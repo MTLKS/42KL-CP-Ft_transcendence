@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import sleep from '../functions/sleep'
 import login from '../functions/login'
+import rickroll from '../functions/rickroll'
 
 interface offset{
   top: number,
@@ -67,7 +68,9 @@ function PromptField() {
       case "login":
           login();
         break;
-    
+      case "sudo":
+          rickroll();
+        break;
       default:
         break;
     }
