@@ -1,12 +1,9 @@
 import React, { useState } from 'react'
+import sleep from '../functions/sleep'
 
 interface offset{
   top: number,
   left: number,
-}
-
-function sleep(ms:number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function PromptField() {
