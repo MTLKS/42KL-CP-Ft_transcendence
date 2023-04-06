@@ -11,6 +11,15 @@
   }
 }
 
+@layer utilities{
+  .card {
+    @apply bg-gray-800 rounded-lg shadow-lg p-2;
+  }
+  .button {
+    @apply bg-fuchsia-900 rounded-lg shadow-lg py-2 px-5 font-bold;
+  }
+}
+
 @layer glitch {
   .glitch {
     position: relative;

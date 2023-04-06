@@ -16,7 +16,7 @@ function Title() {
     // animateStart();
     useEffect(animateStart, []);
     return (
-        <h1 className='glitch text-9xl tracking-tighter font-medium'>
+        <h1 className='glitch text-9xl font-light'>
             <span className=' glitch-child1' aria-hidden="true" >{title}</span>
             {title}
             <span className=' glitch-child2' aria-hidden="true" >{title}</span>

@@ -6,7 +6,7 @@ function login() {
 
 function Button() {
   return (
-    <button type='button' onClick={ login }>
+    <button className='button' type='button' onClick={ login }>
         Login
     </button>
   )
