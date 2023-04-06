@@ -10,6 +10,7 @@ function App() {
     <div className='bg-gray-900 h-screen w-screen font-'>
       <Title />
       <Button />
+      <PromptField />
     </div>
   )
 
