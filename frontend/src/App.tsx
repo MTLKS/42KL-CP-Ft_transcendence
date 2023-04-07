@@ -3,24 +3,30 @@ import Button from "./components/Buttons";
 import Title from "./components/Title";
 import "./index.css";
 import Login from "./login/Login";
+import Terminal from "./login/Terminal";
+import { useEffect, useState } from "react";
+import sleep from "./functions/sleep";
 
 function App() {
+  const [loggedIn, setLoggedIn] = useState(false);
+
   newFunction();
   return (
     <div className='bg-gray-900 h-screen w-screen font-'>
-      <Title />
-      <Button />
-      <PromptField />
+      {loggedIn ? <Terminal /> : <Login />}
     </div>
   )
 
-  function newFunction() {
+  async function newFunction() {
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     const code: any = JSON.parse(`{ "code" : "${urlParams.get('code')}" }`);
 
+    await sleep(1000);
     if (code.code !== "null")
-      console.log(code);
+      setLoggedIn(true);
+    else 
+      setLoggedIn(false);
   }
 }
 
