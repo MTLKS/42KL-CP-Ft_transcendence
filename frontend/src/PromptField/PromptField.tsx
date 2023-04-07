@@ -11,6 +11,7 @@ interface offset{
 function PromptField() {
   const [value, setValue] = useState('');
   const [offset, setOffset] = useState({top:0, left:16} as offset);
+  const [focus, setFocus] = useState(false);
 
   const firstWord:string = value.split(" ")[0];
   const theRest:string = value.split(" ").slice(1).join(" ");
@@ -23,6 +24,7 @@ function PromptField() {
     case "ok":
     case "cowsay":
     case "clear":
+    case "ls":
       color ="cyan";
       break;
     default:
@@ -34,8 +36,9 @@ function PromptField() {
     <div className='mx-16'>
       <p className=' relative bg-slate-600 
       text-gray-300 text-4xl tracking-tighter
-      mb-5 border-4 border-white
+      mb-5 border-4
       px-4 rounded-xl h-15'
+      style={{borderColor:focus ? "cyan" : "white",transition: "border-color 0.5s"}}
       onClick={() => {document.querySelector('input')?.focus()}}
       >
         <span style={{color:color}}>{firstWord + " "}</span>
@@ -50,13 +53,21 @@ function PromptField() {
           if (e.key === 'Enter') {
             handleCommand();
           }
-          if (e.key === 'ArrowLeft'|| e.key === 'ArrowRight') {
-            animateCaret({top: 0, left: 16 + (e.currentTarget.selectionStart!) * 19.8});
+          if (e.key === 'ArrowLeft') {
+            if (e.currentTarget.selectionStart!+1 == 1) return;
+            animateCaret({top: 0, left: 16 + (e.currentTarget.selectionStart!-1) * 19.8});
           }
+          if (e.key === 'ArrowRight') {
+            if (e.currentTarget.selectionStart!+1 > value.length) return;
+            animateCaret({top: 0, left: 16 + (e.currentTarget.selectionStart!+1) * 19.8});
+          }
+
         }}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
         onClickCapture={(e) => e.stopPropagation()}
         />
-        <div className={' animate-pulse absolute w-5 h-11 bg-white '}
+        <div className={' animate-pulse absolute w-5 h-10 bg-white '}
         style={{top:offset.top, left:offset.left }}/>
       </p>
     </div>
@@ -69,6 +80,9 @@ function PromptField() {
           login();
         break;
       case "sudo":
+          rickroll();
+        break;
+      case "ls":
           rickroll();
         break;
       default:
