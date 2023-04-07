@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Res } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 
@@ -11,14 +11,15 @@ export class AuthController {
 		return this.authService.handleData(data);
 	}
 
+	/* TEMP REQUEST */
 	@Get()
-	getLogin() : string {
-		return this.authService.getLogin();
+	getLogin(@Headers() headers: any) : string {
+		return this.authService.checkSession(headers);
 	}
 
 	// Receive code from 42 OAuth
 	@Post('code')
-	login(@Body() data: any, @Res( { passthrough: true} ) response: Response): any {
-		return this.authService.login(data, response);
+	receiveCode(@Body() data: any, @Res( { passthrough: true} ) response: Response): any {
+		return this.authService.receiveCode(data, response);
 	}
 }
