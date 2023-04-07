@@ -1,31 +1,14 @@
-import { Controller, Get, Post, Body, Req, Res, Headers, Redirect, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Res, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { query, Response, Request } from 'express';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
-	
+
 	@Post()
 	handleData(@Body() data: any): any {
 		return this.authService.handleData(data);
-	}
-
-	/* TEMP REQUEST */
-	// @Get()
-	// getLogin(@Headers() headers: any) : string {
-	// 	this.authService.getLogin();
-	// 	return this.authService.checkSession(headers);
-	// 	// return {url : this.authService.getRedirectLink, statusCode : 302};
-	// }
-
-	@Get()
-	getLogin(@Res() res) :void
-	{
-		//redirect to 42 oauth
-		res.redirect(302, this.authService.getRedirectLink());
-		// this.authService.getLogin();
-		// console.log("End of login");
 	}
 
 	@Get("/redirect")
