@@ -7,7 +7,6 @@ interface CardProps {
 }
 
 interface CardAnimation {
-  height: string,
   transform: string,
   opacity: number,
   transition: string,
@@ -15,9 +14,10 @@ interface CardAnimation {
 
 function Card(props: CardProps) {
   const { children } = props;
-  const [animation, setAnimation] = useState({ height: "0", transform: "translateY(50px)", opacity: 0, transition: "all 0.5s" } as CardAnimation);
+  const [animation, setAnimation] = useState({ transform: "translateY(50px)", opacity: 0, transition: "all 0.5s" } as CardAnimation);
+  const [mounted, setMounted] = useState(false);
 
-  animate();
+  if (!mounted) animate();
   return (
     <div className='card'
       style={animation}
@@ -28,7 +28,8 @@ function Card(props: CardProps) {
 
   async function animate() {
     await sleep(10);
-    setAnimation({ height: "", transform: "translateY(0px)", opacity: 1, transition: "all 0.5s" });
+    setAnimation({ transform: "translateY(0px)", opacity: 1, transition: "all 0.5s" });
+    setMounted(true);
   }
 }
 
