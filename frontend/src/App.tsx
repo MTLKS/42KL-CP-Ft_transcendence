@@ -23,7 +23,7 @@ function App() {
     let code: { code: string | null } = { code: urlParams.get('code') };
     if (code.code !== "null")
       setLoggedIn(true);
-    else 
+    else
       setLoggedIn(false);
   }
 }
