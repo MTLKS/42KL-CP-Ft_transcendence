@@ -10,21 +10,21 @@ import sleep from "./functions/sleep";
 function App() {
   const [loggedIn, setLoggedIn] = useState(false);
 
-  newFunction();
+  const logged = checkIfLoggedIn();
   return (
     <div className='bg-gray-900 h-screen w-screen font-'>
-      {loggedIn ? <Terminal /> : <Login />}
+      {logged ? <Terminal /> : <Login />}
     </div>
   )
 
-  async function newFunction() {
+  function checkIfLoggedIn() {
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     let code: { code: string | null } = { code: urlParams.get('code') };
-    if (code.code !== "null")
-      setLoggedIn(true);
-    else
-      setLoggedIn(false);
+
+    if (code.code !== null)
+      return true;
+    return false;
   }
 }
 
