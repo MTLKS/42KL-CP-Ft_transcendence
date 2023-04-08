@@ -26,6 +26,7 @@ function PromptField(props: PromptFieldProps) {
   switch (firstWord) {
     case "help":
     case "login":
+    case "exit":
     case "sudo":
     case "leaderboard":
     case "ok":
@@ -33,23 +34,23 @@ function PromptField(props: PromptFieldProps) {
     case "clear":
     case "ls":
     case "add":
-      color = "cyan";
+      color = "neonText-cyan transition-all";
       break;
     default:
-      color = "red";
+      color = "neonText-red transition-all";
       break;
   }
 
   return (
     <div className='mx-16'>
       <div className=' relative bg-slate-600 
-      text-gray-300 text-2xl tracking-tighter whitespace-pre
+      neonText-white text-2xl tracking-tighter whitespace-pre
       mb-5 border-4 
       px-4 rounded-xl h-15'
         style={{ borderColor: focus ? "cyan" : "white", transition: "border-color 0.5s" }}
         onClick={() => { document.querySelector('input')?.focus() }}
       >
-        <span style={{ color: color }}>{firstWord + " "}</span>
+        <span className={color} >{firstWord + " "}</span>
         {theRest}
         <input className=' w-0 outline-none bg-transparent text-transparent'
           onInput={(e) => {
@@ -57,60 +58,7 @@ function PromptField(props: PromptFieldProps) {
             animateCaret({ top: 0, left: 16 + (e.currentTarget.selectionStart!) * fontWidth });
           }}
           onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.currentTarget.value = '';
-              props.handleCommands(firstWord);
-              let newHistory: string[];
-              if (commandHistory.length > 20) newHistory = commandHistory.slice(1);
-              else if (commandHistory[commandHistory.length - 1] !== firstWord) newHistory = commandHistory.concat(firstWord);
-              else newHistory = commandHistory;
-              setCommandHistory(newHistory);
-              setValue('');
-              setHistoryIndex(-1);
-              animateCaret({ top: 0, left: 16 });
-            }
-            if (e.key === 'ArrowLeft') {
-              if (e.currentTarget.selectionStart! + 1 == 1) return;
-              animateCaret({ top: 0, left: 16 + (e.currentTarget.selectionStart! - 1) * fontWidth });
-            }
-            if (e.key === 'ArrowRight') {
-              if (e.currentTarget.selectionStart! + 1 > value.length) return;
-              animateCaret({ top: 0, left: 16 + (e.currentTarget.selectionStart! + 1) * fontWidth });
-            }
-            if (e.key === 'ArrowUp') {
-              let newHistoryIndex = historyIndex;
-              if (commandHistory.length == 0) return;
-              if (historyIndex == -1) newHistoryIndex = commandHistory.length - 1;
-              else if (historyIndex > 0) newHistoryIndex = historyIndex - 1;
-              else return;
-              const newCommand = commandHistory[newHistoryIndex];
-              console.log(historyIndex - 1);
-              e.currentTarget.value = newCommand;
-              e.currentTarget.selectionStart = newCommand.length;
-              setValue(newCommand);
-              setHistoryIndex(newHistoryIndex)
-              animateCaret({ top: 0, left: 16 + newCommand.length * fontWidth });
-            }
-            if (e.key === 'ArrowDown') {
-              let newHistoryIndex = historyIndex;
-              console.log(newHistoryIndex);
-              if (historyIndex <= commandHistory.length - 1) newHistoryIndex = historyIndex + 1;
-              else if (historyIndex > commandHistory.length - 1) {
-                newHistoryIndex = -1;
-                e.currentTarget.value = '';
-                setValue('');
-                animateCaret({ top: 0, left: 16 });
-                return;
-              } else return;
-              const newCommand = commandHistory[historyIndex];
-              e.currentTarget.value = newCommand;
-              e.currentTarget.selectionStart = newCommand.length;
-              setValue(newCommand);
-              setHistoryIndex(newHistoryIndex);
-              animateCaret({ top: 0, left: 16 + newCommand.length * fontWidth });
-            }
-          }}
+          onKeyDown={onKeyDown}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
           onClickCapture={(e) => e.stopPropagation()}
@@ -136,6 +84,61 @@ function PromptField(props: PromptFieldProps) {
       await sleep(duration / steps);
     }
     setOffset(end);
+  }
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.currentTarget.value = '';
+      props.handleCommands(firstWord);
+      let newHistory: string[];
+      if (commandHistory.length > 20) newHistory = commandHistory.slice(1);
+      else if (commandHistory[commandHistory.length - 1] !== firstWord) newHistory = commandHistory.concat(firstWord);
+      else newHistory = commandHistory;
+      setCommandHistory(newHistory);
+      setValue('');
+      setHistoryIndex(-1);
+      animateCaret({ top: 0, left: 16 });
+    }
+    if (e.key === 'ArrowLeft') {
+      if (e.currentTarget.selectionStart! + 1 == 1) return;
+      animateCaret({ top: 0, left: 16 + (e.currentTarget.selectionStart! - 1) * fontWidth });
+    }
+    if (e.key === 'ArrowRight') {
+      if (e.currentTarget.selectionStart! + 1 > value.length) return;
+      animateCaret({ top: 0, left: 16 + (e.currentTarget.selectionStart! + 1) * fontWidth });
+    }
+    if (e.key === 'ArrowUp') {
+      let newHistoryIndex = historyIndex;
+      if (commandHistory.length == 0) return;
+      if (historyIndex == -1) newHistoryIndex = commandHistory.length - 1;
+      else if (historyIndex > 0) newHistoryIndex = historyIndex - 1;
+      else return;
+      const newCommand = commandHistory[newHistoryIndex];
+      console.log(historyIndex - 1);
+      e.currentTarget.value = newCommand;
+      e.currentTarget.selectionStart = newCommand.length;
+      setValue(newCommand);
+      setHistoryIndex(newHistoryIndex)
+      animateCaret({ top: 0, left: 16 + newCommand.length * fontWidth });
+    }
+    if (e.key === 'ArrowDown') {
+      let newHistoryIndex = historyIndex;
+      console.log(newHistoryIndex);
+      if (historyIndex <= commandHistory.length - 1) newHistoryIndex = historyIndex + 1;
+      else if (historyIndex > commandHistory.length - 1) {
+        newHistoryIndex = -1;
+        e.currentTarget.value = '';
+        setValue('');
+        animateCaret({ top: 0, left: 16 });
+        return;
+      } else return;
+      const newCommand = commandHistory[historyIndex];
+      e.currentTarget.value = newCommand;
+      e.currentTarget.selectionStart = newCommand.length;
+      setValue(newCommand);
+      setHistoryIndex(newHistoryIndex);
+      animateCaret({ top: 0, left: 16 + newCommand.length * fontWidth });
+    }
   }
 }
 
