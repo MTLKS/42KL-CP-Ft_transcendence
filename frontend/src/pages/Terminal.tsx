@@ -13,47 +13,51 @@ function Terminal() {
   return (
     <div className='h-screen flex flex-col'>
       <SrcollView>
+        {elements}
         <div className=' flex justify-center'>
-          <p className=' glitch text-gray-300 text-2xl tracking-tighter mb-5 h-15'>
+          <p className=' glitch text-gray-300 text-8xl tracking-tighter mt-10 mb-5 h-15'>
             <span className='glitch-child1'>Welcome to PONGsh</span>
             Welcome to PONGsh
           </p>
         </div>
-        {elements}
       </SrcollView>
-      <PromptField handleCommands={(command) => {
-        switch (command) {
-          case "login":
-            login();
-            break;
-          case "sudo":
-            rickroll();
-            break;
-          case "ls":
-            rickroll();
-            break;
-          case "add":
-            const newCard = card(index);
-            const newList = elements.concat(newCard);
-            setIndex(index + 1);
-            setElements(newList);
-            break;
-          case "clear":
-            setIndex(0);
-            setElements([]);
-            break;
-          case "help":
-            const newHelpCard = helpCard();
-            const newHelpList = elements.concat(newHelpCard);
-            setIndex(index + 1);
-            setElements(newHelpList);
-            break;
-          default:
-            break;
-        }
-      }} />
+      <PromptField handleCommands={handleCommands} />
     </div>
   )
+
+  function handleCommands(command: string) {
+    let newList: JSX.Element[] = [];
+    switch (command) {
+      case "login":
+        login();
+        break;
+      case "sudo":
+        rickroll();
+        break;
+      case "ls":
+        rickroll();
+        break;
+      case "add":
+        const newCard = card(index);
+        newList = [newCard].concat(elements);
+        setIndex(index + 1);
+        break;
+      case "clear":
+        setIndex(0);
+        break;
+      case "help":
+        const newHelpCard = helpCard();
+        newList = [newHelpCard].concat(elements);
+        setIndex(index + 1);
+        break;
+      default:
+        const newErrorCard = errorCard();
+        newList = [newErrorCard].concat(elements);
+        setIndex(index + 1);
+        break;
+    }
+    setElements(newList);
+  }
 
   function card(index: number) {
     return <Card key={index}>
@@ -64,17 +68,30 @@ function Terminal() {
   function helpCard() {
     return <Card key={index}>
       <p className='text-gray-300 text-1xl tracking-tighter mb-5 h-15 whitespace-pre'>
-        <span className=' text-2xl text-green-600 font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-white font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-cyan font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-pink font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-yellow font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-red font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-green font-bold'>Get some help!</span><br />
+        <span className=' text-2xl neonText-blue font-bold'>Get some help!</span><br />
         add:         add a card <br />
         clear:       clear the screen <br />
         cowsay:      make a cow say something <br />
         help:        show this help message <br />
         leaderboard: show the leaderboard <br />
         login:       login to your account <br />
+        exit:        logout from your account <br />
         ls:          list files <br />
         ok:          ok <br />
         sudo:        give you admin privilige <br />
       </p>
+    </Card>;
+  }
+
+  function errorCard() {
+    return <Card key={index}>
+      <p className='text-xl neonText-red whitespace-pre'>command does not exist...     get some help.</p>
     </Card>;
   }
 }

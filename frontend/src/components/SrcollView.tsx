@@ -7,7 +7,7 @@ interface ScrollViewProps {
 function SrcollView(props: ScrollViewProps) {
   const { children } = props;
   return (
-    <div className=' overflow-y-scroll scroll-m-0 scroll-p-0 mt-auto scrollbar-hide'>
+    <div className='overflow-y-auto scroll-m-0 scroll-p-0 scrollbar-hide flex-1 flex flex-col-reverse'>
       {children}
     </div>
   )
