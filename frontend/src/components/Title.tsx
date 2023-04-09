@@ -8,7 +8,7 @@ function Title() {
   const [title, setTitle] = useState(initTitle);
   const timesBetweenLetters: number = 4;
   const timesBeforeDone: number = 20;
-  const msBetweenAnimation: number = 5000;
+  const msBetweenAnimation: number = 7000;
   const msBetweenSwitch: number = 50;
   let i: number = 0;
 
@@ -16,10 +16,10 @@ function Title() {
   // animateStart();
   useEffect(animateStart, []);
   return (
-    <h1 className=' glitch text-9xl font-light absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full'>
-      <span className=' glitch-child1' aria-hidden="true" >{title}</span>
+    <h1 className=' bugee text-white text-[200px] leading-none '>
+      {/* <span className=' glitch-child1' aria-hidden="true" >{title}</span> */}
       {title}
-      <span className=' glitch-child2' aria-hidden="true" >{title}</span>
+      {/* <span className=' glitch-child2' aria-hidden="true" >{title}</span> */}
     </h1>
   )
 
