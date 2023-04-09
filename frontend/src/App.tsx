@@ -12,7 +12,7 @@ function App() {
 
   const logged = checkIfLoggedIn();
   return (
-    <div className='bg-gray-900 h-screen w-screen font-'>
+    <div className=' bg-background dotted-texture h-screen w-screen'>
       {logged ? <Terminal /> : <Login />}
     </div>
   )
