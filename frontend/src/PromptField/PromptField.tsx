@@ -43,7 +43,7 @@ function PromptField(props: PromptFieldProps) {
       text-white text-2xl tracking-tighter whitespace-pre
       mb-5 border-4 py-2 mx-auto
       px-4 rounded-md h-15 pt-3 pb-2'
-        style={{ borderColor: focus ? focusColor ?? "white" : "white", transition: "border-color 0.5s", textAlign: center ? "center" : "left" }}
+        style={{ borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s", textAlign: center ? "center" : "left" }}
         onClick={() => { document.querySelector('input')?.focus() }}
       >
         <span className={color} >{firstWord + " "}</span>
