@@ -4,26 +4,43 @@ import SrcollView from '../components/SrcollView'
 import Card from '../components/Card'
 import login from '../functions/login'
 import rickroll from '../functions/rickroll'
+import Pong from './Pong'
+import sleep from '../functions/sleep'
+
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help"];
 
 function Terminal() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
+  const [startMatch, setStartMatch] = React.useState(false);
 
-
+  focusOnInput();
   return (
-    <div className='h-screen flex flex-col'>
-      <SrcollView>
-        {elements}
-        <div className=' flex justify-center'>
-          <p className=' glitch text-gray-300 text-8xl tracking-tighter mt-10 mb-5 h-15'>
-            <span className='glitch-child1'>Welcome to PONGsh</span>
-            Welcome to PONGsh
-          </p>
-        </div>
-      </SrcollView>
-      <PromptField handleCommands={handleCommands} />
+    <div>
+      {startMatch && <Pong />}
+      <div className='h-screen flex flex-col'>
+        <SrcollView>
+          {elements}
+          <div className=' flex justify-center'>
+            <p className=' glitch text-gray-300 text-8xl tracking-tighter mt-10 mb-5 h-15'>
+              <span className='glitch-child1'>Welcome to PONGsh</span>
+              Welcome to PONGsh
+            </p>
+          </div>
+        </SrcollView>
+        <PromptField
+          handleCommands={handleCommands}
+          availableCommands={availableCommands}
+          center={false}
+        />
+      </div>
     </div>
   )
+
+  async function focusOnInput() {
+    await sleep(100);
+    document.querySelector('input')?.focus()
+  }
 
   function handleCommands(command: string) {
     let newList: JSX.Element[] = [];
@@ -36,6 +53,16 @@ function Terminal() {
         break;
       case "ls":
         rickroll();
+        break;
+      case "start":
+        if (!startMatch) {
+          setStartMatch(true);
+        }
+        break;
+      case "end":
+        if (startMatch) {
+          setStartMatch(false);
+        }
         break;
       case "add":
         const newCard = card(index);
