@@ -2,19 +2,18 @@ import { Injectable, Param, Headers } from "@nestjs/common";
 
 @Injectable()
 export class AuthService {
-	private myArray = new Array();
-
 	// Starts the login process
-	startLogin(@Headers() header): any {
-		// console.log(header);
-		if (header.cookie && this.myArray.includes(header.cookie.split('=')[1])) {
-			return { redirectUrl: "http://localhost:5173" };
-		} else {
-			const LINK = "https://api.intra.42.fr/oauth/authorize/";
-			const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
-
-			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+	startLogin(@Headers() header: any): any {
+		const COOKIES = header.cookie ? header.cookie.split("; ") : [];
+		if (COOKIES.length !== 0) {
+			const ACCESS_TOKEN = COOKIES.find((cookie) => cookie.startsWith('access_token=')).split('=')[1];
+			if (ACCESS_TOKEN) {
+				return { redirectUrl: "http://localhost:5173" };
+			} 
 		}
+		const LINK = "https://api.intra.42.fr/oauth/authorize/";
+		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
+		return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
 	}
 
 	// Use the code from query to get token info
@@ -35,7 +34,6 @@ export class AuthService {
 		});
 		const RESPONSE_DATA = await API_RESPONSE.json();
 		const ACCESS_TOKEN = RESPONSE_DATA["access_token"];
-		this.myArray.push(ACCESS_TOKEN);
-    	return RESPONSE_DATA;
+		return RESPONSE_DATA;
 	}
 }

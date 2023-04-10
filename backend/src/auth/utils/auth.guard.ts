@@ -13,10 +13,8 @@ export class AuthGuard implements CanActivate
 			Token inside database
 	*/
 	//TODO : search for access token inside database
-	canActivate(context: ExecutionContext)
-	: boolean {
+	canActivate(context: ExecutionContext): boolean {
 		const request = context.switchToHttp().getRequest();
-
 		console.log(request.header('Authorization'));
 		// if (!request.header.authorization)
 		// 	return (false);
