@@ -1,7 +1,13 @@
 import React from 'react'
 
-export function PolkaDotContainer() {
+interface ContainerProps {
+  children: JSX.Element;
+};
+
+export function PolkaDotContainer(props: ContainerProps) {
   return (
-    <div className="polka-dot"></div>
+    <div className="polka-dot">
+      {props.children}
+    </div>
   )
 }
