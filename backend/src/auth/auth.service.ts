@@ -6,7 +6,7 @@ export class AuthService {
 
 	// Starts the login process
 	startLogin(@Headers() header): any {
-		console.log(header);
+		// console.log(header);
 		if (header.cookie && this.myArray.includes(header.cookie.split('=')[1])) {
 			return { redirectUrl: "http://localhost:5173" };
 		} else {
@@ -31,10 +31,11 @@ export class AuthService {
 			headers:{
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(DATA),
+			body : JSON.stringify(DATA),
 		});
 		const RESPONSE_DATA = await API_RESPONSE.json();
-		this.myArray.push(RESPONSE_DATA.access_token);
-		return { accessToken: RESPONSE_DATA.access_token };
+		const ACCESS_TOKEN = RESPONSE_DATA["access_token"];
+		this.myArray.push(ACCESS_TOKEN);
+    	return RESPONSE_DATA;
 	}
 }
