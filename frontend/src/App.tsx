@@ -1,14 +1,9 @@
-import PromptField from "./PromptField/PromptField";
-import Button from "./components/Buttons";
-import Title from "./components/Title";
-import "./index.css";
+import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import Terminal from "./pages/Terminal";
 import { useEffect, useState } from "react";
-import sleep from "./functions/sleep";
 
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
 
   const logged = checkIfLoggedIn();
   return (

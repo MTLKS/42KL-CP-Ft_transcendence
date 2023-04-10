@@ -1,5 +1,3 @@
-import React from 'react'
-import { useState } from "react";
 import Button from '../components/Buttons';
 import Title from '../components/Title';
 import login from '../functions/login';

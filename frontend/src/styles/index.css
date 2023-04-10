@@ -27,6 +27,19 @@
     @apply bg-fuchsia-900 rounded-lg shadow-lg py-2 px-5 font-bold;
   }
 
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .bugee {
+    font-family: 'Bungee', cursive;
+  }
+
   .polka-dot {
     @apply h-screen w-screen rounded-3xl border-[4px] border-solid border-[rgb(var(--highlight-color))];
     background-color: rgb(var(--dimmer-shadow));
@@ -34,6 +47,11 @@
       rgb(var(--highlight-color)) 1px,
       transparent 1px
     );
+    background-size: 20px 20px;
+  }
+
+  .dotted-texture {
+    background-image: repeating-linear-gradient(-45deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.3) 1px, transparent 2px, transparent 30px);
     background-size: 20px 20px;
   }
 }

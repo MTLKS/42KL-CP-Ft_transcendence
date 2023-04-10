@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
@@ -12,6 +11,10 @@ export default {
         yellowOld: "#b3a183",
         blueOld: "#313440",
       },
+      fontFamily: {
+        'jbmono': ['JetBrains Mono', 'monospace'],
+        'bungee': ['Bungee', 'cursive']
+      }
     },
   },
   plugins: [],
