@@ -3,13 +3,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        white: "#fef8e2",
-        background: "#242424",
-        redOld: "#ad6454",
-        cyanOld: "#5f928f",
-        greenOld: "#00ff00",
-        yellowOld: "#b3a183",
-        blueOld: "#313440",
+        highlight: "rgb(var(--highlight-color))",
+        dimshadow: "rgb(var(--dimmer-shadow))",
+        shadow: "rgb(var(--shadow-color))",
+        accRed: "rgb(var(--accent-red))",
+        accCyan: "rgb(var(--accent-cyan))",
+        accYellow: "rgb(var(--accent-yellow))",
+        accBlue: "rgb(var(--accent-blue))",
       },
       fontFamily: {
         'jbmono': ['JetBrains Mono', 'monospace'],
