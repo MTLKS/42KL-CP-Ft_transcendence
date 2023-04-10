@@ -40,7 +40,7 @@ function PromptField(props: PromptFieldProps) {
     <div className={center ? 'mx-auto w-[600px]' : 'mx-16'}
     >
       <div className=' relative
-      text-white text-2xl tracking-tighter whitespace-pre
+      text-highlight text-2xl tracking-tighter whitespace-pre
       mb-5 border-4 py-2 mx-auto
       px-4 rounded-md h-15 pt-3 pb-2'
         style={{ borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s", textAlign: center ? "center" : "left" }}
@@ -60,7 +60,7 @@ function PromptField(props: PromptFieldProps) {
           onBlur={() => setFocus(false)}
           onClickCapture={(e) => e.stopPropagation()}
         />
-        <div className={' animate-pulse absolute w-2 h-9 bg-white top-2'}
+        <div className={'animate-pulse absolute w-2 h-9 bg-highlight top-2'}
           style={{ left: offset.left }} />
       </div>
     </div>

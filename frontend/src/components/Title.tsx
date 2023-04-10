@@ -6,20 +6,16 @@ function Title() {
   const letters: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
   const initTitle: string = 'PONGsh';
   const [title, setTitle] = useState(initTitle);
-  const timesBetweenLetters: number = 4;
-  const timesBeforeDone: number = 20;
+  const timesBetweenLetters: number = 10;
+  const timesBeforeDone: number = 0;
   const msBetweenAnimation: number = 7000;
-  const msBetweenSwitch: number = 50;
+  const msBetweenSwitch: number = 30;
   let i: number = 0;
 
-
-  // animateStart();
   useEffect(animateStart, []);
   return (
-    <h1 className=' bugee text-white text-[200px] leading-none '>
-      {/* <span className=' glitch-child1' aria-hidden="true" >{title}</span> */}
+    <h1 className='font-bungee text-highlight text-[200px] leading-none'>
       {title}
-      {/* <span className=' glitch-child2' aria-hidden="true" >{title}</span> */}
     </h1>
   )
 
