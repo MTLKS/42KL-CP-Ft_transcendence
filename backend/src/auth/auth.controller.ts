@@ -10,7 +10,7 @@ export class AuthController {
 		) {}
 
 	@Get()
-	startLogin(@Headers() header): any {
+	startLogin(@Headers() header: any): any {
 		return this.authService.startLogin(header);
 	}
 
