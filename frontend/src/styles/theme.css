@@ -1,0 +1,9 @@
+/* Default theme */
+:root {
+
+  /* color variables */
+  --highlight-color: 254, 248, 226;
+  --shadow-color: 27, 27, 27;
+  --dimmer-shadow: 36, 36, 36;
+
+}
