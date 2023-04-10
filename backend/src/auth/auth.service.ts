@@ -6,8 +6,7 @@ export class AuthService {
 
 	// Starts the login process
 	startLogin(@Headers() header): any {
-		// console.log(header);
-		if (header.cookie && this.myArray.includes(header.cookie.split('=')[1])) {
+		if (header.cookie) {
 			return { redirectUrl: "http://localhost:5173" };
 		} else {
 			const LINK = "https://api.intra.42.fr/oauth/authorize/";
@@ -36,6 +35,6 @@ export class AuthService {
 		const RESPONSE_DATA = await API_RESPONSE.json();
 		const ACCESS_TOKEN = RESPONSE_DATA["access_token"];
 		this.myArray.push(ACCESS_TOKEN);
-    	return RESPONSE_DATA;
+		return RESPONSE_DATA;
 	}
 }

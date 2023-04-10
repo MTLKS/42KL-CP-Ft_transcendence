@@ -1,11 +1,11 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable, Headers } from "@nestjs/common";
 import { UserDTO } from "./user.dto";
 
 @Injectable()
 export class UserService {
 	//Use access token to get user info
-	async getUserData(accessToken : string) : Promise<UserDTO>{
-		const HEADER = "Bearer " + accessToken;
+		async getMyData(access_token: string) : Promise<UserDTO>{
+		const HEADER = "Bearer " + access_token;
 		const RESPONSE = await fetch ("https://api.intra.42.fr/v2/me", {
 			method : "GET",
 			headers : {
