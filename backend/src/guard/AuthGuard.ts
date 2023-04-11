@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
-import * as CryptoJS from 'crypto-js';
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
+import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 
 @Injectable()

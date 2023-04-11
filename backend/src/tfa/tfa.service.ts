@@ -1,11 +1,11 @@
 import { UserService } from "src/user/user.service";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/entity/user.entity";
 import { Injectable } from "@nestjs/common";
 import { authenticator } from "otplib";
 import * as CryptoJS from "crypto-js";
-import * as qrCode from "qrcode";
-import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
-import { User } from "src/entity/user.entity";
+import * as qrCode from "qrcode";
 
 @Injectable()
 export class TFAService{

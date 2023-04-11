@@ -1,9 +1,9 @@
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "../entity/user.entity";
 import { Injectable } from "@nestjs/common";
 import { IntraDTO } from "../dto/intra.dto";
-import { User } from "../entity/user.entity";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 import * as CryptoJS from 'crypto-js';
+import { Repository } from "typeorm";
 
 @Injectable()
 export class UserService {
