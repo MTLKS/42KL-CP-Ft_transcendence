@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { UserDTO } from "./user.dto";
+import { UserDTO } from "../dto/user.dto";
 
 @Injectable()
 export class UserService {
@@ -14,6 +14,7 @@ export class UserService {
 			return RESPONSE
 		const USER_DATA = await RESPONSE.json();
 		const USER_DTO =  new UserDTO();
+		USER_DTO.intraId = USER_DATA.id;
 		USER_DTO.intraUrl = USER_DATA.url;
 		USER_DTO.intraName = USER_DATA.login;
 		USER_DTO.intraEmail = USER_DATA.email;

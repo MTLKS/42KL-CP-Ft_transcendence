@@ -1,4 +1,5 @@
 export class UserDTO{
+	intraId: number; //id
 	intraUrl: string; //url
 	intraName : string; //login
 	intraEmail: string; //email

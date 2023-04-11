@@ -12,7 +12,7 @@ export class AuthController {
 	}
 
 	@Post("/code/:code")
-	async getCode(@Param('code') code: string): Promise<any> {
-		return this.authService.getCode(code);
+	async postCode(@Param('code') code: string): Promise<any> {
+		return this.authService.postCode(code);
 	}
 }

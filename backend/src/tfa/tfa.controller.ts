@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { TFAService } from "./tfa.service";
-import { AuthGuard } from 'src/guard/auth.guard';
+import { AuthGuard } from 'src/guard/AuthGuard';
 
 @Controller('2fa')
 export class TFAController{

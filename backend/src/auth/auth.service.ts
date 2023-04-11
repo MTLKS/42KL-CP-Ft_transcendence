@@ -1,7 +1,13 @@
-import { Injectable, Param, Headers } from "@nestjs/common";
+import { Injectable, Param, Headers, Response } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/entity/user.entity";
+import { UserService } from "src/user/user.service";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthService {
+	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
+
 	// Starts the login process
 	startLogin(@Headers() header: any): any {
 		const COOKIES = header.cookie ? header.cookie.split("; ") : [];
@@ -16,7 +22,7 @@ export class AuthService {
 	}
 
 	// Use the code from query to get token info
-	async getCode(@Param('code') code: string): Promise<any> {
+	async postCode(@Param('code') code: string): Promise<any> {
 		const DATA = {
 			"grant_type": "authorization_code",
 			"client_id": process.env.APP_UID,
@@ -29,6 +35,15 @@ export class AuthService {
 			headers:{ 'Content-Type': 'application/json' },
 			body : JSON.stringify(DATA),
 		});
-		return await API_RESPONSE.json();
+		const RETURN_DATA = await API_RESPONSE.json();
+		if (RETURN_DATA.access_token != null) {
+			const ENTITY_USER = new User();
+			ENTITY_USER.accessToken = RETURN_DATA.access_token;
+			const USER_DTO = await this.userService.getMyData(ENTITY_USER.accessToken);
+			ENTITY_USER.intraId = USER_DTO.intraId;
+			ENTITY_USER.tfaSecret = null;
+			this.userRepository.save(ENTITY_USER);
+		}
+		return RETURN_DATA;
 	}
 }
