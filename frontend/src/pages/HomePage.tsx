@@ -4,22 +4,28 @@ import login from '../functions/login';
 import rickroll from '../functions/rickroll';
 import Card from '../components/Card';
 import Terminal from './Terminal';
+import Profile from '../widgets/Profile';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help"];
-
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
+const emptyWidget = <div></div>;
 function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
+  const [topWidget, setTopWidget] = React.useState(<Profile />);
+  const [midWidget, setMidWidget] = React.useState(emptyWidget);
+  const [botWidget, setBotWidget] = React.useState(emptyWidget);
 
   return (
     <div className='h-full p-7'>
       {startMatch && <Pong />}
       <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl overflow-hidden flex flex-row'>
         <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />
-        <div className=' bg-highlight h-full w-1'/>
-        <div className='w-10'>
-
+        <div className=' bg-highlight h-full w-[7px]' />
+        <div className='w-[1000px] flex flex-col overflow-hidden'>
+          {topWidget}
+          {midWidget}
+          {botWidget}
         </div>
       </div>
     </div>
@@ -59,6 +65,10 @@ function HomePage() {
         const newHelpCard = helpCard();
         newList = [newHelpCard].concat(elements);
         setIndex(index + 1);
+        break;
+      case "whoami":
+        const newWhoamiCard = <Profile />;
+        setTopWidget(newWhoamiCard);
         break;
       default:
         const newErrorCard = errorCard();
