@@ -10,7 +10,6 @@ import { User } from "src/entity/user.entity";
 @Injectable()
 export class TFAService{
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
-	private myArray = new Array();
 
 	async requestSecret(accessToken: string) : Promise<any> {
 		try {
