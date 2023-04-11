@@ -8,10 +8,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfig } from './config/typeorm.config';
 import { User } from './entity/user.entity';
 import { AuthController } from './auth/auth.controller';
+import { TFAController } from './tfa/tfa.controller';
+import { TFAService } from './tfa/tfa.service';
 
 @Module({
   imports: [TypeOrmModule.forRoot(typeOrmConfig), TypeOrmModule.forFeature([User])],
-  controllers: [AppController, AuthController, UserController],
-  providers: [AppService, AuthService, UserService],
+  controllers: [AppController, AuthController, UserController, TFAController],
+  providers: [AppService, AuthService, UserService, TFAService],
 })
 export class AppModule {}

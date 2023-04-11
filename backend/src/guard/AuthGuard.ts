@@ -13,16 +13,15 @@ export class AuthGuard implements CanActivate
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const REQUEST = context.switchToHttp().getRequest();
 		const AUTH_CODE = REQUEST.header('Authorization');
-		console.log("AUTH_CODE:", AUTH_CODE);
+		console.log("Authorization code:", AUTH_CODE);
 		try {
 			let accessToken = CryptoJS.AES.decrypt(AUTH_CODE, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 			console.log("ACCESS_TOKEN:", accessToken);
 			const DATA = await this.userRepository.find({ where: {accessToken} })
-			console.log("Guard end\n")
+			console.log("Guard End");
 			return (DATA.length !== 0)
-		} catch (error) {
-			console.log("AUTH_CODE is invalid");
-			console.log("Guard end\n")
+		} catch {
+			console.log("Authorization is invalid");
 			return (false);
 		}
 	}

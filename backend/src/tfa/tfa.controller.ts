@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Param, UseGuards } from "@nestjs/common";
+import { Headers } from "@nestjs/common";
 import { TFAService } from "./tfa.service";
 import { AuthGuard } from 'src/guard/AuthGuard';
 
@@ -6,15 +7,15 @@ import { AuthGuard } from 'src/guard/AuthGuard';
 export class TFAController{
 	constructor (private readonly tfaService : TFAService){}
 
-	@Get('secret')
+	@Get()
 	@UseGuards(AuthGuard)
-	async requestSecret(){
-		return await this.tfaService.requestSecret();
+	async requestSecret(@Headers('Authorization') accessToken: string) {
+		return await this.tfaService.requestSecret(accessToken);
 	}
 	
-	@Post('validate')
+	@Post(':otp')
 	@UseGuards(AuthGuard)
-	async validateOTP(@Body() body : { token :string } ): Promise<boolean> {
-		return await this.tfaService.validateOTP(body.token)
+	async validateOTP(@Headers('Authorization') accessToken: string, @Param('otp') code: string ): Promise<any> {
+		return await this.tfaService.validateOTP(accessToken, code)
 	}
 }

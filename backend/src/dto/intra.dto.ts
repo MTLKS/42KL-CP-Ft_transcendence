@@ -1,4 +1,4 @@
-export class IntraDTO{
+export class IntraDTO {
 	id: number;
 	url: string;
 	name : string;
