@@ -1,27 +1,20 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
 import { TFAService } from "./tfa.service";
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('2fa')
 export class TFAController{
 	constructor (private readonly tfaService : TFAService){}
-	private myArray = new Array();
 
-	@Post('enable')
+	@Get('secret')
+	@UseGuards(AuthGuard)
 	async requestSecret(){
-		const SECRET =await this.tfaService.requestSecret();
-		this.myArray.push(SECRET.secretKey);
-		return (SECRET);
+		return await this.tfaService.requestSecret();
 	}
 	
-	@Post('generate')
-	async generateOTP() : Promise<string> {
-		return (await this.tfaService.generateOTP(this.myArray[0]));
-	}
-
 	@Post('validate')
-	async validateOTP(@Body() body : {token :string})
-	: Promise<boolean>{
-		return (await this.tfaService.validateOTP(body.token, this.myArray[0]));
+	@UseGuards(AuthGuard)
+	async validateOTP(@Body() body : { token :string } ): Promise<boolean> {
+		return await this.tfaService.validateOTP(body.token)
 	}
-
 }
