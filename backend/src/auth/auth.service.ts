@@ -10,16 +10,23 @@ export class AuthService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
 	// Starts the login process
-	startLogin(@Headers() header: any): any {
+	async startLogin(@Headers() header: any): Promise<any> {
 		const COOKIES = header.cookie ? header.cookie.split("; ") : [];
-		if (COOKIES.length !== 0) {
-			const ACCESS_TOKEN = COOKIES.find((cookie) => cookie.startsWith('access_token=')).split('=')[1];
-			if (ACCESS_TOKEN)
-				return { redirectUrl: "http://localhost:5173" };
-		}
 		const LINK = "https://api.intra.42.fr/oauth/authorize/";
 		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
-		return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		if (COOKIES.length === 0)
+			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		const AUTH_CODE = COOKIES.find((cookie) => cookie.startsWith('access_token=')).split('=')[1];
+		if (AUTH_CODE === "null")
+			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		try {
+			let accessToken = CryptoJS.AES.decrypt(AUTH_CODE, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+			const DATA = await this.userRepository.find({ where: {accessToken} })
+			return (DATA.length !== 0) ? { redirectUrl: "http://localhost:5173" } : { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		}
+		catch {
+			return { redirectUrl: "http://localhost:5173" };
+		}
 	}
 
 	// Use the code from query to get token info
