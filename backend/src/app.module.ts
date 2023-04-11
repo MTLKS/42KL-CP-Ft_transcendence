@@ -6,10 +6,13 @@ import { UserModule } from './user/user.module';
 import { AppService } from './app.service';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
+import { TFAModule } from './tfa/tfa.module';
+import { TFAController } from './tfa/tfa.controller';
+import { TFAService } from './tfa/tfa.service';
 
 @Module({
-  imports: [AuthModule, UserModule],
-  controllers: [AppController, UserController],
-  providers: [AppService, AuthService, UserService],
+  imports: [AuthModule, UserModule, TFAModule],
+  controllers: [AppController, UserController, TFAController],
+  providers: [AppService, AuthService, UserService, TFAService],
 })
 export class AppModule {}
