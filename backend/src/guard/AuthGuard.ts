@@ -1,23 +1,30 @@
 import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
+import * as CryptoJS from 'crypto-js';
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/entity/user.entity";
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthGuard implements CanActivate
 {
-	/*
-		This guard will be placed in all routes that is accessable only by authenticate user.
-		for example ('user'). When the user want to access these sites, they need to send the request
-		with the header storing their access token
-		
-		This guard will check the http header for following
-			Token present
-			Token inside database
-	*/
-	//TODO : search for access token inside database
-	canActivate(context: ExecutionContext): boolean {
-		const request = context.switchToHttp().getRequest();
-		console.log("Guard Authorization: ", request.header('Authorization'));
-		// if (!request.header.authorization)
-		// 	return (false);
+	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
+
+	// Check if the access token is valid with the database
+	async canActivate(context: ExecutionContext): Promise<boolean> {
+		const REQUEST = context.switchToHttp().getRequest();
+		const AUTH_CODE = REQUEST.header('Authorization');
+		console.log("AUTH_CODE:", AUTH_CODE);
+		try {
+			const ACCESS_TOKEN = CryptoJS.AES.decrypt(AUTH_CODE, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+			console.log("ACCESS_TOKEN:", ACCESS_TOKEN);
+			const DATA = await this.userRepository.find({ where: {accessToken: ACCESS_TOKEN} })
+			console.log("Guard end\n")
+			return (DATA.length !== 0)
+		} catch (error) {
+			console.log("AUTH_CODE is invalid");
+			console.log("Guard end\n")
+			return (false);
+		}
 		return (true);
 	}
 }

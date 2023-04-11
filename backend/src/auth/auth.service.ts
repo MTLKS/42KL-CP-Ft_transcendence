@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
 import { UserService } from "src/user/user.service";
 import { Repository } from "typeorm";
+import * as CryptoJS from 'crypto-js';
 
 @Injectable()
 export class AuthService {
@@ -36,14 +37,14 @@ export class AuthService {
 			body : JSON.stringify(DATA),
 		});
 		const RETURN_DATA = await API_RESPONSE.json();
-		if (RETURN_DATA.access_token != null) {
-			const ENTITY_USER = new User();
-			ENTITY_USER.accessToken = RETURN_DATA.access_token;
-			const USER_DTO = await this.userService.getMyIntraData(ENTITY_USER.accessToken);
-			ENTITY_USER.intraId = USER_DTO.id;
-			ENTITY_USER.tfaSecret = null;
-			this.userRepository.save(ENTITY_USER);
-		}
-		return RETURN_DATA;
+		if (RETURN_DATA.access_token == null)
+			return { accessToken: null };
+		const USER_DTO = await this.userService.getMyIntraData(RETURN_DATA.access_token);
+		const ENTITY_USER = new User();
+		ENTITY_USER.accessToken = RETURN_DATA.access_token;
+		ENTITY_USER.intraId = USER_DTO.id;
+		ENTITY_USER.tfaSecret = null;
+		this.userRepository.save(ENTITY_USER);
+		return { accessToken: CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString() };
 	}
 }

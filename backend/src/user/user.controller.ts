@@ -17,5 +17,4 @@ export class UserController {
 	getMyIntraData(@Headers('Authorization') accessToken: string): any {
 		return this.userService.getMyIntraData(accessToken);
 	}
-
 }
