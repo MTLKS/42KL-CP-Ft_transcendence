@@ -28,7 +28,7 @@ function Profile() {
     </div>
     <div className=' flex flex-row w-full mb-1'>
       <div className='flex-1 mr-1 bg-dimshadow'>
-        <PixelatedImage src='../../assets/download.png' pixelSize={pixelSize} className='w-full' />
+        <PixelatedImage src='https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg' pixelSize={pixelSize} className='w-full' />
       </div>
       <div className='mr-1 bg-dimshadow flex-1'>
         <div className='relative w-full h-full'>
@@ -61,7 +61,7 @@ function Profile() {
     <div className='w-full bg-highlight py-1 flex flex-row items-center'
       onClick={onProfileClick}
     >
-      <PixelatedImage src='../../assets/download.png' pixelSize={pixelSize} className=' w-20 aspect-square' />
+      <PixelatedImage src='https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg' pixelSize={pixelSize} className=' w-20 aspect-square' />
       <div className='flex flex-col justify-center mx-5'>
         <div className=' text-2xl text-dimshadow font-extrabold'>JOHNDOE</div>
         <div className=' text-xs text-dimshadow'>THE BLACKHOLE DESTROYER</div>
@@ -81,14 +81,22 @@ function Profile() {
     </div>
   )
 
-  async function pixelatedToSmooth(start: number = 400) {
+  async function pixelatedToSmooth(start: number = 300) {
     let tmp = start;
+    // style 1 jaggled animation
+    // while (tmp > 1) {
+    //   tmp = Math.floor(tmp / 1.2 - 1);
+    //   if (tmp < 1) tmp = 1;
+    //   setPixelSize(tmp);
+    //   await sleep(80);
+    // }
+    // style 2 smooth animation
     while (tmp > 1) {
-      tmp = Math.floor(tmp / 1.2);
+      tmp = Math.floor(tmp / 1.05);
+      if (tmp < 1) tmp = 1;
       setPixelSize(tmp);
-      await sleep(100);
+      await sleep(30);
     }
-    console.log('done');
   }
 
   function onProfileClick() {
