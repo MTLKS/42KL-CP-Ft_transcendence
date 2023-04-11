@@ -81,11 +81,10 @@ function Profile() {
     </div>
   )
 
-  async function pixelatedToSmooth() {
-    let tmp = pixelSize;
+  async function pixelatedToSmooth(start: number = 400) {
+    let tmp = start;
     while (tmp > 1) {
       tmp = Math.floor(tmp / 1.2);
-      console.log(tmp);
       setPixelSize(tmp);
       await sleep(100);
     }
@@ -94,6 +93,8 @@ function Profile() {
 
   function onProfileClick() {
     setExpanded(!expanded);
+    if (pixelSize > 1) return;
+    pixelatedToSmooth();
   }
 
 }
