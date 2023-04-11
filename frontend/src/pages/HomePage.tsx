@@ -5,8 +5,7 @@ import rickroll from '../functions/rickroll';
 import Card from '../components/Card';
 import Terminal from './Terminal';
 import Profile from '../widgets/Profile';
-import MatrixRain from '../MatrixRain/MatrixRain';
-import Mr from "../MatrixRain/Mr";
+import Mr from "../widgets/MatrixRain";
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
 const emptyWidget = <div></div>;
