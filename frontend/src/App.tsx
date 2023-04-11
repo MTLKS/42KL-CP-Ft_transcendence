@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import Terminal from "./pages/Terminal";
 import { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
+import Profile from "./widgets/Profile";
+import { CookiePopup } from "./components/Popup";
 
 
 

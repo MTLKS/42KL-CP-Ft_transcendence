@@ -45,6 +45,21 @@
     );
     background-size: 20px 20px;
   }
+
+  .highlight::before {
+    @apply bg-accCyan;
+    content: "";
+    position: absolute;
+    width: calc(100% + 4px);
+    height: 40%;
+    left: -2px;
+    bottom: 0;
+    z-index: -1;
+  }
+  
+  .hover:hover {
+    @apply bg-highlight text-dimshadow;
+  }
 }
 
 @layer glitch {
