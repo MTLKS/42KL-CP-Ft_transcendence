@@ -39,8 +39,8 @@ export class AuthService {
 		if (RETURN_DATA.access_token != null) {
 			const ENTITY_USER = new User();
 			ENTITY_USER.accessToken = RETURN_DATA.access_token;
-			const USER_DTO = await this.userService.getMyData(ENTITY_USER.accessToken);
-			ENTITY_USER.intraId = USER_DTO.intraId;
+			const USER_DTO = await this.userService.getMyIntraData(ENTITY_USER.accessToken);
+			ENTITY_USER.intraId = USER_DTO.id;
 			ENTITY_USER.tfaSecret = null;
 			this.userRepository.save(ENTITY_USER);
 		}

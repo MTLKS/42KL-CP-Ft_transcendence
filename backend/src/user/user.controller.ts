@@ -6,9 +6,16 @@ import { AuthGuard } from 'src/guard/AuthGuard';
 export class UserController {
 	constructor(private readonly userService: UserService) {}
 
+	@Get()
+	@UseGuards(AuthGuard)
+	getMyUserData(@Headers('Authorization') accessToken: string): any {
+		return this.userService.getMyUserData(accessToken);
+	}
+
 	@Get('intra')
 	@UseGuards(AuthGuard)
-	getMyData(@Headers('Authorization') accessToken: string): any {
-		return this.userService.getMyData(accessToken);
+	getMyIntraData(@Headers('Authorization') accessToken: string): any {
+		return this.userService.getMyIntraData(accessToken);
 	}
+
 }
