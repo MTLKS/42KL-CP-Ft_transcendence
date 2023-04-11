@@ -13,7 +13,7 @@
   }
 
   body {
-    @apply bg-[rgb(var(--highlight-color))];
+    @apply bg-highlight;
   }
 
 }
@@ -37,7 +37,7 @@
   }
 
   .polka-dot {
-    @apply h-screen w-screen rounded-3xl border-[4px] border-solid border-[rgb(var(--highlight-color))];
+    @apply h-screen w-screen rounded-3xl border-[4px] border-solid border-highlight;
     background-color: rgb(var(--dimmer-shadow));
     background-image: radial-gradient(
       rgba(var(--highlight-color)) 0.5px,

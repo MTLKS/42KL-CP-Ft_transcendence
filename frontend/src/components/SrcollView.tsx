@@ -1,13 +1,14 @@
 import React from 'react'
 
 interface ScrollViewProps {
-  children: React.ReactNode
+  children: React.ReactNode;
+  reverse?: boolean;
 }
 
 function SrcollView(props: ScrollViewProps) {
-  const { children } = props;
+  const { children, reverse } = props;
   return (
-    <div className='overflow-y-auto scroll-m-0 scroll-p-0 scrollbar-hide flex-1 flex flex-col-reverse'>
+    <div className= {reverse? 'overflow-y-auto scroll-m-0 scroll-p-0 scrollbar-hide flex-1 flex flex-col-reverse':'overflow-y-auto scroll-m-0 scroll-p-0 scrollbar-hide flex-1 flex flex-col' }>
       {children}
     </div>
   )

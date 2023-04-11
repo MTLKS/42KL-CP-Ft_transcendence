@@ -19,7 +19,7 @@ interface PromptFieldProps {
 
 function PromptField(props: PromptFieldProps) {
   const { handleCommands, center, availableCommands, commandHighLightColor, focusColor, capitalize } = props;
-  const caretStart = center ? 300 - 13.23 / 2 : 16;
+  const caretStart = center ? 300 - 13.23 / 2 : 4;
   const fontWidth: number = center ? 13.23 / 2 : 13.23;
   const [value, setValue] = useState('');
   const [offset, setOffset] = useState({ top: 0, left: caretStart } as offset);
@@ -37,12 +37,12 @@ function PromptField(props: PromptFieldProps) {
   });
 
   return (
-    <div className={center ? 'mx-auto w-[600px]' : 'mx-16'}
+    <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
     >
       <div className=' relative
       text-highlight text-2xl tracking-tighter whitespace-pre
-      mb-5 border-4 py-2 mx-auto
-      px-4 rounded-md h-15 pt-3 pb-2'
+      py-2 mx-auto
+      px-1 rounded-md h-15 pt-3 pb-2'
         style={{ borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s", textAlign: center ? "center" : "left" }}
         onClick={() => { document.querySelector('input')?.focus() }}
       >
