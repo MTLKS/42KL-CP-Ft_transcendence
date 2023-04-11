@@ -5,6 +5,8 @@ import rickroll from '../functions/rickroll';
 import Card from '../components/Card';
 import Terminal from './Terminal';
 import Profile from '../widgets/Profile';
+import MatrixRain from '../MatrixRain/MatrixRain';
+import Mr from "../MatrixRain/Mr";
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
 const emptyWidget = <div></div>;
@@ -13,8 +15,8 @@ function HomePage() {
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
   const [topWidget, setTopWidget] = React.useState(<Profile />);
-  const [midWidget, setMidWidget] = React.useState(emptyWidget);
-  const [botWidget, setBotWidget] = React.useState(emptyWidget);
+  const [midWidget, setMidWidget] = React.useState(<Mr />);
+  const [botWidget, setBotWidget] = React.useState(<></>);
 
   return (
     <div className='h-full p-7'>
