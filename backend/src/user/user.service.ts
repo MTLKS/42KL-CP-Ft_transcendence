@@ -21,7 +21,7 @@ export class UserService {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
 		});
-		const INTRA_DTO =  new IntraDTO();
+		const INTRA_DTO = new IntraDTO();
 		if (RESPONSE.status !== 200)
 			return INTRA_DTO
 		const USER_DATA = await RESPONSE.json();

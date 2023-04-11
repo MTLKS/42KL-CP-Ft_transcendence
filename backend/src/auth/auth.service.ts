@@ -46,12 +46,13 @@ export class AuthService {
 		const RETURN_DATA = await API_RESPONSE.json();
 		if (RETURN_DATA.access_token == null)
 			return { accessToken: null };
-		const USER_DTO = await this.userService.getMyIntraData(RETURN_DATA.access_token);
+		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()
+		const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
 		const ENTITY_USER = new User();
 		ENTITY_USER.accessToken = RETURN_DATA.access_token;
-		ENTITY_USER.intraId = USER_DTO.id;
+		ENTITY_USER.intraId = INTRA_DTO.id;
 		ENTITY_USER.tfaSecret = null;
 		this.userRepository.save(ENTITY_USER);
-		return { accessToken: CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString() };
+		return { accessToken };
 	}
 }
