@@ -12,7 +12,7 @@ interface column {
 }
 
 
-function Mr() {
+function MatrixRain() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -68,4 +68,4 @@ function Mr() {
   }
 }
 
-export default Mr
+export default MatrixRain
