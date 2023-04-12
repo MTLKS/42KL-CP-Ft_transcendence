@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import Terminal from "./pages/Terminal";
 import login, { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
-import Profile from "./widgets/Profile";
+import Profile from "./widgets/Profile/Profile";
 import { CookiePopup } from "./components/Popup";
 import AxiosResponse from 'axios';
 
@@ -13,12 +13,12 @@ import AxiosResponse from 'axios';
 function App() {
   const [logged, setLogged] = useState(false);
 
-  if(!logged)
-   checkIfLoggedIn();
+  if (!logged)
+    checkIfLoggedIn();
 
   return (
     <PolkaDotContainer>
-      {logged ? <HomePage/>: <Login />}
+      {logged ? <HomePage /> : <Login />}
     </PolkaDotContainer>
   )
 
@@ -30,12 +30,12 @@ function App() {
         loggin = true;
       }
     });
-    if (loggin) return ;
+    if (loggin) return;
 
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     let code: { code: string | null } = { code: urlParams.get('code') };
-    
+
     if (code.code) {
       checkAuth(code.code).then((res) => {
         if (res) {

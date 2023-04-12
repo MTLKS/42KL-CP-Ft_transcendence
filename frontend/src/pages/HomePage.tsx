@@ -4,7 +4,7 @@ import login from '../functions/login';
 import rickroll from '../functions/rickroll';
 import Card from '../components/Card';
 import Terminal from './Terminal';
-import Profile from '../widgets/Profile';
+import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 
@@ -14,22 +14,37 @@ function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
+  const [width, setWidth] = React.useState(1000);
+  const [initWidth, setInitWidth] = React.useState(1000);
+  const [initPositon, setInitPosition] = React.useState(0);
   const [topWidget, setTopWidget] = React.useState(<Profile />);
   // const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<></>);
 
   return (
-    <div className='h-full p-7'>
+    <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl overflow-hidden flex flex-row'>
-        <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />
-        <div className=' bg-highlight h-full w-[7px]' />
-        <div className='w-[1000px] h-full flex flex-col overflow-hidden'>
+      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row'>
+        <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements}
+          style={{ width: width }}
+        />
+        <div className=' bg-highlight h-full w-1'
+          style={{ cursor: 'col-resize' }}
+          onDragStart={(e) => {
+            setInitWidth(width);
+            setInitPosition(e.pageX);
+          }}
+          onDrag={(e) => {
+            setWidth(initWidth + (e.pageX - initPositon));
+          }}
+          onDragEnd={(e) => {
+            setWidth(initWidth + (e.pageX - initPositon));
+          }}
+          draggable />
+        <div className=' h-full flex-1 box-border flex flex-col overflow-hidden'>
           {topWidget}
-          <div className='h-[95%]'> {/* this is temp fix for hidden content */}
-            {midWidget}
-          </div>
+          {midWidget}
           {botWidget}
         </div>
       </div>
