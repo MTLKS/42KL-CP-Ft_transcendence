@@ -28,7 +28,7 @@ function Profile() {
     </div>
     <div className=' flex flex-row w-full mb-1'>
       <div className='flex-1 mr-1 bg-dimshadow'>
-        <PixelatedImage src='https://cdn.intra.42.fr/users/df2be25b922f7c0c676f0802e688c4e2/small_zah.jpg' pixelSize={pixelSize} className='w-full' />
+        <PixelatedImage src='https://cdn.intra.42.fr/users/df2be25b922f7c0c676f0802e688c4e2/zah.jpg' pixelSize={pixelSize} className='w-full' />
       </div>
       <div className='mr-1 bg-dimshadow flex-1'>
         <div className='relative w-full h-full'>
@@ -61,7 +61,7 @@ function Profile() {
     <div className='w-full bg-highlight py-1 flex flex-row items-center'
       onClick={onProfileClick}
     >
-      <PixelatedImage src='https://cdn.intra.42.fr/users/df2be25b922f7c0c676f0802e688c4e2/small_zah.jpg' pixelSize={pixelSize} className=' w-20 aspect-square' />
+      <PixelatedImage src='https://cdn.intra.42.fr/users/df2be25b922f7c0c676f0802e688c4e2/zah.jpg' pixelSize={pixelSize} className=' w-20 aspect-square' />
       <div className='flex flex-col justify-center mx-5'>
         <div className=' text-2xl text-dimshadow font-extrabold'>JOHNDOE</div>
         <div className=' text-xs text-dimshadow'>THE BLACKHOLE DESTROYER</div>

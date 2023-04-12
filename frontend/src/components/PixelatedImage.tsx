@@ -27,13 +27,12 @@ function PixelatedImage(props: PixelatedImageProps) {
   function draw(image: HTMLImageElement) {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     image.src = src;
     image.crossOrigin = "Anonymous";
     // image.src = 'https://hips.hearstapps.com/hmg-prod/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=0.752xw:1.00xh;0.175xw,0&resize=1200:*';
     image.onload = () => {
       ctx!.imageSmoothingEnabled = false;
-      (canvas as any).willReadFrequently = true;
       cropToSquare(image, canvas, ctx!);
 
       const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
