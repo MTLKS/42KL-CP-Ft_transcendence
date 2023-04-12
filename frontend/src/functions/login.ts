@@ -7,11 +7,12 @@ interface IResponse {
 }
 
 export function checkAuth(code: string | null) {
-  return Api.post("/auth/accessToken/" + code);
+  return Api.post("/auth/code/" + code);
 }
 
 async function login() {
   Api.get<IResponse>("/auth").then((res) => {
+    console.log(res.data.redirectUrl);
     window.location.assign(res.data.redirectUrl);
   });
 }
