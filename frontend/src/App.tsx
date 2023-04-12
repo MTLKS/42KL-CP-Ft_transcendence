@@ -1,25 +1,39 @@
+import { useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import Terminal from "./pages/Terminal";
-import { useEffect, useState } from "react";
+import { checkAuth } from "./functions/login";
+import HomePage from "./pages/HomePage";
+import Profile from "./widgets/Profile";
+import { CookiePopup } from "./components/Popup";
+
+
 
 function App() {
+  const [logged, setLogged] = useState(false);
 
-  const logged = checkIfLoggedIn();
+  if(!logged)
+   checkIfLoggedIn();
+
   return (
-    <div className=' bg-background dotted-texture h-screen w-screen'>
-      {logged ? <Terminal /> : <Login />}
-    </div>
+    <PolkaDotContainer>
+      {logged ? <HomePage/>: <Login />}
+    </PolkaDotContainer>
   )
 
-  function checkIfLoggedIn() {
+  async function checkIfLoggedIn() {
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     let code: { code: string | null } = { code: urlParams.get('code') };
-
-    if (code.code !== null)
-      return true;
-    return false;
+    
+    if (code.code) {
+      setLogged(true);
+      // await checkAuth(code.code).then((res) => {
+      //   if (res) {
+      //     console.log(res);
+      //   }
+      // })
+    }
   }
 }
 
