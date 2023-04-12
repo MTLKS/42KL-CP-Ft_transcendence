@@ -48,11 +48,20 @@ export class AuthService {
 			return { accessToken: null };
 		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()
 		const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
-		const ENTITY_USER = new User();
-		ENTITY_USER.accessToken = RETURN_DATA.access_token;
-		ENTITY_USER.intraId = INTRA_DTO.id;
-		ENTITY_USER.tfaSecret = null;
-		this.userRepository.save(ENTITY_USER);
+		const ENTITY_USER = await this.userRepository.find({ where: {intraId: INTRA_DTO.id} });
+		if (ENTITY_USER.length)
+		{
+			ENTITY_USER[0].accessToken = RETURN_DATA.access_token;
+			this.userRepository.save(ENTITY_USER[0]);
+		} else {
+			const NEW_USER = new User();
+			NEW_USER.intraId = INTRA_DTO.id;
+			NEW_USER.elo = 400;
+			NEW_USER.accessToken = RETURN_DATA.access_token;
+			NEW_USER.avatar = INTRA_DTO.imageSmall;
+			NEW_USER.tfaSecret = null;
+			this.userRepository.save(NEW_USER);
+		}
 		return { accessToken };
 	}
 }
