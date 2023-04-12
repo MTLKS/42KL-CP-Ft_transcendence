@@ -6,6 +6,7 @@ import Card from '../components/Card';
 import Terminal from './Terminal';
 import Profile from '../widgets/Profile';
 import MatrixRain from "../widgets/MatrixRain";
+import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
 const emptyWidget = <div></div>;
@@ -14,7 +15,8 @@ function HomePage() {
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
   const [topWidget, setTopWidget] = React.useState(<Profile />);
-  const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
+  // const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
+  const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<></>);
 
   return (
@@ -23,9 +25,11 @@ function HomePage() {
       <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl overflow-hidden flex flex-row'>
         <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />
         <div className=' bg-highlight h-full w-[7px]' />
-        <div className='w-[1000px] flex flex-col overflow-hidden'>
+        <div className='w-[1000px] h-full flex flex-col overflow-hidden'>
           {topWidget}
-          {midWidget}
+          <div className='h-[95%]'> {/* this is temp fix for hidden content */}
+            {midWidget}
+          </div>
           {botWidget}
         </div>
       </div>
