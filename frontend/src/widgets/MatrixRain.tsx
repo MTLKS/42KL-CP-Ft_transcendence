@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 
-var tileSize: number = 15;
+var tileSize: number = 20;
 var maxStackHeight: number;
 var columns: column[] = [];
 var fadeFactor = 0.1;
@@ -51,8 +51,8 @@ function MatrixRain() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // pick a font slightly smaller than the tile size
-      ctx.font = `${tileSize - 2}px jetbrains mono`;
-      ctx.fillStyle = "rgb( 254, 248, 226 )";
+      ctx.font = `${tileSize - 10}px jetbrains mono`;
+      ctx.fillStyle = "rgb( 254, 248, 226, 0.4 )";
       for (let i = 0; i < columns.length; ++i) {
         // pick a random ascii character (change the 94 to a higher number to include more characters)
         var randomCharacter = String.fromCharCode(33 + Math.floor(Math.random() * 94));
