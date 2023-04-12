@@ -12,13 +12,13 @@ interface PromptFieldProps {
   handleCommands: (command: string) => void;
   center: boolean;
   availableCommands: string[];
-  commandHighLightColor?: string | null;
+  commandClassName?: string | null;
   focusColor?: string | null;
   capitalize?: boolean;
 }
 
 function PromptField(props: PromptFieldProps) {
-  const { handleCommands, center, availableCommands, commandHighLightColor, focusColor, capitalize } = props;
+  const { handleCommands, center, availableCommands, commandClassName, focusColor, capitalize } = props;
   const caretStart = center ? 300 - 13.23 / 2 : 4;
   const fontWidth: number = center ? 13.23 / 2 : 13.23;
   const [value, setValue] = useState('');
@@ -29,10 +29,10 @@ function PromptField(props: PromptFieldProps) {
 
   const firstWord: string = value.split(" ")[0];
   const theRest: string = value.split(" ").slice(1).join(" ");
-  let color: string = "white";
+  let commandCN: string = ' underline decoration-3 decoration-accRed';
   availableCommands.forEach((command) => {
     if (firstWord === command) {
-      color = commandHighLightColor ?? "white";
+      commandCN = commandClassName ?? '';
     }
   });
 
@@ -49,8 +49,8 @@ function PromptField(props: PromptFieldProps) {
         }}
         onClick={() => { document.querySelector('input')?.focus() }}
       >
-        <span className={color} >{firstWord + " "}</span>
-        {theRest}
+        <span className={commandCN} >{firstWord}</span>
+        {" " + theRest}
         <input className=' w-0 outline-none bg-transparent text-transparent'
           onInput={(e) => {
             if (capitalize ?? false) setValue(e.currentTarget.value.toUpperCase());
