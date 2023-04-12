@@ -41,6 +41,8 @@ export class UserService {
 		} catch {
 			accessToken = null;
 		}
-		return await this.userRepository.find({ where: {accessToken} })
+		let userData = await this.userRepository.find({ where: {accessToken} });
+		userData[0].accessToken = null;
+		return userData[0];
 	}
 }
