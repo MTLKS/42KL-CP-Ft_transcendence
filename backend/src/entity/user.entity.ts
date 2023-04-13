@@ -2,7 +2,6 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity( { name: 'users' } )
 export class User {
-
   @PrimaryColumn()
   intraId: number;
 
