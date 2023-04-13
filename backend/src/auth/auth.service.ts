@@ -1,4 +1,4 @@
-import { Injectable, Param, Headers } from "@nestjs/common";
+import { Injectable, Param, Headers, Response, Req } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
@@ -16,7 +16,7 @@ export class AuthService {
 		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
 		if (COOKIES.length === 0)
 			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
-		const AUTH_CODE = COOKIES.find((cookie) => cookie.startsWith('access_token=')).split('=')[1];
+		const AUTH_CODE = COOKIES.find((cookie) => cookie.startsWith('Authorization=')).split('=')[1];
 		if (AUTH_CODE === "null")
 			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
 		try {

@@ -18,7 +18,7 @@ const Triangle = ({ w = 20, h = 20, direction = 'top', color = 'fill-highlight' 
 
   return (
     <svg width={w} height={h}>
-      <polygon points={points[direction].join(' ')} className={color} />
+      <polygon points={points[direction].join(' ')} className={color + ' transition-all duration-300 ease-in-out'} />
       Sorry, your browser does not support inline SVG.
     </svg>
   )

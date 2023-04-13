@@ -15,7 +15,6 @@
   body {
     @apply bg-highlight;
   }
-
 }
 
 @layer utilities {

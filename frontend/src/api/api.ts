@@ -6,6 +6,7 @@ class Api {
   constructor() {
     this.reqInstance = axios.create({
       baseURL: "http://localhost:3000",
+      withCredentials: true,
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -15,12 +16,8 @@ class Api {
       (error: AxiosError) => {
         const { data, status, config } = error.response!;
         switch (status) {
-          case 400:
-            console.error(data);
-            break;
-
-          case 401:
-            console.error("unauthorised");
+          case 403:
+            console.error("not-authorised");
             break;
 
           case 404:
