@@ -6,8 +6,12 @@ import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './Expanded/RecentMatches';
 
+interface ProfileProps {
+  animate?: boolean;
+}
 
-function Profile() {
+function Profile(props: ProfileProps) {
+  const { animate } = props;
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
 
@@ -21,11 +25,11 @@ function Profile() {
     onClick={onProfileClick}
   >
     <ProfileHeader expanded={expanded} />
-    <ProfileBody expanded={expanded} pixelSize={pixelSize} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} animate= {animate} />
     <RecentMatches expanded={expanded} />
   </div>);
 
-  async function pixelatedToSmooth(start: number = 300) {
+  async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;
     // style 1 jaggled animation
     // while (tmp > 1) {
@@ -39,14 +43,14 @@ function Profile() {
       tmp = Math.floor(tmp / 1.05);
       if (tmp < 1) tmp = 1;
       setPixelSize(tmp);
-      await sleep(30);
+      await sleep(10);
     }
   }
 
   function onProfileClick() {
     setExpanded(!expanded);
     if (pixelSize > 1) return;
-    // pixelatedToSmooth();
+    pixelatedToSmooth();
   }
 
 }
