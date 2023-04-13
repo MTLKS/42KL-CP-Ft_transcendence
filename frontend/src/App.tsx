@@ -7,6 +7,7 @@ import HomePage from "./pages/HomePage";
 import Profile from "./widgets/Profile/Profile";
 import { CookiePopup } from "./components/Popup";
 import AxiosResponse from 'axios';
+import Chat from "./widgets/Chat/Chat";
 
 
 
@@ -18,7 +19,8 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      {logged ? <HomePage /> : <Login />}
+      {/* {logged ? <HomePage /> : <Login />} */}
+      <Chat />
     </PolkaDotContainer>
   )
 

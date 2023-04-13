@@ -7,6 +7,7 @@ import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
+import Chat from '../widgets/Chat/Chat';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
 const emptyWidget = <div></div>;

@@ -41,7 +41,7 @@ function MatrixRain() {
   }, [canvasRef.current])
 
   return (
-    <canvas className='h-full w-full' id="canvas" ref={canvasRef} />
+    <canvas className='flex-1 w-full' id="canvas" ref={canvasRef} />
   )
 
   function draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {

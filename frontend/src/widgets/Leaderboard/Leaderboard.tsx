@@ -6,7 +6,7 @@ import LeaderboardTable from './LeaderboardTable'
 
 function Leaderboard() {
   return (
-    <div className='w-full h-full p-9 pb-0 flex flex-col gap-y-4'>
+    <div className='w-full p-9 pb-0 flex flex-col gap-y-4'>
       <LeaderboardTitle />
       <LeaderboardTabs />
       <LeaderboardTable />
