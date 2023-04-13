@@ -7,10 +7,11 @@ import ProfileStat from './ProfileStat';
 interface ProfileBodyProps {
   pixelSize: number
   expanded: boolean;
+  animate?: boolean;
 }
 
 function ProfileBody(props: ProfileBodyProps) {
-  const { pixelSize, expanded } = props;
+  const { pixelSize, expanded, animate } = props;
   return (
     <div className={` flex flex-row w-full box-border transition-all duration-300 ease-in-out ${!expanded ? "h-20" : "mb-1"}`}>
       <div className={expanded ? 'flex-1 mr-1 bg-dimshadow transition-all' : 'w-20 h-20 aspect-square transition-all'}>
@@ -18,7 +19,7 @@ function ProfileBody(props: ProfileBodyProps) {
       </div>
       <ProfileSmall expanded={!expanded} />
       <div className={expanded ? 'mr-1 bg-dimshadow flex-1 transition-all duration-1000 ease-in-out' : 'h-20 transition-all duration-1000 ease-in-out'}>
-        <ProfileElo expanded={expanded} />
+        <ProfileElo expanded={expanded}  animate={animate}/>
       </div>
       <ProfileStat expanded={expanded} />
     </div>

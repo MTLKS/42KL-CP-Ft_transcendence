@@ -5,6 +5,7 @@ interface ProfileEloProps {
   expanded: boolean;
   elo?: number;
   winning?: boolean;
+  animate?: boolean;
 }
 
 interface BoxSize {
@@ -13,7 +14,7 @@ interface BoxSize {
 }
 
 function ProfileElo(props: ProfileEloProps) {
-  const { expanded, elo = 420, winning = true } = props;
+  const { expanded, elo = 420, winning = true, animate } = props;
   const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
 
   const containerRef=useRef<HTMLDivElement>(null);
@@ -21,9 +22,10 @@ function ProfileElo(props: ProfileEloProps) {
   useEffect(() => {
     if (containerRef.current) {
       const { width, height } = containerRef.current.getBoundingClientRect();
+      // console.log(width, height);
       setBoxSize({ w: width, h: height });
     }
-  }, );
+  }, [containerRef.current?.clientHeight, containerRef.current?.clientWidth, animate]);
 
   return (
     <div className={expanded ? 'relative w-full h-full overflow-hidden transition-all duration-300 ease-in-out' : 'relative w-20 h-20 mx-5 transition-all duration-300 ease-in-out'}
