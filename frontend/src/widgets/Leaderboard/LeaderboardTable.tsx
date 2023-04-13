@@ -121,9 +121,9 @@ const users = [
 function LeaderboardTable() {
 
   return (
-    <div className='text-highlight h-full overflow-hidden font-extrabold text-sm'>
+    <div className='text-highlight flex-1 overflow-hidden font-extrabold text-sm flex flex-col'>
       <LeaderboardTableTitle />
-      <div className='overflow-auto w-full h-[80%] scrollbar-hide'>
+      <div className='overflow-auto w-full flex-1 scrollbar-hide'>
         {
           users.map((user, index) =>
             <LeaderboardTableRow
