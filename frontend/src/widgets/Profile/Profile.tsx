@@ -25,7 +25,7 @@ function Profile() {
     <RecentMatches expanded={expanded} />
   </div>);
 
-  async function pixelatedToSmooth(start: number = 300) {
+  async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;
     // style 1 jaggled animation
     // while (tmp > 1) {
@@ -39,7 +39,7 @@ function Profile() {
       tmp = Math.floor(tmp / 1.05);
       if (tmp < 1) tmp = 1;
       setPixelSize(tmp);
-      await sleep(30);
+      await sleep(10);
     }
   }
 

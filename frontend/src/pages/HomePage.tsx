@@ -26,23 +26,25 @@ function HomePage() {
   return (
     <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row'
+      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
          ref={pageRef}
          onMouseMove={(e) => {
           if(!draggable) return;
           const pageWidth = pageRef.current?.clientWidth!;
           const padding = (window.innerWidth - pageWidth)/2;
+          if (pageWidth - e.screenX + padding < 500) return;
           if (e.screenX && e.screenX - padding >= 0) 
           setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
           
         }}
         onMouseUp={(e) => {
-          setDraggable(false);
+          if (!draggable) return;
           const pageWidth = pageRef.current?.clientWidth!;
           const padding = (window.innerWidth - pageWidth)/2;
+          if (pageWidth - e.screenX + padding < 500) return;
           if (e.screenX - padding >= 0)
           setWidth(`${((e.screenX -padding) / pageWidth) * 100}%`);
-          
+          setDraggable(false);
         }}
       >
         <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements}
@@ -63,7 +65,8 @@ function HomePage() {
           
          
            />
-        <div className=' h-full flex-1 box-border flex flex-col overflow-hidden'>
+        <div className=' h-full flex-1 box-border flex flex-col overflow-hidden'
+        >
           {topWidget}
           {midWidget}
           {botWidget}
