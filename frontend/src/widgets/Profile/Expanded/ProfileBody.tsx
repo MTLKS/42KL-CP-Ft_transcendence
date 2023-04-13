@@ -19,7 +19,7 @@ function ProfileBody(props: ProfileBodyProps) {
       </div>
       <ProfileSmall expanded={!expanded} />
       <div className={expanded ? 'mr-1 bg-dimshadow flex-1 transition-all duration-1000 ease-in-out' : 'h-20 transition-all duration-1000 ease-in-out'}>
-        <ProfileElo expanded={expanded}  animate={animate}/>
+        <ProfileElo expanded={expanded} animate={animate} />
       </div>
       <ProfileStat expanded={expanded} />
     </div>

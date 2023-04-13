@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import sleep from '../functions/sleep';
 
 var tileSize: number = 20;
 var maxStackHeight: number;
-var columns: column[] = [];
+
 var fadeFactor = 0.1;
 
 interface column {
@@ -11,19 +12,54 @@ interface column {
   stackCounter: number;
 }
 
+interface MatrixRainProps {
+  animate?: boolean;
+}
 
-function MatrixRain() {
+function MatrixRain(props: MatrixRainProps) {
+  const { animate } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  var columns: column[] = [];
 
   useEffect(() => {
     if (!canvasRef.current) return;
+    if (!containerRef.current) return;
     const canvas = canvasRef.current;
+    const container = containerRef.current;
+
+    const handleResize = () => {
+      const { width, height } = container.getBoundingClientRect();
+      canvas.width = width;
+      canvas.height = height;
+      columns = [];
+      for (let i = 0; i < canvas.width / tileSize; ++i) {
+        var column: column = {
+          x: i * tileSize,
+          stackHeight: 10 + Math.random() * maxStackHeight,
+          stackCounter: 0
+        };
+        columns.push(column);
+      }
+    };
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(containerRef.current);
+    handleResize();
+
+    return () => observer.unobserve(container);
+  }, []);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    if (!containerRef.current) return;
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
     const ctx = canvas.getContext("2d");
+    const { width, height } = container.getBoundingClientRect();
+    canvas.width = width;
+    canvas.height = height;
     maxStackHeight = Math.ceil(canvas.height / tileSize);
-    canvas.height = canvas.clientHeight;
-    canvas.width = canvas.clientWidth;
-    console.log(canvas.height)
-    console.log(canvas.width)
     // divide the canvas into columns
     for (let i = 0; i < canvas.width / tileSize; ++i) {
       var column: column = {
@@ -34,17 +70,19 @@ function MatrixRain() {
       columns.push(column);
     }
 
-    const interval = setInterval(() => {
-      draw(ctx!, canvas);
-    }, 70);
-    return () => clearInterval(interval);
-  }, [canvasRef.current])
+
+    requestAnimationFrame(() => draw(ctx!, canvas));
+  }, [animate])
 
   return (
-    <canvas className='flex-1 w-full' id="canvas" ref={canvasRef} />
+    <div className='relative w-full h-full flex-1' ref={containerRef}>
+      <canvas className='absolute h-full w-full top-0 left-0' id="canvas" ref={canvasRef}
+        onClick={(e) => { e.preventDefault(); }}
+      />
+    </div>
   )
 
-  function draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  async function draw(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
     {
       // draw a semi transparent black rectangle on top of the scene to slowly fade older characters
       ctx.fillStyle = `rgba( 36, 36, 36 , ${fadeFactor} )`;
@@ -64,6 +102,8 @@ function MatrixRain() {
           columns[i].stackCounter = 0;
         }
       }
+      await sleep(70);
+      requestAnimationFrame(() => draw(ctx, canvas));
     }
   }
 }

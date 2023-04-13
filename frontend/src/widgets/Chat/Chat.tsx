@@ -23,12 +23,15 @@ function Chat() {
   const [chatOpened, setChatOpened] = useState(0);
 
   return (
-    <div className='flex flex-col h-fit select-none'>
-      <ChatToggle onClick={handleClick}/>
-      <div className={`${expanded ? '' : 'hidden'} overflow-auto scrollbar-hide`}>
+    <div className='flex flex-col select-none transition-all duration-300'
+      style={expanded ? { height: "100%" } : { height: "80px" }}
+    >
+      <ChatToggle onClick={handleClick} />
+      <div className='overflow-y-scroll scrollbar-hide transition-all duration-300 hidden'
+        style={expanded ? { display: "block" } : { display: "none" }}>
         {/* block might cause issue */}
         {
-          rooms.map((room, index) => <ChatRoom name={room.name} />)
+          rooms.map((room, index) => <ChatRoom name={room.name} key={index} />)
         }
       </div>
     </div>

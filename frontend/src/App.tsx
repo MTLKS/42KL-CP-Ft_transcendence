@@ -19,8 +19,8 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      {/* {logged ? <HomePage /> : <Login />} */}
-      <Chat />
+      {logged ? <HomePage /> : <Login />}
+      {/* <Chat /> */}
     </PolkaDotContainer>
   )
 
