@@ -46,7 +46,7 @@ function Profile() {
   function onProfileClick() {
     setExpanded(!expanded);
     if (pixelSize > 1) return;
-    // pixelatedToSmooth();
+    pixelatedToSmooth();
   }
 
 }

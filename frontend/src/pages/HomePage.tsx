@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { cloneElement, useRef } from 'react'
 import Pong from './Pong'
 import login from '../functions/login';
 import rickroll from '../functions/rickroll';
@@ -14,34 +14,55 @@ function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [width, setWidth] = React.useState(1000);
-  const [initWidth, setInitWidth] = React.useState(1000);
-  const [initPositon, setInitPosition] = React.useState(0);
+  const [width, setWidth] = React.useState("60%");
   const [topWidget, setTopWidget] = React.useState(<Profile />);
+  const [draggable, setDraggable] = React.useState(false);
   // const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<></>);
 
+  const pageRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row'>
+      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row'
+         ref={pageRef}
+         onMouseMove={(e) => {
+          if(!draggable) return;
+          const pageWidth = pageRef.current?.clientWidth!;
+          const padding = (window.innerWidth - pageWidth)/2;
+          if (e.screenX && e.screenX - padding >= 0) 
+          setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
+          
+        }}
+        onMouseUp={(e) => {
+          setDraggable(false);
+          const pageWidth = pageRef.current?.clientWidth!;
+          const padding = (window.innerWidth - pageWidth)/2;
+          if (e.screenX - padding >= 0)
+          setWidth(`${((e.screenX -padding) / pageWidth) * 100}%`);
+          
+        }}
+      >
         <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements}
           style={{ width: width }}
         />
         <div className=' bg-highlight h-full w-1'
           style={{ cursor: 'col-resize' }}
-          onDragStart={(e) => {
-            setInitWidth(width);
-            setInitPosition(e.pageX);
+          onMouseDown={(e) => {
+            setDraggable(true);
+            // const crt = document.createElement('div');
+            // crt.style.opacity = '0';
+            // crt.style.width = '0px';
+            // crt.style.height = '0px';
+            // pageRef.current?.clientWidth;
+            // e.dataTransfer.setDragImage(crt, 0, 0);
+
           }}
-          onDrag={(e) => {
-            setWidth(initWidth + (e.pageX - initPositon));
-          }}
-          onDragEnd={(e) => {
-            setWidth(initWidth + (e.pageX - initPositon));
-          }}
-          draggable />
+          
+         
+           />
         <div className=' h-full flex-1 box-border flex flex-col overflow-hidden'>
           {topWidget}
           {midWidget}
