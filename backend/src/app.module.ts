@@ -10,9 +10,10 @@ import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/user.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
+import { FriendshipModule } from './friendship/friendship.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeOrmConfig), TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forRoot(typeOrmConfig), TypeOrmModule.forFeature([User]), FriendshipModule],
   controllers: [AppController, AuthController, UserController, TFAController],
   providers: [AppService, AuthService, UserService, TFAService],
 })

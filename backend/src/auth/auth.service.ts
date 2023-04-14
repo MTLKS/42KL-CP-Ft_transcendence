@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
 import { Repository } from "typeorm";
 import * as CryptoJS from 'crypto-js';
+import { error } from "console";
 
 @Injectable()
 export class AuthService {
@@ -16,16 +17,16 @@ export class AuthService {
 		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
 		if (COOKIES.length === 0)
 			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
-		const AUTH_CODE = COOKIES.find((cookie) => cookie.startsWith('Authorization=')).split('=')[1];
-		if (AUTH_CODE === "null")
+		let authCode = COOKIES.find((cookie) => cookie.startsWith('Authorization='))
+		if (authCode === undefined)
 			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		authCode = authCode.split('=')[1];
 		try {
-			let accessToken = CryptoJS.AES.decrypt(AUTH_CODE, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
-			const DATA = await this.userRepository.find({ where: {accessToken} })
+			const DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })
 			return (DATA.length !== 0) ? { redirectUrl: "http://localhost:5173" } : { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
 		}
 		catch {
-			return { redirectUrl: "http://localhost:5173" };
+			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
 		}
 	}
 
