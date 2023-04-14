@@ -27,30 +27,37 @@ function PromptField(props: PromptFieldProps) {
   const [commandHistory, setCommandHistory] = useState([] as string[]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
-  const firstWord: string = value.split(" ")[0];
-  const theRest: string = value.split(" ").slice(1).join(" ");
-  let commandCN: string = ' underline decoration-3 decoration-accRed';
-  availableCommands.forEach((command) => {
-    if (firstWord === command) {
-      commandCN = commandClassName ?? '';
-    }
-  });
+  const splitValue: string[] = value.split(" ");
+  const words: string[] = splitValue.filter((word) => word !== "");
+  let spansStyles: string[] = [];
 
+  checkValid();
+
+  let spans: JSX.Element[];
+
+  spans = splitValue
+    .map((word, index) =>
+      <>
+        <span key={index} className={`${spansStyles[index]} whitespace-pre`}>{word === '' ? ' ' : `${word}`}</span>
+        &nbsp;
+      </>
+    )
+
+  if (splitValue.length === 1 && splitValue[0] === "") spans = [];
   return (
     <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
     >
       <div className=' relative
       text-highlight text-2xl tracking-tighter whitespace-pre
-      py-2 mx-auto
+      py-2 mx-auto flex flex-wrap overflow-auto
       px-1 rounded-md h-15 pt-3 pb-2'
         style={{
           borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s",
-          textAlign: center ? "center" : "left", borderWidth: center ? "4px" : 0
+          textAlign: center ? "center" : "left", borderWidth: center ? "4px" : 0,
         }}
         onClick={() => { document.querySelector('input')?.focus() }}
       >
-        <span className={commandCN} >{firstWord}</span>
-        {" " + theRest}
+        {spans}
         <input className=' w-0 outline-none bg-transparent text-transparent'
           onInput={(e) => {
             if (capitalize ?? false) setValue(e.currentTarget.value.toUpperCase());
@@ -68,6 +75,29 @@ function PromptField(props: PromptFieldProps) {
       </div>
     </div>
   )
+
+  function checkValid() {
+
+    let index = 0;
+    for (const val in splitValue) {
+
+      const element = val;
+      if (element === "") {
+        spansStyles.push('');
+        continue;
+      }
+      if (index == 0) {
+        if (availableCommands.includes(element))
+          spansStyles.push(commandClassName ?? '');
+        else
+          spansStyles.push("underline decoration-3 decoration-accRed");
+      }
+      else {
+        spansStyles.push('');
+      }
+      index++;
+    }
+  }
 
   function lerpOffset(a: offset, b: offset, t: number) {
     return { top: a.top + (b.top - a.top) * t, left: a.left + (b.left - a.left) * t };
@@ -89,10 +119,10 @@ function PromptField(props: PromptFieldProps) {
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
       e.currentTarget.value = '';
-      handleCommands(firstWord);
+      handleCommands(words[0]);
       let newHistory: string[];
       if (commandHistory.length > 20) newHistory = commandHistory.slice(1);
-      else if (commandHistory[commandHistory.length - 1] !== firstWord) newHistory = commandHistory.concat(firstWord);
+      else if (commandHistory[commandHistory.length - 1] !== words[0]) newHistory = commandHistory.concat(words[0]);
       else newHistory = commandHistory;
       setCommandHistory(newHistory);
       setValue('');
