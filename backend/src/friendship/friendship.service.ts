@@ -28,7 +28,7 @@ export class FriendshipService {
 			return ERROR;
 
 		if ((await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} })).length)
-			return { "error": "Friendship already exist - use PATCH method to update" }
+			return { "error": "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
 		
 		const NEW_FRIENDSHIP = new Friendship(Number(senderId), Number(receiverId), status.toUpperCase());
 		this.friendshipRepository.save(NEW_FRIENDSHIP);
@@ -49,4 +49,6 @@ export class FriendshipService {
 		this.friendshipRepository.save(FRIENDSHIP[0]);
 		return FRIENDSHIP[0];
 	}
+
+	// Deletes a friendship
 }

@@ -16,4 +16,7 @@ export class Friendship {
 
 	@Column()
 	muted: boolean;
+
+	@Column()
+	lastRead: string;
 }
