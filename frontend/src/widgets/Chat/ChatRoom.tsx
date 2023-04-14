@@ -5,6 +5,7 @@ interface ChatRoomProps {
   name: string;
   roomType: string;
   newMessage?: boolean;
+  onClick?: () => void;
 }
 
 function ChatRoom(props: ChatRoomProps) {
