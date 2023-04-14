@@ -44,7 +44,7 @@ function MatrixRain(props: MatrixRainProps) {
     };
 
     const observer = new ResizeObserver(handleResize);
-    observer.observe(containerRef.current);
+    observer.observe(container);
     handleResize();
 
     return () => observer.unobserve(container);

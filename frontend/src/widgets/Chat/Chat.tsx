@@ -3,31 +3,47 @@ import ChatToggle from './ChatToggle'
 import ChatRoom from './ChatRoom';
 import Room from './Room/Room';
 
-const rooms = [
+const rooms: ChatRoomData[] = [
   {
     name: "bobo",
-    type: "private",
+    id: ' 1',
+    ownerId: '1',
+    password: null,
+    private: true,
   },
   {
     name: "zoro",
-    type: "private",
+    id: ' 1',
+    ownerId: '1',
+    password: null,
+    private: true,
   },
   {
     name: "bizarre group",
-    type: "group",
+    id: ' 1',
+    ownerId: '1',
+    password: null,
+    private: false,
   },
   {
     name: "janedoe",
-    type: "private",
+    id: ' 1',
+    ownerId: '1',
+    password: null,
+    private: true,
   },
 ]
+
+interface RoomData {
+
+}
 
 function Chat() {
   const [expanded, setExpanded] = useState(false);
   const [chatOpened, setChatOpened] = useState<number | null>(null);
 
   return (
-    <div className='flex flex-col select-none transition-all duration-300 pb-5'
+    <div className='flex flex-col select-none transition-all duration-300'
       style={expanded ? { height: "100%" } : { height: "60px" }}
     >
       <ChatToggle onClick={handleClick} />
@@ -35,9 +51,11 @@ function Chat() {
         style={expanded ? { display: "block" } : { display: "none" }}>
         {
           rooms.map((room, index) =>
-            <ChatRoom name={room.name} roomType={room.type} key={index} />)
+            <ChatRoom roomData={room} key={index} onClick={() => handleChatOpened(index)} />)
         }
-      </div> : <Room />}
+      </div> :
+        <Room roomData={rooms[chatOpened]} closeChat={handleChatClosed} />
+      }
     </div>
   )
 
@@ -46,8 +64,11 @@ function Chat() {
   }
 
   function handleChatOpened(index: number) {
-    console.log(index);
     setChatOpened(index);
+  }
+
+  function handleChatClosed() {
+    setChatOpened(null);
   }
 }
 
