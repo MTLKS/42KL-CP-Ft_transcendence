@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { Ref, createRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import sleep from '../functions/sleep'
 import login from '../functions/login'
 import rickroll from '../functions/rickroll'
@@ -15,22 +15,31 @@ interface PromptFieldProps {
   commandClassName?: string | null;
   focusColor?: string | null;
   capitalize?: boolean;
+  errorClassName?: string | null;
+  wrap?: boolean;
 }
 
-function PromptField(props: PromptFieldProps) {
-  const { handleCommands, center, availableCommands, commandClassName, focusColor, capitalize } = props;
+const PromptField = forwardRef((props: PromptFieldProps, ref) => {
+  const { handleCommands, center, availableCommands, commandClassName, focusColor, capitalize, errorClassName, wrap } = props;
   const caretStart = center ? 300 - 13.23 / 2 : 4;
-  const fontWidth: number = center ? 13.23 / 2 : 13.23;
+  const fontWidth: number = 10;
   const [value, setValue] = useState('');
   const [offset, setOffset] = useState({ top: 0, left: caretStart } as offset);
   const [focus, setFocus] = useState(false);
-  const [inputRef, setInputRef] = useState(null as HTMLInputElement | null);
   const [commandHistory, setCommandHistory] = useState([] as string[]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const inputRef = createRef<HTMLInputElement>();
+  const divRef = createRef<HTMLDivElement>();
 
   const splitValue: string[] = value.split(" ");
   const words: string[] = splitValue.filter((word) => word !== "");
   let spansStyles: string[] = [];
+
+  useImperativeHandle(ref, () => ({
+    focusOnInput() {
+      inputRef.current!.focus();
+    }
+  }));
 
   checkValid();
 
@@ -39,48 +48,64 @@ function PromptField(props: PromptFieldProps) {
   spans = splitValue
     .map((word, index) =>
       <>
-        <span key={index} className={`${spansStyles[index]} whitespace-pre`}>{word === '' ? ' ' : `${word}`}</span>
+        <span key={index} className={`${spansStyles[index]} whitespace-pre`}>{word}</span>
         &nbsp;
       </>
     )
-
   if (splitValue.length === 1 && splitValue[0] === "") spans = [];
+
+  useEffect(() => {
+    if (inputRef.current) {
+      if (inputRef.current.value === '')
+        animateCaret({ top: inputRef.current!.offsetTop, left: inputRef.current!.offsetLeft });
+      else if (inputRef.current!.value.length > value.length)
+        animateCaret({ top: inputRef.current!.offsetTop, left: inputRef.current!.offsetLeft + fontWidth });
+      else
+        animateCaret({ top: inputRef.current!.offsetTop, left: inputRef.current!.offsetLeft - fontWidth });
+    }
+  }, [value]);
   return (
     <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
     >
       <div className=' relative
       text-highlight text-2xl tracking-tighter whitespace-pre
-      py-2 mx-auto overflow-hidden
-      px-1 rounded-md h-15 pt-3 pb-2'
+      mx-auto overflow-hidden flex
+      px-1 rounded-md h-15 pt-3 pb-3'
         style={{
           borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s",
           textAlign: center ? "center" : "left", borderWidth: center ? "4px" : 0,
-          placeContent: center ? "center" : "flex-start"
+          placeContent: center ? "center" : "flex-start",
+          flexWrap: wrap ? "wrap" : "nowrap"
         }}
-        onClick={() => { inputRef!.focus() }}
+        onClick={focusOnInput}
+        ref={divRef}
       >
         {spans}
         <input className=' w-0 outline-none bg-transparent text-transparent'
-          ref={(ref) => setInputRef(ref)}
+          ref={inputRef}
           onInput={(e) => {
+
             if (capitalize ?? false) setValue(e.currentTarget.value.toUpperCase());
             else setValue(e.currentTarget.value);
-            animateCaret({ top: 0, left: caretStart + (e.currentTarget.selectionStart!) * fontWidth });
           }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={onKeyDown}
           onFocus={(e) => {
-            e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)
+            e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length);
             setFocus(true)
           }}
           onBlur={() => setFocus(false)}
           onClickCapture={(e) => e.stopPropagation()}
         />
         <div className={'animate-pulse absolute w-2 h-9 bg-highlight top-2'}
-          style={{ left: offset.left }} />
+          style={{ left: offset.left, top: offset.top }} />
       </div>
     </div>
   )
+
+  function focusOnInput() {
+    inputRef.current!.focus();
+  }
 
   function checkValid() {
 
@@ -96,7 +121,7 @@ function PromptField(props: PromptFieldProps) {
         if (availableCommands.includes(element))
           spansStyles.push(commandClassName ?? '');
         else
-          spansStyles.push("underline decoration-3 decoration-accRed");
+          spansStyles.push(errorClassName ?? "underline decoration-3 decoration-accRed");
       }
       else {
         spansStyles.push('');
@@ -135,14 +160,7 @@ function PromptField(props: PromptFieldProps) {
       setHistoryIndex(-1);
       animateCaret({ top: 0, left: caretStart });
     }
-    if (e.key === 'ArrowLeft') {
-      if (e.currentTarget.selectionStart! + 1 == 1) return;
-      animateCaret({ top: 0, left: caretStart + (e.currentTarget.selectionStart! - 1) * fontWidth });
-    }
-    if (e.key === 'ArrowRight') {
-      if (e.currentTarget.selectionStart! + 1 > value.length) return;
-      animateCaret({ top: 0, left: caretStart + (e.currentTarget.selectionStart! + 1) * fontWidth });
-    }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length);
     if (e.key === 'ArrowUp') {
       let newHistoryIndex = historyIndex;
       if (commandHistory.length == 0) return;
@@ -176,6 +194,6 @@ function PromptField(props: PromptFieldProps) {
       animateCaret({ top: 0, left: caretStart + newCommand.length * fontWidth });
     }
   }
-}
+})
 
 export default PromptField
