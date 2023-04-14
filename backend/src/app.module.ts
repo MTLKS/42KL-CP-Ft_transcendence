@@ -1,3 +1,6 @@
+import { FriendshipController } from './friendship/friendship.controller';
+import { FriendshipService } from './friendship/friendship.service';
+import { Friendship } from './entity/friendship.entity';
 import { UserController } from './user/user.controller';
 import { typeOrmConfig } from './config/typeorm.config';
 import { AuthController } from './auth/auth.controller';
@@ -10,11 +13,10 @@ import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/user.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
-import { FriendshipModule } from './friendship/friendship.module';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeOrmConfig), TypeOrmModule.forFeature([User]), FriendshipModule],
-  controllers: [AppController, AuthController, UserController, TFAController],
-  providers: [AppService, AuthService, UserService, TFAService],
+  imports: [TypeOrmModule.forRoot(typeOrmConfig), TypeOrmModule.forFeature([User]), TypeOrmModule.forFeature([Friendship])],
+  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController],
+  providers: [AppService, AuthService, UserService, TFAService, FriendshipService],
 })
 export class AppModule {}

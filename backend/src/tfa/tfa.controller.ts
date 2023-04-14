@@ -5,7 +5,7 @@ import { Headers } from "@nestjs/common";
 
 @Controller('2fa')
 export class TFAController{
-	constructor (private readonly tfaService : TFAService){}
+	constructor (private readonly tfaService: TFAService){}
 
 	@Get()
 	@UseGuards(AuthGuard)

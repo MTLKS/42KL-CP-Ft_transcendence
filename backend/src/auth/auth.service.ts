@@ -1,17 +1,16 @@
-import { Injectable, Param, Headers } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
 import { Repository } from "typeorm";
 import * as CryptoJS from 'crypto-js';
-import { error } from "console";
 
 @Injectable()
 export class AuthService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
 	// Starts the login process
-	async startLogin(@Headers() header: any): Promise<any> {
+	async startLogin(header: any): Promise<any> {
 		const COOKIES = header.cookie ? header.cookie.split("; ") : [];
 		const LINK = "https://api.intra.42.fr/oauth/authorize/";
 		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
@@ -31,7 +30,7 @@ export class AuthService {
 	}
 
 	// Use the code from query to get token info
-	async postCode(@Param('code') code: string): Promise<any> {
+	async postCode(code: string): Promise<any> {
 		const DATA = {
 			"grant_type": "authorization_code",
 			"client_id": process.env.APP_UID,
