@@ -16,9 +16,9 @@ export class UserService {
 		} catch {
 			accessToken = null;
 		}
-		let userData = await this.userRepository.find({ where: {accessToken} });
-		userData[0].accessToken = "hidden";
-		return userData[0];
+		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
+		USER_DATA[0].accessToken = "hidden";
+		return USER_DATA[0];
 	}
 	
 		//Use access token to get intra user info
@@ -50,9 +50,9 @@ export class UserService {
 	//Use intra id to get user info
 	async getUserDataById(id: string): Promise<any> {
 		console.log(id)
-		let userData = await this.userRepository.find({ where: {intraId: Number(id)} });
-		userData[0].accessToken = "hidden";
-		return userData;
+		const USER_DATA = await this.userRepository.find({ where: {intraId: Number(id)} });
+		USER_DATA[0].accessToken = "hidden";
+		return USER_DATA;
 	}
 
 	//Use intra id to get intra user info

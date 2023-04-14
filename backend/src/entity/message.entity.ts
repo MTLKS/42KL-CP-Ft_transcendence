@@ -10,10 +10,13 @@ export class Friendship {
 
 	@Column()
 	receiverId: number;
+
+	@Column()
+	channel: boolean;
 	
 	@Column()
 	message: string;
 	
-	@Column( { nullable: true } )
+	@Column()
 	timeStamp: string;
 }

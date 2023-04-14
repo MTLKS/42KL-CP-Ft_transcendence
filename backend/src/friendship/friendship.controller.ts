@@ -1,4 +1,4 @@
-import { Get, UseGuards, Param, Post, Body } from '@nestjs/common';
+import { Get, UseGuards, Param, Post, Body, Patch } from '@nestjs/common';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { Controller } from '@nestjs/common';
 import { FriendshipService } from './friendship.service';
@@ -7,17 +7,25 @@ import { FriendshipService } from './friendship.service';
 export class FriendshipController {
 	constructor(private readonly friendshipService: FriendshipService) {}
 
+	// Get friendship by ID
 	@Get(":id")
 	@UseGuards(AuthGuard)
 	getFriendshipByID(@Param('id') id: string): any {
 		return this.friendshipService.getFriendshipByID(id);
 	}
 
-	//New friendship by ID
+	// Create friendship
 	@Post()
 	@UseGuards(AuthGuard)
-	newFriendshipByID(@Body() body: any): any {
-		return this.friendshipService.newFriendshipByID(body.senderId, body.receiverId, body.status);
+	newFriendship(@Body() body: any): any {
+		return this.friendshipService.newFriendship(body.senderId, body.receiverId, body.status);
+	}
+
+	// Update friendship by ID
+	@Patch()
+	@UseGuards(AuthGuard)
+	updateFriendship(@Body() body: any): any {
+		return this.friendshipService.updateFriendship(body.senderId, body.receiverId, body.status);
 	}
 
 	//Delete friendship by ID

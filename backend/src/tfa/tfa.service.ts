@@ -15,14 +15,14 @@ export class TFAService{
 		try {
 			const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
-			let data = await this.userRepository.find({ where: {accessToken} });
-			data[0].tfaSecret = authenticator.generateSecret();
+			const DATA = await this.userRepository.find({ where: {accessToken} });
+			DATA[0].tfaSecret = authenticator.generateSecret();
 			const ACCOUNT_NAME = INTRA_DTO.name;
 			const SERVICE = "PONGSH"
-			const OTP_PATH = authenticator.keyuri(ACCOUNT_NAME, SERVICE, data[0].tfaSecret);
+			const OTP_PATH = authenticator.keyuri(ACCOUNT_NAME, SERVICE, DATA[0].tfaSecret);
 			const IMAGE_URL = await qrCode.toDataURL(OTP_PATH);
-			this.userRepository.save(data[0]);
-			return { qr : IMAGE_URL, secretKey : data[0].tfaSecret };
+			this.userRepository.save(DATA[0]);
+			return { qr : IMAGE_URL, secretKey : DATA[0].tfaSecret };
 		} catch {
 			return { qr: null, secretKey: null };
 		}
