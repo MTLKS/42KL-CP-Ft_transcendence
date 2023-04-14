@@ -11,12 +11,19 @@ export class FriendshipService {
 		return await "hi";
 	}
 
-	async newFriendshipByID(sid: string, rid: string): Promise<any> {
-		const NEW_FRIENDSHIP = new Friendship();
-		NEW_FRIENDSHIP.senderId = Number(sid);
-		NEW_FRIENDSHIP.receiverId = Number(rid);
-		
-		return await "new";
+	async newFriendshipByID(senderId: string, receiverId: string, status: string): Promise<any> {
+		if (senderId == receiverId)
+			return { "error": "Invalid Id - senderId and receiverId are the same" }
+		if (isNaN(Number(senderId)) || isNaN(Number(receiverId)) || status == null)
+			return { "error": "Missing required property - Ensure you have senderId(number), receiverId(number) and status(string) in your JSON body" }
+		if (status.toUpperCase() != "PENDING" && status.toUpperCase() != "ACCEPTED" && status.toUpperCase() != "BLOCKED")
+			return { "error": "Invalid status - status must be PENDING, ACCEPTED or BLOCKED"}
 
+		if ((await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} })).length)
+			return { "error": "Friendship already exists - use PATCH method to update" }
+		
+		const NEW_FRIENDSHIP = new Friendship(Number(senderId), Number(receiverId), status.toUpperCase());
+		this.friendshipRepository.save(NEW_FRIENDSHIP);
+		return NEW_FRIENDSHIP;
 	}
 }

@@ -1,4 +1,4 @@
-import { Get, UseGuards, Param, Post } from '@nestjs/common';
+import { Get, UseGuards, Param, Post, Body } from '@nestjs/common';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { Controller } from '@nestjs/common';
 import { FriendshipService } from './friendship.service';
@@ -14,10 +14,10 @@ export class FriendshipController {
 	}
 
 	//New friendship by ID
-	@Post("new/:sid/:rid")
+	@Post()
 	@UseGuards(AuthGuard)
-	newFriendshipByID(@Param('sid') sid: string, @Param('rid') rid: string): any {
-		return this.friendshipService.newFriendshipByID(sid, rid);
+	newFriendshipByID(@Body() body: any): any {
+		return this.friendshipService.newFriendshipByID(body.senderId, body.receiverId, body.status);
 	}
 
 	//Delete friendship by ID

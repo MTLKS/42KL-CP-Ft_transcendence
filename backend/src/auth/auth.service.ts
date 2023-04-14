@@ -21,7 +21,7 @@ export class AuthService {
 			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
 		authCode = authCode.split('=')[1];
 		try {
-			const DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })
+			const DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
 			return (DATA.length !== 0) ? { redirectUrl: "http://localhost:5173" } : { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
 		}
 		catch {
@@ -43,6 +43,7 @@ export class AuthService {
 			headers:{ 'Content-Type': 'application/json' },
 			body : JSON.stringify(DATA),
 		});
+
 		const RETURN_DATA = await API_RESPONSE.json();
 		if (RETURN_DATA.access_token == null)
 			return { accessToken: null };
