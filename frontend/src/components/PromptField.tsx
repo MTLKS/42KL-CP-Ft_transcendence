@@ -9,7 +9,7 @@ interface offset {
 }
 
 interface PromptFieldProps {
-  handleCommands: (command: string) => void;
+  handleCommands: (commands: string[], fullstring: string) => void;
   center: boolean;
   availableCommands: string[];
   commandClassName?: string | null;
@@ -24,6 +24,7 @@ function PromptField(props: PromptFieldProps) {
   const [value, setValue] = useState('');
   const [offset, setOffset] = useState({ top: 0, left: caretStart } as offset);
   const [focus, setFocus] = useState(false);
+  const [inputRef, setInputRef] = useState(null as HTMLInputElement | null);
   const [commandHistory, setCommandHistory] = useState([] as string[]);
   const [historyIndex, setHistoryIndex] = useState(-1);
 
@@ -49,16 +50,18 @@ function PromptField(props: PromptFieldProps) {
     >
       <div className=' relative
       text-highlight text-2xl tracking-tighter whitespace-pre
-      py-2 mx-auto flex flex-wrap overflow-auto
+      py-2 mx-auto overflow-hidden
       px-1 rounded-md h-15 pt-3 pb-2'
         style={{
           borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s",
           textAlign: center ? "center" : "left", borderWidth: center ? "4px" : 0,
+          placeContent: center ? "center" : "flex-start"
         }}
-        onClick={() => { document.querySelector('input')?.focus() }}
+        onClick={() => { inputRef!.focus() }}
       >
         {spans}
         <input className=' w-0 outline-none bg-transparent text-transparent'
+          ref={(ref) => setInputRef(ref)}
           onInput={(e) => {
             if (capitalize ?? false) setValue(e.currentTarget.value.toUpperCase());
             else setValue(e.currentTarget.value);
@@ -66,7 +69,10 @@ function PromptField(props: PromptFieldProps) {
           }}
           onClick={(e) => e.stopPropagation()}
           onKeyDown={onKeyDown}
-          onFocus={() => setFocus(true)}
+          onFocus={(e) => {
+            e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length)
+            setFocus(true)
+          }}
           onBlur={() => setFocus(false)}
           onClickCapture={(e) => e.stopPropagation()}
         />
@@ -119,7 +125,7 @@ function PromptField(props: PromptFieldProps) {
   function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter') {
       e.currentTarget.value = '';
-      handleCommands(words[0]);
+      handleCommands(words, value);
       let newHistory: string[];
       if (commandHistory.length > 20) newHistory = commandHistory.slice(1);
       else if (commandHistory[commandHistory.length - 1] !== words[0]) newHistory = commandHistory.concat(words[0]);

@@ -18,7 +18,7 @@ function HomePage() {
   const [width, setWidth] = React.useState("60%");
   const [topWidget, setTopWidget] = React.useState(<Profile />);
   const [draggable, setDraggable] = React.useState(false);
-  const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
+  const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
 
@@ -88,9 +88,9 @@ function HomePage() {
     </div>
   )
 
-  function handleCommands(command: string) {
+  function handleCommands(command: string[]) {
     let newList: JSX.Element[] = [];
-    switch (command) {
+    switch (command[0]) {
       case "login":
         login();
         break;

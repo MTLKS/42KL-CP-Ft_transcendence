@@ -1,5 +1,5 @@
 import React from 'react'
-import PromptField from '../PromptField/PromptField'
+import PromptField from '../components/PromptField'
 import SrcollView from '../components/SrcollView'
 import Card from '../components/Card'
 import login from '../functions/login'
@@ -8,7 +8,7 @@ import Pong from './Pong'
 import sleep from '../functions/sleep'
 interface TerminalProps {
   availableCommands: string[];
-  handleCommands: (command: string) => void;
+  handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
   style?: React.CSSProperties;
 }
