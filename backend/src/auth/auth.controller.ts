@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -10,8 +10,8 @@ export class AuthController {
 		return this.authService.startLogin(header);
 	}
 
-	@Post(":code")
-	async postCode(@Param('code') code: string): Promise<any> {
-		return this.authService.postCode(code);
+	@Post()
+	async postCode(@Body() body: any): Promise<any> {
+		return this.authService.postCode(body.code);
 	}
 }
