@@ -2,7 +2,7 @@ import Title from '../components/Title';
 import login from '../functions/login';
 import PromptField from '../components/PromptField';
 import sleep from '../functions/sleep';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 function LoginBadge() {
   return (
@@ -37,7 +37,12 @@ function Login() {
 
   const [errorCount, setErrorCount] = useState(0);
 
-  focusOnInput();
+  const promptFieldRef = useRef<any>(null);
+
+  useEffect(() => {
+    promptFieldRef.current?.focusOnInput();
+  }, []);
+
   return (
     <div className='w-[80%] h-full mx-auto flex flex-col justify-center items-center text-highlight'>
       <SkewedPattern />
@@ -52,17 +57,13 @@ function Login() {
         availableCommands={["LOGIN"]}
         center={true}
         capitalize={true}
+        ref={promptFieldRef}
       />
       {
         (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0'>Have you tried using the 'login' command?</div>)
       }
     </div >
   )
-
-  async function focusOnInput() {
-    await sleep(100);
-    document.querySelector('input')?.focus()
-  }
 
   function handleCommands(command: string[]) {
     switch (command[0]) {
