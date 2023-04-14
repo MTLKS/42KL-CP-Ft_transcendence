@@ -9,42 +9,6 @@ import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
 
-
-
-
-function A() {
-  const [height, setHeight] = React.useState(0);
-
-  useEffect(() => {
-    let a = height;
-    const interval = setInterval(() => {
-      a -= 10;
-      setHeight(a);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="bg-red-500 transition-all"
-      style={{ height: height }}
-    ></div>
-  )
-}
-function B() {
-  return (
-    <div className="bg-green-500 flex-1"></div>
-  )
-}
-function C() {
-  return (
-    <div className="bg-blue-500 flex flex-col">
-      <div className='h-20'></div>
-      <div className='h-10'></div>
-    </div>
-  )
-}
-
-
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
 const emptyWidget = <div></div>;
 function HomePage() {
@@ -102,7 +66,6 @@ function HomePage() {
             // e.dataTransfer.setDragImage(crt, 0, 0);
 
           }}
-
 
         />
         <div className=' h-full flex-1 flex flex-col pointer-events-auto'
