@@ -11,17 +11,17 @@ export class UserController {
 	getMyUserData(@Headers('Authorization') accessToken: string): any {
 		return this.userService.getMyUserData(accessToken);
 	}
+	
+	@Get('intra')
+	@UseGuards(AuthGuard)
+	getMyIntraData(@Headers('Authorization') accessToken: string): any {
+		return this.userService.getMyIntraData(accessToken);
+	}
 
 	@Get(':id')
 	@UseGuards(AuthGuard)
 	getUserDataById(@Param('id') id: string): any {
 		return this.userService.getUserDataById(id);
-	}
-
-	@Get('intra')
-	@UseGuards(AuthGuard)
-	getMyIntraData(@Headers('Authorization') accessToken: string): any {
-		return this.userService.getMyIntraData(accessToken);
 	}
 
 	@Get('intra/:id')
