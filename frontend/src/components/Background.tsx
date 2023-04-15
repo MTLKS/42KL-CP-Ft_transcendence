@@ -1,7 +1,7 @@
 import React from 'react'
 
 interface ContainerProps {
-  children: JSX.Element;
+  children: JSX.Element | JSX.Element[];
 };
 
 export function PolkaDotContainer(props: ContainerProps) {
