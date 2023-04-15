@@ -1,4 +1,4 @@
-import React, { Ref, createRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import React, { Fragment, Ref, createRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import sleep from '../functions/sleep'
 import login from '../functions/login'
 import rickroll from '../functions/rickroll'
@@ -47,10 +47,10 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
 
   spans = splitValue
     .map((word, index) =>
-      <>
-        <span key={index} className={`${spansStyles[index]} whitespace-pre`}>{word}</span>
+      <Fragment key={index}>
+        <span className={`${spansStyles[index]} whitespace-pre`}>{word}</span>
         &nbsp;
-      </>
+      </Fragment>
     )
   if (splitValue.length === 1 && splitValue[0] === "") spans = [];
 
