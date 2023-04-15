@@ -45,11 +45,11 @@ export function ErrorPopup(props: ErrorPopupProps) {
   const { text } = props;
 
   return (
-    <div className='w-fit h-fit flex flex-row items-center rounded-l-xl bg-dimshadow border-solid border-4 border-highlight'>
-      <div className='p-2.5 text-3xl text-dimshadow bg-highlight'>
+    <div className='w-fit h-fit flex flex-row items-center rounded-l-xl bg-dimshadow border-solid border-2 lg:border-3 border-highlight overflow-hidden'>
+      <div className='p-2.5 text-xl lg:text-2xl text-dimshadow bg-highlight'>
         <FaDizzy className='animate-spin' />
       </div>
-      <p className='text-highlight text-xl text-center flex-grow px-6 w-fit uppercase'>{text}</p>
+      <p className='text-highlight text-sm lg:text-lg text-center flex-grow px-6 w-fit uppercase'>{text}</p>
     </div>
   )
 }
