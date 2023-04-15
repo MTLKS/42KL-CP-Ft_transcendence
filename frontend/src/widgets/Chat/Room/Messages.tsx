@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import SrcollView from '../../../components/SrcollView';
+import UnreadSep from './UnreadSep';
 
 const messages: ChatRoomMessageData[] = [
   {
@@ -169,7 +170,7 @@ interface MessageProps {
 function Message(props: MessageProps) {
   const { messageData, align } = props;
   return (
-    <div className={`flex flex-col self-${align} text-highlight w-[80%] m-3 select-text`}>
+    <div className={`flex flex-col self-${align} text-highlight w-[80%] select-text`}>
       <p className={`opacity-30 self-${align}`}>
         {messageData.timestamp.toLocaleTimeString()}
       </p>
@@ -192,10 +193,15 @@ interface Size {
 function Messages(props: MessagesProps) {
   const { recieverId } = props;
 
+  const message = messages.map((message, index) => {
+    if (index === 4)
+      return <UnreadSep />
+    return <Message messageData={message} key={index} align={message.senderId === recieverId ? 'end' : 'start'} />
+  });
+
   return (
-    <div className='overflow-y-scroll flex flex-col scrollbar-hide flex-1 h-0'>
-      {messages.map((message, index) =>
-        <Message messageData={message} key={index} align={message.senderId === recieverId ? 'end' : 'start'} />)}
+    <div className='overflow-y-scroll flex flex-col scrollbar-hide p-3 flex-1 h-0'>
+      {message}
     </div>
   )
 }
