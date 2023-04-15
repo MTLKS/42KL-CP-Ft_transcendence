@@ -8,6 +8,7 @@ import Profile from "./widgets/Profile/Profile";
 import { CookiePopup } from "./components/Popup";
 import AxiosResponse from 'axios';
 import Chat from "./widgets/Chat/Chat";
+import MouseCursor from "./components/MouseCursor";
 
 
 
@@ -20,7 +21,7 @@ function App() {
   return (
     <PolkaDotContainer>
       {logged ? <HomePage /> : <Login />}
-      {/* <Chat /> */}
+      {/* <MouseCursor /> */}
     </PolkaDotContainer>
   )
 
