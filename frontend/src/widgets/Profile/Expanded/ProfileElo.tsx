@@ -5,7 +5,6 @@ interface ProfileEloProps {
   expanded: boolean;
   elo?: number;
   winning?: boolean;
-  animate?: boolean;
 }
 
 interface BoxSize {
@@ -14,18 +13,29 @@ interface BoxSize {
 }
 
 function ProfileElo(props: ProfileEloProps) {
-  const { expanded, elo = 420, winning = true, animate } = props;
+  const { expanded, elo = 420, winning = true } = props;
   const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
 
-  const containerRef=useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (containerRef.current) {
-      const { width, height } = containerRef.current.getBoundingClientRect();
-      // console.log(width, height);
-      setBoxSize({ w: width, h: height });
+    if (!containerRef.current) return;
+    const currentDiv = containerRef.current;
+    const handleResize = () => {
+      if (containerRef.current) {
+        setBoxSize({
+          w: containerRef.current.offsetWidth,
+          h: containerRef.current.offsetHeight,
+        })
+      }
     }
-  }, [containerRef.current?.clientHeight, containerRef.current?.clientWidth, animate]);
+
+    const observer = new ResizeObserver(handleResize);
+    observer.observe(currentDiv);
+    handleResize();
+
+    return () => observer.unobserve(currentDiv);
+  }, []);
 
   return (
     <div className={expanded ? 'relative w-full h-full overflow-hidden transition-all duration-300 ease-in-out' : 'relative w-20 h-20 mx-5 transition-all duration-300 ease-in-out'}
@@ -41,7 +51,7 @@ function ProfileElo(props: ProfileEloProps) {
         {elo}
       </div>
       <div className='absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300 ease-in-out'>
-        <Triangle color={expanded ? 'fill-highlight' : 'fill-dimshadow'} h={expanded ?boxSize.h * 0.5:boxSize.h * 0.8} w={expanded ?boxSize.w * 0.5:boxSize.w *0.8} direction={winning ? 'top' : 'bottom'} />
+        <Triangle color={expanded ? 'fill-highlight' : 'fill-dimshadow'} h={expanded ? boxSize.h * 0.5 : boxSize.h * 0.8} w={expanded ? boxSize.w * 0.5 : boxSize.w * 0.8} direction={winning ? 'top' : 'bottom'} />
       </div>
     </div>
   )

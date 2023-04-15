@@ -36,7 +36,6 @@ function HomePage() {
           if (pageWidth - e.screenX + padding < 500) return;
           if (e.screenX && e.screenX - padding >= 0)
             setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
-          setTopWidget(<Profile animate={draggable} />);
 
         }}
         onMouseUp={(e) => {
@@ -47,7 +46,6 @@ function HomePage() {
           if (e.screenX - padding >= 0)
             setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
           setDraggable(false);
-          setTopWidget(<Profile animate={draggable} />);
         }}
       >
         <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements}
@@ -57,7 +55,6 @@ function HomePage() {
           style={{ cursor: 'col-resize' }}
           onMouseDown={(e) => {
             setDraggable(true);
-            setTopWidget(<Profile animate={draggable} />);
             // const crt = document.createElement('div');
             // crt.style.opacity = '0';
             // crt.style.width = '0px';
@@ -77,7 +74,6 @@ function HomePage() {
             if (e.screenX - padding >= 0)
               setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
             setDraggable(false);
-            setTopWidget(<Profile animate={draggable} />);
           }}
         >
           {topWidget}

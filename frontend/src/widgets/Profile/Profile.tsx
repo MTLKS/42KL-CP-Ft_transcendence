@@ -6,12 +6,8 @@ import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './Expanded/RecentMatches';
 
-interface ProfileProps {
-  animate?: boolean;
-}
 
-function Profile(props: ProfileProps) {
-  const { animate } = props;
+function Profile() {
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
 
@@ -25,7 +21,7 @@ function Profile(props: ProfileProps) {
     onClick={onProfileClick}
   >
     <ProfileHeader expanded={expanded} />
-    <ProfileBody expanded={expanded} pixelSize={pixelSize} animate= {animate} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} />
     <RecentMatches expanded={expanded} />
   </div>);
 
