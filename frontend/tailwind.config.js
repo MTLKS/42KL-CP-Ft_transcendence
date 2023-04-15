@@ -14,6 +14,10 @@ export default {
       fontFamily: {
         'jbmono': ['JetBrains Mono', 'monospace'],
         'bungee': ['Bungee', 'cursive']
+      },
+      animation: {
+        'pulse-short': 'pulse 0.3s ease-in-out 1',
+        'right-to-left': 'right-to-left 0.5s ease-out 1'
       }
     },
   },
