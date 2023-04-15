@@ -169,11 +169,11 @@ interface MessageProps {
 function Message(props: MessageProps) {
   const { messageData, align } = props;
   return (
-    <div className={`flex flex-col items-${align} text-highlight w-[80%]`}>
-      <p className=' opacity-30'>
+    <div className={`flex flex-col self-${align} text-highlight w-[80%] m-3 select-text`}>
+      <p className={`opacity-30 self-${align}`}>
         {messageData.timestamp.toLocaleTimeString()}
       </p>
-      <p>
+      <p className={`self-${align}`}>
         {messageData.message}
       </p>
     </div>
@@ -191,38 +191,11 @@ interface Size {
 
 function Messages(props: MessagesProps) {
   const { recieverId } = props;
-  const divRef = useRef<HTMLDivElement>(null);
-  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
-
-  useEffect(() => {
-    if (!divRef.current) return;
-    const currentDiv = divRef.current;
-    const handleResize = () => {
-      if (divRef.current) {
-        setSize({
-          width: divRef.current.offsetWidth,
-          height: divRef.current.offsetHeight,
-        })
-      }
-    }
-
-    const observer = new ResizeObserver(handleResize);
-    observer.observe(currentDiv);
-    handleResize();
-
-    return () => observer.unobserve(currentDiv);
-  }, []);
 
   return (
-    <div className='flex-1 relative'
-      ref={divRef}
-    >
-      <div className=' absolute top-0 left-0 overflow-auto flex flex-col scrollbar-hide'
-        style={{ width: size.width, height: size.height }}
-      >
-        {messages.map((message, index) =>
-          <Message messageData={message} key={index} align={message.senderId === recieverId ? 'end' : 'start'} />)}
-      </div>
+    <div className='overflow-y-scroll flex flex-col scrollbar-hide flex-1 h-0'>
+      {messages.map((message, index) =>
+        <Message messageData={message} key={index} align={message.senderId === recieverId ? 'end' : 'start'} />)}
     </div>
   )
 }

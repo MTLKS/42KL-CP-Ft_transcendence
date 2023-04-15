@@ -43,7 +43,7 @@ function Chat() {
   const [chatOpened, setChatOpened] = useState<number | null>(null);
 
   return (
-    <div className='flex flex-col select-none transition-all duration-300'
+    <div className='flex flex-col select-none transition-all duration-300 overflow-hidden'
       style={expanded ? { height: "100%" } : { height: "60px" }}
     >
       <ChatToggle onClick={handleClick} />

@@ -18,7 +18,7 @@ function Room(props: RoomProps) {
   }, []);
 
   return (
-    <div className='flex flex-col box-border flex-1'
+    <div className='flex flex-col box-border flex-1 h-0'
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <RoomHeader roomData={roomData} closeChat={closeChat} />
