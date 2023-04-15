@@ -1,3 +1,7 @@
+/**
+ * TODO: UserData interface
+ */
+
 export interface UserData {
   id: string;
   name: string;
