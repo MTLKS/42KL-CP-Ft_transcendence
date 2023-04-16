@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import sleep from '../functions/sleep';
 
 interface Offset {
@@ -87,16 +87,25 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  return (
-    <div className='relative cursor-none w-full h-full'
-      style={{ pointerEvents: currentCursorType == CursorType.hover ? 'none' : 'auto' }}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onMouseMove={onMouseMove}
-    >
+  useEffect(() => {
+    window.onmousedown = handleMouseDown;
+    window.onmouseup = handleMouseUp;
+    window.ontouchstart = handleTouchStart;
+    window.ontouchend = handleTouchEnd;
+    window.onmousemove = (e) => onMouseMove(e);
+    document.body.style.cursor = 'none';
+    return () => {
+      document.body.style.cursor = 'auto';
+    }
+  }, []);
 
+  return (
+    <div className='relative w-full h-full'>
+      {/* <div className=' absolute top-[100px] left-[100px] h-[100px] w-[100px] bg-highlight' ref={divRef}
+        onMouseEnter={(e) => handleHoverStart(e, divRef, CursorType.hover)}
+        onMouseMove={(e) => handleHover(e, divRef)}
+        onMouseLeave={handleHoverEnd}
+      /> */}
       {props.children}
       <div className={`absolute pointer-events-none border-highlight border-4 z-50 ${currentCursorType == CursorType.hover ? " " : "transform -translate-x-1/2 -translate-y-1/2 "} `}
         style={{
@@ -125,7 +134,7 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
       />
     </div>
   );
-  async function onMouseMove(e: React.MouseEvent) {
+  async function onMouseMove(e: MouseEvent) {
     await sleep(40);
     if (currentCursorType != CursorType.hover) {
       setOffset1({ x: e.clientX, y: e.clientY });
@@ -161,15 +170,23 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
     }
   }
 
-  function handleHoverStart(objectSize: Size, objectOffset: Offset, cursorType: CursorType, cursorPosition: Offset) {
+  function handleHoverStart(e: React.MouseEvent, ref: React.RefObject<HTMLDivElement>, cursorType: CursorType) {
     currentCursorType = cursorType;
-    setSize1({ width: objectSize.width + 30, height: objectSize.height + 30 });
-    setOffset1({ x: objectOffset.x - (cursorPosition.x / 2 - cursorPosition.x) / 10 - 30, y: objectOffset.y - (cursorPosition.y / 2 - cursorPosition.y) / 10 - 30 });
+    const rect = ref.current?.getBoundingClientRect();
+    const { width, height, top, left } = rect || { width: 0, height: 0 };
+    setSize1({ width: width + 10, height: height + 10 });
+    const leftOffset = (e.clientX - left! - width / 2) / 4;
+    const topOffset = (e.clientY - top! - height / 2) / 4;
+    setOffset1({ x: left! + leftOffset - 9, y: top! + topOffset - 9 });
   }
 
-  function handleHover(objectSize: Size, objectOffset: Offset, cursorPosition: Offset) {
-    setSize1({ width: objectSize.width + 30, height: objectSize.height + 30 });
-    setOffset1({ x: objectOffset.x - (cursorPosition.x / 2 - cursorPosition.x) / 10 - 30, y: objectOffset.y - (cursorPosition.y / 2 - cursorPosition.y) / 10 - 30 });
+  function handleHover(e: React.MouseEvent, ref: React.RefObject<HTMLDivElement>,) {
+    const rect = ref.current?.getBoundingClientRect();
+    const { width, height, top, left } = rect || { width: 0, height: 0 };
+    setSize1({ width: width + 10, height: height + 10 });
+    const leftOffset = (e.clientX - left! - width / 2) / 4;
+    const topOffset = (e.clientY - top! - height / 2) / 4;
+    setOffset1({ x: left! + leftOffset - 9, y: top! + topOffset - 9 });
   }
 
   function handleHoverEnd() {
