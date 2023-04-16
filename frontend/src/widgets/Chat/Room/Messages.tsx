@@ -170,11 +170,15 @@ interface MessageProps {
 function Message(props: MessageProps) {
   const { messageData, align } = props;
   return (
-    <div className={`flex flex-col self-${align} text-highlight w-[80%] select-text`}>
-      <p className={`opacity-30 self-${align}`}>
+    <div className='flex flex-col text-highlight w-[80%] select-text'
+      style={{ alignSelf: align === 'start' ? 'flex-start' : 'flex-end' }}
+    >
+      <p className='opacity-30'
+        style={{ alignSelf: align === 'start' ? 'flex-start' : 'flex-end' }}
+      >
         {messageData.timestamp.toLocaleTimeString()}
       </p>
-      <p className={`self-${align}`}>
+      <p style={{ alignSelf: align === 'start' ? 'flex-start' : 'flex-end' }}>
         {messageData.message}
       </p>
     </div>
@@ -193,14 +197,19 @@ interface Size {
 function Messages(props: MessagesProps) {
   const { recieverId } = props;
 
-  const message = messages.map((message, index) => {
-    if (index === 4)
-      return <UnreadSep />
-    return <Message messageData={message} key={index} align={message.senderId === recieverId ? 'end' : 'start'} />
-  });
+  const message = [];
+
+  const lastReadTime = new Date();
+
+  for (let i = 0; i < messages.length; i++) {
+    if (messages[i].timestamp.getTime() > lastReadTime.getTime()) {
+      message.push(<UnreadSep />)
+    }
+    message.push(<Message messageData={messages[i]} key={i} align={messages[i].senderId === recieverId ? 'end' : 'start'} />)
+  }
 
   return (
-    <div className='overflow-y-scroll flex flex-col scrollbar-hide p-3 flex-1 h-0'>
+    <div className='overflow-y-scroll flex flex-col scrollbar-hide p-3 flex-1 w-full box-border'>
       {message}
     </div>
   )
