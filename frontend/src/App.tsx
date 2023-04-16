@@ -20,8 +20,9 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      {logged ? <HomePage /> : <Login />}
-      {/* <MouseCursor /> */}
+      <MouseCursor>
+        {logged ? <HomePage /> : <Login />}
+      </MouseCursor>
     </PolkaDotContainer>
   )
 

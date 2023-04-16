@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { forwardRef, useRef, useState } from 'react'
 import sleep from '../functions/sleep';
 
 interface Offset {
@@ -18,6 +18,7 @@ enum CursorType {
   VDrag = 'ns-resize',
   Drag = 'move',
   Text = 'text',
+  hover = 'hover',
 }
 
 interface CursorSizes {
@@ -33,25 +34,25 @@ const defaultCurser: CursorSizes = {
   size3Default: { width: 16, height: 16 },
   size4Default: { width: 6, height: 6 },
 };
-const HDCursor: CursorSizes = {
+const hDCursor: CursorSizes = {
   size1Default: { width: 30, height: 30 },
   size2Default: { width: 18, height: 18 },
   size3Default: { width: 50, height: 16 },
   size4Default: { width: 6, height: 6 },
 };
-const VDCursor: CursorSizes = {
+const vDCursor: CursorSizes = {
   size1Default: { width: 30, height: 30 },
   size2Default: { width: 18, height: 18 },
   size3Default: { width: 16, height: 50 },
   size4Default: { width: 6, height: 6 },
 };
-const DCursor: CursorSizes = {
+const dCursor: CursorSizes = {
   size1Default: { width: 30, height: 30 },
   size2Default: { width: 50, height: 18 },
   size3Default: { width: 16, height: 50 },
   size4Default: { width: 6, height: 6 },
 };
-const TextCursor: CursorSizes = {
+const textCursor: CursorSizes = {
   size1Default: { width: 8, height: 40 },
   size2Default: { width: 5, height: 25 },
   size3Default: { width: 4, height: 20 },
@@ -63,13 +64,16 @@ const TextCursor: CursorSizes = {
 let timerId: NodeJS.Timeout | null = null;
 let intervalId: NodeJS.Timeout | null = null;
 let holdCount: number = 0;
+let currentCursorType: CursorType = CursorType.Default;
 
 const longPressDuration: number = 200;
 
-function MouseCursor() {
-  const [cursorType, setCursorType] = useState<CursorType>(CursorType.Default);
+interface MouseCursorProps {
+  children: JSX.Element | JSX.Element[];
+}
 
-  const { size1Default, size2Default, size3Default, size4Default } = HDCursor;
+const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
+  const { size1Default, size2Default, size3Default, size4Default } = defaultCurser;
 
   const [offset1, setOffset1] = useState<Offset>({ x: -100, y: -100 });
   const [offset2, setOffset2] = useState<Offset>({ x: -100, y: -100 });
@@ -81,31 +85,52 @@ function MouseCursor() {
   const [size4, setSize4] = useState<Size>(size4Default);
   const [longPressDetected, setLongPressDetected] = useState(false);
 
+  const divRef = useRef<HTMLDivElement>(null);
+
   return (
     <div className='relative cursor-none w-full h-full'
+      style={{ pointerEvents: currentCursorType == CursorType.hover ? 'none' : 'auto' }}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
+      onMouseMove={onMouseMove}
+    >
 
-      onMouseMove={onMouseMove}>
-      <div className='absolute border-highlight rounded-full border-4 transform -translate-x-1/2 -translate-y-1/2'
-        style={{ left: offset1.x, top: offset1.y, width: size1.width, height: size1.height }}
+      {props.children}
+      <div className={`absolute pointer-events-none border-highlight border-4 z-50 ${currentCursorType == CursorType.hover ? " " : "transform -translate-x-1/2 -translate-y-1/2 "} `}
+        style={{
+          left: offset1.x, top: offset1.y, width: size1.width, height: size1.height,
+          borderRadius: currentCursorType == CursorType.hover ? '10px' : '50%',
+          mixBlendMode: 'difference'
+        }}
       />
-      <div className='absolute border-highlight rounded-full border-2 transform -translate-x-1/2 -translate-y-1/2 opacity-60'
-        style={{ left: offset2.x, top: offset2.y, width: size2.width, height: size2.height }}
+      <div className='absolute pointer-events-none border-highlight rounded-full border-2 z-50 transform -translate-x-1/2 -translate-y-1/2 opacity-60 '
+        style={{
+          left: offset2.x, top: offset2.y, width: size2.width, height: size2.height,
+          mixBlendMode: 'difference'
+        }}
       />
-      <div className='absolute border-highlight rounded-full border-2 transform -translate-x-1/2 -translate-y-1/2 opacity-60'
-        style={{ left: offset3.x, top: offset3.y, width: size3.width, height: size3.height }}
+      <div className='absolute pointer-events-none border-highlight rounded-full border-2 z-50 transform -translate-x-1/2 -translate-y-1/2 opacity-60 '
+        style={{
+          left: offset3.x, top: offset3.y, width: size3.width, height: size3.height,
+          mixBlendMode: 'difference'
+        }}
       />
-      <div className='absolute bg-highlight rounded-full transform -translate-x-1/2 -translate-y-1/2'
-        style={{ left: offset4.x, top: offset4.y, width: size4.width, height: size4.height }}
+      <div className='absolute pointer-events-none bg-highlight rounded-full transform  z-50 -translate-x-1/2 -translate-y-1/2 '
+        style={{
+          left: offset4.x, top: offset4.y, width: size4.width, height: size4.height,
+          mixBlendMode: 'difference'
+        }}
       />
     </div>
   );
   async function onMouseMove(e: React.MouseEvent) {
-    setOffset1({ x: e.clientX, y: e.clientY });
     await sleep(40);
+    if (currentCursorType != CursorType.hover) {
+      setOffset1({ x: e.clientX, y: e.clientY });
+      await sleep(40);
+    }
     setOffset2({ x: e.clientX, y: e.clientY });
     await sleep(60);
     setOffset3({ x: e.clientX, y: e.clientY });
@@ -116,7 +141,8 @@ function MouseCursor() {
   async function shortPressAnimation() {
     let i: number = 0;
     while (i < 15) {
-      setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
+      if (currentCursorType != CursorType.hover)
+        setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
       if (i > 2) setSize2({ width: size2Default.width + i * 2, height: size2Default.height + i * 2 });
       if (i > 4) setSize3({ width: size3Default.width + i, height: size3Default.height + i });
       if (i > 8) setSize4({ width: size4Default.width + i, height: size4Default.height + i });
@@ -125,13 +151,30 @@ function MouseCursor() {
     }
     await sleep(20);
     while (i >= 0) {
-      setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
+      if (currentCursorType != CursorType.hover)
+        setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
       setSize2({ width: size2Default.width + i * 2, height: size2Default.height + i * 2 });
       setSize3({ width: size3Default.width + i, height: size3Default.height + i });
       setSize4({ width: size4Default.width + i, height: size4Default.height + i });
       await sleep(5);
       i--;
     }
+  }
+
+  function handleHoverStart(objectSize: Size, objectOffset: Offset, cursorType: CursorType, cursorPosition: Offset) {
+    currentCursorType = cursorType;
+    setSize1({ width: objectSize.width + 30, height: objectSize.height + 30 });
+    setOffset1({ x: objectOffset.x - (cursorPosition.x / 2 - cursorPosition.x) / 10 - 30, y: objectOffset.y - (cursorPosition.y / 2 - cursorPosition.y) / 10 - 30 });
+  }
+
+  function handleHover(objectSize: Size, objectOffset: Offset, cursorPosition: Offset) {
+    setSize1({ width: objectSize.width + 30, height: objectSize.height + 30 });
+    setOffset1({ x: objectOffset.x - (cursorPosition.x / 2 - cursorPosition.x) / 10 - 30, y: objectOffset.y - (cursorPosition.y / 2 - cursorPosition.y) / 10 - 30 });
+  }
+
+  function handleHoverEnd() {
+    currentCursorType = CursorType.Default;
+    setSize1(size1Default);
   }
 
   function shortPress() {
@@ -150,7 +193,7 @@ function MouseCursor() {
       setSize2({ width: 6 + num1, height: 6 + num1 });
       setSize3({ width: 6 + num2, height: 6 + num2 });
       holdCount++;
-    }, 30);
+    }, 40);
   }
 
   function longPressRealeased() {
@@ -189,7 +232,7 @@ function MouseCursor() {
     else longPressRealeased();
     setLongPressDetected(false);
   }
-}
+});
 
 
 export default MouseCursor
