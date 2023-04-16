@@ -63,10 +63,10 @@ const textCursor: CursorSizes = {
 
 let timerId: NodeJS.Timeout | null = null;
 let intervalId: NodeJS.Timeout | null = null;
-let holdCount: number = 0;
 let currentCursorType: CursorType = CursorType.Default;
 
 const longPressDuration: number = 200;
+let longPressDetected: boolean = false;
 
 interface MouseCursorProps {
   children: JSX.Element | JSX.Element[];
@@ -83,9 +83,8 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
   const [size2, setSize2] = useState<Size>(size2Default);
   const [size3, setSize3] = useState<Size>(size3Default);
   const [size4, setSize4] = useState<Size>(size4Default);
-  const [longPressDetected, setLongPressDetected] = useState(false);
 
-  const divRef = useRef<HTMLDivElement>(null);
+  // const divRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.onmousedown = handleMouseDown;
@@ -100,8 +99,8 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
   }, []);
 
   return (
-    <div className='relative w-full h-full'>
-      {/* <div className=' absolute top-[100px] left-[100px] h-[100px] w-[100px] bg-highlight' ref={divRef}
+    <div className='relative w-full h-full overflow-hidden'>
+      {/* <div className=' absolute top-[100px] left-[100px] h-[500px] w-[500px] bg-highlight' ref={divRef}
         onMouseEnter={(e) => handleHoverStart(e, divRef, CursorType.hover)}
         onMouseMove={(e) => handleHover(e, divRef)}
         onMouseLeave={handleHoverEnd}
@@ -134,17 +133,24 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
       />
     </div>
   );
-  async function onMouseMove(e: MouseEvent) {
-    await sleep(40);
-    if (currentCursorType != CursorType.hover) {
-      setOffset1({ x: e.clientX, y: e.clientY });
-      await sleep(40);
+  function onMouseMove(e: MouseEvent) {
+    const { clientX, clientY } = e;
+
+    // Update offset1 without delay
+    if (currentCursorType !== CursorType.hover) {
+      setOffset1({ x: clientX, y: clientY });
     }
-    setOffset2({ x: e.clientX, y: e.clientY });
-    await sleep(60);
-    setOffset3({ x: e.clientX, y: e.clientY });
-    await sleep(100);
-    setOffset4({ x: e.clientX, y: e.clientY });
+
+    // Use a single `setTimeout` call to update offset2, offset3, and offset4 with varying delays
+    setTimeout(() => {
+      setOffset2({ x: clientX, y: clientY });
+      setTimeout(() => {
+        setOffset3({ x: clientX, y: clientY });
+        setTimeout(() => {
+          setOffset4({ x: clientX, y: clientY });
+        }, 100);
+      }, 60);
+    }, 40);
   }
 
   async function shortPressAnimation() {
@@ -203,13 +209,11 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
   }
 
   function longPress() {
-    holdCount = 0;
     intervalId = setInterval(async () => {
       const num1 = Math.floor(Math.random() * 20);
       const num2 = Math.floor(Math.random() * 20);
       setSize2({ width: 6 + num1, height: 6 + num1 });
       setSize3({ width: 6 + num2, height: 6 + num2 });
-      holdCount++;
     }, 40);
   }
 
@@ -221,25 +225,25 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
   }
 
   function handleMouseDown() {
-    setLongPressDetected(false);
+    longPressDetected = false;
     timerId = setTimeout(() => {
       longPress();
-      setLongPressDetected(true);
+      longPressDetected = true;
     }, longPressDuration);
   }
 
   function handleMouseUp() {
-    if (timerId) clearTimeout(timerId!);
+    if (timerId) clearTimeout(timerId);
     if (!longPressDetected) shortPress();
     else longPressRealeased();
-    setLongPressDetected(false);
+    longPressDetected = false;
   }
 
   function handleTouchStart() {
-    setLongPressDetected(false);
+    longPressDetected = false;
     timerId = setTimeout(() => {
       longPress();
-      setLongPressDetected(true);
+      longPressDetected = true;
     }, longPressDuration);
   }
 
@@ -247,7 +251,7 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
     if (timerId) clearTimeout(timerId!);
     if (!longPressDetected) shortPress();
     else longPressRealeased();
-    setLongPressDetected(false);
+    longPressDetected = false;
   }
 });
 
