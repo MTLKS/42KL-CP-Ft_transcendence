@@ -76,18 +76,17 @@ export class FriendshipService {
 		if (ERROR)
 			return ERROR;
 
-		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId), status: status.toUpperCase()} });
-		if (status.toUpperCase() == "ACCEPTED") {
-			const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} });
-			if (FRIENDSHIP.length === 0 && RECEIVER.length === 0)
+		const SENDER = await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId), status: status.toUpperCase()} });
+		if (status.toUpperCase() == "BLOCKED") {
+			if (SENDER.length === 0)
 				return { "error": "Friendship does not exist - use POST method to create" }
-			this.friendshipRepository.delete(FRIENDSHIP.length !== 0 ? FRIENDSHIP[0] : RECEIVER[0]);
-			return FRIENDSHIP.length !== 0 ? FRIENDSHIP[0] : RECEIVER[0];
+			this.friendshipRepository.delete(SENDER[0]);
+			return SENDER[0];
 		}
-		if (FRIENDSHIP.length === 0)
+		const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId), status: status.toUpperCase()} });
+		if (SENDER.length === 0 && RECEIVER.length === 0)
 			return { "error": "Friendship does not exist - use POST method to create" }
-
-		this.friendshipRepository.delete(FRIENDSHIP[0]);
-		return FRIENDSHIP[0];
+		this.friendshipRepository.delete(SENDER.length !== 0 ? SENDER[0] : RECEIVER[0]);
+		return SENDER.length !== 0 ? SENDER[0] : RECEIVER[0];
 	}
 }
