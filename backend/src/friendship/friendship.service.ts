@@ -18,7 +18,7 @@ export class FriendshipService {
 	}
 
 	async getFriendshipByID(id: string): Promise<any> {
-		return await "hi";
+		return await "hi" + id;
 	}
 
 	// Creates a new friendship
@@ -27,7 +27,7 @@ export class FriendshipService {
 		if (ERROR)
 			return ERROR;
 
-		if ((await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} })).length)
+		if ((await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} })).length || (await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} })).length)
 			return { "error": "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
 		
 		const NEW_FRIENDSHIP = new Friendship(Number(senderId), Number(receiverId), status.toUpperCase());
