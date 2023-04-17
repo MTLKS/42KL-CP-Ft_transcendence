@@ -15,7 +15,7 @@ interface BoxSize {
 function ProfileElo(props: ProfileEloProps) {
   const { expanded, elo = 420, winning = true } = props;
   const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
-
+  const [fontSize, setFontSize] = useState<number>(0)
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -27,6 +27,7 @@ function ProfileElo(props: ProfileEloProps) {
           w: containerRef.current.offsetWidth,
           h: containerRef.current.offsetHeight,
         })
+        setFontSize(containerRef.current.offsetHeight/3);
       }
     }
 
@@ -41,11 +42,12 @@ function ProfileElo(props: ProfileEloProps) {
     <div className={expanded ? 'relative w-full h-full overflow-hidden transition-all duration-300 ease-in-out' : 'relative w-20 h-20 mx-5 transition-all duration-300 ease-in-out'}
       ref={containerRef}
     >
-      <div className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 transition-all duration-300 ease-in-out -translate-y-1/2 ${expanded ? "text-highlight text-6xl" : " text-dimshadow text-4xl"} font-extrabold z-10`}
+      <div className={`absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 ${expanded ? "text-highlight" : " text-dimshadow"} font-extrabold z-10`}
         style={{
           textShadow: expanded ?
             '-0.06em 0 0 #242424, 0 0.06em 0 #242424, 0.06em 0 0  #242424, 0 -0.06em 0 #242424' :
-            '-0.06em 0 0 #fef8e2, 0 0.06em 0 #fef8e2, 0.06em 0 0  #fef8e2, 0 -0.06em 0 #fef8e2'
+            '-0.06em 0 0 #fef8e2, 0 0.06em 0 #fef8e2, 0.06em 0 0  #fef8e2, 0 -0.06em 0 #fef8e2',
+          fontSize: `${fontSize}px`
         }}
       >
         {elo}
