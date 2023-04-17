@@ -51,4 +51,17 @@ export class FriendshipService {
 	}
 
 	// Deletes a friendship
+	async	deleteFriendship(senderId: string, receiverId: string, status: string): Promise<any> {
+		const ERROR = this.checkJson(senderId, receiverId, status);
+		if (ERROR)
+			return ERROR;
+
+		console.log(status)
+		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId), status: status.toUpperCase()} });
+		if (FRIENDSHIP.length === 0)
+			return { "error": "Friendship does not exist - use POST method to create" }
+		
+		this.friendshipRepository.delete(FRIENDSHIP[0]);
+		return FRIENDSHIP[0];
+	}
 }

@@ -1,4 +1,4 @@
-import { Get, UseGuards, Param, Post, Body, Patch } from '@nestjs/common';
+import { Get, UseGuards, Param, Post, Body, Patch, Delete } from '@nestjs/common';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { Controller } from '@nestjs/common';
 import { FriendshipService } from './friendship.service';
@@ -29,6 +29,11 @@ export class FriendshipController {
 	}
 
 	//Delete friendship by ID
+	@Delete()
+	@UseGuards(AuthGuard)
+	deleteFriendship(@Body() body: any): any {
+		return this.friendshipService.deleteFriendship(body.senderId, body.receiverId, body.status);
+	}
 
 	//Get all friendship by ID
 
