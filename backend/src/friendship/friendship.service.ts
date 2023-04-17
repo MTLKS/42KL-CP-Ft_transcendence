@@ -18,7 +18,11 @@ export class FriendshipService {
 	}
 
 	async getFriendshipByID(id: string): Promise<any> {
-		return await "hi" + id;
+		if (isNaN(Number(id)))
+			return { "error": "Invalid Id - id must be a number" }
+		const RECEIVER = await this.friendshipRepository.find({ where: {receiverId: Number(id)} });
+		const SENDER = await this.friendshipRepository.find({ where: {senderId: Number(id)} });
+		return [...RECEIVER, ...SENDER];
 	}
 
 	// Creates a new friendship
@@ -42,9 +46,25 @@ export class FriendshipService {
 			return ERROR;
 
 		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} });
+		if (status.toUpperCase() == "BLOCKED")
+		{
+			const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} });
+			if (FRIENDSHIP.length === 0 && RECEIVER.length === 0)
+				return { "error": "Friendship does not exist - use POST method to create" }
+			if (FRIENDSHIP.length !== 0) {
+				FRIENDSHIP[0].status = status.toUpperCase();
+				this.friendshipRepository.save(FRIENDSHIP[0]);
+				return FRIENDSHIP[0];
+			} else {
+				const NEW_FRIENDSHIP = new Friendship(Number(senderId), Number(receiverId), status.toUpperCase());
+				this.friendshipRepository.delete(RECEIVER[0]);
+				this.friendshipRepository.save(NEW_FRIENDSHIP);
+				return NEW_FRIENDSHIP;
+			}
+		}
 		if (FRIENDSHIP.length === 0)
 			return { "error": "Friendship does not exist - use POST method to create" }
-		
+			
 		FRIENDSHIP[0].status = status.toUpperCase();
 		this.friendshipRepository.save(FRIENDSHIP[0]);
 		return FRIENDSHIP[0];
@@ -56,11 +76,17 @@ export class FriendshipService {
 		if (ERROR)
 			return ERROR;
 
-		console.log(status)
 		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId), status: status.toUpperCase()} });
+		if (status.toUpperCase() == "ACCEPTED") {
+			const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} });
+			if (FRIENDSHIP.length === 0 && RECEIVER.length === 0)
+				return { "error": "Friendship does not exist - use POST method to create" }
+			this.friendshipRepository.delete(FRIENDSHIP.length !== 0 ? FRIENDSHIP[0] : RECEIVER[0]);
+			return FRIENDSHIP.length !== 0 ? FRIENDSHIP[0] : RECEIVER[0];
+		}
 		if (FRIENDSHIP.length === 0)
 			return { "error": "Friendship does not exist - use POST method to create" }
-		
+
 		this.friendshipRepository.delete(FRIENDSHIP[0]);
 		return FRIENDSHIP[0];
 	}
