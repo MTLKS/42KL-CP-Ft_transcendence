@@ -8,9 +8,11 @@ import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
+import Less from '../widgets/Less';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less"];
 const emptyWidget = <div></div>;
+
 function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
@@ -80,6 +82,11 @@ function HomePage() {
       case "whoami":
         const newWhoamiCard = <Profile />;
         setTopWidget(newWhoamiCard);
+        break;
+      case "less":
+        setLeftWidget(<Less onQuit={() => {
+          setLeftWidget(null);
+        }} />);
         break;
       default:
         const newErrorCard = errorCard();
