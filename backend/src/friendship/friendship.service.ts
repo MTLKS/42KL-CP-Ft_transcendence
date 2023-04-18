@@ -42,6 +42,9 @@ export class FriendshipService {
 		const ERROR = await this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
+		
+		if (status.toUpperCase() == "ACCEPTED")
+			return { "error": "Friendship status (ACCEPTED) is not supported - use PATCH method to edit an existing PENDING friendship to ACCEPTED friendship instead" }
 
 		if ((await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} })).length || (await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} })).length)
 			return { "error": "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
@@ -67,7 +70,7 @@ export class FriendshipService {
 		const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} });
 		if (status.toUpperCase() == "ACCEPTED") {
 			if (RECEIVER.length === 0)
-			return { "error": "Friendship does not exist - use POST method to create" }
+				return { "error": "Friendship does not exist - use POST method to create" }
 			RECEIVER[0].status = status.toUpperCase();
 			this.friendshipRepository.save(RECEIVER[0]);
 			return RECEIVER[0];
@@ -88,7 +91,7 @@ export class FriendshipService {
 				return NEW_FRIENDSHIP;
 			}
 		}
-		return { "error": "Friendship status (PENDING) is not supported - use POST method to create a new friendship instead" }
+		return { "error": "Friendship status (PENDING) is not supported - use POST method to create a new PENDING friendship instead" }
 	}
 
 	// Deletes a friendship
