@@ -22,11 +22,25 @@ export class FriendshipService {
 	}
 
 	// Gets all friendship by ID
-	async getFriendshipByID(id: string): Promise<any> {
+	async getFriendshipByID(accessToken: string, id: string): Promise<any> {
 		if (isNaN(Number(id)))
 			return { "error": "Invalid Id - id must be a number" }
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverId: Number(id)} });
+		for (let i = 0; i < RECEIVER.length; i++) {
+			const USER = await this.userRepository.find({ where: {intraId: Number(RECEIVER[i].senderId)} });
+			RECEIVER[i]['intraName'] = USER[0].intraName;
+			RECEIVER[i]['userName'] = USER[0].userName;
+			RECEIVER[i]['elo'] = USER[0].elo;
+			RECEIVER[i]['avatar'] = USER[0].avatar;
+		}
 		const SENDER = await this.friendshipRepository.find({ where: {senderId: Number(id)} });
+		for (let i = 0; i < SENDER.length; i++) {
+			const USER = await this.userRepository.find({ where: {intraId: Number(SENDER[i].senderId)} });
+			SENDER[i]['intraName'] = USER[0].intraName;
+			SENDER[i]['userName'] = USER[0].userName;
+			SENDER[i]['elo'] = USER[0].elo;
+			SENDER[i]['avatar'] = USER[0].avatar;
+		}
 		return [...RECEIVER, ...SENDER];
 	}
 
@@ -42,10 +56,8 @@ export class FriendshipService {
 		const ERROR = await this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
-		
 		if (status.toUpperCase() == "ACCEPTED")
 			return { "error": "Friendship status (ACCEPTED) is not supported - use PATCH method to edit an existing PENDING friendship to ACCEPTED friendship instead" }
-
 		if ((await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} })).length || (await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} })).length)
 			return { "error": "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
 		

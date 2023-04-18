@@ -7,11 +7,11 @@ import { FriendshipService } from './friendship.service';
 export class FriendshipController {
 	constructor(private readonly friendshipService: FriendshipService) {}
 
-	// Get friendship by ID
+	// Get all friendship by ID
 	@Get(":id")
 	@UseGuards(AuthGuard)
-	getFriendshipByID(@Param('id') id: string): any {
-		return this.friendshipService.getFriendshipByID(id);
+	getFriendshipByID(@Headers('Authorization') accessToken: string,@Param('id') id: string): any {
+		return this.friendshipService.getFriendshipByID(accessToken, id);
 	}
 
 	// Create friendship
@@ -35,13 +35,12 @@ export class FriendshipController {
 		return this.friendshipService.deleteFriendship(accessToken, body.receiverId, body.status);
 	}
 
-	//Get all friendship by ID
-
 	/**
 	 * List of all friends
 	 * ID
-	 * NAME
+	 * INTRANAME
+	 * USERNAME
 	 * ELO
-	 * STREAK bool
+	 * avatar
 	 */
 }
