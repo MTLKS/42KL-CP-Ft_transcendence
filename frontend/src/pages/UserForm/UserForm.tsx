@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import UserFormAvatar from './UserFormAvatar';
 import { UserData } from '../../modal/UserData';
 import UserFormName from './UserFormName';
@@ -39,17 +39,16 @@ const getError = (code: ErrorCode) => {
 
 function UserForm(props: UserData) {
 
-  // by default it's their intraID/name
   const [finalName, setFinalName] = useState(props.name);
   const [questionAns, setQuestionAns] = useState("");
   const [borderColors, setborderColors] = useState({nameBorder: `highlight`, questionBorder: `highlight`});
-  const [awesomeSynonym, setAwesomeSynonym] = useState(getAwesomeSynonym()); // do i need a state for this?
-  const [iceBreakingQuestion, setIceBreakingQuestion] = useState(getRandomIceBreakingQuestion()); // do i need a state for this?
+  const [awesomeSynonym, setAwesomeSynonym] = useState(getAwesomeSynonym());
+  const [iceBreakingQuestion, setIceBreakingQuestion] = useState(getRandomIceBreakingQuestion());
   const [popups, setPopups] = useState<JSX.Element[]>([]);
 
   return (
     <PolkaDotContainer>
-      <div className='absolute top-10 w-full h-fit flex flex-col animate-right-to-left gap-2 lg:gap-4 items-end z-30'>
+      <div className='w-full h-fit flex flex-col gap-2 lg:gap-4 items-end z-30 mt-6'>
         {popups}
       </div>
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
@@ -102,7 +101,7 @@ function UserForm(props: UserData) {
       setPopups([]);
       return ;
     }
-    setPopups(errors.map((error, index) => <ErrorPopup key={index} text={getError(error)} />))
+    setPopups(errors.map((error) => <ErrorPopup key={error} text={getError(error)} />))
   }
 }
 
