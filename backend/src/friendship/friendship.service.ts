@@ -1,21 +1,24 @@
 import { Friendship } from 'src/entity/friendship.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/entity/user.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class FriendshipService {
-	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, private userService: UserService) {}
+	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
 	// Check if the JSON body is valid
-	checkJson(senderId: string, receiverId: string, status:string): any {
+	async checkJson(senderId: string, receiverId: string, status:string): Promise<any> {
 		if (senderId == receiverId)
 			return { "error": "Invalid Id - senderId and receiverId are the same" }
 		if (isNaN(Number(senderId)) || isNaN(Number(receiverId)) || status == null)
 			return { "error": "Missing required property - Ensure you have senderId(number), receiverId(number) and status(string) in your JSON body" }
 		if (status.toUpperCase() != "PENDING" && status.toUpperCase() != "ACCEPTED" && status.toUpperCase() != "BLOCKED")
 			return { "error": "Invalid status - status must be PENDING, ACCEPTED or BLOCKED"}
+		if ((await this.userRepository.find({ where: {intraId: Number(receiverId)} })).length === 0)
+			return { "error": "Invalid Id - receiverId does not exist" }
 	}
 
 	// Gets all friendship by ID
@@ -36,7 +39,7 @@ export class FriendshipService {
 			var senderId = null;
 		}
 		
-		const ERROR = this.checkJson(senderId, receiverId, status);
+		const ERROR = await this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
 
@@ -57,7 +60,7 @@ export class FriendshipService {
 			var senderId = null;
 		}
 
-		const ERROR = this.checkJson(senderId, receiverId, status);
+		const ERROR = await this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
 
@@ -97,7 +100,7 @@ export class FriendshipService {
 			var senderId = null;
 		}
 
-		const ERROR = this.checkJson(senderId, receiverId, status);
+		const ERROR = await this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
 
