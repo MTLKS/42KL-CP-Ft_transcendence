@@ -11,7 +11,6 @@ function App() {
 
   if (!logged)
     checkIfLoggedIn();
-
   return (
     <PolkaDotContainer>
       <MouseCursor>
@@ -23,7 +22,7 @@ function App() {
   function checkIfLoggedIn() {
     let loggin = false;
     document.cookie.split(';').forEach((cookie) => {
-      if (cookie.includes('access_token')) {
+      if (cookie.includes('Authorization')) {
         setLogged(true);
         loggin = true;
       }
@@ -37,9 +36,10 @@ function App() {
     if (code.code) {
       checkAuth(code.code).then((res) => {
         if (res) {
-          console.log((res as any).data.access_token);
-          document.cookie = `access_token=${(res as any).data.access_token};`;
-          login();
+          console.log(res);
+          console.log((res as any).data.accessToken);
+          document.cookie = `Authorization=${(res as any).data.accessToken};`;
+          // login();
         }
       }).catch((err) => {
         console.log(err);
