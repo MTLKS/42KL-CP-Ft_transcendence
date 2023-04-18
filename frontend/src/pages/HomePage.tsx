@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { cloneElement, useEffect, useRef } from 'react'
 import Pong from './Pong'
 import login from '../functions/login';
 import rickroll from '../functions/rickroll';
@@ -7,42 +7,35 @@ import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
+import Chat from '../widgets/Chat/Chat';
+import Less from '../widgets/Less';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less"];
 const emptyWidget = <div></div>;
+
 function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [width, setWidth] = React.useState(1000);
-  const [initWidth, setInitWidth] = React.useState(1000);
-  const [initPositon, setInitPosition] = React.useState(0);
   const [topWidget, setTopWidget] = React.useState(<Profile />);
-  // const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
-  const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
-  const [botWidget, setBotWidget] = React.useState(<></>);
+  const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
+  // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
+  const [botWidget, setBotWidget] = React.useState(<Chat />);
+  const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
+
+  const pageRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row'>
-        <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements}
-          style={{ width: width }}
-        />
-        <div className=' bg-highlight h-full w-1'
-          style={{ cursor: 'col-resize' }}
-          onDragStart={(e) => {
-            setInitWidth(width);
-            setInitPosition(e.pageX);
-          }}
-          onDrag={(e) => {
-            setWidth(initWidth + (e.pageX - initPositon));
-          }}
-          onDragEnd={(e) => {
-            setWidth(initWidth + (e.pageX - initPositon));
-          }}
-          draggable />
-        <div className=' h-full flex-1 box-border flex flex-col overflow-hidden'>
+      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
+        ref={pageRef}
+      >
+        <div className='h-full flex-1'>
+          {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+        </div>
+        <div className=' bg-highlight h-full w-1' />
+        <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
           {topWidget}
           {midWidget}
           {botWidget}
@@ -51,9 +44,9 @@ function HomePage() {
     </div>
   )
 
-  function handleCommands(command: string) {
+  function handleCommands(command: string[]) {
     let newList: JSX.Element[] = [];
-    switch (command) {
+    switch (command[0]) {
       case "login":
         login();
         break;
@@ -89,6 +82,11 @@ function HomePage() {
       case "whoami":
         const newWhoamiCard = <Profile />;
         setTopWidget(newWhoamiCard);
+        break;
+      case "less":
+        setLeftWidget(<Less onQuit={() => {
+          setLeftWidget(null);
+        }} />);
         break;
       default:
         const newErrorCard = errorCard();

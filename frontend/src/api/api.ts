@@ -5,11 +5,8 @@ class Api {
 
   constructor() {
     this.reqInstance = axios.create({
-      baseURL: "http://localhost:3000",
+      baseURL: "http://10.15.8.3:3000",
       withCredentials: true,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-      },
     });
     this.reqInstance.interceptors.response.use(
       (res) => res,

@@ -7,7 +7,9 @@ interface IResponse {
 }
 
 export function checkAuth(code: string | null) {
-  return Api.post("/auth/" + code);
+  return Api.post("/auth", {
+    code: code,
+  });
 }
 
 async function login() {

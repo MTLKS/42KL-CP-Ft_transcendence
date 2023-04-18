@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaDizzy, FaTableTennis } from 'react-icons/fa'
 import Button from './Buttons';
 
@@ -42,14 +42,24 @@ export function CookiePopup() {
 
 export function ErrorPopup(props: ErrorPopupProps) {
   
+  const [position, setPosition] = useState(100);
   const { text } = props;
 
+  useEffect(() => {
+    setTimeout(() => {
+      setPosition(0);
+    }, 10);
+  }, []);
+
   return (
-    <div className='w-fit h-fit flex flex-row items-center rounded-l-xl bg-dimshadow border-solid border-4 border-highlight'>
-      <div className='p-2.5 text-3xl text-dimshadow bg-highlight'>
+    <div
+      className='w-fit h-fit flex flex-row items-center rounded-l-xl bg-dimshadow border-solid border-2 lg:border-3 border-highlight overflow-hidden transition-transform transform duration-200 ease-in-out'
+      style={{ transform: `translateX(${position}%)`}}
+    >
+      <div className='p-2.5 text-xl lg:text-2xl text-dimshadow bg-highlight'>
         <FaDizzy className='animate-spin' />
       </div>
-      <p className='text-highlight text-xl text-center flex-grow px-6 w-fit uppercase'>{text}</p>
+      <p className='text-highlight text-sm lg:text-lg text-center flex-grow px-6 w-fit uppercase'>{text}</p>
     </div>
   )
 }

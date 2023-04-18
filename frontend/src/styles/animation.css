@@ -36,16 +36,6 @@
   }
 }
 
-@keyframes pan-overlay {
-  from {
-    background-position: 0% 0%;
-  }
-
-  to {
-    background-position: 0% 100%;
-  }
-}
-
 @keyframes neonText-cyan-kf {
   0% {
     color: #ddffff;
@@ -91,5 +81,14 @@
   100% {
     color: #ffffff;
     text-shadow: 0 0 0.1em #ffffff, 0 0 0.3em #ffffffc7, 0 0 0.6em #ffffff7e, 0 0 0.9em #ffffff3a;
+  }
+}
+
+@keyframes right-to-left {
+  0% {
+    right: -100%;
+  }
+  100% {
+    right: 0%;
   }
 }

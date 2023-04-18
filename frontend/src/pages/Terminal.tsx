@@ -1,5 +1,5 @@
-import React from 'react'
-import PromptField from '../PromptField/PromptField'
+import React, { useEffect, useRef } from 'react'
+import PromptField from '../components/PromptField'
 import SrcollView from '../components/SrcollView'
 import Card from '../components/Card'
 import login from '../functions/login'
@@ -8,18 +8,22 @@ import Pong from './Pong'
 import sleep from '../functions/sleep'
 interface TerminalProps {
   availableCommands: string[];
-  handleCommands: (command: string) => void;
+  handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
-  style?: React.CSSProperties;
 }
 
 function Terminal(pros: TerminalProps) {
-  const { availableCommands, handleCommands, elements, style } = pros;
+  const { availableCommands, handleCommands, elements } = pros;
 
-  focusOnInput();
+  const promptFieldRef = useRef<any>(null);
+
+  useEffect(() => {
+    promptFieldRef.current?.focusOnInput();
+  }, []);
+
   return (
     <div className='h-full w-full flex flex-col justify-end '
-      style={style}
+      onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <SrcollView reverse={true}>
         {elements}
@@ -28,15 +32,11 @@ function Terminal(pros: TerminalProps) {
       <PromptField
         handleCommands={handleCommands}
         availableCommands={availableCommands}
-        center={false}
+        center={false} ref={promptFieldRef}
       />
     </div>
   )
 
-  async function focusOnInput() {
-    await sleep(100);
-    document.querySelector('input')?.focus()
-  }
 }
 
 export default Terminal

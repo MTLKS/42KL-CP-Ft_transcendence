@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
+import StatusIndicator from '../../StatusIndicator';
 
 interface ProfileSmallProps {
   expanded: boolean;
@@ -24,7 +25,9 @@ function ProfileSmall(props: ProfileSmallProps) {
         <div className=' text-xs text-dimshadow'>THE BLACKHOLE DESTROYER</div>
       </div>
       <div className=' bg-dimshadow w-1 h-16 mr-5' />
-      <div className=' bg-dimshadow w-10 h-10 mr-auto' />
+      <div>
+        <StatusIndicator status="offline" />
+      </div>
     </div>
   )
 

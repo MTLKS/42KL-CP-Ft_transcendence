@@ -10,10 +10,15 @@ export default {
         accCyan: "rgb(var(--accent-cyan))",
         accYellow: "rgb(var(--accent-yellow))",
         accBlue: "rgb(var(--accent-blue))",
+        accGreen: "rgb(var(--accent-green))",
       },
       fontFamily: {
         'jbmono': ['JetBrains Mono', 'monospace'],
         'bungee': ['Bungee', 'cursive']
+      },
+      animation: {
+        'pulse-short': 'pulse 0.3s ease-in-out 1',
+        'right-to-left': 'right-to-left 0.5s ease-out 1'
       }
     },
   },

@@ -1,30 +1,28 @@
 import { useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
-import Terminal from "./pages/Terminal";
 import login, { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
-import Profile from "./widgets/Profile/Profile";
-import { CookiePopup } from "./components/Popup";
 import AxiosResponse from 'axios';
-
-
+import MouseCursor from "./components/MouseCursor";
 
 function App() {
   const [logged, setLogged] = useState(false);
 
   if (!logged)
     checkIfLoggedIn();
-
   return (
     <PolkaDotContainer>
-      {logged ? <HomePage /> : <Login />}
+      <MouseCursor>
+        {logged ? <HomePage /> : <Login />}
+      </MouseCursor>
     </PolkaDotContainer>
   )
 
   function checkIfLoggedIn() {
     let loggin = false;
     document.cookie.split(';').forEach((cookie) => {
+      if (cookie.includes('Authorization')) {
       if (cookie.includes('Authorization')) {
         setLogged(true);
         loggin = true;

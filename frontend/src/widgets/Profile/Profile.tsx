@@ -4,7 +4,7 @@ import PixelatedImage from '../../components/PixelatedImage'
 import sleep from '../../functions/sleep';
 import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
-import RecentMatches from './Expanded/RecentMatches';
+import RecentMatches from './RecentMatches/RecentMatches';
 
 
 function Profile() {
@@ -25,7 +25,7 @@ function Profile() {
     <RecentMatches expanded={expanded} />
   </div>);
 
-  async function pixelatedToSmooth(start: number = 300) {
+  async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;
     // style 1 jaggled animation
     // while (tmp > 1) {
@@ -39,14 +39,14 @@ function Profile() {
       tmp = Math.floor(tmp / 1.05);
       if (tmp < 1) tmp = 1;
       setPixelSize(tmp);
-      await sleep(30);
+      await sleep(10);
     }
   }
 
   function onProfileClick() {
     setExpanded(!expanded);
     if (pixelSize > 1) return;
-    // pixelatedToSmooth();
+    pixelatedToSmooth();
   }
 
 }
