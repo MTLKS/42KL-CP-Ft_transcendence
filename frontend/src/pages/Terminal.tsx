@@ -10,11 +10,10 @@ interface TerminalProps {
   availableCommands: string[];
   handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
-  style?: React.CSSProperties;
 }
 
 function Terminal(pros: TerminalProps) {
-  const { availableCommands, handleCommands, elements, style } = pros;
+  const { availableCommands, handleCommands, elements } = pros;
 
   const promptFieldRef = useRef<any>(null);
 
@@ -24,7 +23,6 @@ function Terminal(pros: TerminalProps) {
 
   return (
     <div className='h-full w-full flex flex-col justify-end '
-      style={style}
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <SrcollView reverse={true}>

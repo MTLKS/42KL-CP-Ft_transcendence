@@ -8,19 +8,20 @@ import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
+import Less from '../widgets/Less';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less"];
 const emptyWidget = <div></div>;
+
 function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [width, setWidth] = React.useState("60%");
   const [topWidget, setTopWidget] = React.useState(<Profile />);
-  const [draggable, setDraggable] = React.useState(false);
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
+  const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -29,53 +30,12 @@ function HomePage() {
       {startMatch && <Pong />}
       <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
         ref={pageRef}
-        onMouseMove={(e) => {
-          if (!draggable) return;
-          const pageWidth = pageRef.current?.clientWidth!;
-          const padding = (window.innerWidth - pageWidth) / 2;
-          if (pageWidth - e.screenX + padding < 500) return;
-          if (e.screenX && e.screenX - padding >= 0)
-            setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
-
-        }}
-        onMouseUp={(e) => {
-          if (!draggable) return;
-          const pageWidth = pageRef.current?.clientWidth!;
-          const padding = (window.innerWidth - pageWidth) / 2;
-          if (pageWidth - e.screenX + padding < 500) return;
-          if (e.screenX - padding >= 0)
-            setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
-          setDraggable(false);
-        }}
       >
-        <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements}
-          style={{ width: width }}
-        />
-        <div className=' bg-highlight h-full w-1'
-          style={{ cursor: 'col-resize' }}
-          onMouseDown={(e) => {
-            setDraggable(true);
-            // const crt = document.createElement('div');
-            // crt.style.opacity = '0';
-            // crt.style.width = '0px';
-            // crt.style.height = '0px';
-            // pageRef.current?.clientWidth;
-            // e.dataTransfer.setDragImage(crt, 0, 0);
-
-          }}
-
-        />
-        <div className=' h-full flex-1 flex flex-col pointer-events-auto'
-          onMouseUp={(e) => {
-            if (!draggable) return;
-            const pageWidth = pageRef.current?.clientWidth!;
-            const padding = (window.innerWidth - pageWidth) / 2;
-            if (pageWidth - e.screenX + padding < 500) return;
-            if (e.screenX - padding >= 0)
-              setWidth(`${((e.screenX - padding) / pageWidth) * 100}%`);
-            setDraggable(false);
-          }}
-        >
+        <div className='h-full flex-1'>
+          {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+        </div>
+        <div className=' bg-highlight h-full w-1' />
+        <div className=' h-full w-[500px] flex flex-col pointer-events-auto'>
           {topWidget}
           {midWidget}
           {botWidget}
@@ -122,6 +82,11 @@ function HomePage() {
       case "whoami":
         const newWhoamiCard = <Profile />;
         setTopWidget(newWhoamiCard);
+        break;
+      case "less":
+        setLeftWidget(<Less onQuit={() => {
+          setLeftWidget(null);
+        }} />);
         break;
       default:
         const newErrorCard = errorCard();
