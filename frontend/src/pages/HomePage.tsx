@@ -35,7 +35,7 @@ function HomePage() {
           {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
         </div>
         <div className=' bg-highlight h-full w-1' />
-        <div className=' h-full w-[500px] flex flex-col pointer-events-auto'>
+        <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
           {topWidget}
           {midWidget}
           {botWidget}
