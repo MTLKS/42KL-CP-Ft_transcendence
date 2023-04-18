@@ -22,7 +22,7 @@ export class FriendshipService {
 	}
 
 	// Gets all friendship by ID
-	async getFriendshipByID(accessToken: string, id: string): Promise<any> {
+	async getFriendshipByID(id: string): Promise<any> {
 		if (isNaN(Number(id)))
 			return { "error": "Invalid Id - id must be a number" }
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverId: Number(id)} });

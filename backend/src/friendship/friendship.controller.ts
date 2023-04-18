@@ -10,8 +10,8 @@ export class FriendshipController {
 	// Get all friendship by ID
 	@Get(":id")
 	@UseGuards(AuthGuard)
-	getFriendshipByID(@Headers('Authorization') accessToken: string,@Param('id') id: string): any {
-		return this.friendshipService.getFriendshipByID(accessToken, id);
+	getFriendshipByID(@Param('id') id: string): any {
+		return this.friendshipService.getFriendshipByID(id);
 	}
 
 	// Create friendship
