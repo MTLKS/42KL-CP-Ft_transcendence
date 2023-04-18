@@ -35,7 +35,7 @@ export class FriendshipService {
 		}
 		const SENDER = await this.friendshipRepository.find({ where: {senderId: Number(id)} });
 		for (let i = 0; i < SENDER.length; i++) {
-			const USER = await this.userRepository.find({ where: {intraId: Number(SENDER[i].senderId)} });
+			const USER = await this.userRepository.find({ where: {intraId: Number(SENDER[i].receiverId)} });
 			SENDER[i]['intraName'] = USER[0].intraName;
 			SENDER[i]['userName'] = USER[0].userName;
 			SENDER[i]['elo'] = USER[0].elo;

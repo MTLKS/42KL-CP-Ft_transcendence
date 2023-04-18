@@ -34,13 +34,4 @@ export class FriendshipController {
 	deleteFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
 		return this.friendshipService.deleteFriendship(accessToken, body.receiverId, body.status);
 	}
-
-	/**
-	 * List of all friends
-	 * ID
-	 * INTRANAME
-	 * USERNAME
-	 * ELO
-	 * avatar
-	 */
 }
