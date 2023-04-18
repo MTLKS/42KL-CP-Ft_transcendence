@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ChatToggle from './ChatToggle'
 import ChatRoom from './ChatRoom';
 import Room from './Room/Room';
@@ -42,11 +42,18 @@ function Chat() {
   const [expanded, setExpanded] = useState(false);
   const [chatOpened, setChatOpened] = useState<number | null>(null);
 
+  useEffect(() => {
+    console.log(rooms);
+    setExpanded(expanded);
+  }, [rooms]);
+
   return (
     <div className='flex flex-col select-none transition-all duration-300 overflow-hidden'
       style={expanded ? { height: "100%" } : { height: "60px" }}
     >
-      <ChatToggle onClick={handleClick} />
+      <ChatToggle onClick={handleClick} expanded={expanded} onFilterUpdate={(word) => {
+        console.log(word);
+      }} />
       {chatOpened == null ? <div className='overflow-y-scroll scrollbar-hide h-full transition-all duration-300 hidden'
         style={expanded ? { display: "block" } : { display: "none" }}>
         {

@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import sleep from '../functions/sleep';
 
-var tileWidth: number = 15;
-var tileHeight: number = 10;
-var fontSize: number = 12;
+var tileWidth: number = 30;
+var tileHeight: number = 30;
+var fontSize: number = 20;
 var maxStackHeight: number;
 
-var fadeFactor = 0.03;
+var fadeFactor = 0.3;
 
 interface column {
   x: number;
@@ -90,7 +90,7 @@ function MatrixRain(props: MatrixRainProps) {
     {
       // draw a semi transparent black rectangle on top of the scene to slowly fade older characters
       // ctx.globalAlpha = 0.95;
-      ctx.fillStyle = `rgba( 0, 0, 0 , ${fadeFactor} )`;
+      ctx.fillStyle = `rgba( 36, 36, 36 , ${fadeFactor} )`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       // ctx.globalCompositeOperation = 'copy';
       // ctx.drawImage(canvas, 0, 0);
@@ -98,7 +98,7 @@ function MatrixRain(props: MatrixRainProps) {
       // ctx.globalAlpha = 1;
       // pick a font slightly smaller than the tile size
       ctx.font = `${fontSize}px jetbrains mono`;
-      ctx.fillStyle = "rgb( 254, 248, 226, 1 )";
+      ctx.fillStyle = "rgb( 254, 248, 226, 0.5 )";
       for (let i = 0; i < columns.length; ++i) {
         // pick a random ascii character (change the 94 to a higher number to include more characters)
         var randomCharacter = String.fromCharCode(33 + Math.floor(Math.random() * 94));
@@ -110,7 +110,7 @@ function MatrixRain(props: MatrixRainProps) {
           columns[i].stackCounter = 0;
         }
       }
-      await sleep(50);
+      await sleep(100);
       requestAnimationFrame(() => draw(ctx, canvas));
     }
   }
