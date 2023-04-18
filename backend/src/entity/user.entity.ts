@@ -2,9 +2,10 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity( { name: 'users' } )
 export class User {
-  constructor(intraId: number, userName: string, elo: number, accessToken: string, avatar: string, tfaSecret: string) {
+  constructor(intraId: number, userName: string, intraName: string, elo: number, accessToken: string, avatar: string, tfaSecret: string) {
     this.intraId = intraId;
     this.userName = userName;
+    this.intraName = intraName;
     this.elo = elo;
     this.accessToken = accessToken;
     this.avatar = avatar;
@@ -16,6 +17,9 @@ export class User {
 
   @Column()
   userName: string;
+
+  @Column()
+  intraName: string;
 
   @Column()
   elo: number;
