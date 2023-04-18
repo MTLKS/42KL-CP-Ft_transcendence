@@ -14,7 +14,7 @@ function StatusIndicator(props: StatusIndicatorProps) {
     indicatorStyle = `bg-accGreen`;
 
   return (
-    <div className={`w-full flex ${reverse ? 'flex-row-reverse' : 'flex-row' } items-center`}>
+    <div className={`w-full flex ${reverse ? 'flex-row-reverse' : 'flex-row' } items-center gap-2`}>
       <p
         className={`lowercase text-xs xl:text-sm font-extrabold w-full ${status === "in-game" ? 'visible' : 'invisible'} opacity-50 ${reverse ? 'text-dimshadow' : 'text-highlight'}`}
       >

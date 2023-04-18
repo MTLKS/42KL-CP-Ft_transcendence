@@ -26,7 +26,7 @@ function ProfileHeader(props: ProfileHeaderProps) {
         <div className=' text-2xl text-highlight font-extrabold'>JOHNDOE <a href='' className='hover:underline cursor-pointer'>(jdoe)</a></div>
         <div className=' text-xs text-highlight'>THE BLACKHOLE DESTROYER</div>
       </div>
-      <div className='flex flex-row w-[30%] items-center bg-dimshadow p-8'>
+      <div className='flex flex-row w-fit items-center bg-dimshadow p-8'>
         <StatusIndicator status="in-game" />
       </div>
     </div>
