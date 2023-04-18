@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
 import MatchCard from './MatchCard';
+import { UserData } from '../../../modal/UserData';
 
 interface RecentMatchesProps {
   expanded: boolean;
