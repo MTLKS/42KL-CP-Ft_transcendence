@@ -10,6 +10,7 @@ export default {
         accCyan: "rgb(var(--accent-cyan))",
         accYellow: "rgb(var(--accent-yellow))",
         accBlue: "rgb(var(--accent-blue))",
+        accGreen: "rgb(var(--accent-green))",
       },
       fontFamily: {
         'jbmono': ['JetBrains Mono', 'monospace'],
