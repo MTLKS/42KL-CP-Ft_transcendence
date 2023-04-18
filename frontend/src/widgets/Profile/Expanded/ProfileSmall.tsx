@@ -25,7 +25,9 @@ function ProfileSmall(props: ProfileSmallProps) {
         <div className=' text-xs text-dimshadow'>THE BLACKHOLE DESTROYER</div>
       </div>
       <div className=' bg-dimshadow w-1 h-16 mr-5' />
-      <StatusIndicator status="online" reverse={true} />
+      <div>
+        <StatusIndicator status="in-game" reverse={true} />
+      </div>
     </div>
   )
 

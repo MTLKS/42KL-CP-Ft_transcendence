@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
+import StatusIndicator from '../../StatusIndicator';
 
 interface ProfileHeaderProps {
   expanded: boolean;
@@ -18,15 +19,15 @@ function ProfileHeader(props: ProfileHeaderProps) {
   }, [expanded]);
 
   return (
-    <div className='flex flex-row overflow-hidden w-full mb-1 box-border transition-all duration-500 ease-in-out'
+    <div className='flex flex-row justify-between overflow-hidden w-full mb-1 box-border transition-all duration-500 ease-in-out bg-dimshadow'
       style={{ height: height }}
     >
-      <div className='flex flex-col w-full justify-center  bg-dimshadow px-5 mr-1'>
+      <div className='flex flex-col flex-1 justify-center bg-dimshadow px-5'>
         <div className=' text-2xl text-highlight font-extrabold'>JOHNDOE <a href='' className='hover:underline cursor-pointer'>(jdoe)</a></div>
         <div className=' text-xs text-highlight'>THE BLACKHOLE DESTROYER</div>
       </div>
-      <div className=' bg-dimshadow w-20 aspect-square '>
-        <div className=' bg-highlight w-10 h-10 m-auto' />
+      <div className='flex flex-row w-[30%] items-center bg-dimshadow p-8'>
+        <StatusIndicator status="in-game" />
       </div>
     </div>
   )
