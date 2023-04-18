@@ -12,7 +12,7 @@ interface ProfileBodyProps {
 function ProfileBody(props: ProfileBodyProps) {
   const { pixelSize, expanded } = props;
   return (
-    <div className={` flex flex-row w-full box-border transition-all duration-300 ease-in-out ${!expanded ? "h-20" : "mb-1"}`}>
+    <div className={` flex flex-row w-full box-border transition-all duration-300 ease-in-out ${!expanded ? "h-20" : "mb-1 mt-1"}`}>
       <div className={expanded ? 'flex-1 mr-1 bg-dimshadow transition-all' : 'w-20 h-20 aspect-square transition-all'}>
         <PixelatedImage src='https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg' pixelSize={pixelSize} className='w-full' />
       </div>

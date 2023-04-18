@@ -44,7 +44,7 @@ function RecentMatches(props: RecentMatchesProps) {
   }, [expanded]);
 
   return (
-    <div className='flex flex-col border-box bg-dimshadow mb-1 w-full transition-all duration-500 ease-in-out gap-2'
+    <div className='flex flex-col overflow-hidden border-box bg-dimshadow mb-1 w-full transition-all duration-500 ease-in-out gap-2'
       style={{ height: height }}
     >
       <div className='w-[80%] mx-auto'>
