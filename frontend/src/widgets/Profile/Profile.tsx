@@ -4,7 +4,7 @@ import PixelatedImage from '../../components/PixelatedImage'
 import sleep from '../../functions/sleep';
 import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
-import RecentMatches from './Expanded/RecentMatches';
+import RecentMatches from './RecentMatches/RecentMatches';
 
 
 function Profile() {
