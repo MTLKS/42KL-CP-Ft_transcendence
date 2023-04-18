@@ -4,7 +4,7 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 export class Friendship {
 	@PrimaryGeneratedColumn()
 	messageId: number;
-	
+
 	@Column()
 	senderId: number;
 
@@ -13,10 +13,10 @@ export class Friendship {
 
 	@Column()
 	channel: boolean;
-	
+
 	@Column()
 	message: string;
-	
+
 	@Column()
 	timeStamp: string;
 }
