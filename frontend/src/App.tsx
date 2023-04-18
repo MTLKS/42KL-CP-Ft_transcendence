@@ -1,16 +1,10 @@
 import { useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
-import Terminal from "./pages/Terminal";
 import login, { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
-import Profile from "./widgets/Profile/Profile";
-import { CookiePopup } from "./components/Popup";
 import AxiosResponse from 'axios';
-import Chat from "./widgets/Chat/Chat";
 import MouseCursor from "./components/MouseCursor";
-
-
 
 function App() {
   const [logged, setLogged] = useState(false);
