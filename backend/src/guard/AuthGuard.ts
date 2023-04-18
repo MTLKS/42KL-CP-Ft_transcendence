@@ -19,10 +19,10 @@ export class AuthGuard implements CanActivate
 			console.log("ACCESS_TOKEN:", ACCESS_TOKEN);
 			const DATA = await this.userRepository.find({ where: {accessToken: ACCESS_TOKEN} })
 			console.log("Guard End");
-			return (DATA.length !== 0)
+			return DATA.length !== 0
 		} catch {
 			console.log("Authorization is invalid");
-			return (false);
+			return false;
 		}
 	}
 }
