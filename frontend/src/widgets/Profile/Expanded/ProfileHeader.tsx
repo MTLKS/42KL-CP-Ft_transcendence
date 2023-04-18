@@ -27,7 +27,7 @@ function ProfileHeader(props: ProfileHeaderProps) {
         <div className=' text-xs text-highlight'>THE BLACKHOLE DESTROYER</div>
       </div>
       <div className='flex flex-row w-fit items-center bg-dimshadow p-8'>
-        <StatusIndicator status="in-game" />
+        <StatusIndicator status="offline" invert={true} />
       </div>
     </div>
   )

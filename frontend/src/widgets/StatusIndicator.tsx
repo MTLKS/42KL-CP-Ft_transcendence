@@ -2,25 +2,25 @@ import React from 'react'
 
 interface StatusIndicatorProps {
   status: string;
-  reverse?: boolean;
+  invert?: boolean;
 }
 
 function StatusIndicator(props: StatusIndicatorProps) {
 
-  const { status, reverse = false } = props;
-  let indicatorStyle = `opacity-50 ${reverse ? 'border-dimshadow' : 'border-highlight'}`;
+  const { status, invert = false } = props;
+  let indicatorStyle = `opacity-50 border-[5px] xl:border-[6px] ${invert ? 'border-highlight' : 'border-dimshadow'}`;
 
   if (status == "online" || status == 'in-game')
     indicatorStyle = `bg-accGreen`;
 
   return (
-    <div className={`w-full flex ${reverse ? 'flex-row-reverse' : 'flex-row' } items-center gap-2`}>
+    <div className={`w-full flex flex-row-reverse items-center gap-2`}>
       <p
-        className={`lowercase text-xs xl:text-sm font-extrabold w-full ${status === "in-game" ? 'visible' : 'invisible'} opacity-50 ${reverse ? 'text-dimshadow' : 'text-highlight'}`}
+        className={`lowercase text-md font-extrabold w-full opacity-50 ${invert ? 'text-highlight' : 'text-dimshadow'}`}
       >
-        in game
+        {status}
       </p>
-      <div className={`rounded-full aspect-square w-5 xl:w-6 ${status === 'offline' ? 'border-[5px] xl:border-[6px]' : ''} ${indicatorStyle} transition-all ease-in-out duration-200`}></div>
+      <div className={`rounded-full aspect-square w-6 xl:w-6 ${status === 'offline' ? 'border-[5px] xl:border-[6px]' : ''} ${indicatorStyle} transition-all ease-in-out duration-200`}></div>
     </div>
   )
 }

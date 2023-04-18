@@ -26,7 +26,7 @@ function ProfileSmall(props: ProfileSmallProps) {
       </div>
       <div className=' bg-dimshadow w-1 h-16 mr-5' />
       <div>
-        <StatusIndicator status="in-game" reverse={true} />
+        <StatusIndicator status="offline" />
       </div>
     </div>
   )
