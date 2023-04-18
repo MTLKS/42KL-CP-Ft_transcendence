@@ -27,7 +27,7 @@ function App() {
         setLogged(true);
         loggin = true;
       }
-    });
+    }});
     if (loggin) return;
 
     const queryString: string = window.location.search;
