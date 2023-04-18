@@ -1,11 +1,12 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class FriendshipService {
-	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>) {}
+	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, private userService: UserService) {}
 
 	// Check if the JSON body is valid
 	checkJson(senderId: string, receiverId: string, status:string): any {
@@ -17,6 +18,7 @@ export class FriendshipService {
 			return { "error": "Invalid status - status must be PENDING, ACCEPTED or BLOCKED"}
 	}
 
+	// Gets all friendship by ID
 	async getFriendshipByID(id: string): Promise<any> {
 		if (isNaN(Number(id)))
 			return { "error": "Invalid Id - id must be a number" }
@@ -26,7 +28,14 @@ export class FriendshipService {
 	}
 
 	// Creates a new friendship
-	async newFriendship(senderId: string, receiverId: string, status: string): Promise<any> {
+	async newFriendship(accessToken: string, receiverId: string, status: string): Promise<any> {
+		try {
+			const USER = await this.userService.getMyUserData(accessToken);
+			var senderId = USER.intraId;
+		} catch {
+			var senderId = null;
+		}
+		
 		const ERROR = this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
@@ -40,15 +49,29 @@ export class FriendshipService {
 	}
 
 	// Updates a friendship
-	async updateFriendship(senderId: string, receiverId: string, status: string): Promise<any> {
+	async updateFriendship(accessToken: string, receiverId: string, status: string): Promise<any> {
+		try {
+			const USER = await this.userService.getMyUserData(accessToken);
+			var senderId = USER.intraId;
+		} catch {
+			var senderId = null;
+		}
+
 		const ERROR = this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
 
 		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderId: Number(senderId), receiverId: Number(receiverId)} });
+		const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} });
+		if (status.toUpperCase() == "ACCEPTED") {
+			if (RECEIVER.length === 0)
+				return { "error": "Friendship does not exist - use POST method to create" }
+			RECEIVER[0].status = status.toUpperCase();
+			this.friendshipRepository.save(RECEIVER[0]);
+			return RECEIVER[0];
+		}
 		if (status.toUpperCase() == "BLOCKED")
 		{
-			const RECEIVER = await this.friendshipRepository.find({ where: {senderId: Number(receiverId), receiverId: Number(senderId)} });
 			if (FRIENDSHIP.length === 0 && RECEIVER.length === 0)
 				return { "error": "Friendship does not exist - use POST method to create" }
 			if (FRIENDSHIP.length !== 0) {
@@ -71,7 +94,14 @@ export class FriendshipService {
 	}
 
 	// Deletes a friendship
-	async	deleteFriendship(senderId: string, receiverId: string, status: string): Promise<any> {
+	async	deleteFriendship(accessToken: string, receiverId: string, status: string): Promise<any> {
+		try {
+			const USER = await this.userService.getMyUserData(accessToken);
+			var senderId = USER.intraId;
+		} catch {
+			var senderId = null;
+		}
+
 		const ERROR = this.checkJson(senderId, receiverId, status);
 		if (ERROR)
 			return ERROR;
