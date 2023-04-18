@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import { PolkaDotContainer } from "./components/Background";
+import Login from "./pages/Login";
+import login, { checkAuth } from "./functions/login";
+import HomePage from "./pages/HomePage";
+import AxiosResponse from 'axios';
+import MouseCursor from "./components/MouseCursor";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [logged, setLogged] = useState(false);
 
+  if (!logged)
+    checkIfLoggedIn();
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+    <PolkaDotContainer>
+      <MouseCursor>
+        {logged ? <HomePage /> : <Login />}
+      </MouseCursor>
+    </PolkaDotContainer>
   )
+
+  function checkIfLoggedIn() {
+    let loggin = false;
+    document.cookie.split(';').forEach((cookie) => {
+      if (cookie.includes('Authorization')) {
+        setLogged(true);
+        loggin = true;
+      }
+    });
+    if (loggin) return;
+
+    const queryString: string = window.location.search;
+    const urlParams: URLSearchParams = new URLSearchParams(queryString);
+    let code: { code: string | null } = { code: urlParams.get('code') };
+
+    if (code.code) {
+      checkAuth(code.code).then((res) => {
+        if (res) {
+          console.log(res);
+          console.log((res as any).data.accessToken);
+          localStorage.setItem('Authorization', (res as any).data.accessToken);
+          document.cookie = `Authorization=${(res as any).data.accessToken};`;
+          login();
+        }
+      }).catch((err) => {
+        console.log(err);
+      });
+    }
+  }
 }
 
 export default App

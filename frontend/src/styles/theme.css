@@ -1,0 +1,14 @@
+/* default theme */
+@layer base {
+  :root {
+    /* color variables */
+    --highlight-color: 254 248 226;
+    --shadow-color: 27 27 27;
+    --dimmer-shadow: 36 36 36;
+    --accent-red: 173 100 84;
+    --accent-cyan: 95 146 143;
+    --accent-yellow: 179 161 131;
+    --accent-blue: 49 52 64;
+    --accent-green: 106 153 98;
+  }
+}
