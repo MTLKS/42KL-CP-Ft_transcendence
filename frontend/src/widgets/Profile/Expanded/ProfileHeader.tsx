@@ -19,7 +19,7 @@ function ProfileHeader(props: ProfileHeaderProps) {
   }, [expanded]);
 
   return (
-    <div className='flex flex-row justify-between overflow-hidden w-full mb-1 box-border transition-all duration-500 ease-in-out bg-dimshadow'
+    <div className='flex flex-row justify-between overflow-hidden w-full box-border transition-all duration-500 ease-in-out bg-dimshadow'
       style={{ height: height }}
     >
       <div className='flex flex-col flex-1 justify-center bg-dimshadow px-5'>
