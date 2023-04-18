@@ -31,7 +31,7 @@ class Api {
   }
 
   updateToken(token: string, newToken: string) {
-    this.reqInstance.defaults.headers.common["token"] = `Bearer ${newToken}`;
+    this.reqInstance.defaults.headers.common[token] = newToken;
   }
 
   get<T>(url: string, config?: any): Promise<AxiosResponse<T>> {

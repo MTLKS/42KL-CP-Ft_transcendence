@@ -38,8 +38,9 @@ function App() {
         if (res) {
           console.log(res);
           console.log((res as any).data.accessToken);
+          localStorage.setItem('Authorization', (res as any).data.accessToken);
           document.cookie = `Authorization=${(res as any).data.accessToken};`;
-          // login();
+          login();
         }
       }).catch((err) => {
         console.log(err);
