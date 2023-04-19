@@ -9,10 +9,10 @@ import UserForm from "./pages/UserForm/UserForm";
 import { toDataUrl } from "./functions/toDataURL";
 
 let user = {
-  intraId: 1,
-  userName: "johndoe",
-  intraName: "johndoe",
-  elo: 123,
+  intraId: 106435,
+  userName: "Ricky",
+  intraName: "wricky-t",
+  elo: 999,
   accessToken: "asdfasdfasdfadsf",
   avatar: "https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg",
   tfaSecret: null,
@@ -24,12 +24,11 @@ function App() {
   if (!logged)
     checkIfLoggedIn();
   return (
-    <UserForm {...user} />
-    // <PolkaDotContainer>
-    //   <MouseCursor>
-    //     {logged ? <HomePage /> : <Login />}
-    //   </MouseCursor>
-    // </PolkaDotContainer>
+    <PolkaDotContainer>
+      <MouseCursor>
+        {logged ? <HomePage /> : <Login />}
+      </MouseCursor>
+    </PolkaDotContainer>
   )
 
   function checkIfLoggedIn() {

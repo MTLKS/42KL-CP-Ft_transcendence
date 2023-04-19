@@ -7,7 +7,7 @@ import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions
 import { Profanity, ProfanityOptions } from '@2toad/profanity';
 import { PolkaDotContainer } from '../../components/Background';
 import { ErrorPopup } from '../../components/Popup';
-import { dataUrlToBlob, toDataUrl } from '../../functions/toDataURL';
+import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
 import Api from '../../api/api';
 
 enum ErrorCode {
@@ -43,8 +43,8 @@ function UserForm(props: UserData) {
 
   const [avatar, setAvatar] = useState('');
   const [userName, setFinalName] = useState(props.intraName);
+  const [fileExtension, setFileExtension] = useState<string>('jpeg');
   const [questionAns, setQuestionAns] = useState("");
-  const [borderColors, setborderColors] = useState({nameBorder: `highlight`, questionBorder: `highlight`});
   const [awesomeSynonym, setAwesomeSynonym] = useState(getAwesomeSynonym());
   const [iceBreakingQuestion, setIceBreakingQuestion] = useState(getRandomIceBreakingQuestion());
   const [popups, setPopups] = useState<JSX.Element[]>([]);
@@ -61,11 +61,11 @@ function UserForm(props: UserData) {
         {popups}
       </div>
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
-        <UserFormAvatar intraID={props.intraName} avatarUrl={avatar} setAvatar={setAvatar}/>
+        <UserFormAvatar intraName={props.intraName} avatarUrl={avatar} setAvatar={setAvatar} setFileExtension={setFileExtension}/>
         <div className='w-[48%] lg:w-[40%] h-full my-auto flex flex-col font-extrabold text-highlight gap-3'>
           <p className='uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold'>user info</p>
-          <UserFormName user={props} awesomeSynonym={awesomeSynonym} updateName={updateName} borderColor={borderColors.nameBorder}/>
-          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} borderColor={borderColors.nameBorder}/>
+          <UserFormName user={props} awesomeSynonym={awesomeSynonym} updateName={updateName}/>
+          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} />
           <div
             className='font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out'
             onClick={handleSubmit}
@@ -110,8 +110,9 @@ function UserForm(props: UserData) {
 
     let errors: ErrorCode[] = checkNameAndAnswer();
     let formData = new FormData();
+    let avatarFile;
 
-    if (errors.length === 0)  { // meaning no error, can POST latest info to server
+    if (errors.length === 0)  {
       Api.updateToken(
         "Authorization",
         document.cookie
@@ -119,9 +120,10 @@ function UserForm(props: UserData) {
         .find((cookie) => cookie.includes("Authorization"))
         ?.split("=")[1] ?? ""
       );
+      avatarFile = dataURItoFile(avatar, `${props.intraId}.${fileExtension}`);
       formData.append("userName", userName);
-      formData.append("avatar", avatar);
-      await Api.post("/user", formData);
+      formData.append("image", avatarFile);
+      await Api.post("/user", formData).then((res) => console.log(res));
       Api.get("/user").then((res) => console.log(res));
       setPopups([]);
       return ;
