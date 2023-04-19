@@ -15,6 +15,6 @@ export class TFAController{
 	@Post()
 	@UseGuards(AuthGuard)
 	async validateOTP(@Headers('Authorization') accessToken: string, @Body() body: any ): Promise<any> {
-		return await this.tfaService.validateOTP(accessToken, body)
+		return await this.tfaService.validateOTP(accessToken, body.otp)
 	}
 }

@@ -1,7 +1,7 @@
 import { Get, UseGuards, Param, Post, Body, Patch, Delete, Headers } from '@nestjs/common';
+import { FriendshipService } from './friendship.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { Controller } from '@nestjs/common';
-import { FriendshipService } from './friendship.service';
 
 @Controller('friendship')
 export class FriendshipController {

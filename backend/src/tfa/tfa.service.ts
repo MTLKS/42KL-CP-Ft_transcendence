@@ -28,12 +28,12 @@ export class TFAService{
 		}
 	}
 
-	async validateOTP(accessToken: string, body: any) : Promise<any> {
+	async validateOTP(accessToken: string, otp: string) : Promise<any> {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 			const DATA = await this.userRepository.find({ where: {accessToken} });
 			return { boolean: authenticator.verify({
-				token : body.otp, 
+				token : otp, 
 				secret : DATA[0].tfaSecret,
 			}) };
 		} catch {
