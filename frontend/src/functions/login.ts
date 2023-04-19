@@ -13,7 +13,6 @@ export function checkAuth(code: string | null) {
 }
 
 async function login() {
-  Api.updateToken("Banana", "ok");
   Api.updateToken(
     "Authorization",
     document.cookie
@@ -22,8 +21,6 @@ async function login() {
       ?.split("=")[1] ?? ""
   );
   Api.get<IResponse>("/auth").then((res) => {
-    console.log(res.data.redirectUrl);
-    console.log(document.cookie);
     window.location.assign(res.data.redirectUrl);
   });
 }
