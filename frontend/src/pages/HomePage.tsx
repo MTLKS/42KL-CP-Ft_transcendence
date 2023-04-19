@@ -12,6 +12,7 @@ import Less from '../widgets/Less';
 import api from '../api/api';
 import { UserData } from '../modal/UserData';
 import { getMyProfile } from '../functions/profile';
+import YoutubeEmbed from '../components/YoutubeEmbed';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less"];
 const emptyWidget = <div></div>;
@@ -27,7 +28,7 @@ let myProfile: UserData = {
 };
 
 function HomePage() {
-  const [elements, setElements] = React.useState([] as JSX.Element[])
+  const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
   const [topWidget, setTopWidget] = React.useState(<Profile userData={myProfile} />);
@@ -72,7 +73,10 @@ function HomePage() {
         login();
         break;
       case "sudo":
-        rickroll();
+        const newEmbed = <YoutubeEmbed key={"rickroll" + index} />
+        newList = [newEmbed].concat(elements);
+        setIndex(index + 1);
+        // rickroll();
         break;
       // case "ls":
       //   rickroll();
@@ -93,7 +97,8 @@ function HomePage() {
       //   setIndex(index + 1);
       //   break;
       case "clear":
-        setIndex(0);
+        newList = elements.filter((element) => element.type === YoutubeEmbed);
+        setIndex(newList.length - 1);
         break;
       case "help":
         const newHelpCard = helpCard();
@@ -119,13 +124,13 @@ function HomePage() {
   }
 
   function card(index: number) {
-    return <Card key={index}>
+    return <Card key={index} type=''>
       <p className='text-gray-300 text-2xl tracking-tighter mb-5 h-15'>This is a card</p>
     </Card>;
   }
 
   function helpCard() {
-    return <Card key={index}>
+    return <Card key={index} type=''>
       <p className='text-gray-300 text-1xl tracking-tighter mb-5 h-15 whitespace-pre'>
         <span className=' text-2xl neonText-white font-bold'>Get some help!</span><br />
         <span className=' text-2xl neonText-cyan font-bold'>Get some help!</span><br />
@@ -149,7 +154,7 @@ function HomePage() {
   }
 
   function errorCard() {
-    return <Card key={index}>
+    return <Card key={index} type=''>
       <p className='text-xl neonText-red whitespace-pre'>command does not exist...     get some help.</p>
     </Card>;
   }
