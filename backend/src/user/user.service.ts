@@ -49,7 +49,6 @@ export class UserService {
 
 	// Use intra id to get user info
 	async getUserDataById(id: string): Promise<any> {
-		console.log(id)
 		const USER_DATA = await this.userRepository.find({ where: {intraId: Number(id)} });
 		USER_DATA[0].accessToken = "hidden";
 		return USER_DATA;
@@ -82,7 +81,7 @@ export class UserService {
 	}
 
 	// Create new user
-	async newUserInfo(accessToken: string, body: any): Promise<any> {
+	async newUserInfo(accessToken: string, body: any, file: any): Promise<any> {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {

@@ -1,4 +1,5 @@
-import { Controller, Get, Headers, UseGuards, Param, Post, Body } from '@nestjs/common';
+import { Controller, Get, Headers, UseGuards, Param, Post, Body, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { UserService } from './user.service';
 
@@ -32,7 +33,8 @@ export class UserController {
 
 	@Post()
 	@UseGuards(AuthGuard)
-	newUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any ): any {
-		return this.userService.newUserInfo(accessToken, body);
+	@UseInterceptors(FileInterceptor('image'))
+	newUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() file: any): any {
+		return this.userService.newUserInfo(accessToken, body, file);
 	}
 }
