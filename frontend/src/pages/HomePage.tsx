@@ -53,9 +53,9 @@ function HomePage() {
       case "sudo":
         rickroll();
         break;
-      case "ls":
-        rickroll();
-        break;
+      // case "ls":
+      //   rickroll();
+      //   break;
       case "start":
         if (!startMatch) {
           setStartMatch(true);
@@ -66,11 +66,11 @@ function HomePage() {
           setStartMatch(false);
         }
         break;
-      case "add":
-        const newCard = card(index);
-        newList = [newCard].concat(elements);
-        setIndex(index + 1);
-        break;
+      // case "add":
+      //   const newCard = card(index);
+      //   newList = [newCard].concat(elements);
+      //   setIndex(index + 1);
+      //   break;
       case "clear":
         setIndex(0);
         break;
@@ -79,10 +79,10 @@ function HomePage() {
         newList = [newHelpCard].concat(elements);
         setIndex(index + 1);
         break;
-      case "whoami":
-        const newWhoamiCard = <Profile />;
-        setTopWidget(newWhoamiCard);
-        break;
+      // case "whoami":
+      //   const newWhoamiCard = <Profile />;
+      //   setTopWidget(newWhoamiCard);
+      //   break;
       case "less":
         setLeftWidget(<Less onQuit={() => {
           setLeftWidget(null);

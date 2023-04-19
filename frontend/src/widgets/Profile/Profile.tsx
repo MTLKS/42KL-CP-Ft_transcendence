@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import Triangle from '../../components/Triangle'
-import PixelatedImage from '../../components/PixelatedImage'
 import sleep from '../../functions/sleep';
 import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';

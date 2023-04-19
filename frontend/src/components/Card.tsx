@@ -3,7 +3,8 @@ import { useState } from 'react';
 import sleep from '../functions/sleep';
 
 interface CardProps {
-  children: React.ReactNode
+  type: string;
+  children: React.ReactNode;
 }
 
 interface CardAnimation {
@@ -13,16 +14,20 @@ interface CardAnimation {
 }
 
 function Card(props: CardProps) {
-  const { children } = props;
+  const { type = "NOTFOUND", children } = props;
   const [animation, setAnimation] = useState({ transform: "translateY(50px)", opacity: 0, transition: "all 0.5s" } as CardAnimation);
   const [mounted, setMounted] = useState(false);
 
   if (!mounted) animate();
   return (
-    <div className='card'
+    <div className='w-full h-fit flex flex-row items-center border-t-2 border-highlight/[0.5]'
       style={animation}
     >
-      {children}
+      <div className='h-full w-5 bg-accRed'>
+      </div>
+      <div className='w-full bg-highlight/[0.02] text-highlight py-3 px-6'>
+        {children}
+      </div>
     </div>
   )
 

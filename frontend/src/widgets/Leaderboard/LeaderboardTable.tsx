@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import SrcollView from '../../components/SrcollView';
+import ScrollView from '../../components/ScrollView';
 
 interface LeaderboardTableProps {
   index: number;

@@ -12,9 +12,8 @@ function Clock() {
     setInterval(() => setClockTime(getCurrentTime), 100);
   })
 
-
   return (
-    <div className='px-5 py-7 w-fit h-fit bg-highlight rounded-bl-3xl font-extrabold'>
+    <div className='absolute top-0 right-0 px-5 py-7 w-fit h-fit bg-highlight rounded-bl-xl font-extrabold text-lg'>
       {clockTime}
     </div>
   )
