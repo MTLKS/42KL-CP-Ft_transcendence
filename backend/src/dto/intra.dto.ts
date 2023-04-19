@@ -4,6 +4,6 @@ export class IntraDTO {
 	name : string;
 	email: string;
 	imageMedium: string;
-	imageSmall: string;
+	imageLarge: string;
 	blackhole: string;
 }

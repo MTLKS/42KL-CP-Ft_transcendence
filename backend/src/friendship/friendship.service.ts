@@ -46,11 +46,12 @@ export class FriendshipService {
 
 	// Creates a new friendship
 	async newFriendship(accessToken: string, receiverId: string, status: string): Promise<any> {
+		let senderId: string;
 		try {
 			const USER = await this.userService.getMyUserData(accessToken);
-			var senderId = USER.intraId;
+			senderId = USER.intraId;
 		} catch {
-			var senderId = null;
+			senderId = null;
 		}
 		
 		const ERROR = await this.checkJson(senderId, receiverId, status);
