@@ -7,17 +7,21 @@ import { UserData } from '../../modal/UserData';
 
 interface ProfileProps {
   userData: UserData;
+  expanded?: boolean;
 }
 function Profile(props: ProfileProps) {
   const { userData } = props;
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
 
+  useEffect(() => {
+    if (props.expanded) setExpanded(true);
+    else setExpanded(false);
+  }, [props.expanded]);
 
   useEffect(() => {
-    if (pixelSize == 400)
-      pixelatedToSmooth();
-  }, []);
+    pixelatedToSmooth();
+  }, [userData.avatar]);
 
   return (<div className='w-full bg-highlight flex flex-col items-center box-border'
     onClick={onProfileClick}

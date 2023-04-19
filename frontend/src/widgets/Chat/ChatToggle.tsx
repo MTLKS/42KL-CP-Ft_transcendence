@@ -22,15 +22,16 @@ function ChatToggle(props: ChatToggleProps) {
         <p className='font-extrabold'>chat</p>
         <BsFillChatLeftFill className='ml-3' />
       </div>
-      <div>
+      <div className=''>
         <div className='rounded-full h-6 w-6 animate-ping bg-accRed hidden'></div>
-        <input
+        {expanded ? <input
+          onClick={(e) => { e.stopPropagation() }}
           className={`bg-dimshadow p-[2px] text-highlight rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl  w-full focus:[outline:none] focus:animate-pulse-short`}
           type="text"
           name="name"
           autoComplete="off"
           onChange={(e) => onFilterUpdate!(e.currentTarget.value)}
-        />
+        /> : <></>}
       </div>
     </div>
   )

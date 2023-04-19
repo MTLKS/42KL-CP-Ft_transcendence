@@ -2,8 +2,13 @@ import React from 'react'
 import { useState } from 'react';
 import sleep from '../functions/sleep';
 
+export enum CardType {
+  SUCCESS,
+  ERROR,
+}
+
 interface CardProps {
-  type: string;
+  type?: CardType;
   children: React.ReactNode;
 }
 
@@ -23,9 +28,8 @@ function Card(props: CardProps) {
     <div className='w-full h-fit flex flex-row items-center border-t-2 border-highlight/[0.5]'
       style={animation}
     >
-      <div className='h-full w-5 bg-accRed'>
-      </div>
-      <div className='w-full bg-highlight/[0.02] text-highlight py-3 px-6'>
+      {type == CardType.SUCCESS ? <div className='h-full w-2 bg-accGreen' /> : <div className='h-full w-2 bg-accRed' />}
+      <div className='w-full bg-highlight/[0.02] text-base whitespace-pre text-highlight py-1 px-2'>
         {children}
       </div>
     </div>
