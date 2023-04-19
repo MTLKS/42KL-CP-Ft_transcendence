@@ -9,21 +9,42 @@ import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
 import Less from '../widgets/Less';
+import api from '../api/api';
+import { UserData } from '../modal/UserData';
+import { getMyProfile } from '../functions/profile';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less"];
 const emptyWidget = <div></div>;
+
+let myProfile: UserData = {
+  accessToken: "hidden",
+  avatar: "4.png",
+  elo: 400,
+  intraId: 130305,
+  intraName: "itan",
+  tfaSecret: null,
+  userName: "Ijon"
+};
 
 function HomePage() {
   const [elements, setElements] = React.useState([] as JSX.Element[])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [topWidget, setTopWidget] = React.useState(<Profile />);
+  const [topWidget, setTopWidget] = React.useState(<Profile userData={myProfile} />);
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
 
   const pageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getMyProfile().then((profile) => {
+      myProfile = profile.data;
+      console.log(myProfile);
+      setTopWidget(<Profile userData={myProfile} />);
+    });
+  }, []);
 
   return (
     <div className='h-full w-full p-7'>
@@ -79,10 +100,10 @@ function HomePage() {
         newList = [newHelpCard].concat(elements);
         setIndex(index + 1);
         break;
-      // case "whoami":
-      //   const newWhoamiCard = <Profile />;
-      //   setTopWidget(newWhoamiCard);
-      //   break;
+      case "whoami":
+        const newWhoamiCard = <Profile userData={myProfile} />;
+        setTopWidget(newWhoamiCard);
+        break;
       case "less":
         setLeftWidget(<Less onQuit={() => {
           setLeftWidget(null);

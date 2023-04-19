@@ -3,9 +3,13 @@ import sleep from '../../functions/sleep';
 import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
+import { UserData } from '../../modal/UserData';
 
-
-function Profile() {
+interface ProfileProps {
+  userData: UserData;
+}
+function Profile(props: ProfileProps) {
+  const { userData } = props;
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
 
@@ -18,8 +22,8 @@ function Profile() {
   return (<div className='w-full bg-highlight flex flex-col items-center box-border'
     onClick={onProfileClick}
   >
-    <ProfileHeader expanded={expanded} />
-    <ProfileBody expanded={expanded} pixelSize={pixelSize} />
+    <ProfileHeader expanded={expanded} userData={userData} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} userData={userData} />
     <RecentMatches expanded={expanded} />
   </div>);
 

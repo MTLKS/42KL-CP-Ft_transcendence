@@ -5,6 +5,15 @@ import login, { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
 import AxiosResponse from 'axios';
 import MouseCursor from "./components/MouseCursor";
+import UserForm from "./pages/UserForm/UserForm";
+import { toDataUrl } from "./functions/toDataURL";
+
+let user = {
+  id: "1",
+  name: "johnny doe",
+  intraId: "johndoe",
+  avatarURL: "https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg",
+}
 
 function App() {
   const [logged, setLogged] = useState(false);
