@@ -7,7 +7,7 @@ import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions
 import { Profanity, ProfanityOptions } from '@2toad/profanity';
 import { PolkaDotContainer } from '../../components/Background';
 import { ErrorPopup } from '../../components/Popup';
-import { toDataUrl } from '../../functions/toDataURL';
+import { dataUrlToBlob, toDataUrl } from '../../functions/toDataURL';
 import Api from '../../api/api';
 
 enum ErrorCode {
@@ -42,7 +42,7 @@ const getError = (code: ErrorCode) => {
 function UserForm(props: UserData) {
 
   const [avatar, setAvatar] = useState('');
-  const [userName, setFinalName] = useState(props.name);
+  const [userName, setFinalName] = useState(props.intraName);
   const [questionAns, setQuestionAns] = useState("");
   const [borderColors, setborderColors] = useState({nameBorder: `highlight`, questionBorder: `highlight`});
   const [awesomeSynonym, setAwesomeSynonym] = useState(getAwesomeSynonym());
@@ -51,7 +51,7 @@ function UserForm(props: UserData) {
 
   // convert the image from intra to data:base64
   useEffect(() => {
-    toDataUrl(props.avatarURL)
+    toDataUrl(props.avatar)
       .then((res) => setAvatar(res))
   }, []);
 
@@ -61,7 +61,7 @@ function UserForm(props: UserData) {
         {popups}
       </div>
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
-        <UserFormAvatar intraID={props.intraId} avatarUrl={avatar} setAvatar={setAvatar}/>
+        <UserFormAvatar intraID={props.intraName} avatarUrl={avatar} setAvatar={setAvatar}/>
         <div className='w-[48%] lg:w-[40%] h-full my-auto flex flex-col font-extrabold text-highlight gap-3'>
           <p className='uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold'>user info</p>
           <UserFormName user={props} awesomeSynonym={awesomeSynonym} updateName={updateName} borderColor={borderColors.nameBorder}/>
@@ -106,23 +106,24 @@ function UserForm(props: UserData) {
     return (errors);
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
 
     let errors: ErrorCode[] = checkNameAndAnswer();
+    let formData = new FormData();
 
     if (errors.length === 0)  { // meaning no error, can POST latest info to server
-      setPopups([]);
       Api.updateToken(
         "Authorization",
         document.cookie
-          .split(";")
-          .find((cookie) => cookie.includes("Authorization"))
-          ?.split("=")[1] ?? ""
+        .split(";")
+        .find((cookie) => cookie.includes("Authorization"))
+        ?.split("=")[1] ?? ""
       );
-      Api.post("/user", {
-        userName: userName,
-        avatar: avatar
-      })
+      formData.append("userName", userName);
+      formData.append("avatar", avatar);
+      await Api.post("/user", formData);
+      Api.get("/user").then((res) => console.log(res));
+      setPopups([]);
       return ;
     }
     setPopups(errors.map((error) => <ErrorPopup key={error} text={getError(error)} />))

@@ -9,10 +9,13 @@ import UserForm from "./pages/UserForm/UserForm";
 import { toDataUrl } from "./functions/toDataURL";
 
 let user = {
-  id: "1",
-  name: "johnny doe",
-  intraId: "johndoe",
-  avatarURL: "https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg",
+  intraId: 1,
+  userName: "johndoe",
+  intraName: "johndoe",
+  elo: 123,
+  accessToken: "asdfasdfasdfadsf",
+  avatar: "https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg",
+  tfaSecret: null,
 }
 
 function App() {
@@ -21,11 +24,12 @@ function App() {
   if (!logged)
     checkIfLoggedIn();
   return (
-    <PolkaDotContainer>
-      <MouseCursor>
-        {logged ? <HomePage /> : <Login />}
-      </MouseCursor>
-    </PolkaDotContainer>
+    <UserForm {...user} />
+    // <PolkaDotContainer>
+    //   <MouseCursor>
+    //     {logged ? <HomePage /> : <Login />}
+    //   </MouseCursor>
+    // </PolkaDotContainer>
   )
 
   function checkIfLoggedIn() {

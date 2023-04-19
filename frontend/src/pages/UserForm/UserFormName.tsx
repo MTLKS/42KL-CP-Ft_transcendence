@@ -10,7 +10,7 @@ interface UserFormNameProps {
 
 function UserFormName(props: UserFormNameProps) {
 
-  const [userName, setUsername] = useState(props.user.name);
+  const [userName, setUsername] = useState(props.user.intraName);
   const [borderColor, setBorderColor] = useState(props.borderColor);
 
   return (
