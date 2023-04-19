@@ -19,11 +19,23 @@ export class UserController {
 	getMyIntraData(@Headers('Authorization') accessToken: string): any {
 		return this.userService.getMyIntraData(accessToken);
 	}
+	
+	@Get('intra/:intraName')
+	@UseGuards(AuthGuard)
+	getIntraDataByIntraName(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string, @Res() res: any): any {
+		return this.userService.getIntraDataByIntraName(accessToken, intraName);
+	}
 
 	@Get('avatar')
-	// @UseGuards(AuthGuard)
+	@UseGuards(AuthGuard)
 	getMyAvatar(@Headers('Authorization') accessToken: string, @Res() res: any): any {
 		return this.userService.getMyAvatar(accessToken, res);
+	}
+
+	@Get('avatar/:intraName')
+	@UseGuards(AuthGuard)
+	getAvatarByIntraName(@Param('intraName') intraName: string, @Res() res: any): any {
+		return this.userService.getAvatarByIntraName(intraName, res);
 	}
 
 	@Get(':intraName')
@@ -31,13 +43,6 @@ export class UserController {
 	getUserDataByIntraName(@Param('intraName') intraName: string): any {
 		return this.userService.getUserDataByIntraName(intraName);
 	}
-
-	@Get('intra/:intraName')
-	@UseGuards(AuthGuard)
-	getIntraDataByIntraName(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string, @Res() res: any): any {
-		return this.userService.getIntraDataByIntraName(accessToken, intraName);
-	}
-
 
 	@Post()
 	@UseGuards(AuthGuard)

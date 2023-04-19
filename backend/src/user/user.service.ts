@@ -47,7 +47,7 @@ export class UserService {
 		return INTRA_DTO;
 	}
 
-	// Use intra id to get user info
+	// Use intraName to get user info
 	async getUserDataByIntraName(intraName: string): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
 		if (USER_DATA.length === 0)
@@ -56,7 +56,7 @@ export class UserService {
 		return USER_DATA[0];
 	}
 
-	// Use intra id to get intra user info
+	// Use intraName to get intra user info
 	async getIntraDataByIntraName(accessToken: string, intraName: string): Promise<any> {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
@@ -96,7 +96,13 @@ export class UserService {
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
 		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar, { root: '.' });
-	} 
+	}
+
+	// Use intraName to get user avatar
+	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
+		const USER_DATA = await this.userRepository.find({ where: {intraName} });
+		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar, { root: '.' });
+	}
 
 	// Creates new user by saving their userName and avatar
 	async newUserInfo(accessToken: string, userName: string, file: any): Promise<any> {
