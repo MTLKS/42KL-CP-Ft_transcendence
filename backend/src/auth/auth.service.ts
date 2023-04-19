@@ -10,22 +10,13 @@ export class AuthService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
 	// Starts the login process
-	async startLogin(header: any): Promise<any> {
-		const COOKIES = header.cookie ? header.cookie.split("; ") : [];
-		const LINK = "https://api.intra.42.fr/oauth/authorize/";
-		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
-		if (COOKIES.length === 0)
-			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
-		let authCode = COOKIES.find((cookie) => cookie.startsWith('Authorization='))
-		if (authCode === undefined)
-			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
-		authCode = authCode.split('=')[1];
+	async startLogin(accessToken: any): Promise<any> {
+		const OAUTH = "https://api.intra.42.fr/oauth/authorize/?client_id=" + process.env.APP_UID + "&redirect_uri=http%3A%2F%2Flocalhost%3A5173&response_type=code"
 		try {
-			const DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
-			return (DATA.length !== 0) ? { redirectUrl: "http://localhost:5173" } : { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+			return { redirectUrl: ((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? "http://localhost:5173" : OAUTH };
 		}
 		catch {
-			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+			return { redirectUrl: OAUTH};
 		}
 	}
 
