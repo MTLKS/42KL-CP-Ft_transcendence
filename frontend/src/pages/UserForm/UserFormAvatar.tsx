@@ -3,14 +3,15 @@ import { UserData } from '../../modal/UserData'
 import { toDataUrl } from '../../functions/toDataURL';
 
 interface UserFormAvatarProps {
-  intraID: string,
+  intraName: string,
   avatarUrl: string,
-  setAvatar: (newAvatar: string) => void
+  setAvatar: (newAvatar: string) => void,
+  setFileExtension: (ext: string) => void
 }
 
 function UserFormAvatar(props: UserFormAvatarProps) {
 
-  const { intraID, avatarUrl, setAvatar } = props;
+  const { intraName, avatarUrl, setAvatar, setFileExtension } = props;
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -18,20 +19,25 @@ function UserFormAvatar(props: UserFormAvatarProps) {
   }
 
   const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let ext;
     const reader = new FileReader();
 
     // define a callback function to be called when the file is loaded
     reader.onload = () => {
       if (reader.readyState === 2) {
-        props.setAvatar(reader.result as string);
+        setAvatar(reader.result as string);
       }
     };
+    ext = e.target.files![0].name.split('.').pop();
+    if (ext === undefined)
+      ext = 'jpeg';
+    setFileExtension(ext);
     reader.readAsDataURL(e.target.files![0]);
   }
 
   return (
     <div className='flex flex-col w-[50%] h-fit max-w-md rounded-2xl overflow-hidden border-highlight border-4'>
-      <img className='h-full w-full object-cover aspect-square lg:aspect[0.5/0.5]' src={avatarUrl} alt={`${intraID}'s avatar`} />
+      <img className='h-full w-full object-cover aspect-square lg:aspect[0.5/0.5]' src={avatarUrl} alt={`${intraName}'s avatar`} />
       <div
         className='select-none capitalize text-dimshadow hover:text-highlight bg-highlight hover:bg-dimshadow text-center py-2 lg:py-3 cursor-pointer font-semibold lg:font-extrabold transition hover:ease-in-out'
         onClick={handleButtonClick}
