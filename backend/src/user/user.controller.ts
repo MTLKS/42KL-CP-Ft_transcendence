@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, Headers, UseGuards, Param, Post, Body } from '@nestjs/common';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { UserService } from './user.service';
 
@@ -28,5 +28,11 @@ export class UserController {
 	@UseGuards(AuthGuard)
 	getIntraDataById(@Headers('Authorization') accessToken: string, @Param('id') id: string): any {
 		return this.userService.getIntraDataById(accessToken, id);
+	}
+
+	@Post()
+	@UseGuards(AuthGuard)
+	newUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any ): any {
+		return this.userService.newUserInfo(accessToken, body);
 	}
 }

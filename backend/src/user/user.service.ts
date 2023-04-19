@@ -9,7 +9,7 @@ import { Repository } from "typeorm";
 export class UserService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
-	//Use access token to get user info
+	// Use access token to get user info
 	async getMyUserData(accessToken: string) : Promise<any> {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
@@ -21,7 +21,7 @@ export class UserService {
 		return USER_DATA[0];
 	}
 	
-	//Use access token to get intra user info
+	// Use access token to get intra user info
 	async getMyIntraData(accessToken: string) : Promise<any> {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
@@ -47,7 +47,7 @@ export class UserService {
 		return INTRA_DTO;
 	}
 
-	//Use intra id to get user info
+	// Use intra id to get user info
 	async getUserDataById(id: string): Promise<any> {
 		console.log(id)
 		const USER_DATA = await this.userRepository.find({ where: {intraId: Number(id)} });
@@ -55,7 +55,7 @@ export class UserService {
 		return USER_DATA;
 	}
 
-	//Use intra id to get intra user info
+	// Use intra id to get intra user info
 	async getIntraDataById(accessToken: string, id: string): Promise<any> {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
@@ -79,5 +79,20 @@ export class UserService {
 		INTRA_DTO.imageSmall = USER_DATA.image.versions.small;
 		INTRA_DTO.blackhole = USER_DATA.cursus_users[1].blackholed_at;
 		return INTRA_DTO;
+	}
+
+	// Create new user
+	async newUserInfo(accessToken: string, body: any): Promise<any> {
+		try {
+			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+		} catch {
+			accessToken = null;
+		}
+		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
+		USER_DATA[0].avatar = body.avatar;
+		USER_DATA[0].userName = body.userName;
+		await this.userRepository.save(USER_DATA[0]);
+		USER_DATA[0].accessToken = "hidden";
+		return USER_DATA[0];
 	}
 }
