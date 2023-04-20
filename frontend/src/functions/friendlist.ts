@@ -1,6 +1,6 @@
 import api from "../api/api";
 
-interface Relationship {
+export interface Relationship {
   senderId?: number;
   receiverId: number;
   status: string;

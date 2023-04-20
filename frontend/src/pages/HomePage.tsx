@@ -13,10 +13,12 @@ import api from '../api/api';
 import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
+import { Relationship, friendList } from '../functions/friendlist';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
+let listFriends: Relationship[] = [];
 
 let myProfile: UserData = {
   accessToken: "hidden",
@@ -46,6 +48,9 @@ function HomePage() {
       myProfile = profile.data as UserData;
       console.log(myProfile);
       setTopWidget(<Profile userData={myProfile} />);
+    });
+    friendList().then((friends) => {
+      listFriends = friends.data as Relationship[];
     });
   }, []);
 
@@ -115,27 +120,10 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "profile":
-        if (command.length > 1) {
-          getProfileOfUser(command[1]).then((response) => {
-            currentPreviewProfile = response.data;
-            if (currentPreviewProfile as any === '') {
-              const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
-              newList = [newErrorCard].concat(elements);
-              setIndex(index + 1);
-              setElements(newList);
-              return;
-            }
-            newList = elements;
-            const newProfileCard = <Profile userData={currentPreviewProfile as UserData} expanded={expandProfile} />;
-            setTopWidget(newProfileCard);
-            setTimeout(() => {
-              setExpandProfile(true);
-            }, 500);
-          });
-        } else {
-          const newProfileCard = <Profile userData={myProfile} />;
-          setTopWidget(newProfileCard);
-        }
+        newList = handleProfileCommand(command);
+        break;
+      case "friends":
+
         break;
       case "clear":
         newList = elements.filter((element) => element.type === YoutubeEmbed);
@@ -192,6 +180,38 @@ function HomePage() {
     return <Card key={index} type={CardType.ERROR}>
       <p >command does not exist...     get some help.</p>
     </Card>;
+  }
+
+  function handleProfileCommand(command: string[]): JSX.Element[] {
+    let newList: JSX.Element[] = [];
+    if (command.length === 2) {
+      getProfileOfUser(command[1]).then((response) => {
+        currentPreviewProfile = response.data;
+        if (currentPreviewProfile as any === '') {
+          const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
+          newList = [newErrorCard].concat(elements);
+          setIndex(index + 1);
+          setElements(newList);
+          return newList;
+        }
+        newList = elements;
+        const newProfileCard = <Profile userData={currentPreviewProfile as UserData} expanded={expandProfile} />;
+        setTopWidget(newProfileCard);
+        setTimeout(() => {
+          setExpandProfile(true);
+        }, 500);
+      });
+    } else {
+      const newProfileCard = <Profile userData={myProfile} />;
+      setTopWidget(newProfileCard);
+    }
+    return newList;
+  }
+
+  function handleFriendsCommand(command: string[]): JSX.Element[] {
+    let newList: JSX.Element[] = [];
+
+    return newList;
   }
 }
 
