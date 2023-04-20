@@ -113,7 +113,7 @@ function UserForm(props: UserFormProps) {
           .find((cookie) => cookie.includes("Authorization"))
           ?.split("=")[1] ?? ""
       );
-      avatarFile = dataURItoFile(avatar, `${userData.intraId}.${fileExtension}`);
+      avatarFile = dataURItoFile(avatar, `${userData.intraName}.${fileExtension}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
       await Api.post("/user", formData).then((res) => console.log(res));
