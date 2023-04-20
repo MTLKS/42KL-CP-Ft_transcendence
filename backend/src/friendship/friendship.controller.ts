@@ -7,11 +7,18 @@ import { Controller } from '@nestjs/common';
 export class FriendshipController {
 	constructor(private readonly friendshipService: FriendshipService) {}
 
-	// Get all friendship by ID
-	@Get(":id")
+	// Get all friendship by accessToken
+	@Get()
 	@UseGuards(AuthGuard)
-	getFriendshipByID(@Param('id') id: string): any {
-		return this.friendshipService.getFriendshipByID(id);
+	getFriendship(@Headers('Authorization') accessToken: string): any {
+		return this.friendshipService.getFriendship(accessToken);
+	}
+
+	// Get all friendship by ID
+	@Get(":intraName")
+	@UseGuards(AuthGuard)
+	getFriendshipByID(@Param('intraName') intraName: string): any {
+		return this.friendshipService.getFriendshipByID(intraName);
 	}
 
 	// Create friendship

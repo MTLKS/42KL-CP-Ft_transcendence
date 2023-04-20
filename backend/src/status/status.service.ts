@@ -1,14 +1,14 @@
 import { InjectRepository } from "@nestjs/typeorm";
-// import { Status } from "src/entity/status.entity";
+import { Status } from "src/entity/status.entity";
 import { Repository } from "typeorm";
 import { Injectable } from "@nestjs/common";
 
 @Injectable()
 export class StatusService {
-	// constructor(@InjectRepository(Status) private statusRepository: Repository<Status>) {}
-	// private activeUsers: ActiveUserDTO[] = [];
+	constructor(@InjectRepository(Status) private statusRepository: Repository<Status>) {}
 
 	async userConnect(clientId: string, userId: number) {
+		const NEW_STATUS = new Status(clientId, userId, "ONLINE");
 		// this.activeUsers.push({
 		// 	clientId: clientId,
 		// 	userId: userId,

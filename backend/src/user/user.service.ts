@@ -14,9 +14,11 @@ export class UserService {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
-			accessToken = null;
+			return { "error": "Invalid access token" }
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
+		if (USER_DATA.length === 0)
+			return { "error": "Invalid access token - access token does not exist" }
 		USER_DATA[0].accessToken = "hidden";
 		return USER_DATA[0];
 	}
