@@ -48,6 +48,7 @@ export class AuthService {
 		} else {
 			const NEW_USER = new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, 400, RETURN_DATA.access_token, INTRA_DTO.imageLarge, null)
 			this.userRepository.save(NEW_USER);
+			return { accessToken, newUser: true };
 		}
 		return { accessToken };
 	}
