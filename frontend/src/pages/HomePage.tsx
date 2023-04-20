@@ -14,6 +14,7 @@ import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { Relationship, friendList } from '../functions/friendlist';
+import socketApi from '../api/socketApi';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
@@ -44,6 +45,7 @@ function HomePage() {
   const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    socketApi.connect();
     getMyProfile().then((profile) => {
       myProfile = profile.data as UserData;
       console.log(myProfile);
