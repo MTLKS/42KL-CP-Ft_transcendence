@@ -120,19 +120,13 @@ export class UserService {
 		if (userName.length > 16)
 		{
 			if (USER_DATA[0].avatar.includes("avatar/") === true)
-			{
 				console.log("1", file.path);
-				FS.unlink(file.path, () => {});
-			}
 			return { "error": "Username exceeds 16 characters"}
 		}
 		console.log(PORT + "/user/" + file.path);
 		console.log(USER_DATA[0].avatar);
 		if (USER_DATA[0].avatar.includes("avatar/") && (PORT + "/user/" + file.path) !== USER_DATA[0].avatar)
-		{
-			console.log("2", USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')));
 			FS.unlink(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), () => {});
-		}
 		USER_DATA[0].avatar = PORT + "/user/" + file.path;
 		USER_DATA[0].userName = userName;
 		await this.userRepository.save(USER_DATA[0]);
