@@ -77,9 +77,9 @@ export class UserService {
 		if (response.status !== 200 || userData.length === 0)
 			return INTRA_DTO
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {
-				method : "GET",
-				headers : { 'Authorization': HEADER }
-			});
+			method : "GET",
+			headers : { 'Authorization': HEADER }
+		});
 		userData = await response.json();
 		INTRA_DTO.id = userData.id;
 		INTRA_DTO.url = userData.url;
