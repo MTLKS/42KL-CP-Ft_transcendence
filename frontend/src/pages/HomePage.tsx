@@ -13,8 +13,9 @@ import api from '../api/api';
 import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
-import { friendList } from '../functions/friendlist';
+import { getFriendList } from '../functions/friendlist';
 import { FriendData } from '../modal/FriendData';
+import Friendlist from '../widgets/Friendlist/Friendlist';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
@@ -50,7 +51,7 @@ function HomePage() {
       console.log(myProfile);
       setTopWidget(<Profile userData={myProfile} />);
     });
-    friendList().then((friends) => {
+    getFriendList().then((friends) => {
       listFriends = friends.data as FriendData[];
       console.log(listFriends);
     });
@@ -141,9 +142,10 @@ function HomePage() {
         setTopWidget(newWhoamiCard);
         break;
       case "less":
-        setLeftWidget(<Less onQuit={() => {
-          setLeftWidget(null);
-        }} />);
+        setLeftWidget(<Friendlist />);
+        // setLeftWidget(<Less onQuit={() => {
+        //   setLeftWidget(null);
+        // }} />);
         break;
       default:
         const newErrorCard = errorCard();
