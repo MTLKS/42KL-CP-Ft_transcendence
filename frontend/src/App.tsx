@@ -54,11 +54,14 @@ function App() {
 
   function checkIfLoggedIn() {
     let loggin = false;
-    document.cookie.split(';').forEach((cookie) => {
-      if (cookie.includes('Authorization')) {
+    getMyProfile().then((res) => {
+      if (res.data.accessToken) {
         setLogged(true);
         loggin = true;
       }
+    }).catch((err) => {
+      console.log(err);
+      setLogged(false);
     });
     if (loggin) return;
 
