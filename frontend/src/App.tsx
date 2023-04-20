@@ -23,10 +23,11 @@ function App() {
     let loggin = false;
     document.cookie.split(';').forEach((cookie) => {
       if (cookie.includes('Authorization')) {
+      if (cookie.includes('Authorization')) {
         setLogged(true);
         loggin = true;
       }
-    });
+    }});
     if (loggin) return;
 
     const queryString: string = window.location.search;
@@ -36,9 +37,7 @@ function App() {
     if (code.code) {
       checkAuth(code.code).then((res) => {
         if (res) {
-          console.log(res);
-          console.log((res as any).data.accessToken);
-          localStorage.setItem('Authorization', (res as any).data.accessToken);
+          console.log((res as any).data);
           document.cookie = `Authorization=${(res as any).data.accessToken};`;
           login();
         }
