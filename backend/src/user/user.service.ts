@@ -120,7 +120,7 @@ export class UserService {
 		if (userName.length > 16)
 		{
 			if (USER_DATA[0].avatar.includes("avatar/") === true)
-				console.log("1", file.path);
+				FS.unlink(file.path, () => {});
 			return { "error": "Username exceeds 16 characters"}
 		}
 		console.log(PORT + "/user/" + file.path);
