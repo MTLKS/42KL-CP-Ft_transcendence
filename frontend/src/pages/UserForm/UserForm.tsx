@@ -4,7 +4,6 @@ import { UserData } from '../../modal/UserData';
 import UserFormName from './UserFormName';
 import UserFormQuestion from './UserFormQuestion';
 import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions/fun';
-import { Profanity, ProfanityOptions } from '@2toad/profanity';
 import { PolkaDotContainer } from '../../components/Background';
 import { ErrorPopup } from '../../components/Popup';
 import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
@@ -81,9 +80,6 @@ function UserForm(props: UserData) {
 
   function checkNameAndAnswer() {
     let errors: ErrorCode[] = new Array();
-    const options = new ProfanityOptions();
-    options.wholeWord = true;
-    const profanity = new Profanity(options);
 
     if (!userName)
       errors.push(ErrorCode.EMPTYNAME);
