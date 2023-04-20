@@ -7,6 +7,12 @@ services:
       - 80:5173
     networks:
       - network
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5173 || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
 
   backend:
     build: ./backend
@@ -14,11 +20,19 @@ services:
       - 3000:3000
     networks:
       - network
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1
+      interval: 60s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
 
   database:
     image: postgres:14.5
     env_file:
       - ./postgres.env
+    volumes:
+      - data:/var/lib/postgresql/data
     ports:
       - 5432:5432
     networks:
@@ -27,7 +41,9 @@ services:
   db_admin:
     image: dpage/pgadmin4
     env_file:
-      - ./pgadmin4.env
+      - ./db_admin/.env
+    volumes:
+      - ./db_admin/servers.json:/pgadmin4/servers.json
     ports:
       - 5050:80
     networks:

@@ -18,8 +18,8 @@ jobs:
       - name: Copy
         run: cp /pongsh_env/* ./
 
-      - name: Down
-        run: docker compose down --rmi all --remove-orphans
-
       - name: Up
-        run: docker compose up -d
+        run: docker compose up --force-recreate --no-deps --build frontend backend --wait
+
+      - name: Clean
+        run: docker image prune -f
