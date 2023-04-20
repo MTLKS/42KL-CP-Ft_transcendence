@@ -12,24 +12,23 @@ export class FriendshipService {
 	// Check if the JSON body is valid
 	async checkJson(senderIntraName: string, receiverIntraName: string, status:string): Promise<any> {
 		if (senderIntraName == receiverIntraName)
-			return { "error": "Invalid Id - senderIntraName and receiverIntraName are the same" }
+			return { "error": "Invalid intraName - senderIntraName and receiverIntraName are the same" }
 		if (status.toUpperCase() != "PENDING" && status.toUpperCase() != "ACCEPTED" && status.toUpperCase() != "BLOCKED")
 			return { "error": "Invalid status - status must be PENDING, ACCEPTED or BLOCKED"}
 		if ((await this.userRepository.find({ where: {intraName: receiverIntraName} })).length === 0)
-			return { "error": "Invalid Id - receiverIntraName does not exist" }
+			return { "error": "Invalid intraName - receiverIntraName does not exist" }
 	}
 
 	// Get all friendship by accessToken
 	async getFriendship(accessToken: string): Promise<any> {
-		return await this.getFriendshipByID((await this.userService.getMyUserData(accessToken)).intraName);
+		return await this.getFriendshipByIntraNAme((await this.userService.getMyUserData(accessToken)).intraName);
 	}
 
-	// Gets all friendship by ID
-	async getFriendshipByID(intraName: string): Promise<any> {
+	// Gets all friendship by intraName
+	async getFriendshipByIntraNAme(intraName: string): Promise<any> {
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverIntraName: intraName} });
 		for (let i = 0; i < RECEIVER.length; i++) {
 			const USER = await this.userRepository.find({ where: {intraName: RECEIVER[i].senderIntraName} });
-			RECEIVER[i]['intraName'] = USER[0].intraName;
 			RECEIVER[i]['userName'] = USER[0].userName;
 			RECEIVER[i]['elo'] = USER[0].elo;
 			RECEIVER[i]['avatar'] = USER[0].avatar;
@@ -37,7 +36,6 @@ export class FriendshipService {
 		const SENDER = await this.friendshipRepository.find({ where: {senderIntraName: intraName} });
 		for (let i = 0; i < SENDER.length; i++) {
 			const USER = await this.userRepository.find({ where: {intraName: SENDER[i].receiverIntraName} });
-			SENDER[i]['intraName'] = USER[0].intraName;
 			SENDER[i]['userName'] = USER[0].userName;
 			SENDER[i]['elo'] = USER[0].elo;
 			SENDER[i]['avatar'] = USER[0].avatar;

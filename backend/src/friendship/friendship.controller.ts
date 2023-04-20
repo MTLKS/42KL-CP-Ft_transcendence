@@ -18,7 +18,7 @@ export class FriendshipController {
 	@Get(":intraName")
 	@UseGuards(AuthGuard)
 	getFriendshipByID(@Param('intraName') intraName: string): any {
-		return this.friendshipService.getFriendshipByID(intraName);
+		return this.friendshipService.getFriendshipByIntraNAme(intraName);
 	}
 
 	// Create friendship

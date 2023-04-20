@@ -37,7 +37,7 @@ export class AuthService {
 
 		const RETURN_DATA = await API_RESPONSE.json();
 		if (RETURN_DATA.access_token == null)
-			return { accessToken: null };
+			return { accessToken: null, newUser: false };
 		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()
 		const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
 		const ENTITY_USER = await this.userRepository.find({ where: {intraId: INTRA_DTO.id} });
@@ -50,6 +50,6 @@ export class AuthService {
 			this.userRepository.save(NEW_USER);
 			return { accessToken, newUser: true };
 		}
-		return { accessToken };
+		return { accessToken, newUser: false };
 	}
 }
