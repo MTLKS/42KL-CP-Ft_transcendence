@@ -15,8 +15,6 @@ enum ErrorCode {
   NAMETOOLONG,
   EMPTYNAME,
   EMPTYANS,
-  PROFANENAME,
-  PROFANEANS
 }
 
 const getError = (code: ErrorCode) => {
@@ -30,10 +28,6 @@ const getError = (code: ErrorCode) => {
       return ("Longer name, please. (MIN: 5 chars)");
     case ErrorCode.NAMETOOLONG:
       return ("Name too epic, please shorten. (MAX: 15 chars)");
-    case ErrorCode.PROFANENAME:
-      return ("Uh oh, that name might be rated R.");
-    case ErrorCode.PROFANEANS:
-      return ("Please keep it PG. You answer contains profanity.");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -95,14 +89,10 @@ function UserForm(props: UserData) {
       errors.push(ErrorCode.EMPTYNAME);
     if (userName.length < 5 && !errors.includes(ErrorCode.EMPTYNAME))
       errors.push(ErrorCode.NAMETOOSHORT);
-    if (userName.length > 15)
+    if (userName.length > 16)
       errors.push(ErrorCode.NAMETOOLONG);
-    if (profanity.exists(userName)) // need another way to do this shit. cannot detect if the string is "fuckthisshit"
-      errors.push(ErrorCode.PROFANENAME);
     if (!questionAns)
       errors.push(ErrorCode.EMPTYANS);
-    if (profanity.exists(questionAns))
-      errors.push(ErrorCode.PROFANEANS);
     return (errors);
   }
 
