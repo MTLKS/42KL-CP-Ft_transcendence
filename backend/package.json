@@ -20,8 +20,9 @@
   },
   "dependencies": {
     "@nestjs/common": "^9.4.0",
-    "@nestjs/core": "^9.0.5",
+    "@nestjs/core": "^9.4.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/platform-socket.io": "^9.4.0",
     "@nestjs/typeorm": "^9.0.1",
     "body-parser": "^1.20.2",
     "crypto-js": "^4.1.1",

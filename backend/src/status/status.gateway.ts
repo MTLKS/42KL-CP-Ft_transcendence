@@ -1,34 +1,28 @@
-import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket } from '@nestjs/websockets';
+import { UseGuards, Headers } from '@nestjs/common';
 import { StatusService } from './status.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
-import { UseGuards } from '@nestjs/common';
 import { Socket } from 'socket.io';
 
-@WebSocketGateway({ cors : {origin: 'localhost:5173'} })
-export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect{
+@WebSocketGateway({ cors : {origin: '*', credentials: true} })
+export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor (private readonly statusService: StatusService) {}
 
 	@UseGuards(AuthGuard)
-	async handleConnection(client: any, ...args: any[]) {
-		let userId : number
-		client.on('connectMessage', (receivedUserId: number) => {
-			userId = receivedUserId;
-		});
-		console.log(client.id, userId, "connected");
-		await this.statusService.userConnect(client.id, userId);
+	async handleConnection(client: any, @Headers() accessToken, ...args: any[]) {
+		let intraName : string;
+		client.on('userConnect', (receivedIntraName: string) => { intraName = receivedIntraName; });
+		await this.statusService.userConnect(client.id, accessToken);
 	}
 	
 	@UseGuards(AuthGuard)
 	async handleDisconnect(client: any) {
-		console.log(client.id, "disconnect");
 		await this.statusService.userDisconnect(client.id);
 	}
 	
 	@UseGuards(AuthGuard)
 	@SubscribeMessage('changeStatus')
-	async handleChangeStatus(@MessageBody() body: any, @ConnectedSocket() client: Socket){
-		console.log(body);
-		await this.statusService.userChangeStatus(client.id, body);
+	async handleChangeStatus(@ConnectedSocket() client: Socket, newStatus: string, ){
+		await this.statusService.userChangeStatus(client.id, newStatus);
 	}
-
 }

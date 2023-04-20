@@ -2,9 +2,9 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity( { name: 'status' } )
 export class Status {
-  constructor(clientId: string, userId: number, status: string) {
+  constructor(clientId: string, intraName: string, status: string) {
     this.clientId = clientId;
-    this.userId = userId;
+    this.intraName = intraName;
     this.status = status;
   }
 
@@ -12,7 +12,7 @@ export class Status {
   clientId: string;
 
   @Column()
-  userId: number;
+  intraName: string;
 
   @Column()
 	status: string;
