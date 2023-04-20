@@ -1,11 +1,5 @@
 import api from "../api/api";
 
-export interface Relationship {
-  senderId?: number;
-  receiverId: number;
-  status: string;
-}
-
 export type status = "pending" | "accepted" | "rejected" | "blocked" | "muted";
 
 export function friendList() {
@@ -16,7 +10,7 @@ export function friendList() {
       .find((cookie) => cookie.includes("Authorization"))
       ?.split("=")[1] ?? ""
   );
-  return api.get<Relationship[]>("friendlist");
+  return api.get<FriendData[]>("friendship");
 }
 
 export function friendListOf(name: string) {
@@ -27,7 +21,7 @@ export function friendListOf(name: string) {
       .find((cookie) => cookie.includes("Authorization"))
       ?.split("=")[1] ?? ""
   );
-  return api.get<Relationship[]>("friendlist/" + name);
+  return api.get<FriendData[]>("friendship/" + name);
 }
 
 export function friendStatusUpdate(friendId: string, status: status) {
@@ -38,9 +32,9 @@ export function friendStatusUpdate(friendId: string, status: status) {
       .find((cookie) => cookie.includes("Authorization"))
       ?.split("=")[1] ?? ""
   );
-  const data: Relationship = {
+  const data: FriendData = {
     receiverId: parseInt(friendId),
     status: status,
   };
-  return api.post<Relationship>("friendlist", data);
+  return api.post<FriendData>("friendship", data);
 }

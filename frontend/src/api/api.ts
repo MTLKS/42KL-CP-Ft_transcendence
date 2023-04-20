@@ -6,6 +6,7 @@ class Api {
   constructor() {
     this.reqInstance = axios.create({
       baseURL: "http://10.15.8.3:3000",
+      // baseURL: "http://10.15.6.1:3000",
       withCredentials: true,
     });
     this.reqInstance.interceptors.response.use(
