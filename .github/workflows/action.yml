@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Copy
-        run: cp /pongsh_env/* ./
+        run: cp -r /pongsh_env/* ./
 
       - name: Up
         run: docker compose up --force-recreate --no-deps --build frontend backend --wait
