@@ -33,13 +33,11 @@ export class UserController {
 	}
 
 	@Get('avatar/:intraName')
-	@UseGuards(AuthGuard)
 	getAvatarByIntraName(@Param('intraName') intraName: string, @Res() res: any): any {
 		return this.userService.getAvatarByIntraName(intraName, res);
 	}
 
 	@Get(':intraName')
-	@UseGuards(AuthGuard)
 	getUserDataByIntraName(@Param('intraName') intraName: string): any {
 		return this.userService.getUserDataByIntraName(intraName);
 	}

@@ -5,6 +5,8 @@ import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 
+const PORT = "http://10.15.8.3:3000";
+
 @Injectable()
 export class UserService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
@@ -97,13 +99,13 @@ export class UserService {
 			accessToken = null;
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
-		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar, { root: '.' });
+		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
-		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar, { root: '.' });
+		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Creates new user by saving their userName and avatar
@@ -117,13 +119,21 @@ export class UserService {
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
 		if (userName.length > 16)
 		{
-			if (USER_DATA[0].avatar.startsWith("avatar/"))
+			if (USER_DATA[0].avatar.includes("avatar/") === true)
+			{
+				console.log("1", file.path);
 				FS.unlink(file.path, () => {});
+			}
 			return { "error": "Username exceeds 16 characters"}
 		}
-		if (USER_DATA[0].avatar.startsWith("avatar/") && file.path !== USER_DATA[0].avatar)
-			FS.unlink(USER_DATA[0].avatar, () => {});
-		USER_DATA[0].avatar = file.path;
+		console.log(PORT + "/user/" + file.path);
+		console.log(USER_DATA[0].avatar);
+		if (USER_DATA[0].avatar.includes("avatar/") && (PORT + "/user/" + file.path) !== USER_DATA[0].avatar)
+		{
+			console.log("2", USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')));
+			FS.unlink(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), () => {});
+		}
+		USER_DATA[0].avatar = PORT + "/user/" + file.path;
 		USER_DATA[0].userName = userName;
 		await this.userRepository.save(USER_DATA[0]);
 		USER_DATA[0].accessToken = "hidden";
