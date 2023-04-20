@@ -7,6 +7,8 @@ import AxiosResponse from 'axios';
 import MouseCursor from "./components/MouseCursor";
 import UserForm from "./pages/UserForm/UserForm";
 import { toDataUrl } from "./functions/toDataURL";
+import { UserData } from "./modal/UserData";
+import { getMyProfile } from "./functions/profile";
 
 let user = {
   intraId: 106435,
@@ -18,15 +20,34 @@ let user = {
   tfaSecret: null,
 }
 
+let userData: UserData = {
+  intraId: 106435,
+  userName: "Ricky",
+  intraName: "wricky-t",
+  elo: 999,
+  accessToken: "",
+  avatar: "",
+  tfaSecret: null,
+};
+
 function App() {
   const [logged, setLogged] = useState(false);
+  const [newUser, setNewUser] = useState(false);
+
+  let page = <Login />;
+  if (newUser) {
+    page = <UserForm userData={userData} />;
+  }
+  else if (logged) {
+    page = <HomePage />;
+  }
 
   if (!logged)
     checkIfLoggedIn();
   return (
     <PolkaDotContainer>
       <MouseCursor>
-        {logged ? <HomePage /> : <Login />}
+        {page}
       </MouseCursor>
     </PolkaDotContainer>
   )
@@ -46,14 +67,19 @@ function App() {
     let code: { code: string | null } = { code: urlParams.get('code') };
 
     if (code.code) {
-      checkAuth(code.code).then((res) => {
+      checkAuth(code.code).then(async (res) => {
         if (res) {
           console.log(res);
           console.log((res as any).data.accessToken);
           localStorage.setItem('Authorization', (res as any).data.accessToken);
           if ((res as any).data.accessToken)
             document.cookie = `Authorization=${(res as any).data.accessToken};`;
-          login();
+          if ((res as any).data.newUser) {
+            userData = (await getMyProfile()).data;
+            setNewUser(true);
+          }
+          else
+            login();
         }
       }).catch((err) => {
         console.log(err);
