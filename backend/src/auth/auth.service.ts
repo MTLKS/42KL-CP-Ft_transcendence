@@ -4,10 +4,11 @@ import { User } from "src/entity/user.entity";
 import { Injectable } from "@nestjs/common";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
+import * as dotenv from 'dotenv';
 
 @Injectable()
 export class AuthService {
-	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
+	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) { dotenv.config(); }
 
 	// Starts the login process
 	async startLogin(accessToken: any): Promise<any> {

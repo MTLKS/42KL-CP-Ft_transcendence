@@ -4,6 +4,7 @@ import { User } from "../entity/user.entity";
 import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
+import * as dotenv from 'dotenv';
 
 @Injectable()
 export class UserService {
@@ -133,7 +134,7 @@ export class UserService {
 			return ERROR_DELETE("Username must be 1-16 characters only");
 		if (NEW_USER[0].avatar.includes("avatar/") && (process.env.DOMAIN + ":" + process.env.PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
 			FS.unlink(NEW_USER[0].avatar.substring(NEW_USER[0].avatar.indexOf('avatar/')), () => {});
-		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.PORT + "/user/" + file.path;
+		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + file.path;
 		NEW_USER[0].userName = userName;
 		await this.userRepository.save(NEW_USER[0]);
 		NEW_USER[0].accessToken = "hidden";

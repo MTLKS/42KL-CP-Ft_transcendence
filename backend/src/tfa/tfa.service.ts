@@ -6,6 +6,7 @@ import { authenticator } from "otplib";
 import * as CryptoJS from "crypto-js";
 import { Repository } from "typeorm";
 import * as qrCode from "qrcode";
+import * as dotenv from "dotenv";
 
 @Injectable()
 export class TFAService{
