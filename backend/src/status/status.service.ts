@@ -18,11 +18,10 @@ export class StatusService {
 			STATUS[0].clientId = client.id;
 			this.statusRepository.save(STATUS[0]);
 			return STATUS[0];
-		} else {
-			const NEW_STATUS = new Status(USER_DATA.intraName, client.id, "ONLINE");
-			this.statusRepository.save(NEW_STATUS);
-			return NEW_STATUS;
 		}
+		const NEW_STATUS = new Status(USER_DATA.intraName, client.id, "ONLINE");
+		this.statusRepository.save(NEW_STATUS);
+		return NEW_STATUS;
 	}
 	
 	async userDisconnect(client: any): Promise<any> {
