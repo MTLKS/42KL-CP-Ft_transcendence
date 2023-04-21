@@ -112,27 +112,32 @@ export class UserService {
 
 	// Creates new user by saving their userName and avatar
 	async newUserInfo(accessToken: string, userName: string, file: any): Promise<any> {
+		const ERROR_DELETE = (errMsg) => {
+			if (FS.existsSync(file.path) && (PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
+			FS.unlink(file.path, () => {});
+			return { "error": errMsg }
+		}
+
+		if (file === undefined)
+			return { "error": "No avatar image given" }
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
 			accessToken = null;
 		}
 		const FS = require('fs');
-		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
-		if (userName.length > 16)
-		{
-			if (USER_DATA[0].avatar.includes("avatar/") === true)
-				FS.unlink(file.path, () => {});
-			return { "error": "Username exceeds 16 characters"}
-		}
-		console.log(PORT + "/user/" + file.path);
-		console.log(USER_DATA[0].avatar);
-		if (USER_DATA[0].avatar.includes("avatar/") && (PORT + "/user/" + file.path) !== USER_DATA[0].avatar)
-			FS.unlink(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), () => {});
-		USER_DATA[0].avatar = PORT + "/user/" + file.path;
-		USER_DATA[0].userName = userName;
-		await this.userRepository.save(USER_DATA[0]);
-		USER_DATA[0].accessToken = "hidden";
-		return USER_DATA[0];
+		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
+		const EXISTING = await this.userRepository.find({ where: {userName} });
+		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
+			return ERROR_DELETE("Username already exists");
+		if (userName.length > 16 || userName.length < 1)
+			return ERROR_DELETE("Username must be 1-16 characters only");
+		if (NEW_USER[0].avatar.includes("avatar/") && (PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
+			FS.unlink(NEW_USER[0].avatar.substring(NEW_USER[0].avatar.indexOf('avatar/')), () => {});
+		NEW_USER[0].avatar = PORT + "/user/" + file.path;
+		NEW_USER[0].userName = userName;
+		await this.userRepository.save(NEW_USER[0]);
+		NEW_USER[0].accessToken = "hidden";
+		return NEW_USER[0];
 	}
 }
