@@ -4,23 +4,35 @@ import FriendlistTag from './FriendlistTag'
 import { TabWidth } from './FriendlistConfig'
 import { FriendData } from '../../modal/FriendData'
 
-function FriendInfo(props: FriendData) {
+interface FriendInfoProps {
+  friend: FriendData,
+  intraName: string, // logged user intraName
+}
 
-  const { senderName, receiverName, receiverIntraName, eloScore, status = "online"} = props;
+function FriendInfo(props: FriendInfoProps) {
+
+  const { friend, intraName } = props;
+  let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
 
   return (
     <div className='flex flex-row text-highlight'>
-      <p className={`w-[${TabWidth.nickname}ch] truncate`}>{receiverName}</p>
+      <p className={`w-[16ch] truncate`}>{friend.userName}</p>
       <FriendlistSeparator />
-      <p className={`w-[${TabWidth.intraName}ch] truncate`}>{receiverIntraName}</p>
+      <p className={`w-[16ch] truncate`}>{friendIntraName}</p>
       <FriendlistSeparator />
-      <p className={`w-[${TabWidth.eloScore}ch]`}>{eloScore}</p>
+      <p className={`w-[9ch]`}>{friend.elo}</p>
       <FriendlistSeparator />
-      <p className={`w-[${TabWidth.relationship}ch]`}>
-        <FriendlistTag type={status}/>
+      <p className={`w-[12ch]`}>
+        <FriendlistTag type={friend.status}/>
       </p>
-      <FriendlistSeparator />
-      <p className={`w-[${TabWidth.status}]`}>online</p>
+      {
+        friend.status.toLowerCase() === "accepted" ?
+        <>
+          <FriendlistSeparator />
+          <p className={`w-[9ch]`}>online</p>
+        </>
+        : <></>
+      }
     </div>
   )
 }

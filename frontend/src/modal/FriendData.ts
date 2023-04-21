@@ -1,14 +1,15 @@
 export interface FriendData {
-  senderName: string;
-  receiverName: string;
+  id: number;
+  senderIntraName: string;
   receiverIntraName: string;
-  eloScore: number;
+  elo: number;
   status: string;
+  userName: string
   avatar: string;
 }
 
 export const FriendTags = {
-  friend: "friend",
+  accepted: "accepted",
   muted: "muted",
   blocked: "blocked",
   pending: "pending"

@@ -12,7 +12,7 @@ const getFriendTagStyle = (type: string) => {
     bgColor = `bg-highlight`;
     textColor = `text-dimshadow`;
   }
-  else if (type === "muted")
+  else if (type === "accepted")
     bgColor = `bg-accCyan`;
   else if (type === "pending")
     bgColor = `bg-accYellow`;

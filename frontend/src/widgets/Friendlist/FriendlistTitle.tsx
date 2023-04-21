@@ -4,7 +4,7 @@ import { TabWidth } from './FriendlistConfig'
 
 function FriendlistTitle() {
   return (
-    <div className='flex flex-row text-highlight'>
+    <div className='flex flex-row text-highlight pt-[2ch]'>
       <p className={`w-[${TabWidth.nickname}ch]`}>nickname</p>
       <FriendlistSeparator />
       <p className={`w-[${TabWidth.intraName}ch]`}>intra name</p>
