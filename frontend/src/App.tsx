@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import login, { checkAuth } from "./functions/login";
@@ -6,33 +6,16 @@ import HomePage from "./pages/HomePage";
 import AxiosResponse from 'axios';
 import MouseCursor from "./components/MouseCursor";
 import UserForm from "./pages/UserForm/UserForm";
-import { toDataUrl } from "./functions/toDataURL";
-import { UserData } from "./modal/UserData";
 import { getMyProfile } from "./functions/profile";
-
-let user = {
-  intraId: 106435,
-  userName: "Ricky",
-  intraName: "wricky-t",
-  elo: 999,
-  accessToken: "asdfasdfasdfadsf",
-  avatar: "https://cdn.intra.42.fr/users/5452393b87392f586be0b0fe37d5f9c1/large_zah.jpg",
-  tfaSecret: null,
-}
-
-let userData: UserData = {
-  intraId: 106435,
-  userName: "Ricky",
-  intraName: "wricky-t",
-  elo: 999,
-  accessToken: "",
-  avatar: "",
-  tfaSecret: null,
-};
 
 function App() {
   const [logged, setLogged] = useState(false);
   const [newUser, setNewUser] = useState(false);
+  const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    checkIfLoggedIn();
+  }, []);
 
   let page = <Login />;
   if (newUser) {
@@ -42,8 +25,6 @@ function App() {
     page = <HomePage />;
   }
 
-  if (!logged)
-    checkIfLoggedIn();
   return (
     <PolkaDotContainer>
       <MouseCursor>
@@ -80,12 +61,11 @@ function App() {
           if ((res as any).data.accessToken)
             document.cookie = `Authorization=${(res as any).data.accessToken};`;
           if ((res as any).data.newUser) {
-            userData = (await getMyProfile()).data;
+            setUserData((await getMyProfile()).data);
             setNewUser(true);
           }
           else
             login();
-
         }
       }).catch((err) => {
         console.log(err);
