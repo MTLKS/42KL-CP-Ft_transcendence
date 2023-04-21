@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
-import { Repository } from "typeorm";
+import { Injectable } from "@nestjs/common";
 import * as CryptoJS from 'crypto-js';
+import { Repository } from "typeorm";
 
 @Injectable()
 export class AuthService {
@@ -11,12 +11,11 @@ export class AuthService {
 
 	// Starts the login process
 	async startLogin(accessToken: any): Promise<any> {
-		const OAUTH = "https://api.intra.42.fr/oauth/authorize/?client_id=" + process.env.APP_UID + "&redirect_uri=http%3A%2F%2Flocalhost%3A5173&response_type=code"
 		try {
-			return { redirectUrl: ((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? "http://localhost:5173" : OAUTH };
+			return { redirectUrl: ((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? process.env.CLIENT_DOMAIN + ":" + process.env.FE_PORT : process.env.APP_REDIRECT };
 		}
 		catch {
-			return { redirectUrl: OAUTH};
+			return { redirectUrl: process.env.APP_REDIRECT};
 		}
 	}
 
@@ -27,14 +26,13 @@ export class AuthService {
 			"client_id": process.env.APP_UID,
 			"client_secret": process.env.APP_SECRET,
 			"code": code,
-			"redirect_uri": "http://localhost:5173"
+			"redirect_uri": process.env.CLIENT_DOMAIN + ':' + process.env.FE_PORT
 		};
 		const API_RESPONSE = await fetch("https://api.intra.42.fr/oauth/token", {
 			method: 'POST',
 			headers:{ 'Content-Type': 'application/json' },
 			body : JSON.stringify(DATA),
 		});
-
 		const RETURN_DATA = await API_RESPONSE.json();
 		if (RETURN_DATA.access_token == null)
 			return { accessToken: null, newUser: false };

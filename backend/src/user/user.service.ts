@@ -5,8 +5,6 @@ import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 
-const PORT = "http://10.15.8.3:3000";
-
 @Injectable()
 export class UserService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
@@ -115,11 +113,10 @@ export class UserService {
 	// Creates new user by saving their userName and avatar
 	async newUserInfo(accessToken: string, userName: string, file: any): Promise<any> {
 		const ERROR_DELETE = (errMsg) => {
-			if (FS.existsSync(file.path) && (PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
-			FS.unlink(file.path, () => {});
+			if (FS.existsSync(file.path) && (process.env.DOMAIN + ':' + process.env.BE_PORT + '/user/' + file.path) !== NEW_USER[0].avatar)
+				FS.unlink(file.path, () => {});
 			return { "error": errMsg }
 		}
-
 		if (file === undefined)
 			return { "error": "No avatar image given" }
 		try {
@@ -134,9 +131,9 @@ export class UserService {
 			return ERROR_DELETE("Username already exists");
 		if (userName.length > 16 || userName.length < 1)
 			return ERROR_DELETE("Username must be 1-16 characters only");
-		if (NEW_USER[0].avatar.includes("avatar/") && (PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
+		if (NEW_USER[0].avatar.includes("avatar/") && (process.env.DOMAIN + ":" + process.env.PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
 			FS.unlink(NEW_USER[0].avatar.substring(NEW_USER[0].avatar.indexOf('avatar/')), () => {});
-		NEW_USER[0].avatar = PORT + "/user/" + file.path;
+		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.PORT + "/user/" + file.path;
 		NEW_USER[0].userName = userName;
 		await this.userRepository.save(NEW_USER[0]);
 		NEW_USER[0].accessToken = "hidden";

@@ -6,6 +6,8 @@ import { Friendship } from './entity/friendship.entity';
 import { UserController } from './user/user.controller';
 import { AuthController } from './auth/auth.controller';
 import { MulterModule } from '@nestjs/platform-express';
+import { StatusService } from './status/status.service';
+import { StatusGateway } from './status/status.gateway';
 import { TFAController } from './tfa/tfa.controller';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
@@ -16,8 +18,6 @@ import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/user.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
-import { StatusService } from './status/status.service';
-import { StatusGateway } from './status/status.gateway';
 
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User]), TypeOrmModule.forFeature([Friendship]), TypeOrmModule.forFeature([Status]), MulterModule.register(MULTER_CONFIG)],
