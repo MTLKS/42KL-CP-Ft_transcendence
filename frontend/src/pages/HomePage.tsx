@@ -13,13 +13,14 @@ import api from '../api/api';
 import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
-import { Relationship, friendList } from '../functions/friendlist';
-import socketApi from '../api/socketApi';
+import { friendList } from '../functions/friendlist';
+import { FriendData } from '../modal/FriendData';
+
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
-let listFriends: Relationship[] = [];
+let listFriends: FriendData[] = [];
 
 let myProfile: UserData = {
   accessToken: "hidden",
@@ -52,7 +53,8 @@ function HomePage() {
       setTopWidget(<Profile userData={myProfile} />);
     });
     friendList().then((friends) => {
-      listFriends = friends.data as Relationship[];
+      listFriends = friends.data as FriendData[];
+      console.log(listFriends);
     });
   }, []);
 
@@ -212,7 +214,12 @@ function HomePage() {
 
   function handleFriendsCommand(command: string[]): JSX.Element[] {
     let newList: JSX.Element[] = [];
+    if (command.length === 1) {
 
+    } else if (command.length === 2) {
+
+    } else if (command.length === 4) {
+    }
     return newList;
   }
 }
