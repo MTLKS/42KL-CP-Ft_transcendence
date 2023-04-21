@@ -1,26 +1,58 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { UserData } from '../../modal/UserData'
+import { toDataUrl } from '../../functions/toDataURL';
 
-function UserFormAvatar(props: UserData) {
+interface UserFormAvatarProps {
+  intraName: string,
+  avatarUrl: string,
+  setAvatar: (newAvatar: string) => void,
+  setFileExtension: (ext: string) => void
+}
 
-    // by default it's their intra avatar
-    const [avatarURL, setAvatarURL] = useState(props.avatarURL)
+function UserFormAvatar(props: UserFormAvatarProps) {
+
+  const { intraName, avatarUrl, setAvatar, setFileExtension } = props;
+  const inputFileRef = useRef<HTMLInputElement>(null);
+
+  const handleButtonClick = () => {
+    inputFileRef.current?.click();
+  }
+
+  const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let ext;
+    const reader = new FileReader();
+
+    // define a callback function to be called when the file is loaded
+    reader.onload = () => {
+      if (reader.readyState === 2) {
+        setAvatar(reader.result as string);
+      }
+    };
+    ext = e.target.files![0].name.split('.').pop();
+    if (ext === undefined)
+      ext = 'jpeg';
+    setFileExtension(ext);
+    reader.readAsDataURL(e.target.files![0]);
+  }
 
   return (
     <div className='flex flex-col w-[50%] h-fit max-w-md rounded-2xl overflow-hidden border-highlight border-4'>
-      <img className='h-full w-full object-cover aspect-square lg:aspect[0.5/0.5]' src={avatarURL} />
+      <img className='h-full w-full object-cover aspect-square lg:aspect[0.5/0.5]' src={avatarUrl} alt={`${intraName}'s avatar`} />
       <div
         className='select-none capitalize text-dimshadow hover:text-highlight bg-highlight hover:bg-dimshadow text-center py-2 lg:py-3 cursor-pointer font-semibold lg:font-extrabold transition hover:ease-in-out'
-        onClick={handleChangeAvatar}
+        onClick={handleButtonClick}
       >
         Upload new avatar
       </div>
+      <input
+        className='hidden'
+        type="file"
+        accept=".jpg, .jpeg, .png"
+        ref={inputFileRef}
+        onChange={handleChangeAvatar}
+      />
   </div>
   )
-
-  function handleChangeAvatar() {
-    setAvatarURL(`https://i.insider.com/62d86af3d0011000190fb681?width=897&format=jpeg`);
-  }
 }
 
 export default UserFormAvatar

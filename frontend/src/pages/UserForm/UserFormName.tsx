@@ -4,14 +4,12 @@ import { UserData } from '../../modal/UserData'
 interface UserFormNameProps {
   user: UserData,
   awesomeSynonym: string,
-  borderColor: string,
   updateName: (name: string) => void,
 }
 
 function UserFormName(props: UserFormNameProps) {
 
-  const [userName, setUsername] = useState(props.user.name);
-  const [borderColor, setBorderColor] = useState(props.borderColor);
+  const [userName, setUsername] = useState(props.user.intraName);
 
   return (
     <div className="flex flex-col gap-2">
@@ -19,7 +17,7 @@ function UserFormName(props: UserFormNameProps) {
         Your {props.awesomeSynonym} name
       </p>
       <input
-        className={`bg-dimshadow border-${borderColor} border-2 lg:border-4 rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl p-2 lg:p-3 w-full focus:[outline:none] focus:animate-pulse-short`}
+        className={`bg-dimshadow border-highlight border-2 lg:border-4 rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl p-2 lg:p-3 w-full focus:[outline:none] focus:animate-pulse-short`}
         type="text"
         name="name"
         value={userName}
@@ -32,10 +30,6 @@ function UserFormName(props: UserFormNameProps) {
   function handleOnchangeUsername(e: React.FormEvent<HTMLInputElement>) {
     setUsername(e.currentTarget.value);
     props.updateName(e.currentTarget.value);
-  }
-
-  function resetBorderColor() {
-    setBorderColor(`highlight`);
   }
 }
 

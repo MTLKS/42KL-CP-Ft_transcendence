@@ -4,17 +4,18 @@ import { UserData } from '../../modal/UserData';
 import UserFormName from './UserFormName';
 import UserFormQuestion from './UserFormQuestion';
 import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions/fun';
-import { Profanity, ProfanityOptions } from '@2toad/profanity';
 import { PolkaDotContainer } from '../../components/Background';
 import { ErrorPopup } from '../../components/Popup';
+import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
+import Api from '../../api/api';
+import sleep from '../../functions/sleep';
+import login from '../../functions/login';
 
 enum ErrorCode {
   NAMETOOSHORT,
   NAMETOOLONG,
   EMPTYNAME,
   EMPTYANS,
-  PROFANENAME,
-  PROFANEANS
 }
 
 const getError = (code: ErrorCode) => {
@@ -28,23 +29,31 @@ const getError = (code: ErrorCode) => {
       return ("Longer name, please. (MIN: 5 chars)");
     case ErrorCode.NAMETOOLONG:
       return ("Name too epic, please shorten. (MAX: 15 chars)");
-    case ErrorCode.PROFANENAME:
-      return ("Uh oh, that name might be rated R.");
-    case ErrorCode.PROFANEANS:
-      return ("Please keep it PG. You answer contains profanity.");
     default:
       return ("Error 42: Unknown error occurred");
   }
 }
 
-function UserForm(props: UserData) {
+interface UserFormProps {
+  userData: UserData;
+}
 
-  const [finalName, setFinalName] = useState(props.name);
+function UserForm(props: UserFormProps) {
+  const { userData } = props;
+
+  const [avatar, setAvatar] = useState('');
+  const [userName, setFinalName] = useState(userData.intraName);
+  const [fileExtension, setFileExtension] = useState<string>('jpeg');
   const [questionAns, setQuestionAns] = useState("");
-  const [borderColors, setborderColors] = useState({nameBorder: `highlight`, questionBorder: `highlight`});
   const [awesomeSynonym, setAwesomeSynonym] = useState(getAwesomeSynonym());
   const [iceBreakingQuestion, setIceBreakingQuestion] = useState(getRandomIceBreakingQuestion());
   const [popups, setPopups] = useState<JSX.Element[]>([]);
+
+  // convert the image from intra to data:base64
+  useEffect(() => {
+    toDataUrl(userData.avatar)
+      .then((res) => setAvatar(res))
+  }, []);
 
   return (
     <PolkaDotContainer>
@@ -52,11 +61,11 @@ function UserForm(props: UserData) {
         {popups}
       </div>
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
-        <UserFormAvatar {...props} />
+        <UserFormAvatar intraName={userData.intraName} avatarUrl={avatar} setAvatar={setAvatar} setFileExtension={setFileExtension} />
         <div className='w-[48%] lg:w-[40%] h-full my-auto flex flex-col font-extrabold text-highlight gap-3'>
           <p className='uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold'>user info</p>
-          <UserFormName user={props} awesomeSynonym={awesomeSynonym} updateName={updateName} borderColor={borderColors.nameBorder}/>
-          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} borderColor={borderColors.nameBorder}/>
+          <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} />
+          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} />
           <div
             className='font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out'
             onClick={handleSubmit}
@@ -76,30 +85,43 @@ function UserForm(props: UserData) {
     setQuestionAns(ans);
   }
 
-  function handleSubmit() {
-
+  function checkNameAndAnswer() {
     let errors: ErrorCode[] = new Array();
-    const options = new ProfanityOptions();
-    options.wholeWord = true;
-    const profanity = new Profanity(options);
 
-    if (!finalName)
+    if (!userName)
       errors.push(ErrorCode.EMPTYNAME);
-    if (finalName.length < 5 && !errors.includes(ErrorCode.EMPTYNAME))
+    if (userName.length < 5 && !errors.includes(ErrorCode.EMPTYNAME))
       errors.push(ErrorCode.NAMETOOSHORT);
-    if (finalName.length > 15)
+    if (userName.length > 16)
       errors.push(ErrorCode.NAMETOOLONG);
-    if (profanity.exists(finalName)) // need another way to do this shit. cannot detect if the string is "fuckthisshit"
-      errors.push(ErrorCode.PROFANENAME);
     if (!questionAns)
       errors.push(ErrorCode.EMPTYANS);
-    if (profanity.exists(questionAns))
-      errors.push(ErrorCode.PROFANEANS);
+    return (errors);
+  }
 
-    if (errors.length === 0)  { // meaning no error, can POST latest info to server
-      console.log(`POST latest info to server`);
+  async function handleSubmit() {
+
+    let errors: ErrorCode[] = checkNameAndAnswer();
+    let formData = new FormData();
+    let avatarFile;
+
+    if (errors.length === 0) {
+      Api.updateToken(
+        "Authorization",
+        document.cookie
+          .split(";")
+          .find((cookie) => cookie.includes("Authorization"))
+          ?.split("=")[1] ?? ""
+      );
+      avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
+      formData.append("userName", userName);
+      formData.append("image", avatarFile);
+      await Api.post("/user", formData).then((res) => console.log(res));
+      Api.get("/user").then((res) => console.log(res));
       setPopups([]);
-      return ;
+      await sleep(1000);
+      login();
+      return;
     }
     setPopups(errors.map((error) => <ErrorPopup key={error} text={getError(error)} />))
   }
