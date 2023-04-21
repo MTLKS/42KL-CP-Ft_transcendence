@@ -9,7 +9,7 @@ export class AuthController {
 	startLogin(@Headers('Authorization') accessToken: any): any {
 		return this.authService.startLogin(accessToken);
 	}
-
+	
 	@Post()
 	async postCode(@Body() body: any): Promise<any> {
 		return this.authService.postCode(body.code);

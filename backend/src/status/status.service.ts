@@ -19,9 +19,8 @@ export class StatusService {
 
 	async userConnect(client: any): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined) {
+		if (USER_DATA.error !== undefined)
 			return USER_DATA;
-		}
 		const STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
 		client.join(USER_DATA.intraName);
 		this.joinFriendRooms(client, USER_DATA.intraName);
