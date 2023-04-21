@@ -107,6 +107,8 @@ export class UserService {
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
+		if (USER_DATA.length === 0)
+			return { "error": "User does not exist" };
 		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
