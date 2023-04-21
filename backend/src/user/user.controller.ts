@@ -1,6 +1,6 @@
-import { Controller, Get, Headers, UseGuards } from '@nestjs/common';
+import { Controller, Get, Headers, UseGuards, Param } from '@nestjs/common';
+import { AuthGuard } from 'src/guard/AuthGuard';
 import { UserService } from './user.service';
-import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -8,7 +8,25 @@ export class UserController {
 
 	@Get()
 	@UseGuards(AuthGuard)
-	getMyData(@Headers('Authorization') accessToken: string): any {
-		return this.userService.getMyData(accessToken);
+	getMyUserData(@Headers('Authorization') accessToken: string): any {
+		return this.userService.getMyUserData(accessToken);
+	}
+	
+	@Get('intra')
+	@UseGuards(AuthGuard)
+	getMyIntraData(@Headers('Authorization') accessToken: string): any {
+		return this.userService.getMyIntraData(accessToken);
+	}
+
+	@Get(':id')
+	@UseGuards(AuthGuard)
+	getUserDataById(@Param('id') id: string): any {
+		return this.userService.getUserDataById(id);
+	}
+
+	@Get('intra/:id')
+	@UseGuards(AuthGuard)
+	getIntraDataById(@Headers('Authorization') accessToken: string, @Param('id') id: string): any {
+		return this.userService.getIntraDataById(accessToken, id);
 	}
 }
