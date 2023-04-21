@@ -5,7 +5,7 @@ class Api {
 
   constructor() {
     this.reqInstance = axios.create({
-      baseURL: "http://10.15.8.3:3000",
+      baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true,
     });
     this.reqInstance.interceptors.response.use(
