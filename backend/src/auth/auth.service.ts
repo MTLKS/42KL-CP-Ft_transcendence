@@ -1,22 +1,36 @@
-import { Injectable, Param, Headers } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { UserService } from "src/user/user.service";
+import { InjectRepository } from "@nestjs/typeorm";
+import { User } from "src/entity/user.entity";
+import { Repository } from "typeorm";
+import * as CryptoJS from 'crypto-js';
 
 @Injectable()
 export class AuthService {
+	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
+
 	// Starts the login process
-	startLogin(@Headers() header: any): any {
+	async startLogin(header: any): Promise<any> {
 		const COOKIES = header.cookie ? header.cookie.split("; ") : [];
-		if (COOKIES.length !== 0) {
-			const ACCESS_TOKEN = COOKIES.find((cookie) => cookie.startsWith('access_token=')).split('=')[1];
-			if (ACCESS_TOKEN)
-				return { redirectUrl: "http://localhost:5173" };
-		}
 		const LINK = "https://api.intra.42.fr/oauth/authorize/";
 		const REDIRECT_URI = "http%3A%2F%2Flocalhost%3A5173"
-		return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		if (COOKIES.length === 0)
+			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		let authCode = COOKIES.find((cookie) => cookie.startsWith('Authorization='))
+		if (authCode === undefined)
+			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		authCode = authCode.split('=')[1];
+		try {
+			const DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
+			return (DATA.length !== 0) ? { redirectUrl: "http://localhost:5173" } : { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		}
+		catch {
+			return { redirectUrl: LINK + "?client_id=" + process.env.APP_UID + "&redirect_uri=" + REDIRECT_URI + "&response_type=code"};
+		}
 	}
 
 	// Use the code from query to get token info
-	async getCode(@Param('code') code: string): Promise<any> {
+	async postCode(code: string): Promise<any> {
 		const DATA = {
 			"grant_type": "authorization_code",
 			"client_id": process.env.APP_UID,
@@ -29,6 +43,21 @@ export class AuthService {
 			headers:{ 'Content-Type': 'application/json' },
 			body : JSON.stringify(DATA),
 		});
-		return await API_RESPONSE.json();
+
+		const RETURN_DATA = await API_RESPONSE.json();
+		if (RETURN_DATA.access_token == null)
+			return { accessToken: null };
+		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()
+		const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
+		const ENTITY_USER = await this.userRepository.find({ where: {intraId: INTRA_DTO.id} });
+		if (ENTITY_USER.length)
+		{
+			ENTITY_USER[0].accessToken = RETURN_DATA.access_token;
+			this.userRepository.save(ENTITY_USER[0]);
+		} else {
+			const NEW_USER = new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, 400, RETURN_DATA.access_token, INTRA_DTO.imageSmall, null)
+			this.userRepository.save(NEW_USER);
+		}
+		return { accessToken };
 	}
 }

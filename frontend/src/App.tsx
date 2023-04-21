@@ -54,6 +54,7 @@ function App() {
 
   function checkIfLoggedIn() {
     let loggin = false;
+
     getMyProfile().then((res) => {
       if (res.data.accessToken) {
         setLogged(true);
@@ -63,6 +64,7 @@ function App() {
       console.log(err);
       setLogged(false);
     });
+
     if (loggin) return;
 
     const queryString: string = window.location.search;
@@ -83,6 +85,7 @@ function App() {
           }
           else
             login();
+
         }
       }).catch((err) => {
         console.log(err);
