@@ -1,4 +1,6 @@
-import { Controller, Get, Headers, UseGuards, Param } from '@nestjs/common';
+import { Controller, Get, Headers, UseGuards, Param, Post, Body, UseInterceptors, UploadedFile, Res } from '@nestjs/common';
+import { INTERCEPTOR_CONFIG } from 'src/config/multer.config';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { UserService } from './user.service';
 
@@ -17,16 +19,33 @@ export class UserController {
 	getMyIntraData(@Headers('Authorization') accessToken: string): any {
 		return this.userService.getMyIntraData(accessToken);
 	}
-
-	@Get(':id')
+	
+	@Get('intra/:intraName')
 	@UseGuards(AuthGuard)
-	getUserDataById(@Param('id') id: string): any {
-		return this.userService.getUserDataById(id);
+	getIntraDataByIntraName(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): any {
+		return this.userService.getIntraDataByIntraName(accessToken, intraName);
 	}
 
-	@Get('intra/:id')
+	@Get('avatar')
 	@UseGuards(AuthGuard)
-	getIntraDataById(@Headers('Authorization') accessToken: string, @Param('id') id: string): any {
-		return this.userService.getIntraDataById(accessToken, id);
+	getMyAvatar(@Headers('Authorization') accessToken: string, @Res() res: any): any {
+		return this.userService.getMyAvatar(accessToken, res);
+	}
+
+	@Get('avatar/:intraName')
+	getAvatarByIntraName(@Param('intraName') intraName: string, @Res() res: any): any {
+		return this.userService.getAvatarByIntraName(intraName, res);
+	}
+
+	@Get(':intraName')
+	getUserDataByIntraName(@Param('intraName') intraName: string): any {
+		return this.userService.getUserDataByIntraName(intraName);
+	}
+
+	@Post()
+	@UseGuards(AuthGuard)
+	@UseInterceptors(FileInterceptor('image', INTERCEPTOR_CONFIG))
+	newUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() file: any): any {
+		return this.userService.newUserInfo(accessToken, body.userName, file);
 	}
 }

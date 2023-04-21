@@ -1,17 +1,24 @@
 import { Get, UseGuards, Param, Post, Body, Patch, Delete, Headers } from '@nestjs/common';
+import { FriendshipService } from './friendship.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { Controller } from '@nestjs/common';
-import { FriendshipService } from './friendship.service';
 
 @Controller('friendship')
 export class FriendshipController {
 	constructor(private readonly friendshipService: FriendshipService) {}
 
-	// Get all friendship by ID
-	@Get(":id")
+	// Get all friendship by accessToken
+	@Get()
 	@UseGuards(AuthGuard)
-	getFriendshipByID(@Param('id') id: string): any {
-		return this.friendshipService.getFriendshipByID(id);
+	getFriendship(@Headers('Authorization') accessToken: string): any {
+		return this.friendshipService.getFriendship(accessToken);
+	}
+
+	// Get all friendship by ID
+	@Get(":intraName")
+	@UseGuards(AuthGuard)
+	getFriendshipByID(@Param('intraName') intraName: string): any {
+		return this.friendshipService.getFriendshipByIntraNAme(intraName);
 	}
 
 	// Create friendship

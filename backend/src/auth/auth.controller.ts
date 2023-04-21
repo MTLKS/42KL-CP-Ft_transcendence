@@ -6,8 +6,8 @@ export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	@Get()
-	startLogin(@Headers() header: any): any {
-		return this.authService.startLogin(header);
+	startLogin(@Headers('Authorization') accessToken: any): any {
+		return this.authService.startLogin(accessToken);
 	}
 
 	@Post()

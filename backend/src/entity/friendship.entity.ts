@@ -2,9 +2,9 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity( { name: 'friendship' } )
 export class Friendship {
-	constructor(senderId: number, receiverId: number, status: string) {
-		this.senderId = senderId;
-		this.receiverId = receiverId;
+	constructor(senderIntraName: string, receiverIntraName: string, status: string) {
+		this.senderIntraName = senderIntraName;
+		this.receiverIntraName = receiverIntraName;
 		this.status = status;
 	}
 
@@ -12,10 +12,10 @@ export class Friendship {
 	id: number;
 
 	@Column()
-	senderId: number;
+	senderIntraName: string;
 	
 	@Column()
-	receiverId: number;
+	receiverIntraName: string;
 
 	@Column()
 	status: string;
