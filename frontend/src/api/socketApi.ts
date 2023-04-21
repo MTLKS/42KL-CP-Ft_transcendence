@@ -1,26 +1,44 @@
-import { io } from "socket.io-client";
+import { Socket, io } from "socket.io-client";
 
-const baseURL = "http://localhost:"
-const port = 3000;
+const baseURL = import.meta.env.VITE_API_URL as string;
 
-// using main namespace
-const socket = io(`${baseURL} + ${port}`)
+export type Events = "userStatus" | "userDisconnect";
 
-// each new connection is assigned a random 20-char identifier
-// The identifier is synced with the value on the server-side
-socket.on("connect", () => {
-  console.log(socket.id); // x8WIv7-mJelg7on_ALbx
-})
+class SocketApi {
+  socket: Socket;
+  constructor() {
+    const URI = baseURL;
+    console.log("uri", URI);
+    this.socket = io(URI, {
+      extraHeaders: {
+        Authorization:
+          document.cookie
+            .split(";")
+            .find((cookie) => cookie.includes("Authorization"))
+            ?.split("=")[1] ?? "",
+      },
+    });
+  }
 
-/**
- * Notes on ID
- * 
- * 1. The id will regenerated after each reconnection
- *    i. when the websocket connection is severed
- *   ii. when the user refreshes the page
- * 2. Two different browser tabs will have two different IDs
- */
+  connect() {
+    this.socket.on("connect", () => {
+      console.log(this.socket.id);
+    });
+  }
 
-socket.on("disconnect", () => {
-  console.log(socket.id); // undefined
-})
+  listen<T>(event: Events, callBack: (data: T) => void) {
+    this.socket.on(event, callBack);
+  }
+
+  sendMessages<T>(data: T) {
+    this.socket.emit("userConnect", data);
+  }
+
+  disconnect() {
+    this.socket.on("disconnect", () => {
+      console.log(this.socket.id);
+    });
+  }
+}
+
+export default new SocketApi();

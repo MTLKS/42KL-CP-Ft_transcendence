@@ -13,8 +13,14 @@ export function checkAuth(code: string | null) {
 }
 
 async function login() {
+  Api.updateToken(
+    "Authorization",
+    document.cookie
+      .split(";")
+      .find((cookie) => cookie.includes("Authorization"))
+      ?.split("=")[1] ?? ""
+  );
   Api.get<IResponse>("/auth").then((res) => {
-    console.log(res.data.redirectUrl);
     window.location.assign(res.data.redirectUrl);
   });
 }
