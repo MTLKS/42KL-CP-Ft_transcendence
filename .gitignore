@@ -6,5 +6,5 @@ api.md
 *.jpeg
 *.jpg
 avatar
-.env
+*.env
 dto
