@@ -5,8 +5,7 @@ class Api {
 
   constructor() {
     this.reqInstance = axios.create({
-      baseURL: "http://10.15.8.3:3000",
-      // baseURL: "http://10.15.6.1:3000",
+      baseURL: "http://mtlks.com:3000",
       withCredentials: true,
     });
     this.reqInstance.interceptors.response.use(
@@ -27,6 +26,24 @@ class Api {
             break;
         }
         return Promise.reject(error);
+      }
+    );
+    this.reqInstance.interceptors.request.use(
+      (config) => {
+        const token = document.cookie
+          .split(";")
+          .find((cookie) => cookie.includes("Authorization"))
+          ?.split("=")[1];
+        if (token) {
+          config.headers.Authorization = token;
+        }
+        return config;
+      },
+      (error) => {
+        if (error.response.status === 403) {
+          document.cookie = "Authorization=;";
+          window.location.assign("/");
+        }
       }
     );
   }

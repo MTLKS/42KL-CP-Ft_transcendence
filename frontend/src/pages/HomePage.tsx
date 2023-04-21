@@ -17,6 +17,7 @@ import { getFriendList } from '../functions/friendlist';
 import { FriendData } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 
+
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
@@ -46,6 +47,7 @@ function HomePage() {
   const pageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    socketApi.connect();
     getMyProfile().then((profile) => {
       myProfile = profile.data as UserData;
       console.log(myProfile);
