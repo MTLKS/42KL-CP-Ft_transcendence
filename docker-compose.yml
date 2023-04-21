@@ -16,6 +16,8 @@ services:
 
   backend:
     build: ./backend
+    volumes:
+      - avatar:/app/avatar
     ports:
       - 3000:3000
     networks:
@@ -51,6 +53,7 @@ services:
 
 volumes:
   data:
+  avatar:
 
 networks:
   network:
