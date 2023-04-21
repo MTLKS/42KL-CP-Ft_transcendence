@@ -2,17 +2,17 @@ import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity( { name: 'status' } )
 export class Status {
-  constructor(clientId: string, intraName: string, status: string) {
-    this.clientId = clientId;
+  constructor(intraName: string, clientId: string, status: string) {
     this.intraName = intraName;
+    this.clientId = clientId;
     this.status = status;
   }
 
   @PrimaryColumn()
-  clientId: string;
-
-  @Column()
   intraName: string;
+  
+  @Column()
+  clientId: string;
 
   @Column()
 	status: string;
