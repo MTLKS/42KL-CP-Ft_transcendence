@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
-import * as dotenv from 'dotenv';
 
 const	GREEN	=	"\x1b[32m";
 const	RED		= "\x1b[31m";

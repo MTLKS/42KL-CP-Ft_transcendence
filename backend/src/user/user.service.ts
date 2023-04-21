@@ -4,7 +4,6 @@ import { User } from "../entity/user.entity";
 import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
-import * as dotenv from 'dotenv';
 
 @Injectable()
 export class UserService {
@@ -100,7 +99,7 @@ export class UserService {
 			accessToken = null;
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
-		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
+		return USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Use intraName to get user avatar
@@ -108,7 +107,7 @@ export class UserService {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
 		if (USER_DATA.length === 0)
 			return { "error": "User does not exist" };
-		return (USER_DATA[0].avatar.startsWith("https://")) ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
+		return USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Creates new user by saving their userName and avatar
