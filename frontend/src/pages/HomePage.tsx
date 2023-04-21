@@ -10,17 +10,19 @@ import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
 import Less from '../widgets/Less';
 import api from '../api/api';
+import socketApi from '../api/socketApi';
 import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
-import { friendList } from '../functions/friendlist';
+import { getFriendList } from '../functions/friendlist';
 import { FriendData } from '../modal/FriendData';
+import Friendlist from '../widgets/Friendlist/Friendlist';
 
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
-let listFriends: FriendData[] = [];
+let myFriends: FriendData[] = [];
 
 let myProfile: UserData = {
   accessToken: "hidden",
@@ -31,6 +33,8 @@ let myProfile: UserData = {
   tfaSecret: null,
   userName: "Ijon"
 };
+
+console.log
 
 function HomePage() {
   const [elements, setElements] = React.useState<JSX.Element[]>([])
@@ -52,9 +56,9 @@ function HomePage() {
       console.log(myProfile);
       setTopWidget(<Profile userData={myProfile} />);
     });
-    friendList().then((friends) => {
-      listFriends = friends.data as FriendData[];
-      console.log(listFriends);
+    getFriendList().then((friends) => {
+      myFriends = friends.data as FriendData[];
+      console.log(myFriends);
     });
   }, []);
 
@@ -143,9 +147,12 @@ function HomePage() {
         setTopWidget(newWhoamiCard);
         break;
       case "less":
-        setLeftWidget(<Less onQuit={() => {
+        setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
           setLeftWidget(null);
         }} />);
+        // setLeftWidget(<Less onQuit={() => {
+        //   setLeftWidget(null);
+        // }} />);
         break;
       default:
         const newErrorCard = errorCard();

@@ -1,7 +1,3 @@
-/**
- * TODO: UserData interface
- */
-
 export interface UserData {
   intraId: number;
   userName: string;

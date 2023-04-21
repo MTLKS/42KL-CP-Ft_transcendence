@@ -1,8 +1,9 @@
 import api from "../api/api";
+import { FriendData } from "../modal/FriendData";
 
 export type status = "pending" | "accepted" | "rejected" | "blocked" | "muted";
 
-export function friendList() {
+export function getFriendList() {
   api.updateToken(
     "Authorization",
     document.cookie
@@ -24,7 +25,7 @@ export function friendListOf(name: string) {
   return api.get<FriendData[]>("friendship/" + name);
 }
 
-export function friendStatusUpdate(friendId: string, status: status) {
+export function friendStatusUpdate(friend: FriendData, status: status) {
   api.updateToken(
     "Authorization",
     document.cookie
@@ -33,7 +34,7 @@ export function friendStatusUpdate(friendId: string, status: status) {
       ?.split("=")[1] ?? ""
   );
   const data: FriendData = {
-    receiverId: parseInt(friendId),
+    ...friend,
     status: status,
   };
   return api.post<FriendData>("friendship", data);
