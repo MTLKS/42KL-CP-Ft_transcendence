@@ -1,14 +1,13 @@
 import { Socket, io } from "socket.io-client";
 
-const baseURL = "http://10.15.8.3:";
-const port = 3000;
+const baseURL = import.meta.env.VITE_API_URL as string;
 
 export type Events = "userStatus" | "userDisconnect";
 
 class SocketApi {
   socket: Socket;
   constructor() {
-    const URI = baseURL + port;
+    const URI = baseURL;
     console.log("uri", URI);
     this.socket = io(URI, {
       extraHeaders: {
