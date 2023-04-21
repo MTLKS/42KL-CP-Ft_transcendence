@@ -74,6 +74,8 @@ export class UserService {
 		});
 		const INTRA_DTO = new IntraDTO();
 		let userData = await response.json();
+		if (userData.error !== undefined)
+			return userData;
 		if (response.status !== 200 || userData.length === 0)
 			return INTRA_DTO
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {

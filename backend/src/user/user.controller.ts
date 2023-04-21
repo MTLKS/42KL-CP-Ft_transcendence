@@ -22,7 +22,7 @@ export class UserController {
 	
 	@Get('intra/:intraName')
 	@UseGuards(AuthGuard)
-	getIntraDataByIntraName(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string, @Res() res: any): any {
+	getIntraDataByIntraName(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): any {
 		return this.userService.getIntraDataByIntraName(accessToken, intraName);
 	}
 
