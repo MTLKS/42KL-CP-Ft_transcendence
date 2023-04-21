@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import SrcollView from '../../../components/SrcollView';
+import ScrollView from '../../../components/ScrollView';
 import UnreadSep from './UnreadSep';
 
 const messages: ChatRoomMessageData[] = [

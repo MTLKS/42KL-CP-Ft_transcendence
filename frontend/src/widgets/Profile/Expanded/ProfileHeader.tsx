@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
 import StatusIndicator from '../../StatusIndicator';
+import { UserData } from '../../../modal/UserData';
 
 interface ProfileHeaderProps {
   expanded: boolean;
+  userData: UserData;
 }
 
 function ProfileHeader(props: ProfileHeaderProps) {
-  const { expanded } = props;
+  const { expanded, userData } = props;
+  const { userName, intraName } = userData;
   const maxHeight = 80;
   const [height, setHeight] = useState(0);
 
@@ -23,7 +26,7 @@ function ProfileHeader(props: ProfileHeaderProps) {
       style={{ height: height }}
     >
       <div className='flex flex-col flex-1 justify-center bg-dimshadow px-5'>
-        <div className=' text-2xl text-highlight font-extrabold'>JOHNDOE <a href='' className='hover:underline cursor-pointer'>(jdoe)</a></div>
+        <div className=' text-2xl text-highlight font-extrabold'>{userName} <a href='' className='hover:underline cursor-pointer'>({intraName})</a></div>
         <div className=' text-xs text-highlight'>THE BLACKHOLE DESTROYER</div>
       </div>
       <div className='flex flex-row w-fit items-center bg-dimshadow p-8'>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ChatToggle from './ChatToggle'
 import ChatRoom from './ChatRoom';
 import Room from './Room/Room';
@@ -34,23 +34,36 @@ const rooms: ChatRoomData[] = [
   },
 ]
 
-interface RoomData {
-
-}
+const filtered: ChatRoomData[] = [];
 
 function Chat() {
   const [expanded, setExpanded] = useState(false);
   const [chatOpened, setChatOpened] = useState<number | null>(null);
+  const [filter, setFilter] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log(filtered);
+    setExpanded(expanded);
+  }, [rooms]);
 
   return (
     <div className='flex flex-col select-none transition-all duration-300 overflow-hidden'
       style={expanded ? { height: "100%" } : { height: "60px" }}
     >
-      <ChatToggle onClick={handleClick} />
+      <ChatToggle onClick={handleClick} expanded={expanded} onFilterUpdate={(word) => {
+        filtered.splice(0, filtered.length);
+        rooms.forEach((room) => {
+          if (room.name.toLocaleLowerCase().includes(word.toLocaleLowerCase())) {
+            filtered.push(room);
+          }
+        });
+        if (word == "") setFilter(false);
+        else setFilter(true);
+      }} />
       {chatOpened == null ? <div className='overflow-y-scroll scrollbar-hide h-full transition-all duration-300 hidden'
         style={expanded ? { display: "block" } : { display: "none" }}>
         {
-          rooms.map((room, index) =>
+          (filter ? filtered : rooms).map((room, index) =>
             <ChatRoom roomData={room} key={index} onClick={() => handleChatOpened(index)} />)
         }
       </div> :

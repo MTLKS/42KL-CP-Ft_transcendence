@@ -28,6 +28,24 @@ class Api {
         return Promise.reject(error);
       }
     );
+    this.reqInstance.interceptors.request.use(
+      (config) => {
+        const token = document.cookie
+          .split(";")
+          .find((cookie) => cookie.includes("Authorization"))
+          ?.split("=")[1];
+        if (token) {
+          config.headers.Authorization = token;
+        }
+        return config;
+      },
+      (error) => {
+        if (error.response.status === 403) {
+          document.cookie = "Authorization=;";
+          window.location.assign("/");
+        }
+      }
+    );
   }
 
   updateToken(token: string, newToken: string) {

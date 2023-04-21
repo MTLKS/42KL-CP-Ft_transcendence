@@ -1,11 +1,12 @@
 import React, { useEffect, useRef } from 'react'
 import PromptField from '../components/PromptField'
-import SrcollView from '../components/SrcollView'
+import ScrollView from '../components/ScrollView'
 import Card from '../components/Card'
 import login from '../functions/login'
 import rickroll from '../functions/rickroll'
 import Pong from './Pong'
 import sleep from '../functions/sleep'
+import Clock from '../widgets/Clock'
 interface TerminalProps {
   availableCommands: string[];
   handleCommands: (command: string[]) => void;
@@ -22,18 +23,19 @@ function Terminal(pros: TerminalProps) {
   }, []);
 
   return (
-    <div className='h-full w-full flex flex-col justify-end '
+    <div className='h-full w-full flex flex-col justify-end relative'
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
-      <SrcollView reverse={true}>
+      <ScrollView reverse={true}>
         {elements}
-      </SrcollView>
+      </ScrollView>
       <div className=' bg-highlight h-1 w-full' />
       <PromptField
         handleCommands={handleCommands}
         availableCommands={availableCommands}
         center={false} ref={promptFieldRef}
       />
+      <Clock />
     </div>
   )
 
