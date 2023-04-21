@@ -29,15 +29,14 @@ export class StatusService {
 		return await this.statusRepository.delete({ clientId: client.id });
 	}
 
-	async userChangeStatus(client: any, newStatus: string) {
-		console.log(client.id);
-		console.log("received");
-		// console.log(client);
-		// console.log(newStatus);
-		// const INDEX = this.activeUsers.findIndex((user) => user.client === client);
-		// if (INDEX !== -1) {
-		// 	this.activeUsers[INDEX].status = status;
-		// }
-		// console.log(this.activeUsers);
+	async userChangeStatus(client: any, newStatus: string, server: any): Promise<any> {
+		const STATUS = await this.statusRepository.find({ where: {clientId: client.id} });
+		if (STATUS.length === 0)
+			return server.emit({ "error": "Invalid client id" });
+		if (newStatus.toUpperCase() != "ONLINE" && newStatus.toUpperCase() != "OFFLINE" && newStatus.toUpperCase() != "INGAME")
+			return server.emit('changeStatus', { "error": "Invalid status - status can only be ONLINE, OFFLINE or INGAME" });
+		STATUS[0].status = newStatus.toUpperCase();
+		this.statusRepository.save(STATUS[0])
+		return server.emit('changeStatus', STATUS[0]);
 	}
 }

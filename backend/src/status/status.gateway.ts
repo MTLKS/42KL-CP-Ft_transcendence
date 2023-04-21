@@ -1,6 +1,7 @@
 import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket, WebSocketServer } from '@nestjs/websockets';
 import { StatusService } from './status.service';
 import { Socket,Server } from 'socket.io';
+import { Body } from '@nestjs/common';
 
 @WebSocketGateway({ cors : {origin: '*', credentials: true} })
 export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -18,8 +19,7 @@ export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 	
 	@SubscribeMessage('changeStatus')
-	async handleChangeStatus(@ConnectedSocket() client: Socket, newStatus: string, ){
-		this.server.emit('test', "hello");
-		await this.statusService.userChangeStatus(client, newStatus);
+	async handleChangeStatus(@ConnectedSocket() client: Socket, @Body() body: any){
+		await this.statusService.userChangeStatus(client, body.status, this.server);
 	}
 }
