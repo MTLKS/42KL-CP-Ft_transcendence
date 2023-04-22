@@ -23,7 +23,15 @@ const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 let myFriends: FriendData[] = [];
 
-let myProfile: UserData;
+let myProfile: UserData = {
+  accessToken: "hidden",
+  avatar: "4.png",
+  elo: 400,
+  intraId: 130305,
+  intraName: "itan",
+  tfaSecret: null,
+  userName: "Ijon"
+};
 
 function HomePage() {
   const [elements, setElements] = React.useState<JSX.Element[]>([])
