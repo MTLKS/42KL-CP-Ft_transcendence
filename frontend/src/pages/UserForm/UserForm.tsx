@@ -88,7 +88,7 @@ function UserForm(props: UserFormProps) {
   function checkNameAndAnswer() {
     let errors: ErrorCode[] = new Array();
 
-    if (!userName)
+    if (!userName || userName.trim() === '')
       errors.push(ErrorCode.EMPTYNAME);
     if (userName.length < 5 && !errors.includes(ErrorCode.EMPTYNAME))
       errors.push(ErrorCode.NAMETOOSHORT);
@@ -117,7 +117,6 @@ function UserForm(props: UserFormProps) {
       formData.append("userName", userName);
       formData.append("image", avatarFile);
       await Api.post("/user", formData).then((res) => console.log(res));
-      Api.get("/user").then((res) => console.log(res));
       setPopups([]);
       await sleep(1000);
       login();
