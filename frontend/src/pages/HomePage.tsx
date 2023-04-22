@@ -23,15 +23,7 @@ const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 let myFriends: FriendData[] = [];
 
-let myProfile: UserData = {
-  accessToken: "hidden",
-  avatar: "https://www.asiamediajournal.com/wp-content/uploads/2022/10/Dog-Cool-PFP.jpg",
-  elo: 400,
-  intraId: 130305,
-  intraName: "wricky-t",
-  tfaSecret: null,
-  userName: "ricky"
-};
+let myProfile: UserData;
 
 function HomePage() {
   const [elements, setElements] = React.useState<JSX.Element[]>([])
