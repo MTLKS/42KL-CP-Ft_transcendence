@@ -21,7 +21,7 @@ function App() {
   if (newUser) {
     page = <UserForm userData={userData} />;
   }
-  else if (!logged) {
+  else if (logged) {
     page = <HomePage />;
   }
 
