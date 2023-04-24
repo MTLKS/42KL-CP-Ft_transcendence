@@ -14,7 +14,7 @@ export class UserService {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
-			return { "error": "Invalid access token" }
+			return { "error": "Invalid access token - access token is invalid" }
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
 		if (USER_DATA.length === 0)
@@ -108,7 +108,7 @@ export class UserService {
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
 		if (USER_DATA.length === 0)
-			return { "error": "User does not exist" };
+			return { "error": "Invalid intraName - user does not exist" };
 		return USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
@@ -120,7 +120,7 @@ export class UserService {
 			return { "error": errMsg }
 		}
 		if (file === undefined)
-			return { "error": "No avatar image given" }
+			return { "error": "Invalid file path - no avatar image given" }
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {

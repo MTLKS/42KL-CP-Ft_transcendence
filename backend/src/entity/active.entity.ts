@@ -1,12 +1,18 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
 
-@Entity( { name: 'message' } )
-export class Friendship {
+@Entity( { name: 'active' } )
+export class Active {
+	constructor(socketId: string, intraName: string, status: string) {
+		this.socketId = socketId;
+		this.intraName = intraName;
+		this.status = status;
+	}
+
 	@PrimaryColumn()
 	socketId: string;
 
 	@Column()
-	userId: number;
+	intraName: string;
 
 	@Column()
 	status: string;
