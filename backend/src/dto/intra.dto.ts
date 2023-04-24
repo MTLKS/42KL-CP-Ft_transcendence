@@ -9,5 +9,4 @@ export class IntraDTO {
 	imageMedium: string;
 	imageLarge: string;
 	blackhole: string;
-
 }

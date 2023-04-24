@@ -14,13 +14,14 @@ import { UserService } from './user/user.service';
 import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Status } from './entity/status.entity';
+import { ChatModule } from './chat/chat.module';
 import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/user.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User]), TypeOrmModule.forFeature([Friendship]), TypeOrmModule.forFeature([Status]), MulterModule.register(MULTER_CONFIG)],
+  imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User]), TypeOrmModule.forFeature([Friendship]), TypeOrmModule.forFeature([Status]), MulterModule.register(MULTER_CONFIG), ChatModule],
   controllers: [AppController, AuthController, UserController, TFAController, FriendshipController],
   providers: [AppService, AuthService, UserService, TFAService, FriendshipService, StatusGateway, StatusService],
 })

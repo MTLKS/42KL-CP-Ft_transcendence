@@ -36,7 +36,7 @@ export class UserService {
 			headers : { 'Authorization': HEADER }
 		});
 		if (RESPONSE.status !== 200)
-		return []
+			return []
 		const USER_DATA = await RESPONSE.json();
 		const INTRA_DTO = new IntraDTO({
 			id: USER_DATA.id,
@@ -73,9 +73,9 @@ export class UserService {
 		});
 		let userData = await response.json();
 		if (userData.error !== undefined)
-		return userData;
+			return userData;
 		if (response.status !== 200 || userData.length === 0)
-		return []
+			return []
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
