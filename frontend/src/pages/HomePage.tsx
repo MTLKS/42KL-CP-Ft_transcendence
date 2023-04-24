@@ -62,7 +62,7 @@ function HomePage() {
   }, []);
 
   useEffect(() => {
-    const totalFriendRequests = myFriends.filter(friend => friend.status.toLowerCase() === "pending").length;
+    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName).length;
     setFriendRequests(totalFriendRequests);
   }, [myFriends]);
 
