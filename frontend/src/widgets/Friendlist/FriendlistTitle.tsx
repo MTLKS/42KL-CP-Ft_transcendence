@@ -14,23 +14,23 @@ function FriendlistTitle(props: FriendlistTitleProp) {
   return (
     <div className='flex flex-row text-highlight'>
       <div className={`w-[${TabWidth.nickname}ch]`}>
-        <Highlighter text={"nickname"} searchTerm={searchTerm}/>
+        <Highlighter key="nickname" text={"nickname"} searchTerm={searchTerm}/>
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.intraName}ch]`}>
-        <Highlighter text={"intra name"} searchTerm={searchTerm}/>
+        <Highlighter key="intraname" text={"intra name"} searchTerm={searchTerm}/>
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.eloScore}ch] flex flex-row`}>
-        <Highlighter text={"elo"} searchTerm={searchTerm}/>
+        <Highlighter key="elo" text={"elo"} searchTerm={searchTerm}/>
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.relationship}ch]`}>
-        <Highlighter text={"relationship"} searchTerm={searchTerm}/>
+        <Highlighter key="relationship" text={"relationship"} searchTerm={searchTerm}/>
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.status}ch]`}>
-        <Highlighter text={"status"} searchTerm={searchTerm}/>
+        <Highlighter key="status" text={"status"} searchTerm={searchTerm}/>
       </div>
     </div>
   )
