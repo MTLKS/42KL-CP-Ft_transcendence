@@ -30,6 +30,7 @@ export class ChatService {
 		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(null, null, true, null, false, RECEIVER.intraName));
 		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
 		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, RECEIVER.userName, true, false, false, new Date().toISOString()));
+		return SAVED_CHANNEL;
 	}
 
 	async createNewRoom(accessToken: string, roomName: string, isPrivate: boolean, password: string): Promise<any> {
@@ -43,6 +44,7 @@ export class ChatService {
 		
 		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(roomName, SENDER.intraName, isPrivate, password, true, null));
 		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
+		return SAVED_CHANNEL;
 	}
 
 	//Used when a user start a new chat or join a new group
