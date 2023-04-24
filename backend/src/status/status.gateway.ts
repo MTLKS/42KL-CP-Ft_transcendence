@@ -3,7 +3,7 @@ import { StatusService } from './status.service';
 import { Socket,Server } from 'socket.io';
 import { Body } from '@nestjs/common';
 
-@WebSocketGateway({ cors : {origin: '*', credentials: true} })
+@WebSocketGateway({ cors : {origin: '*'} })
 export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	@WebSocketServer() server: Server;
 	
