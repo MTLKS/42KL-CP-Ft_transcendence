@@ -20,7 +20,8 @@ function Friendlist(props: FriendlistProps) {
   const { userData, friendsData, onQuit } = props;
 
   // Use Hooks
-  const [searchTerm, setSearchTerm] = useState('');
+  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [maxDisplayLines, setMaxDisplayLines] = useState(0);
   const [startingIndex, setStartingIndex] = useState(0);
@@ -45,7 +46,20 @@ function Friendlist(props: FriendlistProps) {
   }, []);
 
   useEffect(() => {
-    setEndingIndex(startingIndex + maxDisplayLines - 1);
+    if (inputValue === "")
+      setIsSearching(false);
+    console.log(inputValue);
+  }, [inputValue]);
+
+  // calibrate the value of start and ending index
+  useEffect(() => {
+    if (maxDisplayLines > lines.length)
+    {
+      setEndingIndex(lines.length);
+      setStartingIndex(0);
+    }
+    else
+      setEndingIndex(startingIndex + maxDisplayLines - 1);
   }, [startingIndex])
 
   return (
@@ -53,7 +67,8 @@ function Friendlist(props: FriendlistProps) {
       <input
         className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        onInput={handleInput}
+        onChange={handleInput}
+        value={inputValue}
         ref={inputRef}
       />
         <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
@@ -65,9 +80,9 @@ function Friendlist(props: FriendlistProps) {
         </div>
       <p className={`absolute bottom-0 left-0 ${friendsData.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
         {
-          !isSearching
+          (!isSearching || inputValue === "")
             ? `./usr/${userData.userName}/friends ${friendsData.length === 0 ? '' : `line [${startingIndex + 1}-${endingIndex}]/${lines.length}`}  press 'q' to quit`
-            : searchTerm
+            : inputValue
         }
       </p>
     </div>
@@ -79,7 +94,7 @@ function Friendlist(props: FriendlistProps) {
       const lineHeight = 24;
       const max = Math.floor(height / lineHeight);
       setMaxDisplayLines(max);
-      setEndingIndex(max - 1);
+      (max - 1 < lines.length) ? setEndingIndex(max - 1) : setEndingIndex(lines.length);
     }
   }
 
@@ -165,19 +180,15 @@ function Friendlist(props: FriendlistProps) {
       return;
     }
 
-    // Forward one window
-    if (key === " " && !isSearching) {
-      console.log("Forward one window");
-    }
-
-    // Backward one window
-    if ((event.ctrlKey && key === "b") && !isSearching) {
-      console.log("Backward one window");
-    }
-
     // Forward one line or Start searching
-    if (key === "Enter" && searchTerm === "") {
-      setStartingIndex(startingIndex + 1);
+    if (key === "Enter") {
+      if (inputValue === "" && !isLastLine)
+        setStartingIndex(startingIndex + 1);
+      else {
+        setSearchTerm(inputValue.substring(1));
+        console.log(`here`);
+      }
+      setInputValue("");
       return;
     }
 
@@ -193,8 +204,10 @@ function Friendlist(props: FriendlistProps) {
 
     if (value[value.length - 1] == '\\') value += '\\';
 
-    setSearchTerm(value);
-    if (value[0] === '/') setIsSearching(true);
+    setInputValue(value.toLowerCase());
+    if (value[0] === '/') {
+      setIsSearching(true);
+    }
   }
 }
 
