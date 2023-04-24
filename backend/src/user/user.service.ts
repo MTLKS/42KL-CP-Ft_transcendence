@@ -35,17 +35,18 @@ export class UserService {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
 		});
-		const INTRA_DTO = new IntraDTO();
 		if (RESPONSE.status !== 200)
-			return INTRA_DTO
+		return []
 		const USER_DATA = await RESPONSE.json();
-		INTRA_DTO.id = USER_DATA.id;
-		INTRA_DTO.url = USER_DATA.url;
-		INTRA_DTO.name = USER_DATA.login;
-		INTRA_DTO.email = USER_DATA.email;
-		INTRA_DTO.imageMedium = USER_DATA.image.versions.medium;
-		INTRA_DTO.imageLarge = USER_DATA.image.versions.large;
-		INTRA_DTO.blackhole = USER_DATA.cursus_users[1].blackholed_at;
+		const INTRA_DTO = new IntraDTO({
+			id: USER_DATA.id,
+			url: USER_DATA.url,
+			name: USER_DATA.login,
+			email: USER_DATA.email,
+			imageMedium: USER_DATA.image.versions.medium,
+			imageLarge: USER_DATA.image.versions.large,
+			blackhole: USER_DATA.cursus_users[1].blackholed_at
+		});
 		return INTRA_DTO;
 	}
 
@@ -70,24 +71,25 @@ export class UserService {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
 		});
-		const INTRA_DTO = new IntraDTO();
 		let userData = await response.json();
 		if (userData.error !== undefined)
-			return userData;
+		return userData;
 		if (response.status !== 200 || userData.length === 0)
-			return INTRA_DTO
+		return []
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
 		});
 		userData = await response.json();
-		INTRA_DTO.id = userData.id;
-		INTRA_DTO.url = userData.url;
-		INTRA_DTO.name = userData.login;
-		INTRA_DTO.email = userData.email;
-		INTRA_DTO.imageMedium = userData.image.versions.medium;
-		INTRA_DTO.imageLarge = userData.image.versions.large;
-		INTRA_DTO.blackhole = userData.cursus_users[1].blackholed_at;
+		const INTRA_DTO = new IntraDTO({
+			id: userData.id,
+			url: userData.url,
+			name: userData.login,
+			email: userData.email,
+			imageMedium: userData.image.versions.medium,
+			imageLarge: userData.image.versions.large,
+			blackhole: userData.cursus_users[1].blackholed_at
+		});
 		return INTRA_DTO;
 	}
 
