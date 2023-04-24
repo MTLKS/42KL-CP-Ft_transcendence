@@ -30,7 +30,7 @@ let myProfile: UserData = {
   intraId: 130305,
   intraName: "wricky-t",
   tfaSecret: null,
-  userName: "Ijon"
+  userName: "JOHNDOE"
 };
 
 function HomePage() {

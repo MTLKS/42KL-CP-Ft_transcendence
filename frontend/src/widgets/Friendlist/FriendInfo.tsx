@@ -17,7 +17,7 @@ function FriendInfo(props: FriendInfoProps) {
 
   return (
     <div className='flex flex-row text-highlight'>
-      <div className='w-[16ch]'>
+      <div className='w-[16ch] normal-case'>
         <Highlighter text={friend.userName} searchTerm={searchTerm}/>
       </div>
       <FriendlistSeparator />
