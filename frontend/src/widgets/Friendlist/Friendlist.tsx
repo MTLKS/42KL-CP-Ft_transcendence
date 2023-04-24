@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import FriendlistTitle from './FriendlistTitle'
 import FriendlistCategory from './FriendlistCategory';
-import FriendlistEmpty from './FriendlistEmpty';
+import EmptyFriendlist from './EmptyFriendlist';
 import { UserData } from '../../modal/UserData';
 import { FriendData, FriendTags } from '../../modal/FriendData';
+import FriendlistEmptyLine from './FriendlistEmptyLine';
+import FriendlistTag from './FriendlistTag';
+import FriendInfo from './FriendInfo';
 
 interface FriendlistProps {
   userData: UserData;
@@ -17,9 +20,12 @@ function Friendlist(props: FriendlistProps) {
   const { userData, friendsData, onQuit } = props;
 
   // Use Hooks
-  const [match, setMatch] = useState('');
-  const [searching, setSearching] = useState(false);
-  const [numOfLines, setNumOfLines] = useState(0);
+  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [maxDisplayLines, setMaxDisplayLines] = useState(0);
+  const [startingIndex, setStartingIndex] = useState(0);
+  const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -27,6 +33,10 @@ function Friendlist(props: FriendlistProps) {
   const acceptedFriends = filterFriends(friendsData, FriendTags.accepted);
   const pendingFriends = filterFriends(friendsData, FriendTags.pending);
   const blockedFriends = filterFriends(friendsData, FriendTags.blocked);
+  const sortedFriends = acceptedFriends.concat(pendingFriends, blockedFriends);
+
+  // convert sorted friends into lines
+  const lines: JSX.Element[] = createFriendlistComponents(sortedFriends);
 
   // this should run when the component is mounted
   useEffect(() => {
@@ -35,76 +45,59 @@ function Friendlist(props: FriendlistProps) {
     observerSetup();
   }, []);
 
-  // testing
   useEffect(() => {
-    console.log(`userData:`, userData);
-    console.log(`friends`, friendsData);
-  }, []);
+    if (inputValue === "")
+      setIsSearching(false);
+    console.log(inputValue);
+  }, [inputValue]);
+
+  // calibrate the value of start and ending index
+  useEffect(() => {
+    if (maxDisplayLines > lines.length)
+    {
+      setEndingIndex(lines.length);
+      setStartingIndex(0);
+    }
+    else
+      setEndingIndex(startingIndex + maxDisplayLines - 1);
+  }, [startingIndex])
 
   return (
-    <div
-      className='w-full h-full flex flex-col overflow-hidden text-base uppercase bg-dimshadow px-[2ch] relative'
-      onClick={focusOnInput}
-    >
+    <div className='w-full h-full flex flex-col overflow-hidden text-base uppercase bg-dimshadow px-[2ch] relative' onClick={focusOnInput}>
       <input
-        className='w-o h-0 absolute'
+        className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        onInput={handleInput}
+        onChange={handleInput}
+        value={inputValue}
         ref={inputRef}
       />
-      {
-        friendsData.length !== 0 ?
-        <>
-          <div
-            className='w-full h-full flex flex-col overflow-hidden gap-y-[1.5rem]'
-            ref={divRef}
-          > 
-            <FriendlistTitle />
-            <FriendlistCategory intraName={userData.intraName} friendlist={acceptedFriends} type={FriendTags.accepted}/>
-            <FriendlistCategory intraName={userData.intraName} friendlist={pendingFriends} type={FriendTags.pending}/>
-            <FriendlistCategory intraName={userData.intraName} friendlist={blockedFriends} type={FriendTags.blocked}/>
-          </div>
-        </>
-        : <FriendlistEmpty />
-      }
-      <p
-        className={`absolute bottom-0 left-0 ${friendsData.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}
-      >
+        <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
+          {
+            friendsData.length === 0
+              ? <EmptyFriendlist />
+              : lines.slice(startingIndex, endingIndex)
+          }
+        </div>
+      <p className={`absolute bottom-0 left-0 ${friendsData.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
         {
-          !searching
-            ? `./usr/${userData.userName}/friends ${friendsData.length === 0 ? '' : `line 1/${numOfLines}`}  press 'q' to quit`
-            : match
+          (!isSearching || inputValue === "")
+            ? `./usr/${userData.userName}/friends ${friendsData.length === 0 ? '' : `line [${startingIndex + 1}-${endingIndex}]/${lines.length}`}  press 'q' to quit`
+            : inputValue
         }
       </p>
     </div>
   )
 
-  // handle resize. calculate how many line can display on the screen based on the height of the div
   function handleResize() {
     if (divRef.current) {
       const height = divRef.current.clientHeight;
       const lineHeight = 24;
-      setNumOfLines(Math.floor(height / lineHeight) + countExtraLine());
+      const max = Math.floor(height / lineHeight);
+      setMaxDisplayLines(max);
+      (max - 1 < lines.length) ? setEndingIndex(max - 1) : setEndingIndex(lines.length);
     }
   }
 
-  // calculate extra line
-  function countExtraLine() {
-    let lines = 0;
-
-    if (friendsData.length !== 0)
-      lines += 2;
-    if (acceptedFriends.length !== 0)
-      lines += 2;
-    if (pendingFriends.length !== 0)
-      lines += 2;
-    if (blockedFriends.length !== 0)
-      lines += 2;
-    return (lines);
-  }
-
-  // set up a resize observer to watch the changes (the height) of the div.
-  // observer will run handleResize when the div resized.
   function observerSetup() {
     const divElement = divRef.current as Element;
     const observer = new ResizeObserver(handleResize);
@@ -115,50 +108,106 @@ function Friendlist(props: FriendlistProps) {
     return () => observer.unobserve(divElement);
   }
 
-  // filter friends based on relationship
   function filterFriends(friends: FriendData[], status: string) {
     return friends.filter((friend) => friend.status.toLowerCase() === status);
   }
 
-  // focus on the input field
+  function createFriendlistComponents(sortedFriends: FriendData[]) {
+    let prevCategory = '';
+    let targetCategory: FriendData[] = [];
+    let components: JSX.Element[] = [];
+
+    if (sortedFriends.length === 0) return [<EmptyFriendlist />];
+
+    components.push(
+      <FriendlistEmptyLine key="el0" />,
+      <FriendlistTitle searchTerm={searchTerm}/>
+    );
+
+    sortedFriends.map((friend) => {
+      if (prevCategory !== friend.status) {
+
+        switch (friend.status.toLowerCase()) {
+          case "accepted":
+            targetCategory = acceptedFriends;
+            break;
+          case "pending":
+            targetCategory = pendingFriends;
+            break;
+          case "blocked":
+            targetCategory = blockedFriends;
+            break;
+          default:
+            break;
+        }
+
+        components.push(
+          <FriendlistEmptyLine key={friend.status+`_el1`}/>,
+          <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm}/>,
+          <FriendlistEmptyLine key={friend.status+`_el2`}/>
+          );
+        prevCategory = friend.status;
+      }
+      components.push(
+        <FriendInfo
+          key={friend.id}
+          friend={friend}
+          intraName={userData.intraName}
+          searchTerm={searchTerm}
+        />)
+    })
+    return (components);
+  }
+
   function focusOnInput() {
     inputRef.current?.focus();
   }
 
-  // catch the keypress event when focus on the input
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    switch (e.key) {
-      // move up one line
-      case "ArrowUp":
-        break;
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    const { key } = event;
+    const isLastLine = (startingIndex + maxDisplayLines > lines.length);
+    const isFirstLine = startingIndex <= 0;
 
-      // move down one line
-      case "ArrowDown":
-        break;
+    // Backward one line
+    if (key === "ArrowUp") {
+      if (!isFirstLine) setStartingIndex(startingIndex - 1);
+      return;
+    }
 
-      /**
-       * 1. If the value is empty && there's still lines below, move down one line
-       * 2. If the first character of the value is '/'.
-       * 
-       * need to reset match to ''
-       */
-      case "Enter":
-        break;
+    // Forward one line
+    if (key === "ArrowDown") {
+      if (!isLastLine) setStartingIndex(startingIndex + 1);
+      return;
+    }
 
-      // check if we are searching a string. if not, call onQuit.
-      case "q":
-        if (!searching) setTimeout(() => onQuit(), 10);
-        break ;
-      default:
-        break;
+    // Forward one line or Start searching
+    if (key === "Enter") {
+      if (inputValue === "" && !isLastLine)
+        setStartingIndex(startingIndex + 1);
+      else {
+        setSearchTerm(inputValue.substring(1));
+        console.log(`here`);
+      }
+      setInputValue("");
+      return;
+    }
+
+    // Quit friendlist
+    if (key === "q" && !isSearching) {
+      setTimeout(() => onQuit(), 10);
+      return;
     }
   }
 
-  // user input event
   function handleInput(e: React.FormEvent<HTMLInputElement>) {
-    const value = e.currentTarget.value;
-    setMatch(value);
-    if (value[0] === '/') setSearching(true);
+    let value = e.currentTarget.value;
+
+    if (value[value.length - 1] == '\\') value += '\\';
+
+    setInputValue(value.toLowerCase());
+    if (value[0] === '/') {
+      setIsSearching(true);
+    }
   }
 }
 

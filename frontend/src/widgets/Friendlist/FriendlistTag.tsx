@@ -1,7 +1,10 @@
 import React from 'react'
+import Highlighter from '../../components/Highlighter';
 
 interface FriendlistTagType {
   type: string;
+  total?: number;
+  searchTerm?: string;
 }
 
 const getFriendTagStyle = (type: string) => {
@@ -24,16 +27,19 @@ const getFriendTagStyle = (type: string) => {
 function FriendlistTag(props: FriendlistTagType) {
 
   let style, width;
-  const { type } = props;
+  const { type, total, searchTerm } = props;
 
   style = getFriendTagStyle(type);
   width = type.length;
   return (
-    <p
-      className={`${style} text-center w-fit uppercase px-[1ch]`}
-    >
-      {type}
-    </p>
+    <div className='flex flex-row gap-x-[1ch]'>
+      <div className={`${style} text-center w-fit uppercase px-[1ch]`}>
+        <>
+          <Highlighter text={type} searchTerm={searchTerm}/>
+          {total !== undefined ? <span className='text-highlight/50 whitespace-pre'>  {total}</span> : ''}
+        </>
+      </div>
+    </div>
   )
 }
 

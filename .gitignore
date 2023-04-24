@@ -7,3 +7,5 @@ api.md
 *.jpg
 avatar
 *.env
+dto
+placeholder.json
