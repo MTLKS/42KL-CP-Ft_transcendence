@@ -18,7 +18,8 @@ export default {
       },
       animation: {
         'pulse-short': 'pulse 0.3s ease-in-out 1',
-        'right-to-left': 'right-to-left 0.5s ease-out 1'
+        'left-to-right': 'left-to-right 1',
+        'shine': 'shine 2s infinite'
       }
     },
   },
