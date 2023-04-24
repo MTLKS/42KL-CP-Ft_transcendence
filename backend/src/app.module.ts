@@ -10,13 +10,13 @@ import { MulterModule } from '@nestjs/platform-express';
 import { StatusService } from './status/status.service';
 import { StatusGateway } from './status/status.gateway';
 import { ChatController } from './chat/chat.controller';
+import { ChatController } from './chat/chat.controller';
 import { TFAController } from './tfa/tfa.controller';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
 import { ChatService } from './chat/chat.service';
 import { Message } from './entity/message.entity';
 import { Channel } from './entity/channel.entity';
-import { ChatGateway } from './chat/chat.gateway';
 import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Status } from './entity/status.entity';
@@ -32,11 +32,15 @@ import { GameService } from './game/game.service';
 @Module({
   imports: [
     TypeOrmModule.forRoot(TYPEORM_CONFIG),
-    TypeOrmModule.forFeature([User]),
-    TypeOrmModule.forFeature([Friendship]),
-    TypeOrmModule.forFeature([Status]),
+    TypeOrmModule.forFeature([
+      User,
+      Friendship,
+      Status,
+      Channel,
+      Member,
+      Message,
+    ]),
     MulterModule.register(MULTER_CONFIG),
-    ChatModule,
   ],
   controllers: [
     AppController,
@@ -44,6 +48,7 @@ import { GameService } from './game/game.service';
     UserController,
     TFAController,
     FriendshipController,
+    ChatController,
   ],
   providers: [
     AppService,
@@ -53,8 +58,7 @@ import { GameService } from './game/game.service';
     FriendshipService,
     StatusGateway,
     StatusService,
-    GameGateway,
-    GameService,
+    ChatService,
   ],
 })
 export class AppModule {}
