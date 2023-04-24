@@ -30,6 +30,6 @@ export class User {
   @Column()
   avatar: string;
 
-  @Column( { nullable: true } )
+  @Column({ nullable: true })
   tfaSecret: string;
 }

@@ -28,11 +28,11 @@ export class StatusService {
 		this.joinFriendRooms(client, USER_DATA.intraName);
 		if (STATUS.length !== 0) {
 			STATUS[0].clientId = client.id;
-			this.statusRepository.save(STATUS[0]);
+			await this.statusRepository.save(STATUS[0]);
 			return STATUS[0];
 		}
 		const NEW_STATUS = new Status(USER_DATA.intraName, client.id, "ONLINE");
-		this.statusRepository.save(NEW_STATUS);
+		await this.statusRepository.save(NEW_STATUS);
 		return NEW_STATUS;
 	}
 	
@@ -45,12 +45,12 @@ export class StatusService {
 	async userChangeStatus(client: any, newStatus: string, server: any): Promise<any> {
 		const STATUS = await this.statusRepository.find({ where: {clientId: client.id} });
 		if (STATUS.length === 0)
-			return server.emit({ "error": "Invalid client id" });
+			return server.emit({ "error": "Invalid client id - Client ID not found" });
 		if (newStatus.toUpperCase() != "ONLINE" && newStatus.toUpperCase() != "OFFLINE" && newStatus.toUpperCase() != "INGAME")
 			return server.emit('changeStatus', { "error": "Invalid status - status can only be ONLINE, OFFLINE or INGAME" });
 		server.to(STATUS[0].intraName).emit('changeStatus', { "intraName": STATUS[0].intraName, "status": newStatus.toUpperCase() });
 		STATUS[0].status = newStatus.toUpperCase();
-		this.statusRepository.save(STATUS[0])
+		await this.statusRepository.save(STATUS[0])
 		return server.emit('changeStatus', STATUS[0]);
 	}
 }

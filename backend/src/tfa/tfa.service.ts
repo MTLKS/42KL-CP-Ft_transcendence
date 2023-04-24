@@ -21,7 +21,7 @@ export class TFAService{
 			const SERVICE = "PONGSH"
 			const OTP_PATH = authenticator.keyuri(ACCOUNT_NAME, SERVICE, DATA[0].tfaSecret);
 			const IMAGE_URL = await qrCode.toDataURL(OTP_PATH);
-			this.userRepository.save(DATA[0]);
+			await this.userRepository.save(DATA[0]);
 			return { qr : IMAGE_URL, secretKey : DATA[0].tfaSecret };
 		} catch {
 			return { qr: null, secretKey: null };

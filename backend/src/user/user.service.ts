@@ -14,7 +14,7 @@ export class UserService {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
-			return { "error": "Invalid access token" }
+			return { "error": "Invalid access token - access token is invalid" }
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
 		if (USER_DATA.length === 0)
@@ -38,7 +38,7 @@ export class UserService {
 		if (RESPONSE.status !== 200)
 			return []
 		const USER_DATA = await RESPONSE.json();
-		const INTRA_DTO = new IntraDTO({
+		return new IntraDTO({
 			id: USER_DATA.id,
 			url: USER_DATA.url,
 			name: USER_DATA.login,
@@ -47,7 +47,6 @@ export class UserService {
 			imageLarge: USER_DATA.image.versions.large,
 			blackhole: USER_DATA.cursus_users[1].blackholed_at
 		});
-		return INTRA_DTO;
 	}
 
 	// Use intraName to get user info
@@ -81,7 +80,7 @@ export class UserService {
 			headers : { 'Authorization': HEADER }
 		});
 		userData = await response.json();
-		const INTRA_DTO = new IntraDTO({
+		return new IntraDTO({
 			id: userData.id,
 			url: userData.url,
 			name: userData.login,
@@ -89,8 +88,7 @@ export class UserService {
 			imageMedium: userData.image.versions.medium,
 			imageLarge: userData.image.versions.large,
 			blackhole: userData.cursus_users[1].blackholed_at
-		});
-		return INTRA_DTO;
+		});;
 	}
 
 	// Gets user avatar by intraName
@@ -108,7 +106,7 @@ export class UserService {
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
 		if (USER_DATA.length === 0)
-			return { "error": "User does not exist" };
+			return { "error": "Invalid intraName - user does not exist" };
 		return USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
@@ -120,7 +118,7 @@ export class UserService {
 			return { "error": errMsg }
 		}
 		if (file === undefined)
-			return { "error": "No avatar image given" }
+			return { "error": "Invalid file path - no avatar image given" }
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
@@ -130,9 +128,9 @@ export class UserService {
 		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
 		const EXISTING = await this.userRepository.find({ where: {userName} });
 		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
-			return ERROR_DELETE("Username already exists");
+			return ERROR_DELETE("Invalid username - username already exists");
 		if (userName.length > 16 || userName.length < 1)
-			return ERROR_DELETE("Username must be 1-16 characters only");
+			return ERROR_DELETE("Invalid username - username must be 1-16 characters only");
 		if (NEW_USER[0].avatar.includes("avatar/") && (process.env.DOMAIN + ":" + process.env.PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
 			FS.unlink(NEW_USER[0].avatar.substring(NEW_USER[0].avatar.indexOf('avatar/')), () => {});
 		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + file.path;

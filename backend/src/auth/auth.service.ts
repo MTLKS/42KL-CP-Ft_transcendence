@@ -43,10 +43,9 @@ export class AuthService {
 		if (ENTITY_USER.length)
 		{
 			ENTITY_USER[0].accessToken = RETURN_DATA.access_token;
-			this.userRepository.save(ENTITY_USER[0]);
+			await this.userRepository.save(ENTITY_USER[0]);
 		} else {
-			const NEW_USER = new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, 400, RETURN_DATA.access_token, INTRA_DTO.imageLarge, null)
-			this.userRepository.save(NEW_USER);
+			await this.userRepository.save(new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, 400, RETURN_DATA.access_token, INTRA_DTO.imageLarge, null));
 			return { accessToken, newUser: true };
 		}
 		return { accessToken, newUser: false };
