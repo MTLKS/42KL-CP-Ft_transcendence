@@ -9,6 +9,7 @@ import { Repository } from "typeorm";
 export class StatusService {
 	constructor(@InjectRepository(Status) private statusRepository: Repository<Status>, private userService: UserService, private friendShipService: FriendshipService) {}
 
+	// Joins all the rooms of the friends of the user
 	async joinFriendRooms(client: any, intraName: string): Promise<any> {
 		const FRIENDS = await this.friendShipService.getFriendshipByIntraNAme(intraName);
 		for (let i = 0; i < FRIENDS.length; i++){
@@ -17,6 +18,7 @@ export class StatusService {
 		}
 	}
 
+	// New user connection
 	async userConnect(client: any): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
@@ -34,10 +36,12 @@ export class StatusService {
 		return NEW_STATUS;
 	}
 	
+	// User disconnection
 	async userDisconnect(client: any): Promise<any> {
 		return await this.statusRepository.delete({ clientId: client.id });
 	}
 
+	// User status change
 	async userChangeStatus(client: any, newStatus: string, server: any): Promise<any> {
 		const STATUS = await this.statusRepository.find({ where: {clientId: client.id} });
 		if (STATUS.length === 0)
