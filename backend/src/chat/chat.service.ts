@@ -15,7 +15,7 @@ export class ChatService {
 
 	private chatRooms: RoomDTO[] = [];
 	
-	async createNewDM(accessToken: string, receiverIntraName): Promise<any> {
+	async createNewDM(accessToken: string, receiverIntraName: string): Promise<any> {
 		const SENDER = await this.userService.getMyUserData(accessToken);
 		if (receiverIntraName === undefined)
 			return {"error": "Invalid receiverIntraName - receiverIntraName(string) is undefined"};
