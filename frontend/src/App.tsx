@@ -33,27 +33,71 @@ function App() {
     </PolkaDotContainer>
   )
 
-  function checkIfLoggedIn() {
-    let loggin = false;
+  // function checkIfLoggedIn() {
+  //   let loggin = false;
 
-    getMyProfile().then((res) => {
-      if (res.data.accessToken) {
-        setLogged(true);
-        loggin = true;
-      }
-    }).catch((err) => {
-      console.log(err);
-      setLogged(false);
-    });
+  //   getMyProfile().then((res) => {
+  //     if (res.data.accessToken) {
+  //       setLogged(true);
+  //       loggin = true;
+  //     }
+  //   }).catch((err) => {
+  //     console.log(err);
+  //     setLogged(false);
+  //   });
 
-    if (loggin) return;
+  //   if (loggin) return;
 
+  //   const queryString: string = window.location.search;
+  //   const urlParams: URLSearchParams = new URLSearchParams(queryString);
+  //   let code: { code: string | null } = { code: urlParams.get('code') };
+
+  //   if (code.code) {
+  //     checkAuth(code.code).then(async (res) => {
+  //       if (res) {
+  //         console.log(res);
+  //         console.log((res as any).data.accessToken);
+  //         localStorage.setItem('Authorization', (res as any).data.accessToken);
+  //         if ((res as any).data.accessToken)
+  //           document.cookie = `Authorization=${(res as any).data.accessToken};`;
+  //         if ((res as any).data.newUser) {
+  //           setUserData((await getMyProfile()).data);
+  //           setNewUser(true);
+  //         }
+  //         else
+  //           login();
+  //       }
+  //     }).catch((err) => {
+  //       console.log(err);
+  //     });
+  //   }
+  // }
+
+  async function checkIfLoggedIn() {
+    const loggedIn = await getMyProfile()
+      .then((res) => {
+        if (res.data.accessToken) {
+          return true;
+        }
+        return false;
+      })
+      .catch((err) => {
+        console.log(err);
+        return false;
+      });
+  
+    if (loggedIn) {
+      setLogged(true);
+      return;
+    }
+  
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     let code: { code: string | null } = { code: urlParams.get('code') };
-
+  
     if (code.code) {
-      checkAuth(code.code).then(async (res) => {
+      try {
+        const res = await checkAuth(code.code);
         if (res) {
           console.log(res);
           console.log((res as any).data.accessToken);
@@ -63,13 +107,13 @@ function App() {
           if ((res as any).data.newUser) {
             setUserData((await getMyProfile()).data);
             setNewUser(true);
-          }
-          else
+          } else {
             login();
+          }
         }
-      }).catch((err) => {
+      } catch (err) {
         console.log(err);
-      });
+      }
     }
   }
 }
