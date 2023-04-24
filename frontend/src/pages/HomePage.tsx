@@ -17,6 +17,7 @@ import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
 import { FriendData } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
+import FriendRequest from '../widgets/FriendRequest';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
@@ -43,6 +44,7 @@ function HomePage() {
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = React.useState(false);
+  const [friendRequests, setFriendRequests] = React.useState(0);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -59,9 +61,15 @@ function HomePage() {
     });
   }, []);
 
+  useEffect(() => {
+    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName).length;
+    setFriendRequests(totalFriendRequests);
+  }, [myFriends]);
+
   return (
     <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
+      {friendRequests !== 0 && <FriendRequest total={friendRequests}/>}
       <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
         ref={pageRef}
       >
@@ -147,9 +155,6 @@ function HomePage() {
         setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
           setLeftWidget(null);
         }} />);
-        // setLeftWidget(<Less onQuit={() => {
-        //   setLeftWidget(null);
-        // }} />);
         break;
       default:
         const newErrorCard = errorCard();
