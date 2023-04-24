@@ -28,7 +28,7 @@ let myProfile: UserData = {
   avatar: "4.png",
   elo: 400,
   intraId: 130305,
-  intraName: "itan",
+  intraName: "wricky-t",
   tfaSecret: null,
   userName: "Ijon"
 };

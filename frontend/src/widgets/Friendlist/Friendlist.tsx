@@ -117,7 +117,7 @@ function Friendlist(props: FriendlistProps) {
     if (sortedFriends.length === 0) return [<EmptyFriendlist />];
 
     components.push(
-      <FriendlistEmptyLine />,
+      <FriendlistEmptyLine key="el0" />,
       <FriendlistTitle searchTerm={searchTerm}/>
     );
 
@@ -139,9 +139,9 @@ function Friendlist(props: FriendlistProps) {
         }
 
         components.push(
-          <FriendlistEmptyLine />,
+          <FriendlistEmptyLine key={friend.status+`_el1`}/>,
           <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm}/>,
-          <FriendlistEmptyLine />
+          <FriendlistEmptyLine key={friend.status+`_el2`}/>
           );
         prevCategory = friend.status;
       }
