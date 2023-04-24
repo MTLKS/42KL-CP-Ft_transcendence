@@ -13,6 +13,12 @@ export class ChatController {
 		return this.chatService.createNewDM(accessToken, body.receiverIntraName);
 	}
 
+	@Post('room')
+	@UseGuards(AuthGuard)
+	createNewRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.createNewRoom(accessToken, body.roomName, body.isPrivate, body.password);
+	}
+
 	// //Get all chat of a user
 	// @Get(':id')
 	// async getAllChatByID(@Param('id') id: string): any{

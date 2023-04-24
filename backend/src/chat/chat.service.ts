@@ -18,23 +18,31 @@ export class ChatService {
 	async createNewDM(accessToken: string, receiverIntraName): Promise<any> {
 		const SENDER = await this.userService.getMyUserData(accessToken);
 		if (receiverIntraName === undefined)
-			return {"error": "Invalid receiverIntraName - receiverIntraName is undefined"};
+			return {"error": "Invalid receiverIntraName - receiverIntraName(string) is undefined"};
 		if (receiverIntraName === SENDER.intraName)
 			return {"error": "Invalid receiverIntraName - you can't DM yourself"};
 		const RECEIVER = await this.userService.getUserDataByIntraName(receiverIntraName);
 		if (RECEIVER === undefined)
 			return {"error": "Invalid receiverIntraName - receiverIntraName is not found"};
-
-		const EXISTING = [...await this.channelRepository.find({ where: {roommateIntraName: SENDER.intraName} }), ...await this.channelRepository.find({ where: {roommateIntraName: RECEIVER.intraName} })];
-		if (EXISTING.length !== 0)
+		if ([...await this.channelRepository.find({ where: {roommateIntraName: SENDER.intraName} }), ...await this.channelRepository.find({ where: {roommateIntraName: RECEIVER.intraName} })].length !== 0)
 			return {"error": "DM already exist"}
 
-		const NEW_CHANNEL = new Channel(null, null, true, null, false, RECEIVER.intraName);
-		const SAVED_CHANNEL = await this.channelRepository.save(NEW_CHANNEL);
-		const MEMBER1 = new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString());
-		const MEMBER2 = new Member(SAVED_CHANNEL.channelId, RECEIVER.userName, true, false, false, new Date().toISOString());
-		this.memberRepository.save(MEMBER1);
-		this.memberRepository.save(MEMBER2);
+		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(null, null, true, null, false, RECEIVER.intraName));
+		this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
+		this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, RECEIVER.userName, true, false, false, new Date().toISOString()));
+	}
+
+	async createNewRoom(accessToken: string, roomName: string, isPrivate: boolean, password: string): Promise<any> {
+		const SENDER = await this.userService.getMyUserData(accessToken);
+		for (var value of [roomName, isPrivate, password]) {
+			if (value === undefined)
+				return {"error": "Invalid body - body must include roomName(string), isPrivate(boolean), and password(nullable string)"};
+		}
+		if (roomName.length > 16 || roomName.length < 1)
+			return {"error": "Invalid roomName - roomName is must be 1-16 characters only"};
+		
+		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(roomName, SENDER.intraName, isPrivate, password, true, null));
+		this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
 	}
 
 	//Used when a user start a new chat or join a new group
