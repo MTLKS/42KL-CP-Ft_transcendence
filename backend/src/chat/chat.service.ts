@@ -28,8 +28,8 @@ export class ChatService {
 			return {"error": "DM already exist"}
 
 		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(null, null, true, null, false, RECEIVER.intraName));
-		this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
-		this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, RECEIVER.userName, true, false, false, new Date().toISOString()));
+		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
+		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, RECEIVER.userName, true, false, false, new Date().toISOString()));
 	}
 
 	async createNewRoom(accessToken: string, roomName: string, isPrivate: boolean, password: string): Promise<any> {
@@ -42,7 +42,7 @@ export class ChatService {
 			return {"error": "Invalid roomName - roomName is must be 1-16 characters only"};
 		
 		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(roomName, SENDER.intraName, isPrivate, password, true, null));
-		this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
+		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
 	}
 
 	//Used when a user start a new chat or join a new group

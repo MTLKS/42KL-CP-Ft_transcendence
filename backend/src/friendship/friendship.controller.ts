@@ -14,7 +14,7 @@ export class FriendshipController {
 		return this.friendshipService.getFriendship(accessToken);
 	}
 
-	// Get all friendship by ID
+	// Get all friendship by intraName
 	@Get(":intraName")
 	@UseGuards(AuthGuard)
 	getFriendshipByID(@Param('intraName') intraName: string): any {
@@ -25,20 +25,20 @@ export class FriendshipController {
 	@Post()
 	@UseGuards(AuthGuard)
 	newFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.newFriendship(accessToken, body.receiverId, body.status);
+		return this.friendshipService.newFriendship(accessToken, body.receiverIntraName, body.status);
 	}
 
 	// Update friendship by ID
 	@Patch()
 	@UseGuards(AuthGuard)
 	updateFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.updateFriendship(accessToken, body.receiverId, body.status);
+		return this.friendshipService.updateFriendship(accessToken, body.receiverIntraName, body.status);
 	}
 	
 	//Delete friendship by ID
 	@Delete()
 	@UseGuards(AuthGuard)
 	deleteFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.deleteFriendship(accessToken, body.receiverId, body.status);
+		return this.friendshipService.deleteFriendship(accessToken, body.receiverIntraName, body.status);
 	}
 }
