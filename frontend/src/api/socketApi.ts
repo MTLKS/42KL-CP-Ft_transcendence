@@ -2,7 +2,7 @@ import { Socket, io } from "socket.io-client";
 
 const baseURL = import.meta.env.VITE_API_URL as string;
 
-export type Events = "userStatus" | "userDisconnect";
+export type Events = "userConnect" | "userDisconnect" | "changeStatus";
 
 class SocketApi {
   socket: Socket;
@@ -30,8 +30,8 @@ class SocketApi {
     this.socket.on(event, callBack);
   }
 
-  sendMessages<T>(data: T) {
-    this.socket.emit("userConnect", data);
+  sendMessages<T>(event: Events, data: T) {
+    this.socket.emit(event, data);
   }
 
   disconnect() {
