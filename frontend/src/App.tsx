@@ -23,13 +23,13 @@ function App() {
   }
   else if (logged) {
     page = <HomePage />;
-  } 
+  }
 
   return (
     <PolkaDotContainer>
-      <MouseCursor>
-        {page}
-      </MouseCursor>
+      {/* <MouseCursor> */}
+      {page}
+      {/* </MouseCursor> */}
     </PolkaDotContainer>
   )
 
