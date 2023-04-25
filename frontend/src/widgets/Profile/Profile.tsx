@@ -4,6 +4,8 @@ import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
 import { UserData } from '../../modal/UserData';
+import socketApi from '../../api/socketApi';
+import { status } from '../../functions/friendlist';
 
 interface ProfileProps {
   userData: UserData;
@@ -13,6 +15,8 @@ function Profile(props: ProfileProps) {
   const { userData } = props;
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
+  const [status, setStatus] = useState("online");
+  const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
@@ -21,13 +25,25 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     pixelatedToSmooth();
-  }, [userData.avatar]);
+    console.log("ok");
+    socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: true });
+    socketApi.listen("statusRoom", (data: any) => {
+      setStatus((data.status as string).toLowerCase());
+      console.log(data);
+    });
+
+    return () => {
+      console.log("delete");
+      socketApi.removeListener("statusRoom");
+      socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: false });
+    }
+  }, [userData.avatar, userData.intraName]);
 
   return (<div className='w-full bg-highlight flex flex-col items-center box-border'
     onClick={onProfileClick}
   >
-    <ProfileHeader expanded={expanded} userData={userData} />
-    <ProfileBody expanded={expanded} pixelSize={pixelSize} userData={userData} />
+    <ProfileHeader expanded={expanded} userData={userData} status={status} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} userData={userData} status={status} />
     <RecentMatches expanded={expanded} />
   </div>);
 
@@ -49,12 +65,19 @@ function Profile(props: ProfileProps) {
     }
   }
 
-  function onProfileClick() {
+  async function onProfileClick() {
+    if (animating) return;
+    handleAnimate();
     setExpanded(!expanded);
     if (pixelSize > 1) return;
     pixelatedToSmooth();
   }
 
+  async function handleAnimate() {
+    setAnimating(true);
+    await sleep(500);
+    setAnimating(false);
+  }
 }
 
 export default Profile
