@@ -5,21 +5,25 @@ import { Body } from '@nestjs/common';
 
 @WebSocketGateway({ cors : {origin: '*'} })
 export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
-	@WebSocketServer() server: Server;
-	
 	constructor (private readonly statusService: StatusService) {}
+	
+	@WebSocketServer() server: Server;
 
-	async handleConnection(client: any, ...args: any[]) {
-		client.on('userConnect', () => {});
-		await this.statusService.userConnect(client);
+	async handleConnection(client: any) {
+		await this.statusService.userConnect(client, this.server);
 	}
 	
 	async handleDisconnect(client: any) {
-		await this.statusService.userDisconnect(client);
+		await this.statusService.userDisconnect(client, this.server);
 	}
 	
 	@SubscribeMessage('changeStatus')
-	async handleChangeStatus(@ConnectedSocket() client: Socket, @Body() body: any){
-		await this.statusService.userChangeStatus(client, body.status, this.server);
+	async changeStatus(@ConnectedSocket() client: Socket, @Body() body: any) {
+		await this.statusService.changeStatus(client, this.server, body.newStatus);
+	}
+
+	@SubscribeMessage('statusRoom')
+	async joinStatusRoom(@ConnectedSocket() client: Socket, @Body() body: any) {
+		await this.statusService.statusRoom(client, this.server, body.intraName, body.action);
 	}
 }
