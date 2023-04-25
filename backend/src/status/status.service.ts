@@ -66,9 +66,14 @@ export class StatusService {
 				return server.emit('statusRoom', { "error": "Invalid token - Token not found" });
 			const FRIEND_STATUS = await this.statusRepository.find({ where: {intraName: intraName} });
 			const MY_STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
-			server.to(intraName).emit('statusRoom', { "intraName": MY_STATUS[0].intraName, "status": MY_STATUS[0].status });
-			client.join(intraName);
-			server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
+			if (FRIEND_STATUS.length === 0) {
+				client.join(intraName);
+				server.to(intraName).emit('statusRoom', { "intraName": intraName, "status": "OFFLINE" });
+			} else {
+				server.to(intraName).emit('statusRoom', { "intraName": MY_STATUS[0].intraName, "status": MY_STATUS[0].status });
+				client.join(intraName);
+				server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
+			}
 		} else {
 			client.leave(intraName);
 		}
