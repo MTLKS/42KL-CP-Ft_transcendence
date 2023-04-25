@@ -1,7 +1,8 @@
 import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, ConnectedSocket, WebSocketServer } from '@nestjs/websockets';
 import { StatusService } from './status.service';
+import { Body, UseGuards } from '@nestjs/common';
+import { AuthGuard } from 'src/guard/AuthGuard';
 import { Socket,Server } from 'socket.io';
-import { Body } from '@nestjs/common';
 
 @WebSocketGateway({ cors : {origin: '*'} })
 export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -9,21 +10,25 @@ export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	
 	@WebSocketServer() server: Server;
 
+	@UseGuards(AuthGuard)
 	async handleConnection(client: any) {
 		await this.statusService.userConnect(client, this.server);
 	}
 	
+	@UseGuards(AuthGuard)
 	async handleDisconnect(client: any) {
 		await this.statusService.userDisconnect(client, this.server);
 	}
 	
+	@UseGuards(AuthGuard)
 	@SubscribeMessage('changeStatus')
 	async changeStatus(@ConnectedSocket() client: Socket, @Body() body: any) {
 		await this.statusService.changeStatus(client, this.server, body.newStatus);
 	}
-
+	
+	@UseGuards(AuthGuard)
 	@SubscribeMessage('statusRoom')
 	async joinStatusRoom(@ConnectedSocket() client: Socket, @Body() body: any) {
-		await this.statusService.statusRoom(client, this.server, body.intraName, body.action);
+		await this.statusService.statusRoom(client, this.server, body.intraName, body.joining);
 	}
 }

@@ -45,8 +45,8 @@ export class StatusService {
 		const STATUS = await this.statusRepository.find({ where: {clientId: client.id} });
 		if (STATUS.length === 0)
 			return server.emit('changeStatus', { "error": "Invalid client id - Client ID not found" });
-		if (newStatus === undefined || (newStatus.toUpperCase() != "ONLINE" && newStatus.toUpperCase() != "OFFLINE" && newStatus.toUpperCase() != "INGAME"))
-			return server.emit('changeStatus', { "error": "Invalid status - status can only be ONLINE, OFFLINE or INGAME" });
+		if (newStatus === undefined || (newStatus.toUpperCase() != "ONLINE" && newStatus.toUpperCase() != "INGAME"))
+			return server.emit('changeStatus', { "error": "Invalid status - status can only be ONLINE or INGAME" });
 		server.to(STATUS[0].intraName).emit('changeStatus', { "intraName": STATUS[0].intraName, "status": newStatus.toUpperCase() });
 		server.to(STATUS[0].intraName).emit('statusRoom', { "intraName": STATUS[0].intraName, "status": newStatus.toUpperCase() });
 		STATUS[0].status = newStatus.toUpperCase();
@@ -55,25 +55,22 @@ export class StatusService {
 	}
 
 	// User join status room based on intraName
-	async statusRoom(client: any, server: any, intraName: string, action: string): Promise<any> {
+	async statusRoom(client: any, server: any, intraName: string, joining: boolean): Promise<any> {
 		if (intraName === undefined)
 			return ;
-		if (action === undefined)
-			return server.to(intraName).emit('statusRoom', { "error": "Invalid action - Action can only be JOIN or LEAVE" });
-		if (action.toUpperCase() === "JOIN") {
+		if (joining === undefined)
+			return server.to(intraName).emit('statusRoom', { "error": "Invalid body - joining(boolean) is undefined" });
+		if (joining === true) {
 			const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 			if (USER_DATA.error !== undefined)
 				return server.emit('statusRoom', { "error": "Invalid token - Token not found" });
-			console.log("Client requested to joined to", intraName);
 			const FRIEND_STATUS = await this.statusRepository.find({ where: {intraName: intraName} });
 			const MY_STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
 			server.to(intraName).emit('statusRoom', { "intraName": MY_STATUS[0].intraName, "status": MY_STATUS[0].status });
 			client.join(intraName);
 			server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
-		} else if (action.toUpperCase() === "LEAVE") {
-			client.leave(intraName);
 		} else {
-			server.to(intraName).emit('statusRoom', { "error": "Invalid action - Action can only be JOIN or LEAVE" });
+			client.leave(intraName);
 		}
 	}
 }
