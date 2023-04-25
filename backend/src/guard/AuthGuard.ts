@@ -17,10 +17,16 @@ export class AuthGuard implements CanActivate
 	// Check if the access token is valid with the database
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const REQUEST = context.switchToHttp().getRequest();
-		const AUTH_CODE = REQUEST.header('Authorization');
-		console.log(BLUE + "Authorization code:", AUTH_CODE + RESET);
+		let authCode: string;
 		try {
-			const ACCESS_TOKEN = CryptoJS.AES.decrypt(AUTH_CODE, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+			authCode = REQUEST.header('Authorization');
+		} catch {
+			authCode = REQUEST.handshake.headers.authorization;
+		}
+
+		console.log(BLUE + "Authorization code:", authCode + RESET);
+		try {
+			const ACCESS_TOKEN = CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 			console.log(BLUE + "accessToken:", ACCESS_TOKEN + RESET);
 			const USER = await this.userRepository.find({ where: {accessToken: ACCESS_TOKEN} })
 			console.log(USER.length !== 0 ? GREEN + USER[0].intraName + " has connected" + RESET : RED + "Authorization is invalid" + RESET);

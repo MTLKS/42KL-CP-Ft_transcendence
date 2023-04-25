@@ -128,7 +128,7 @@ export class UserService {
 		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
 		const EXISTING = await this.userRepository.find({ where: {userName} });
 		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
-			return ERROR_DELETE("Invalid username - username already exists");
+			return ERROR_DELETE("Invalid username - username already exists or invalid");
 		if (userName.length > 16 || userName.length < 1)
 			return ERROR_DELETE("Invalid username - username must be 1-16 characters only");
 		if (NEW_USER[0].avatar.includes("avatar/") && (process.env.DOMAIN + ":" + process.env.PORT + "/user/" + file.path) !== NEW_USER[0].avatar)
