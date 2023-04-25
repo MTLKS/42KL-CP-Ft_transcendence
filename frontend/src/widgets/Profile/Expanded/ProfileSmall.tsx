@@ -6,10 +6,11 @@ import { UserData } from '../../../modal/UserData';
 interface ProfileSmallProps {
   expanded: boolean;
   userData: UserData;
+  status: string;
 }
 
 function ProfileSmall(props: ProfileSmallProps) {
-  const { expanded, userData } = props;
+  const { expanded, userData, status } = props;
   const { userName } = userData;
   const [width, setWidth] = useState("w-0");
 
@@ -29,7 +30,7 @@ function ProfileSmall(props: ProfileSmallProps) {
       </div>
       <div className=' bg-dimshadow w-1 h-16 mr-5' />
       <div>
-        <StatusIndicator status="offline" />
+        <StatusIndicator status={status} />
       </div>
     </div>
   )
