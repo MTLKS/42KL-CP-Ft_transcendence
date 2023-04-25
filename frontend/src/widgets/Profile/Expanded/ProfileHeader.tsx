@@ -6,10 +6,11 @@ import { UserData } from '../../../modal/UserData';
 interface ProfileHeaderProps {
   expanded: boolean;
   userData: UserData;
+  status: string;
 }
 
 function ProfileHeader(props: ProfileHeaderProps) {
-  const { expanded, userData } = props;
+  const { expanded, userData, status } = props;
   const { userName, intraName } = userData;
   const maxHeight = 80;
   const [height, setHeight] = useState(0);
@@ -30,7 +31,7 @@ function ProfileHeader(props: ProfileHeaderProps) {
         <div className=' text-xs text-highlight'>THE BLACKHOLE DESTROYER</div>
       </div>
       <div className='flex flex-row w-fit items-center bg-dimshadow p-8'>
-        <StatusIndicator status="offline" invert={true} />
+        <StatusIndicator status={status} invert={true} />
       </div>
     </div>
   )
