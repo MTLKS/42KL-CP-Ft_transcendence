@@ -1,0 +1,34 @@
+import { WebSocketGateway, SubscribeMessage, ConnectedSocket, MessageBody, WebSocketServer } from "@nestjs/websockets";
+import { GameService } from "./game.service";
+import { Socket, Server } from 'socket.io';
+
+@WebSocketGateway({ cors : {origin: '*'}, namespace: 'game'})
+export class GameGateway {
+	constructor (private readonly gameService: GameService) {}
+
+	@WebSocketServer()
+	server: Server;
+
+	@SubscribeMessage('startGame')
+	async startGame(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket, @MessageBody() body: any){
+		const BODY = JSON.parse(body);
+
+		//May send info such as clientID, player name through socket.data
+		// console.log(player1.data);
+		await this.gameService.startGame(player1, player2, BODY, this.server);
+	}
+
+	@SubscribeMessage('gameEnd')
+	async gameEnd(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket){
+		await this.gameService.gameEnd(player1, player2);
+	}
+
+	@SubscribeMessage('keyDown')
+	async handleKeyDown(@ConnectedSocket() client: Socket){
+
+	}
+
+	@SubscribeMessage('keyUp')
+	async handleKeyUp(@ConnectedSocket() client: Socket){
+	}
+}
