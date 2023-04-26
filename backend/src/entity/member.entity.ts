@@ -2,9 +2,9 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity( { name: 'member' } )
 export class Member {
-	constructor(channelId: number, userName: string, admin: boolean, banned: boolean, muted: boolean, lastRead: string) {
+	constructor(channelId: number, intraName: string, admin: boolean, banned: boolean, muted: boolean, lastRead: string) {
 		this.channelId = channelId;
-		this.userName = userName;
+		this.intraName = intraName;
 		this.admin = admin;
 		this.banned = banned;
 		this.muted = muted;
@@ -18,7 +18,7 @@ export class Member {
 	channelId: number;
 	
 	@Column()
-	userName: string;
+	intraName: string;
 
 	@Column()
 	admin: boolean;
