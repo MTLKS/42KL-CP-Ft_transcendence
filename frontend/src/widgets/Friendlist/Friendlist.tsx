@@ -53,8 +53,7 @@ function Friendlist(props: FriendlistProps) {
 
   // calibrate the value of start and ending index
   useEffect(() => {
-    if (maxDisplayLines > lines.length)
-    {
+    if (maxDisplayLines > lines.length) {
       setEndingIndex(lines.length);
       setStartingIndex(0);
     }
@@ -71,13 +70,13 @@ function Friendlist(props: FriendlistProps) {
         value={inputValue}
         ref={inputRef}
       />
-        <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
-          {
-            friendsData.length === 0
-              ? <EmptyFriendlist />
-              : lines.slice(startingIndex, endingIndex)
-          }
-        </div>
+      <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
+        {
+          friendsData.length === 0
+            ? <EmptyFriendlist />
+            : lines.slice(startingIndex, endingIndex)
+        }
+      </div>
       <p className={`absolute bottom-0 left-0 ${friendsData.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
         {
           (!isSearching || inputValue === "")
@@ -121,7 +120,7 @@ function Friendlist(props: FriendlistProps) {
 
     components.push(
       <FriendlistEmptyLine key="el0" />,
-      <FriendlistTitle searchTerm={searchTerm}/>
+      <FriendlistTitle searchTerm={searchTerm} />
     );
 
     sortedFriends.map((friend) => {
@@ -142,10 +141,10 @@ function Friendlist(props: FriendlistProps) {
         }
 
         components.push(
-          <FriendlistEmptyLine key={friend.status+`_el1`}/>,
-          <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm}/>,
-          <FriendlistEmptyLine key={friend.status+`_el2`}/>
-          );
+          <FriendlistEmptyLine key={friend.status + `_el1`} />,
+          <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm} />,
+          <FriendlistEmptyLine key={friend.status + `_el2`} />
+        );
         prevCategory = friend.status;
       }
       components.push(
@@ -207,7 +206,9 @@ function Friendlist(props: FriendlistProps) {
     setInputValue(value.toLowerCase());
     if (value[0] === '/') {
       setIsSearching(true);
+      return;
     }
+    setInputValue("");
   }
 }
 

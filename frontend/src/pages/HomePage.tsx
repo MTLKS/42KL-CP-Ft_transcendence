@@ -10,23 +10,22 @@ import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
 import Less from '../widgets/Less';
 import api from '../api/api';
-import socketApi from '../api/socketApi';
 import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
-import { FriendData } from '../modal/FriendData';
+import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
+import SocketApi from '../api/socketApi';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
-let myFriends: FriendData[] = [];
 
 let myProfile: UserData = {
   accessToken: "hidden",
-  avatar: "4.png",
+  avatar: "",
   elo: 400,
   intraId: 130305,
   intraName: "wricky-t",
@@ -44,32 +43,61 @@ function HomePage() {
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = React.useState(false);
+  const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = React.useState(0);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    socketApi.connect();
-    getMyProfile().then((profile) => {
-      myProfile = profile.data as UserData;
-      console.log(myProfile);
-      setTopWidget(<Profile userData={myProfile} />);
-    });
-    getFriendList().then((friends) => {
-      myFriends = friends.data as FriendData[];
-      console.log(myFriends);
-    });
-  }, []);
+  const friendshipSocket = new SocketApi("friendship");
+
+  const initFriendshipSocket = () => {
+    friendshipSocket.listen("friendshipRoom", (data: any) => {
+      getFriendList().then((friends) => {
+        const newFriendsData = friends.data as FriendData[];
+        setMyFriends(newFriendsData);
+      });
+    })
+
+    // function addToFriendRoom(intraName: string) {
+    //   console.log(intraName);
+    //   friendshipSocket.sendMessages("friendshipRoom", {intraName: intraName});
+    //   friendshipSocket.listen("friendshipRoom", (data: any) => {
+    //     console.log(data);
+    //   })
+    // }
+
+    // await api.post("/friendship", {receiverIntraName: "itan", status: "PENDING"})
+    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
+    //         .catch((err) => console.log(err));
+
+    // await api.post("/friendship", {receiverIntraName: "schuah", status: "PENDING"})
+    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
+    //         .catch((err) => console.log(err));
+  }
 
   useEffect(() => {
     const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName).length;
     setFriendRequests(totalFriendRequests);
   }, [myFriends]);
 
+  useEffect(() => {
+    getMyProfile().then((profile) => {
+      myProfile = profile.data as UserData;
+      setTopWidget(<Profile userData={myProfile} />);
+    });
+
+    initFriendshipSocket();
+
+    getFriendList().then((friends) => {
+      const newFriendsData = friends.data as FriendData[];
+      setMyFriends(newFriendsData);
+    });
+  }, []);
+
   return (
     <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
-      {friendRequests !== 0 && <FriendRequest total={friendRequests}/>}
+      {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
       <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
         ref={pageRef}
       >

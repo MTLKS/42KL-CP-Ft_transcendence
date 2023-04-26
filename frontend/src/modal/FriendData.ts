@@ -8,6 +8,13 @@ export interface FriendData {
   avatar: string;
 }
 
+export interface FriendRequestType {
+  id: number;
+  receiverIntraName: string;
+  senderIntraName: string;
+  status: string;
+}
+
 export const FriendTags = {
   accepted: "accepted",
   muted: "muted",
