@@ -25,7 +25,6 @@ export class StatusService {
     client.join(USER_DATA.intraName);
     if (STATUS.length !== 0) {
       STATUS[0].clientId = client.id;
-      STATUS[0].status = 'ONLINE';
       await this.statusRepository.save(STATUS[0]);
       return STATUS[0];
     }
@@ -59,8 +58,7 @@ export class StatusService {
         intraName: STATUS[0].intraName,
         status: 'OFFLINE',
       });
-    STATUS[0].status = 'OFFLINE';
-    return await this.statusRepository.save(STATUS[0]);
+    return await this.statusRepository.delete({ clientId: client.id });
   }
 
   // User status change
@@ -82,18 +80,14 @@ export class StatusService {
       return server.emit('changeStatus', {
         error: 'Invalid status - status can only be ONLINE, OFFLINE or INGAME',
       });
-    server
-      .to(STATUS[0].intraName)
-      .emit('changeStatus', {
-        intraName: STATUS[0].intraName,
-        status: newStatus.toUpperCase(),
-      });
-    server
-      .to(STATUS[0].intraName)
-      .emit('statusRoom', {
-        intraName: STATUS[0].intraName,
-        status: newStatus.toUpperCase(),
-      });
+    server.to(STATUS[0].intraName).emit('changeStatus', {
+      intraName: STATUS[0].intraName,
+      status: newStatus.toUpperCase(),
+    });
+    server.to(STATUS[0].intraName).emit('statusRoom', {
+      intraName: STATUS[0].intraName,
+      status: newStatus.toUpperCase(),
+    });
     STATUS[0].status = newStatus.toUpperCase();
     await this.statusRepository.save(STATUS[0]);
     return STATUS[0];
@@ -125,19 +119,20 @@ export class StatusService {
       const FRIEND_STATUS = await this.statusRepository.find({
         where: { intraName: intraName },
       });
-      if (FRIEND_STATUS.length === 0)
-        return server
+      if (FRIEND_STATUS.length === 0) {
+        client.join(intraName);
+        server
+          .to(intraName)
+          .emit('statusRoom', { intraName: intraName, status: 'OFFLINE' });
+      } else {
+        client.join(intraName);
+        server
           .to(intraName)
           .emit('statusRoom', {
-            error: 'Invalid intraName - IntraName not found',
+            intraName: FRIEND_STATUS[0].intraName,
+            status: FRIEND_STATUS[0].status,
           });
-      client.join(intraName);
-      server
-        .to(intraName)
-        .emit('statusRoom', {
-          intraName: FRIEND_STATUS[0].intraName,
-          status: FRIEND_STATUS[0].status,
-        });
+      }
     } else {
       client.leave(intraName);
     }
