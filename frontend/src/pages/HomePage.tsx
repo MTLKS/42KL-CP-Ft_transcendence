@@ -7,7 +7,7 @@ import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
-import Chat from '../widgets/Chat/Chat';
+import Chat from '../widgets/Chat2.0/Chat';
 import Less from '../widgets/Less';
 import api from '../api/api';
 import socketApi from '../api/socketApi';
