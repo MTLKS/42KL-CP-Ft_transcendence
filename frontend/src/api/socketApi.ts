@@ -6,13 +6,13 @@ export type Events =
   | "userConnect"
   | "userDisconnect"
   | "changeStatus"
-  | "statusRoom";
+  | "statusRoom"
+  | "friendshipRoom" ;
 
 class SocketApi {
   socket: Socket;
-  constructor() {
-    const URI = baseURL;
-    console.log("uri", URI);
+  constructor(namespace?: string) {
+    const URI = namespace ? `${baseURL}/${namespace}` : baseURL;
     this.socket = io(URI, {
       extraHeaders: {
         Authorization:
@@ -47,4 +47,4 @@ class SocketApi {
   }
 }
 
-export default new SocketApi();
+export default SocketApi;

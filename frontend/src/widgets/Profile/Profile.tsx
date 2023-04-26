@@ -4,13 +4,15 @@ import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
 import { UserData } from '../../modal/UserData';
-import socketApi from '../../api/socketApi';
+import SocketApi from '../../api/socketApi';
 import { status } from '../../functions/friendlist';
 
 interface ProfileProps {
   userData: UserData;
   expanded?: boolean;
 }
+
+
 function Profile(props: ProfileProps) {
   const { userData } = props;
   const [pixelSize, setPixelSize] = useState(400);
@@ -25,15 +27,13 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     pixelatedToSmooth();
-    console.log("ok");
+    const socketApi = new SocketApi();
     socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: true });
     socketApi.listen("statusRoom", (data: any) => {
       setStatus((data.status as string).toLowerCase());
-      console.log(data);
     });
 
     return () => {
-      console.log("delete");
       socketApi.removeListener("statusRoom");
       socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: false });
     }
