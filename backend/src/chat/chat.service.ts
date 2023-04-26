@@ -20,7 +20,7 @@ export class ChatService {
 		if (receiverIntraName === undefined)
 			return {"error": "Invalid receiverIntraName - receiverIntraName(string) is undefined"};
 		if (receiverIntraName === SENDER.intraName)
-			return {"error": "Invalid receiverIntraName - you can't DM yourself"};
+			return {"error": "Invalid receiverIntraName - no friends so you DM yourself?"};
 		const RECEIVER = await this.userService.getUserDataByIntraName(receiverIntraName);
 		if (RECEIVER === undefined)
 			return {"error": "Invalid receiverIntraName - receiverIntraName is not found"};
@@ -59,12 +59,12 @@ export class ChatService {
 	}
 	
 	//Used when user connect, join the user 
-	async joinAllRoom(client: Socket){
+	async joinAllRoom(client: Socket) {
 		//Search for all rooms the user is in and join all
 	}
 
 	//Used when user leave a group chat
-	leaveRoom(channelId: string, client: Socket){
+	leaveRoom(channelId: string, client: Socket) {
 		//Remove roomID from user
 		client.leave(channelId);
 	}
@@ -74,17 +74,17 @@ export class ChatService {
 		//Search for all rooms the user is in and leave all
 	}
 
-	checkRoomExist(channelId: string): boolean{
+	checkRoomExist(channelId: string): any {
 		const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
 		return TARGET_ROOM ? true : false;
 	}
 
-	findAllMessages(channelId: string): ChatDTO[]{
-		const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		if (!TARGET_ROOM){
-			return [];
-		}
-		return TARGET_ROOM.messages;
+	findAllMessages(channelId: string): any {
+		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
+		// if (!TARGET_ROOM){
+			// return [];
+		// }
+		// return TARGET_ROOM.messages;
 	}
 
 	// addMessage(channelId: string, message: string) {

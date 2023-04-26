@@ -14,7 +14,7 @@ export class FriendshipService {
 		if (receiverIntraName == undefined || status == undefined)
 			return { "error": "Invalid body - body must include receiverIntraName(string) and status(stirng)" }
 		if (senderIntraName == receiverIntraName)
-			return { "error": "Invalid intraName - no friends so you friend yourself" }
+			return { "error": "Invalid intraName - no friends so you friend yourself?" }
 		if (status.toUpperCase() != "PENDING" && status.toUpperCase() != "ACCEPTED" && status.toUpperCase() != "BLOCKED")
 			return { "error": "Invalid status - status must be PENDING, ACCEPTED or BLOCKED"}
 		if ((await this.userRepository.find({ where: {intraName: receiverIntraName} })).length === 0)
