@@ -1,13 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Stage, Container, Text, Graphics, useTick } from '@pixi/react'
+import { Stage, Container, Text, Graphics, useTick, withFilters } from '@pixi/react'
 import Paddle from './game_objects/Paddle';
 import { render } from 'react-dom';
 import { BoxSize, Offset } from '../modal/GameModels';
 import Pong from './game_objects/Pong';
 import Paticles from './game_objects/Paticles';
+import RippleEffect from './game_objects/RippleEffect';
+import * as PIXI from 'pixi.js';
 
-let pongSpeed: Offset = { x: 4, y: 4 };
+
+let pongSpeed: Offset = { x: 7, y: 7 };
 let pongEnterSpeed: Offset | null = null;
+
+const Filters = withFilters(Container, {
+  blur: PIXI.filters.BlurFilter,
+});
 
 function Game() {
   const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
@@ -42,7 +49,7 @@ function Game() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    setTimeout(() => {
       let newPosition = { ...pongPosition };
       if (pongPosition.x > boxSize.w)
         pongSpeed.x = -pongSpeed.x;
@@ -71,7 +78,6 @@ function Game() {
       newPosition.y += pongSpeed.y;
       setPongPosition(newPosition);
     }, 10);
-    return () => clearInterval(interval);
   }, [pongPosition])
 
   return (
@@ -89,6 +95,9 @@ function Game() {
         <Paddle left={false} stageSize={boxSize} position={rightPaddlePosition} size={{ w: 15, h: 100 }} />
         <Pong stageSize={boxSize} position={pongPosition} size={{ w: 10, h: 10 }} />
         <Paticles position={pongPosition} size={{ w: 2, h: 2 }} speed={pongSpeed} />
+
+
+        <RippleEffect key={'ripple'} position={{ x: 300, y: 300 }} size={{ w: 100, h: 100 }} />
 
       </Stage>
     </div>

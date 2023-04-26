@@ -30,7 +30,7 @@ function Paticles(props: PaticlesProps) {
         if (p.opacity <= 0) {
           newParticle.shift();
         }
-        p.opacity -= 0.001;
+        p.opacity -= 0.02;
         if (p.opacity < 0) {
           p.opacity = 0;
         }
