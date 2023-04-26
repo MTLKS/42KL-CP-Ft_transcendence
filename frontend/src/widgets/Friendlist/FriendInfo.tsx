@@ -34,10 +34,10 @@ function FriendInfo(props: FriendInfoProps) {
       </div>
       {
         <>
-          <div className={`${friend.status.toLowerCase() === "accepted" ? '' : 'invisible'}`}>
+          <div className={`${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
             <FriendlistSeparator/>
           </div>
-          <div className={`w-[9ch] ${friend.status.toLowerCase() === "accepted" ? '' : 'invisible'}`}>
+          <div className={`w-[9ch] ${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
             <Highlighter text={"online"} searchTerm={searchTerm}/>
           </div>
         </>
