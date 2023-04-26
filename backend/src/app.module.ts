@@ -17,6 +17,7 @@ import { UserService } from './user/user.service';
 import { ChatService } from './chat/chat.service';
 import { Message } from './entity/message.entity';
 import { Channel } from './entity/channel.entity';
+import { ChatGateway } from './chat/chat.gateway';
 import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Status } from './entity/status.entity';
@@ -58,6 +59,7 @@ import { GameService } from './game/game.service';
     FriendshipService,
     StatusGateway,
     StatusService,
+    ChatGateway,
     ChatService,
   ],
 })
