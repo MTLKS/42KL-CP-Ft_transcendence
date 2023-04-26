@@ -1,5 +1,6 @@
 import { FriendshipController } from './friendship/friendship.controller';
 import { FriendshipService } from './friendship/friendship.service';
+import { FriendshipGateway } from './friendship/friendship.gateway';
 import { TYPEORM_CONFIG } from './config/typeorm.config';
 import { MULTER_CONFIG } from 'src/config/multer.config';
 import { Friendship } from './entity/friendship.entity';
@@ -28,6 +29,6 @@ import { Module } from '@nestjs/common';
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message]), MulterModule.register(MULTER_CONFIG)],
   controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController],
-  providers: [AppService, AuthService, UserService, TFAService, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService],
+  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService],
 })
 export class AppModule {}

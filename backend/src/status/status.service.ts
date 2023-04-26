@@ -13,7 +13,7 @@ export class StatusService {
 	async userConnect(client: any, server: any): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
-			return USER_DATA;
+			return { "error": USER_DATA.error };
 		const STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
 		client.join(USER_DATA.intraName);
 		if (STATUS.length !== 0) {
@@ -56,7 +56,7 @@ export class StatusService {
 	// User join status room based on intraName
 	async statusRoom(client: any, server: any, intraName: string, joining: boolean): Promise<any> {
 		if (intraName === undefined)
-			return ;
+			return { "error": "Invalid body - body must include intraName(string)" };
 		if (joining === undefined)
 			return server.to(intraName).emit('statusRoom', { "error": "Invalid body - joining(boolean) is undefined" });
 		if (joining === true) {

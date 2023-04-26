@@ -37,8 +37,8 @@ export class ChatService {
 	// Used to connect to own room
 	async userConnect(client: any): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA === undefined)
-			return USER_DATA;
+		if (USER_DATA.error !== undefined)
+			return { "error": USER_DATA.error };
 		const DM_ROOM = await this.channelRepository.find({ where: {channelName: USER_DATA.intraName, isRoom: false} });
 		if (DM_ROOM.length === 0)
 		{

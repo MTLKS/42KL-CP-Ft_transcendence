@@ -1,8 +1,8 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody, OnGatewayConnection } from "@nestjs/websockets"
-import { Socket, Server } from "socket.io"
+import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service"
 import { UseGuards } from "@nestjs/common";
-import { AuthGuard } from "src/guard/AuthGuard";
+import { Socket, Server } from "socket.io"
 
 @WebSocketGateway({ cors: { origin: "*" }, namespace : "/chat", })
 export class ChatGateway implements OnGatewayConnection {
