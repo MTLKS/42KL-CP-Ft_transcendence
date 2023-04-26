@@ -28,7 +28,7 @@ export class FriendshipService {
 		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} });
 		if (FRIENDSHIP.length === 0)
 			return { "error": "Friendship does not exist" };
-		server.to(intraName).emit('friendshipRoom', { "senderIntraName": USER_DATA.intraName, "status": FRIENDSHIP[0].status });
+		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP[0].status });
 	}
 
 	// Check if the JSON body is valid
