@@ -20,6 +20,7 @@ function Game() {
   const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
   const [leftPaddlePosition, setLeftPosition] = useState<Offset>({ y: -100, x: -100 });
   const [rightPaddlePosition, setRightPosition] = useState<Offset>({ y: -100, x: -100 });
+  const [ripplePosition, setRipplePosition] = useState<Offset>({ y: -100, x: -100 });
   const [state, setState] = useState(1);
   const [pongPosition, setPongPosition] = useState<Offset>({ y: 100, x: 100 });
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,25 +52,34 @@ function Game() {
   useEffect(() => {
     setTimeout(() => {
       let newPosition = { ...pongPosition };
-      if (pongPosition.x > boxSize.w)
+      if (pongPosition.x > boxSize.w) {
         pongSpeed.x = -pongSpeed.x;
-      if (pongPosition.y > boxSize.h)
+        setRipplePosition({ ...pongPosition });
+      }
+      if (pongPosition.y > boxSize.h) {
         pongSpeed.y = -pongSpeed.y;
-      if (pongPosition.x < 0)
+        setRipplePosition({ ...pongPosition });
+      }
+      if (pongPosition.x < 0) {
         pongSpeed.x = -pongSpeed.x;
-      if (pongPosition.y < 0)
+        setRipplePosition({ ...pongPosition });
+      }
+      if (pongPosition.y < 0) {
         pongSpeed.y = -pongSpeed.y;
+        setRipplePosition({ ...pongPosition });
+      }
 
 
       if (pongPosition.x > leftPaddlePosition.x && pongPosition.x < leftPaddlePosition.x + 15
         && pongPosition.y < leftPaddlePosition.y + 50 && pongPosition.y > leftPaddlePosition.y - 50) {
         pongSpeed.x = -pongSpeed.x;
-
+        setRipplePosition({ ...pongPosition });
       }
 
       if (pongPosition.x > rightPaddlePosition.x - 15 && pongPosition.x < rightPaddlePosition.x
         && pongPosition.y < rightPaddlePosition.y + 50 && pongPosition.y > rightPaddlePosition.y - 50) {
         pongSpeed.x = -pongSpeed.x;
+        setRipplePosition({ ...pongPosition });
       }
 
 
@@ -97,7 +107,7 @@ function Game() {
         <Paticles position={pongPosition} size={{ w: 2, h: 2 }} speed={pongSpeed} />
 
 
-        <RippleEffect key={'ripple'} position={{ x: 300, y: 300 }} size={{ w: 100, h: 100 }} />
+        <RippleEffect key={'ripple'} position={ripplePosition} size={{ w: 100, h: 100 }} />
 
       </Stage>
     </div>

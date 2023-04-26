@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import { Container, Graphics, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
+import sleep from '../../functions/sleep';
 
 
 interface RingProps {
@@ -40,36 +41,35 @@ interface RippleEffectProps {
   size: BoxSize;
 }
 
+let rings: Ring[] = [];
+
 function RippleEffect(props: RippleEffectProps) {
   const { position, size } = props;
-  const [rings, setRings] = useState<Ring[]>([]);
   useEffect(() => {
-    const newRings = [];
-    for (let i = 0; i < 3; i++) {
-      newRings.push({
-        position: {
-          x: position.x,
-          y: position.y
-        },
-        r: 10,
-        opacity: 1
-      });
+
+    async function addRing() {
+      for (let i = 0; i < 3; i++) {
+        rings.push({
+          position: {
+            x: position.x,
+            y: position.y
+          },
+          r: 10,
+          opacity: 1
+        });
+        await sleep(50);
+      }
     }
-    setRings(newRings);
-  }, []);
+    addRing();
+  }, [position]);
 
   useTick((delta) => {
-    setRings((rings) => {
-      const newRings = [...rings];
-      newRings.forEach((item) => {
-        if (item.opacity <= 0) {
-          newRings.shift();
-        }
-        item.r += 3 * delta;
-        item.opacity -= 0.05 * delta;
-      });
-
-      return newRings;
+    rings.forEach((item) => {
+      if (item.opacity <= 0) {
+        rings.shift();
+      }
+      item.r += 3 * delta;
+      item.opacity -= 0.05 * delta;
     });
   });
   const ringComponent = rings.map((item, i) => {
