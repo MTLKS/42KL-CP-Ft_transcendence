@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Container, Graphics } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
+import Paticles from './Paticles';
 
 interface PongProps {
 	stageSize: BoxSize;
@@ -14,15 +15,29 @@ let p3: Offset = { x: 0, y: 0 }
 
 function Pong(props: PongProps) {
 	const { stageSize, position, size } = props;
+	const [particles, setParticles] = useState<JSX.Element[]>([]);
 	useEffect(() => {
-
 		setTimeout(() => {
 			p3 = p2;
 			p2 = p1;
 			p1 = position;
 		}, 5);
-
 	}, [position]);
+
+	// useEffect(() => {
+	// 	const interval = setInterval(() => {
+	// 		setParticles((particles) => {
+	// 			if (particles.length > 10) {
+	// 				particles.shift();
+	// 			}
+	// 			return [
+	// 				...particles,
+
+	// 			]
+	// 		});
+	// 	}, 10);
+	// 	return () => clearInterval(interval);
+	// }, []);
 
 	const draw = useCallback((g: any) => {
 		g.clear();
@@ -40,7 +55,6 @@ function Pong(props: PongProps) {
 		g.endFill();
 	}, [position]);
 	return (
-
 		<Graphics draw={draw} />
 	)
 }

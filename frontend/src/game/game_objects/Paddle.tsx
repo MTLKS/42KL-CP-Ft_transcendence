@@ -22,14 +22,14 @@ function Paddle(props: PaddleProps) {
     g.drawRect(0, 0, size.w, size.h);
     g.endFill();
 
-    g.beginFill(0xFEF8E2, 0.5);
+    g.beginFill(0xFEF8E2, 0.08);
     g.moveTo(shadowStart, 0);
     g.lineTo(shadowStart, size.h);
     g.lineTo(shadowDirection, size.h + lightAngle);
     g.lineTo(shadowDirection, lightAngle);
     g.endFill();
 
-    g.beginFill(0xFEF8E2, 0.5);
+    g.beginFill(0xFEF8E2, 0.08);
     if (lightAngle < 0) {
       g.moveTo(0, 0);
       g.lineTo(size.w, 0);
@@ -45,7 +45,7 @@ function Paddle(props: PaddleProps) {
     g.endFill();
   }, [position]);
   return (
-    <Container x={left ? 30 : stageSize.w - 46} y={position.y - size.h / 2}>
+    <Container x={position.x} y={position.y - size.h / 2}>
       <Graphics draw={draw} />
     </Container>
   )
