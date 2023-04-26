@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
 import { FriendData } from '../../modal/FriendData'
 import Highlighter from '../../components/Highlighter';
+import socketApi from '../../api/socketApi';
 
 interface FriendInfoProps {
   friend: FriendData,
@@ -12,8 +13,28 @@ interface FriendInfoProps {
 
 function FriendInfo(props: FriendInfoProps) {
 
+  const [onlineStatus, setOnlineStatus] = useState("");
   const { friend, intraName, searchTerm } = props;
   let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
+
+
+  // Handle user's online/offline status
+  // useEffect(() => {
+  //   if (friend.status.toLowerCase() === "blocked")
+  //     return;
+  //   console.log(`Yo I want to check if ${friendIntraName} is online`);
+  //   socketApi.sendMessages("statusRoom", {});
+  //   socketApi.listen("statusRoom", (data: any) => {
+  //     setOnlineStatus((data.status as string).toLowerCase());
+  //     console.log(data);
+  //   });
+
+  //   return () => {
+  //     console.log("Aight thanks mate. Thanks for letting me know.");
+  //     socketApi.removeListener("statusRoom");
+  //     socketApi.sendMessages("statusRoom", { intraName: friendIntraName, joining: false});
+  //   }
+  // })
 
   return (
     <div className='flex flex-row text-highlight'>
@@ -38,7 +59,7 @@ function FriendInfo(props: FriendInfoProps) {
             <FriendlistSeparator/>
           </div>
           <div className={`w-[9ch] ${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
-            <Highlighter text={"online"} searchTerm={searchTerm}/>
+            <Highlighter text={onlineStatus.toLowerCase()} searchTerm={searchTerm}/>
           </div>
         </>
       }
@@ -47,3 +68,7 @@ function FriendInfo(props: FriendInfoProps) {
 }
 
 export default FriendInfo
+
+function useEffect(arg0: () => void) {
+  throw new Error('Function not implemented.');
+}
