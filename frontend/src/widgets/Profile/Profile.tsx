@@ -30,7 +30,8 @@ function Profile(props: ProfileProps) {
     const socketApi = new SocketApi();
     socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: true });
     socketApi.listen("statusRoom", (data: any) => {
-      setStatus((data.status as string).toLowerCase());
+      if (data !== undefined && data.status !== undefined)
+        setStatus((data.status as string).toLowerCase());
     });
 
     return () => {
