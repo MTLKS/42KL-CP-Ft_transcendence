@@ -19,14 +19,8 @@ const Ring = PixiComponent<RingProps, PIXI.Graphics>('RippleEffect', {
     const { position, r, opacity } = props;
 
     instance.clear();
-    instance.beginFill(0xFEF8E2, opacity);
+    instance.lineStyle(2, 0xFEF8E2, opacity);
     instance.drawCircle(position.x, position.y, r);
-    instance.endFill();
-    instance.beginHole();
-    instance.drawCircle(position.x, position.y, r - 3);
-    instance.endHole();
-
-
   },
 });
 
@@ -45,39 +39,39 @@ let rings: Ring[] = [];
 
 function RippleEffect(props: RippleEffectProps) {
   const { position, size } = props;
+  const addRing = useCallback(async () => {
+
+    for (let i = 0; i < 3; i++) {
+      rings.push({
+        position: {
+          x: position.x,
+          y: position.y
+        },
+        r: 10,
+        opacity: 0.5
+      });
+      await sleep(100);
+    }
+
+  }, [position]);
+
   useEffect(() => {
 
-    async function addRing() {
-      for (let i = 0; i < 3; i++) {
-        rings.push({
-          position: {
-            x: position.x,
-            y: position.y
-          },
-          r: 10,
-          opacity: 1
-        });
-        await sleep(50);
-      }
-    }
+
     addRing();
   }, [position]);
 
   useTick((delta) => {
+    if (rings.length === 0) return;
     rings.forEach((item) => {
       if (item.opacity <= 0) {
         rings.shift();
       }
       item.r += 3 * delta;
-      item.opacity -= 0.05 * delta;
+      item.opacity -= 0.01 * delta;
     });
   });
-  const ringComponent = rings.map((item, i) => {
-
-    return (
-      <Ring key={i} position={item.position} r={item.r} opacity={item.opacity} />
-    )
-  });
+  const ringComponent = rings.map((item, i) => <Ring key={i} position={item.position} r={item.r} opacity={item.opacity} />);
 
   return (
     <Container>

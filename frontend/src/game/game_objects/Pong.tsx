@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Container, Graphics } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
-import Paticles from './Paticles';
-
+import * as PIXI from 'pixi.js';
 interface PongProps {
 	stageSize: BoxSize;
 	position: Offset
@@ -39,7 +38,7 @@ function Pong(props: PongProps) {
 	// 	return () => clearInterval(interval);
 	// }, []);
 
-	const draw = useCallback((g: any) => {
+	const draw = useCallback((g: PIXI.Graphics) => {
 		g.clear();
 		g.beginFill(0xFEF8E2);
 		g.drawRect(position.x, position.y, size.w, size.h);

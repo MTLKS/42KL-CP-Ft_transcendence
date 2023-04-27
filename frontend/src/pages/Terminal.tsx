@@ -8,6 +8,7 @@ import Pong from './Pong'
 import sleep from '../functions/sleep'
 import Clock from '../widgets/Clock'
 import Game from '../game/Game'
+import GameStage from '../game/GameStage'
 interface TerminalProps {
   availableCommands: string[];
   handleCommands: (command: string[]) => void;
@@ -37,7 +38,7 @@ function Terminal(pros: TerminalProps) {
         availableCommands={availableCommands}
         center={false} ref={promptFieldRef}
       />
-      {startMatch ? <Game /> : null}
+      {startMatch ? <GameStage /> : null}
       <Clock />
     </div>
   )

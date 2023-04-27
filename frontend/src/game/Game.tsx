@@ -7,110 +7,90 @@ import Pong from './game_objects/Pong';
 import Paticles from './game_objects/Paticles';
 import RippleEffect from './game_objects/RippleEffect';
 import * as PIXI from 'pixi.js';
+import filter from 'pixi-filters';
+import PongEffect, { Mode } from './game_objects/PongEffect';
 
 
 let pongSpeed: Offset = { x: 7, y: 7 };
 let pongEnterSpeed: Offset | null = null;
 
 const Filters = withFilters(Container, {
-  blur: PIXI.filters.BlurFilter,
+  blur: PIXI.BlurFilter,
+  displacement: PIXI.DisplacementFilter,
+  // shockwave: filter.ShockwaveFilter,
 });
 
-function Game() {
-  const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
-  const [leftPaddlePosition, setLeftPosition] = useState<Offset>({ y: -100, x: -100 });
-  const [rightPaddlePosition, setRightPosition] = useState<Offset>({ y: -100, x: -100 });
+interface GameProps {
+  leftPaddlePosition: Offset;
+  rightPaddlePosition: Offset;
+  boxSize: BoxSize;
+  pause: boolean;
+}
+
+function Game(props: GameProps) {
+  const { leftPaddlePosition, rightPaddlePosition, boxSize, pause } = props;
   const [ripplePosition, setRipplePosition] = useState<Offset>({ y: -100, x: -100 });
-  const [state, setState] = useState(1);
   const [pongPosition, setPongPosition] = useState<Offset>({ y: 100, x: 100 });
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const currentDiv = containerRef.current;
 
 
-    const handleResize = () => {
-      if (containerRef.current) {
-
-        const newSize: BoxSize = {
-          w: containerRef.current.clientWidth,
-          h: containerRef.current.clientHeight,
-        }
-        setBoxSize(newSize)
-        console.log(newSize);
-      }
+  useTick((delta) => {
+    let newPosition = { ...pongPosition };
+    if (pongPosition.x > boxSize.w) {
+      pongSpeed.x = -pongSpeed.x;
+      setRipplePosition({ ...pongPosition });
+    }
+    if (pongPosition.y > boxSize.h) {
+      pongSpeed.y = -pongSpeed.y;
+      setRipplePosition({ ...pongPosition });
+    }
+    if (pongPosition.x < 0) {
+      pongSpeed.x = -pongSpeed.x;
+      setRipplePosition({ ...pongPosition });
+    }
+    if (pongPosition.y < 0) {
+      pongSpeed.y = -pongSpeed.y;
+      setRipplePosition({ ...pongPosition });
     }
 
-    const observer = new ResizeObserver(handleResize);
-    observer.observe(currentDiv);
-    handleResize();
 
-    return () => observer.unobserve(currentDiv);
-  }, []);
+    if (pongPosition.x > leftPaddlePosition.x && pongPosition.x < leftPaddlePosition.x + 15
+      && pongPosition.y < leftPaddlePosition.y + 50 && pongPosition.y > leftPaddlePosition.y - 50) {
+      pongSpeed.x = -pongSpeed.x;
+      setRipplePosition({ ...pongPosition });
+    }
 
-  useEffect(() => {
-    setTimeout(() => {
-      let newPosition = { ...pongPosition };
-      if (pongPosition.x > boxSize.w) {
-        pongSpeed.x = -pongSpeed.x;
-        setRipplePosition({ ...pongPosition });
-      }
-      if (pongPosition.y > boxSize.h) {
-        pongSpeed.y = -pongSpeed.y;
-        setRipplePosition({ ...pongPosition });
-      }
-      if (pongPosition.x < 0) {
-        pongSpeed.x = -pongSpeed.x;
-        setRipplePosition({ ...pongPosition });
-      }
-      if (pongPosition.y < 0) {
-        pongSpeed.y = -pongSpeed.y;
-        setRipplePosition({ ...pongPosition });
-      }
-
-
-      if (pongPosition.x > leftPaddlePosition.x && pongPosition.x < leftPaddlePosition.x + 15
-        && pongPosition.y < leftPaddlePosition.y + 50 && pongPosition.y > leftPaddlePosition.y - 50) {
-        pongSpeed.x = -pongSpeed.x;
-        setRipplePosition({ ...pongPosition });
-      }
-
-      if (pongPosition.x > rightPaddlePosition.x - 15 && pongPosition.x < rightPaddlePosition.x
-        && pongPosition.y < rightPaddlePosition.y + 50 && pongPosition.y > rightPaddlePosition.y - 50) {
-        pongSpeed.x = -pongSpeed.x;
-        setRipplePosition({ ...pongPosition });
-      }
+    if (pongPosition.x > rightPaddlePosition.x - 15 && pongPosition.x < rightPaddlePosition.x
+      && pongPosition.y < rightPaddlePosition.y + 50 && pongPosition.y > rightPaddlePosition.y - 50) {
+      pongSpeed.x = -pongSpeed.x;
+      setRipplePosition({ ...pongPosition });
+    }
 
 
 
-      newPosition.x += pongSpeed.x;
-      newPosition.y += pongSpeed.y;
-      setPongPosition(newPosition);
-    }, 10);
-  }, [pongPosition])
+    newPosition.x += pongSpeed.x;
+    newPosition.y += pongSpeed.y;
+    setPongPosition(newPosition);
+  }, !pause);
+
 
   return (
-    <div className=' absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full aspect-video overflow-hidden rounded-md border-highlight border-4'
-      ref={containerRef}
-    >
-      <Stage width={boxSize.w} height={boxSize.h} options={{ backgroundColor: 0x242424 }}
-        onPointerMove={(e) => {
-          const containerRect = containerRef.current?.getBoundingClientRect();
-          setLeftPosition({ x: 30, y: e.clientY - containerRect?.top! });
-          setRightPosition({ x: boxSize.w - 46, y: e.clientY - containerRect?.top! });
-        }}
-      >
-        <Paddle left={true} stageSize={boxSize} position={leftPaddlePosition} size={{ w: 15, h: 100 }} />
-        <Paddle left={false} stageSize={boxSize} position={rightPaddlePosition} size={{ w: 15, h: 100 }} />
-        <Pong stageSize={boxSize} position={pongPosition} size={{ w: 10, h: 10 }} />
-        <Paticles position={pongPosition} size={{ w: 2, h: 2 }} speed={pongSpeed} />
-
-
+    <Container  >
+      <Paddle left={true} stageSize={boxSize} position={leftPaddlePosition} size={{ w: 15, h: 100 }} />
+      <Paddle left={false} stageSize={boxSize} position={rightPaddlePosition} size={{ w: 15, h: 100 }} />
+      <Pong stageSize={boxSize} position={pongPosition} size={{ w: 10, h: 10 }} />
+      <Filters blur={{ blurX: 1, blurY: 1 }} displacement={{
+        construct: [PIXI.Sprite.from('https://pixijs.io/examples/examples/assets/pixi-filters/displacement_map_repeat.jpg')],
+        scale: new PIXI.Point(300, 300),
+      }}  >
         <RippleEffect key={'ripple'} position={ripplePosition} size={{ w: 100, h: 100 }} />
 
-      </Stage>
-    </div>
+      </Filters>
+      <Paticles position={pongPosition} size={{ w: 2, h: 2 }} speed={pongSpeed} />
+
+      <PongEffect position={{ x: pongPosition.x + 5, y: pongPosition.y + 5 }} size={{ w: 10, h: 10 }} speed={pongSpeed} mode={Mode.FAST} />
+
+
+    </Container>
   )
 }
 

@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
-import { Container, Graphics } from '@pixi/react'
+import { Container, Graphics, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
+import * as PIXI from 'pixi.js';
 
 
 interface PaddleProps {
@@ -12,6 +13,11 @@ interface PaddleProps {
 
 function Paddle(props: PaddleProps) {
   const { left, stageSize, position, size } = props;
+  const [rot, setRot] = React.useState(0);
+
+  useTick((delta) => {
+    setRot(rot + 5);
+  }, false);
 
   const draw = useCallback((g: any) => {
     const lightAngle = (position.y - stageSize.h / 2) / 4
@@ -43,9 +49,9 @@ function Paddle(props: PaddleProps) {
       g.lineTo(shadowDirection - shadowStart, size.h + lightAngle);
     }
     g.endFill();
-  }, [position]);
+  }, [position.y]);
   return (
-    <Container x={position.x} y={position.y - size.h / 2}>
+    <Container x={position.x + size.w / 2} y={position.y} pivot={new PIXI.Point(size.w / 2, size.h / 2)} rotation={Math.sin(rot) * 0.05}>
       <Graphics draw={draw} />
     </Container>
   )
