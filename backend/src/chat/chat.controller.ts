@@ -7,17 +7,11 @@ import { UseGuards } from "@nestjs/common";
 export class ChatController {
 	constructor (private readonly chatService: ChatService) {}
 
-	@Post('dm')
-	@UseGuards(AuthGuard)
-	createNewDM(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.chatService.createNewDM(accessToken, body.receiverIntraName);
-	}
-
-	@Post('room')
-	@UseGuards(AuthGuard)
-	createNewRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.chatService.createNewRoom(accessToken, body.roomName, body.isPrivate, body.password);
-	}
+	// @Post('dm')
+	// @UseGuards(AuthGuard)
+	// createNewDM(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+	// 	return this.chatService.createNewDM(accessToken, body.receiverIntraName);
+	// }
 
 	// //Get all chat of a user
 	// @Get(':id')

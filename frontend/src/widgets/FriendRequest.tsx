@@ -1,5 +1,5 @@
 import React from 'react'
-import { FaUserPlus } from 'react-icons/fa'
+import { FaUsers } from 'react-icons/fa'
 import { CollapsiblePopup } from '../components/Popup'
 
 interface FriendRequestProps {
@@ -21,7 +21,7 @@ function FriendRequestContent(props: FriendRequestProps) {
 function FriendRequestIcon() {
   return (
     <div className='h-full w-full bg-accCyan text-3xl hover:text-4xl transition-all duration-[0.2s] ease-in-out select-none'>
-      <FaUserPlus className='w-fit h-fit m-auto pt-[30px] text-highlight'/>
+      <FaUsers className='w-fit h-fit m-auto pt-[30px] text-highlight'/>
     </div>
   )
 }
