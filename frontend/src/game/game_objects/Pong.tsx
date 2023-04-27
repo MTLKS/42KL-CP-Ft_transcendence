@@ -43,15 +43,15 @@ function Pong(props: PongProps) {
 		g.beginFill(0xFEF8E2);
 		g.drawRect(position.x, position.y, size.w, size.h);
 		g.endFill();
-		g.beginFill(0xFEF8E2, 0.6);
-		g.drawRect(p1.x, p1.y, size.w, size.h);
-		g.endFill();
-		g.beginFill(0xFEF8E2, 0.3);
-		g.drawRect(p2.x, p2.y, size.w, size.h);
-		g.endFill();
-		g.beginFill(0xFEF8E2, 0.2);
-		g.drawRect(p3.x, p3.y, size.w, size.h);
-		g.endFill();
+		// g.beginFill(0xFEF8E2, 0.6);
+		// g.drawRect(p1.x, p1.y, size.w, size.h);
+		// g.endFill();
+		// g.beginFill(0xFEF8E2, 0.3);
+		// g.drawRect(p2.x, p2.y, size.w, size.h);
+		// g.endFill();
+		// g.beginFill(0xFEF8E2, 0.2);
+		// g.drawRect(p3.x, p3.y, size.w, size.h);
+		// g.endFill();
 	}, [position]);
 	return (
 		<Graphics draw={draw} />

@@ -3,7 +3,7 @@ import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } f
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
 
-interface PaticlesProps {
+interface SpitsProps {
   position: Offset
   size: BoxSize;
   speed: Offset;
@@ -14,30 +14,23 @@ interface Particle {
   y: number;
   opacity: number;
   speed: Offset;
-  color: number;
 }
 
 const opacity = 1;
 let texture1: PIXI.Texture;
-let texture2: PIXI.Texture;
-let texture3: PIXI.Texture;
 
-function Paticles(props: PaticlesProps) {
+function Spits(props: SpitsProps) {
   const { position, size, speed } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const app = useApp();
 
   useEffect(() => {
     const box = new PIXI.Graphics();
-    box.beginFill(0xFEF8E2);
-    box.drawRect(0, 0, 2, 2);
+    box.beginFill(0x5F928F, 0.5);
+    box.drawRect(0, 0, 4, 4);
     box.endFill();
     texture1 = app.renderer.generateTexture(box);
-    box.clear();
-    box.beginFill(0x5F928F);
-    box.drawRect(0, 0, 2, 2);
-    box.endFill();
-    texture2 = app.renderer.generateTexture(box);
+
   }, []);
 
   useTick((delta) => {
@@ -53,17 +46,30 @@ function Paticles(props: PaticlesProps) {
         }
         p.x += p.speed.x;
         p.y += p.speed.y;
+        // p.speed.x -= p.speed.x * 0.5;
+        // p.speed.y -= p.speed.y * 0.5;
+        p.speed.x *= 0.95;
+        p.speed.y *= 0.95;
       });
-      newParticle.push({
-        x: position.x - 5 + 20 * Math.random(),
-        y: position.y - 5 + 20 * Math.random(),
-        opacity: opacity,
-        speed: {
-          x: speed.y * (Math.random() - 0.5) * 0.3,
-          y: speed.x * (Math.random() - 0.5) * 0.3
-        },
-        color: Math.random() > 0.5 ? 1 : 2
-      });
+      for (let i = 0; i < 3; i++) {
+        const val = (Math.random() > 0.5 ? 1 : -1) + (Math.random() - 0.5) * 1.5;
+        const speedFactor = 1.5;
+        let x: number;
+        let y: number;
+        if (speed.y < 0 && speed.x < 0) { x = speed.x * speedFactor + val; y = speed.y * speedFactor - val; }
+        else if (speed.y > 0 && speed.x > 0) { x = speed.x * speedFactor - val; y = speed.y * speedFactor + val; }
+        else { x = speed.x * speedFactor - val; y = speed.y * speedFactor - val; }
+
+        newParticle.push({
+          x: position.x + 5,
+          y: position.y + 5,
+          opacity: opacity,
+          speed: {
+            x: x,
+            y: y
+          },
+        });
+      }
 
 
       return newParticle;
@@ -84,4 +90,4 @@ function Paticles(props: PaticlesProps) {
   )
 }
 
-export default Paticles
+export default Spits

@@ -9,6 +9,8 @@ import RippleEffect from './game_objects/RippleEffect';
 import * as PIXI from 'pixi.js';
 import filter from 'pixi-filters';
 import PongEffect, { Mode } from './game_objects/PongEffect';
+import Trail from './game_objects/Trail';
+import Spits from './game_objects/Spits';
 
 
 let pongSpeed: Offset = { x: 7, y: 7 };
@@ -86,8 +88,9 @@ function Game(props: GameProps) {
 
       </Filters>
       <Paticles position={pongPosition} size={{ w: 2, h: 2 }} speed={pongSpeed} />
-
-      <PongEffect position={{ x: pongPosition.x + 5, y: pongPosition.y + 5 }} size={{ w: 10, h: 10 }} speed={pongSpeed} mode={Mode.FAST} />
+      <Trail position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} />
+      <Spits position={pongPosition} size={{ w: 3, h: 3 }} speed={pongSpeed} />
+      {/* <PongEffect position={{ x: pongPosition.x + 5, y: pongPosition.y + 5 }} size={{ w: 10, h: 10 }} speed={pongSpeed} mode={Mode.FAST} /> */}
 
 
     </Container>
