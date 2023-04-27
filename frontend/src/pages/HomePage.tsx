@@ -16,7 +16,7 @@ import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
 import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
-import FriendRequest from '../widgets/FriendRequest';
+import FriendRequestPopup from '../widgets/Friendlist/FriendRequestPopup';
 import SocketApi from '../api/socketApi';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
@@ -97,7 +97,7 @@ function HomePage() {
   return (
     <div className='h-full w-full p-7'>
       {startMatch && <Pong />}
-      {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
+      {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
       <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
         ref={pageRef}
       >
