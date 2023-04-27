@@ -18,6 +18,7 @@ export class StatusService {
 		client.join(USER_DATA.intraName);
 		if (STATUS.length !== 0) {
 			STATUS[0].clientId = client.id;
+			STATUS[0].status = "ONLINE";
 			await this.statusRepository.save(STATUS[0]);
 			return STATUS[0];
 		}
@@ -36,7 +37,8 @@ export class StatusService {
 		if (STATUS.length === 0)
 			return server.emit('statusRoom', { "error": "Invalid client id - Client ID not found" });
 		server.to(USER_DATA.intraName).emit('statusRoom', { "intraName": STATUS[0].intraName, "status": "OFFLINE" });
-		return await this.statusRepository.delete({ clientId: client.id });
+		STATUS[0].status = "OFFLINE";
+		return await this.statusRepository.save(STATUS[0]);
 	}
 
 	// User status change
@@ -64,13 +66,10 @@ export class StatusService {
 			if (USER_DATA.error !== undefined)
 				return server.emit('statusRoom', { "error": "Invalid token - Token not found" });
 			const FRIEND_STATUS = await this.statusRepository.find({ where: {intraName: intraName} });
-			if (FRIEND_STATUS.length === 0) {
-				client.join(intraName);
-				server.to(intraName).emit('statusRoom', { "intraName": intraName, "status": "OFFLINE" });
-			} else {
-				client.join(intraName);
-				server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
-			}
+			if (FRIEND_STATUS.length === 0)
+				return server.to(intraName).emit('statusRoom', { "error": "Invalid intraName - IntraName not found" });
+			client.join(intraName);
+			server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
 		} else {
 			client.leave(intraName);
 		}
