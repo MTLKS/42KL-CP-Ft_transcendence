@@ -23,8 +23,8 @@ export class Ball extends Rect{
 	update(){
 		this.velX += this.accX * (1/60);
 		this.velY += this.accY * (1/60);
-		this.posX += this.velX;
-		this.posY += this.velY;
+		this.posX += this.velX ;
+		this.posY += this.velY ;
 	}
 
 	initVelocity(velX: number, velY: number){
