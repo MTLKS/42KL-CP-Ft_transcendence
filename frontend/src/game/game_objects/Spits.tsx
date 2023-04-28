@@ -7,6 +7,7 @@ interface SpitsProps {
   position: Offset
   size: BoxSize;
   speed: Offset;
+  color: number;
 }
 
 interface Particle {
@@ -18,18 +19,24 @@ interface Particle {
 
 const opacity = 1;
 let texture1: PIXI.Texture;
+let texture2: PIXI.Texture;
 
 function Spits(props: SpitsProps) {
-  const { position, size, speed } = props;
+  const { position, size, speed, color } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const app = useApp();
 
   useEffect(() => {
     const box = new PIXI.Graphics();
-    box.beginFill(0x5F928F, 0.5);
-    box.drawRect(0, 0, 4, 4);
+    box.beginFill(0xFEF8E2, 0.8);
+    box.drawRect(0, 0, 8, 8);
     box.endFill();
     texture1 = app.renderer.generateTexture(box);
+    box.clear();
+    box.beginFill(0x5F928F, 0.8);
+    box.drawRect(0, 0, 8, 8);
+    box.endFill();
+    texture2 = app.renderer.generateTexture(box);
 
   }, []);
 
@@ -52,7 +59,7 @@ function Spits(props: SpitsProps) {
         p.speed.y *= 0.95;
       });
       for (let i = 0; i < 3; i++) {
-        const val = (Math.random() > 0.5 ? 1 : -1) + (Math.random() - 0.5) * 1.5;
+        const val = + (Math.random() - 0.5) * 2;
         const speedFactor = 1.5;
         let x: number;
         let y: number;
@@ -80,7 +87,7 @@ function Spits(props: SpitsProps) {
 
   const particleComponent = particles.map((p, i) => {
     return (
-      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={texture1} />
+      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={color === 1 ? texture2 : texture1} />
     )
   });
   return (

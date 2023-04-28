@@ -41,6 +41,8 @@ function Pong(props: PongProps) {
 	const draw = useCallback((g: PIXI.Graphics) => {
 		g.clear();
 		g.beginFill(0xFEF8E2);
+		// g.beginFill(0xACFAF5);
+
 		g.drawRect(position.x, position.y, size.w, size.h);
 		g.endFill();
 		// g.beginFill(0xFEF8E2, 0.6);

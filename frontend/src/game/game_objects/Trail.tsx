@@ -27,6 +27,7 @@ function Trail(props: TrailProps) {
   useEffect(() => {
     const box = new PIXI.Graphics();
     box.beginFill(0xFEF8E2, 0.5);
+    // box.beginFill(0x5F928F, 0.5);
     box.drawRect(0, 0, 15, 15);
     box.endFill();
     texture = app.renderer.generateTexture(box);
@@ -39,9 +40,9 @@ function Trail(props: TrailProps) {
         if (p.opacity <= 0) {
           newParticle.shift();
         }
-        p.opacity -= 0.1;
-        p.size.w -= 1;
-        p.size.h -= 1;
+        p.opacity -= 0.03;
+        p.size.w -= 0.3;
+        p.size.h -= 0.3;
         p.position.x += 0.5;
         p.position.y += 0.5;
         if (p.opacity < 0) {
