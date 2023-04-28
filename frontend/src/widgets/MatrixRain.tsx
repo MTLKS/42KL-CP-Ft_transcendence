@@ -74,8 +74,10 @@ function MatrixRain(props: MatrixRainProps) {
       columns.push(column);
     }
 
-
-    requestAnimationFrame(() => draw(ctx!, canvas));
+    const interval = setInterval(() => {
+      requestAnimationFrame(() => draw(ctx!, canvas));
+    }, 100);
+    return () => clearInterval(interval);
   }, [])
 
   return (
@@ -110,8 +112,6 @@ function MatrixRain(props: MatrixRainProps) {
           columns[i].stackCounter = 0;
         }
       }
-      await sleep(100);
-      requestAnimationFrame(() => draw(ctx, canvas));
     }
   }
 }
