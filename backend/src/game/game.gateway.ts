@@ -9,6 +9,16 @@ export class GameGateway {
 	@WebSocketServer()
 	server: Server;
 
+	@SubscribeMessage('joinQueue')
+	async handleJoinQueue(@ConnectedSocket() client: Socket) {
+		this.gameService.joinQueue(client, this.server);
+	}
+
+	@SubscribeMessage('leaveQueue')
+	async handleLeaveQueue(@ConnectedSocket() client: Socket) {
+		this.gameService.leaveQueue(client);
+	}
+
 	@SubscribeMessage('startGame')
 	async startGame(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket, @MessageBody() body: any){
 		// const BODY = JSON.parse(body);
@@ -16,7 +26,7 @@ export class GameGateway {
 
 		//May send info such as clientID, player name through socket.data
 		// console.log(player1.data);
-		await this.gameService.startGame(player1, player2, BODY, this.server);
+		await this.gameService.startGame(player1, player2, this.server);
 	}
 
 	@SubscribeMessage('gameEnd')
