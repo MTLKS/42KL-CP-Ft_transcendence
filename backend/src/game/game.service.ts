@@ -1,10 +1,14 @@
-import { Injectable, Inject } from "@nestjs/common";
-import { WebSocketServer } from "@nestjs/websockets";
+import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
+import { GameDTO } from "src/dto/game.dto";
+import { Ball } from "./entity/ball";
 
-// interface Game {
-// 	player1_i
-// }
+interface GameData {
+	player1_id: string;
+	player2_id: string;
+	canvasWidth: number;
+	canvasHeight: number;
+}
 
 @Injectable()
 export class GameService {
@@ -12,7 +16,22 @@ export class GameService {
 		private readonly userService: UserService
 		) {}
 
-	// const ALL_GAME: 
+	private gameState : GameDTO = {
+		ballPosX: 0,
+		ballPosY: 0,
+		leftPaddlePosY: 0,
+		rightPaddlePosY: 0,
+	}
+
+	private gameData : GameData = {
+		player1_id: '',
+		player2_id: '',
+		canvasWidth: 100,
+		canvasHeight: 100,
+	}
+
+	private PADDLE_SPEED = 5;
+	private BALL = new Ball(this.gameState.ballPosX, this.gameState.ballPosY, 10, 10);
 
 	//TODO: generate unique id
 	createGameRoom() : string {
@@ -29,8 +48,10 @@ export class GameService {
 		// const TEST = this.userService.getUserDataByIntraName(body.name);
 		// console.log(TEST);
 
-		//Change both player status to in game
+		//SEt game data
 
+		//Change both player status to in game
+		this.BALL.initVelocity(5,2);
 		this.gameLoop(server);
 	}
 
@@ -41,10 +62,26 @@ export class GameService {
 		//TODO : send result to user service
 	}
 
+	playerMove(socketId: string, value: number){
+		if (socketId == this.gameData.player1_id){
+			this.gameState.leftPaddlePosY += value;
+		}
+		else if (socketId == this.gameData.player2_id){
+			this.gameState.rightPaddlePosY += value;
+		}
+	}
+
+	gameUpdate(gameState){
+		this.BALL.update();
+		gameState.ballPosX = this.BALL.posX;
+		gameState.ballPosY = this.BALL.posY;
+		this.BALL.checkContraint(gameState.canvasWidth,gameState.canvasHeight);
+	}
+
 	gameLoop(server: any){
-		console.log("start");
 		setInterval(() => {
-			server.emit('gameLoop', {data: 'test'});
+			this.gameUpdate(this.gameState);
+			server.emit('gameLoop', this.gameState);
 		}, 1000/60);
 	}
 }

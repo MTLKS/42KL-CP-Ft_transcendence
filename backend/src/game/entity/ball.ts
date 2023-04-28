@@ -1,49 +1,67 @@
-export class rect{
-	x : number;
-	y : number;
-	width : number;
-	height : number;
+import { Rect } from "./rect";
+
+export class Ball extends Rect{
 	velX : number;
 	velY : number;
-	
-	constructor(x, y, width, height){
-		this.x = x;
-		this.y = y;
-		this.width = width;
-		this.height = height;
+	accX : number;
+	accY : number;
+
+	constructor (posX, posY, width, height, gravityEnabled = false){
+		super(posX, posY, width, height);
 		this.velX = 0;
 		this.velY = 0;
+		if (gravityEnabled){
+			this.accX = 0;
+			this.accY = 0.1;
+		}
+		else{
+			this.accX = 0;
+			this.accY = 0;
+		}
 	}
 
 	update(){
-		this.x += this.velX;
-		this.y += this.velY;
+		this.velX += this.accX * (1/60);
+		this.velY += this.accY * (1/60);
+		this.posX += this.velX;
+		this.posY += this.velY;
 	}
 
-	checkBorderCollision(width, height){
-		//Left border
-		if (this.x < 0){
-			this.x = 0;
+	initVelocity(velX: number, velY: number){
+		this.velX = velX;
+		this.velY = velY;
+	}
+
+	checkContraint(borderWidth: number, borderHeight: number){
+		if (this.posX < 0){
+			this.posX = 0;
 			this.velX *= -1;
 		}
-		//Right border
-		if (this.x + this.width > width){
-			this.x = width - this.width;
+		if (this.posX + this.width > borderWidth){
+			this.posX = borderWidth - this.width;
 			this.velX *= -1;
 		}
-		//Top border
-		if (this.y < 0){
-			this.y = 0;
+		if (this.posY < 0){
+			this.posY = 0;
 			this.velY *= -1;
 		}
-		//Bottom border
-		if (this.y + this.height > height){
-			this.y = height - this.height;
+		if (this.posY + this.height > borderHeight){
+			this.posY = borderHeight - this.height;
 			this.velY *= -1;
 		}
 	}
 
-	checkCollision(rect){
+	collisionResponse(collideTime: number, normalX: number, normalY: number){
+		this.posX += this.velX * collideTime;
+		this.posY += this.velY * collideTime;
 
+		if (Math.abs(normalX) > 0.001){
+			this.velX *= -1;
+		}
+		if (Math.abs(normalY) > 0.001){
+			this.velY *= -1;
+		}
 	}
+	
+	
 }
