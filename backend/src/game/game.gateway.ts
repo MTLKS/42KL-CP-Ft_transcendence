@@ -11,7 +11,8 @@ export class GameGateway {
 
 	@SubscribeMessage('startGame')
 	async startGame(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket, @MessageBody() body: any){
-		const BODY = JSON.parse(body);
+		// const BODY = JSON.parse(body);
+		const BODY = body;
 
 		//May send info such as clientID, player name through socket.data
 		// console.log(player1.data);
@@ -23,12 +24,8 @@ export class GameGateway {
 		await this.gameService.gameEnd(player1, player2);
 	}
 
-	@SubscribeMessage('keyDown')
-	async handleKeyDown(@ConnectedSocket() client: Socket){
-
-	}
-
-	@SubscribeMessage('keyUp')
-	async handleKeyUp(@ConnectedSocket() client: Socket){
+	@SubscribeMessage('playerMove')
+	async handleKeyDown(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.playerMove(client.id, body.value);
 	}
 }
