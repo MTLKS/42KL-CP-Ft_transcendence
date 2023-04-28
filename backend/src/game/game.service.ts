@@ -16,8 +16,35 @@ interface GameData {
 export class GameService {
   constructor(private readonly userService: UserService) {}
 
+  private interval: NodeJS.Timer | null = null;
+
+  private gameState: GameDTO = {
+    ballPosX: 0,
+    ballPosY: 0,
+    leftPaddlePosY: 0,
+    rightPaddlePosY: 0,
+    velX: 0,
+    velY: 0,
+  };
+
+  //Config settings
+  private PADDLE_SPEED = 5;
+
+  private gameData: GameData = {
+    player1_id: '',
+    player2_id: '',
+    canvasWidth: 1600,
+    canvasHeight: 900,
+  };
+
   queue = [];
   ingame = [];
+  private BALL = new Ball(
+    this.gameState.ballPosX,
+    this.gameState.ballPosY,
+    10,
+    10,
+  );
 
   async joinQueue(client: Socket, server: Server) {
     const USER_DATA = await this.userService.getMyUserData(
@@ -71,8 +98,8 @@ export class GameService {
     console.log(
       `Game start with ${player1.intraName} and ${player2.intraName}`,
     );
-    player1.socket.emit('game', `game start: opponent = ${player2.intraName}`);
-    player2.socket.emit('game', `game start: opponent = ${player1.intraName}`);
+    // player1.socket.emit('game', `game start: opponent = ${player2.intraName}`);
+    // player2.socket.emit('game', `game start: opponent = ${player1.intraName}`);
     console.log(player1, player2);
 
     //Leave lobby room
@@ -87,8 +114,11 @@ export class GameService {
     //SEt game data
 
     //Change both player status to in game
-    this.BALL.initVelocity(5, 2);
-    this.gameLoop(server);
+    this.BALL.initVelocity(9, 3);
+    console.log(this.interval);
+    if (this.interval == null) {
+      this.gameLoop(server);
+    }
   }
 
   async gameEnd(player1: any, player2: any) {
@@ -107,16 +137,22 @@ export class GameService {
     }
   }
 
-  gameUpdate(gameState) {
+  gameUpdate() {
     this.BALL.update();
-    gameState.ballPosX = this.BALL.posX;
-    gameState.ballPosY = this.BALL.posY;
-    this.BALL.checkContraint(gameState.canvasWidth, gameState.canvasHeight);
+    this.BALL.checkContraint(
+      this.gameData.canvasWidth,
+      this.gameData.canvasHeight,
+    );
+    this.gameState.ballPosX = this.BALL.posX;
+    this.gameState.ballPosY = this.BALL.posY;
+    this.gameState.velX = this.BALL.velX;
+    this.gameState.velY = this.BALL.velY;
+    // console.log(this.gameState);
   }
 
   gameLoop(server: any) {
-    setInterval(() => {
-      this.gameUpdate(this.gameState);
+    this.interval = setInterval(() => {
+      this.gameUpdate();
       server.emit('gameLoop', this.gameState);
     }, 1000 / 60);
   }
