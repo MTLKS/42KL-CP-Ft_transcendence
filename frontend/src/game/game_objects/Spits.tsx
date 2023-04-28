@@ -20,10 +20,14 @@ interface Particle {
 const opacity = 1;
 let texture1: PIXI.Texture;
 let texture2: PIXI.Texture;
+let texture3: PIXI.Texture;
+const speedFactor = 1.5;
+let texture: PIXI.Texture;
 
 function Spits(props: SpitsProps) {
   const { position, size, speed, color } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
+  const [texture, setTexture] = useState<PIXI.Texture>(texture1);
   const app = useApp();
 
   useEffect(() => {
@@ -37,8 +41,29 @@ function Spits(props: SpitsProps) {
     box.drawRect(0, 0, 8, 8);
     box.endFill();
     texture2 = app.renderer.generateTexture(box);
+    box.clear();
+    box.beginFill(0xAD6454, 0.8);
+    box.drawRect(0, 0, 8, 8);
+    box.endFill();
+    texture3 = app.renderer.generateTexture(box);
 
   }, []);
+
+  useEffect(() => {
+    switch (color) {
+      case 0:
+        setTexture(texture1);
+        break;
+      case 1:
+        setTexture(texture2);
+        break;
+      case 2:
+        setTexture(texture3);
+        break;
+      default:
+        break;
+    }
+  }, [color]);
 
   useTick((delta) => {
     setParticles((particles) => {
@@ -58,22 +83,14 @@ function Spits(props: SpitsProps) {
         p.speed.x *= 0.95;
         p.speed.y *= 0.95;
       });
-      for (let i = 0; i < 3; i++) {
-        const val = + (Math.random() - 0.5) * 2;
-        const speedFactor = 1.5;
-        let x: number;
-        let y: number;
-        if (speed.y < 0 && speed.x < 0) { x = speed.x * speedFactor + val; y = speed.y * speedFactor - val; }
-        else if (speed.y > 0 && speed.x > 0) { x = speed.x * speedFactor - val; y = speed.y * speedFactor + val; }
-        else { x = speed.x * speedFactor - val; y = speed.y * speedFactor - val; }
-
+      for (let i = 0; i < 2; i++) {
         newParticle.push({
-          x: position.x + 5,
-          y: position.y + 5,
+          x: position.x + 5 - size.w / 2,
+          y: position.y + 5 - size.h / 2,
           opacity: opacity,
           speed: {
-            x: x,
-            y: y
+            x: speed.x * speedFactor + (Math.random() - 0.5) * 3,
+            y: speed.y * speedFactor + (Math.random() - 0.5) * 3
           },
         });
       }
@@ -87,7 +104,7 @@ function Spits(props: SpitsProps) {
 
   const particleComponent = particles.map((p, i) => {
     return (
-      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={color === 1 ? texture2 : texture1} />
+      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={texture} />
     )
   });
   return (

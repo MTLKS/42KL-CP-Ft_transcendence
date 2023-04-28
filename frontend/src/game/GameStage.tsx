@@ -11,6 +11,7 @@ let GameSocket = createContext<SocketApi>(new SocketApi("game"));
 export { GameSocket };
 
 let socketApi: SocketApi;
+let scale: number;
 
 function GameStage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,8 +30,8 @@ function GameStage() {
           w: containerRef.current.clientWidth,
           h: containerRef.current.clientHeight,
         }
+        scale = newSize.w / 1600;
         setBoxSize(newSize)
-        console.log(newSize);
       }
     }
 
@@ -49,17 +50,17 @@ function GameStage() {
         <Stage width={boxSize.w} height={boxSize.h} options={{ backgroundColor: 0x242424 }}
           onPointerMove={(e) => {
             const containerRect = containerRef.current?.getBoundingClientRect();
-            leftPaddlePosition.y = e.clientY - containerRect?.top!;
-            rightPaddlePosition.y = e.clientY - containerRect?.top!;
+            leftPaddlePosition.y = (e.clientY - containerRect?.top!) / scale;
+            rightPaddlePosition.y = (e.clientY - containerRect?.top!) / scale;
             leftPaddlePosition.x = 30;
-            rightPaddlePosition.x = boxSize.w - 46;
+            rightPaddlePosition.x = 1600 - 46;
             socketApi.sendMessages("playerMove", { y: leftPaddlePosition.y });
           }}
           onClick={() => {
             setPause(!pause)
           }}
         >
-          <Game leftPaddlePosition={leftPaddlePosition} rightPaddlePosition={rightPaddlePosition} boxSize={boxSize} pause={pause} />
+          <Game leftPaddlePosition={leftPaddlePosition} rightPaddlePosition={rightPaddlePosition} pause={pause} scale={scale} />
         </Stage>
       </GameSocket.Provider>
     </div>

@@ -15,7 +15,7 @@ import SocketApi from '../api/socketApi';
 import { GameSocket } from './GameStage';
 
 
-let pongSpeed: Offset = { x: 7, y: 7 };
+let pongSpeed: Offset = { x: 12, y: 5 };
 let pongEnterSpeed: Offset | null = null;
 
 const Filters = withFilters(Container, {
@@ -27,89 +27,96 @@ const Filters = withFilters(Container, {
 interface GameProps {
   leftPaddlePosition: Offset;
   rightPaddlePosition: Offset;
-  boxSize: BoxSize;
+
   pause: boolean;
+  scale: number;
 }
+const boxSize: BoxSize = { w: 1600, h: 900 };
+const tick: boolean = true;
 
 let socketApi: SocketApi;
 function Game(props: GameProps) {
-  const { leftPaddlePosition, rightPaddlePosition, boxSize, pause } = props;
+  const { leftPaddlePosition, rightPaddlePosition, pause, scale } = props;
   const [ripplePosition, setRipplePosition] = useState<Offset>({ y: -100, x: -100 });
   const [pongPosition, setPongPosition] = useState<Offset>({ y: 100, x: 100 });
-  const [pongSpeed, setPongSpeed] = useState<Offset>({ y: 0, x: 0 });
+  // const [pongSpeed, setPongSpeed] = useState<Offset>({ y: 0, x: 0 });
   socketApi = useContext(GameSocket);
 
-  useEffect(() => {
-    socketApi.sendMessages("startGame", { ok: "ok" });
-    socketApi.listen("gameLoop", (data: any) => {
-      // console.log("gameLoop", data);
-      setPongSpeed({
-        x: data.velX,
-        y: data.velY
-      });
+  // useEffect(() => {
+  //   socketApi.sendMessages("startGame", { ok: "ok" });
+  //   socketApi.listen("gameLoop", (data: any) => {
+  //     // console.log("gameLoop", data);
+  //     setPongSpeed({
+  //       x: data.velX,
+  //       y: data.velY
+  //     });
+  //     setPongPosition({
+  //       x: data.ballPosX,
+  //       y: data.ballPosY
+  //     });
 
+  //   });
 
-
-
-      setPongPosition({
-        x: data.ballPosX,
-        y: data.ballPosY
-      });
-
-    });
-
-    return () => {
-      socketApi.removeListener("gameLoop");
-    }
-  }, []);
+  //   return () => {
+  //     socketApi.removeListener("gameLoop");
+  //   }
+  // }, []);
 
 
   useTick((delta) => {
-    // let newPosition = { ...pongPosition };
+    let newPosition = { ...pongPosition };
     if (pongPosition.x >= boxSize.w - 10) {
-      // pongSpeed.x = -pongSpeed.x;
+      if (tick)
+        pongSpeed.x = -pongSpeed.x;
       setRipplePosition({ ...pongPosition });
     }
     if (pongPosition.y >= boxSize.h - 10) {
-      // pongSpeed.y = -pongSpeed.y;
+      if (tick)
+        pongSpeed.y = -pongSpeed.y;
       setRipplePosition({ ...pongPosition });
     }
     if (pongPosition.x <= 0) {
-      // pongSpeed.x = -pongSpeed.x;
+      if (tick)
+        pongSpeed.x = -pongSpeed.x;
       setRipplePosition({ ...pongPosition });
     }
     if (pongPosition.y <= 0) {
-      // pongSpeed.y = -pongSpeed.y;
+      if (tick)
+        pongSpeed.y = -pongSpeed.y;
       setRipplePosition({ ...pongPosition });
     }
 
 
     if (pongPosition.x > leftPaddlePosition.x && pongPosition.x < leftPaddlePosition.x + 15
       && pongPosition.y < leftPaddlePosition.y + 50 && pongPosition.y > leftPaddlePosition.y - 50) {
-      // pongSpeed.x = -pongSpeed.x;
+      if (tick)
+        pongSpeed.x = -pongSpeed.x;
       setRipplePosition({ ...pongPosition });
     }
 
     if (pongPosition.x > rightPaddlePosition.x - 15 && pongPosition.x < rightPaddlePosition.x
       && pongPosition.y < rightPaddlePosition.y + 50 && pongPosition.y > rightPaddlePosition.y - 50) {
-      // pongSpeed.x = -pongSpeed.x;
+      if (tick)
+        pongSpeed.x = -pongSpeed.x;
       setRipplePosition({ ...pongPosition });
     }
 
 
 
-    // newPosition.x += pongSpeed.x;
-    // newPosition.y += pongSpeed.y;
-    // setPongPosition(newPosition);
+    if (tick) {
+      newPosition.x += pongSpeed.x;
+      newPosition.y += pongSpeed.y;
+      setPongPosition(newPosition);
+    }
   }, !pause);
 
 
   return (
-    <Container  >
+    <Container width={1600} height={900} scale={scale}>
       <Paddle left={true} stageSize={boxSize} position={leftPaddlePosition} size={{ w: 15, h: 100 }} />
       <Paddle left={false} stageSize={boxSize} position={rightPaddlePosition} size={{ w: 15, h: 100 }} />
-      <Spits position={pongPosition} size={{ w: 8, h: 8 }} speed={pongSpeed} color={1} />
-      <Spits position={pongPosition} size={{ w: 3, h: 3 }} speed={pongSpeed} color={2} />
+      <Spits position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} color={1} />
+      <Spits position={pongPosition} size={{ w: 5, h: 5 }} speed={pongSpeed} color={0} />
       <Pong stageSize={boxSize} position={pongPosition} size={{ w: 10, h: 10 }} />
       <Filters blur={{ blurX: 1, blurY: 1 }} displacement={{
         construct: [PIXI.Sprite.from('https://pixijs.io/examples/examples/assets/pixi-filters/displacement_map_repeat.jpg')],
@@ -118,9 +125,9 @@ function Game(props: GameProps) {
         <RippleEffect key={'ripple'} position={ripplePosition} size={{ w: 100, h: 100 }} />
 
       </Filters>
-      <Paticles position={pongPosition} size={{ w: 2, h: 2 }} speed={pongSpeed} />
+      <Paticles position={pongPosition} size={{ w: 3, h: 3 }} speed={pongSpeed} />
       <Trail position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} />
-      <Trail position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} />
+      {/* <Trail position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} /> */}
       {/* <PongEffect position={{ x: pongPosition.x + 5, y: pongPosition.y + 5 }} size={{ w: 10, h: 10 }} speed={pongSpeed} mode={Mode.FAST} /> */}
 
 

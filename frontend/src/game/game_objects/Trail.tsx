@@ -43,8 +43,8 @@ function Trail(props: TrailProps) {
         p.opacity -= 0.03;
         p.size.w -= 0.3;
         p.size.h -= 0.3;
-        p.position.x += 0.5;
-        p.position.y += 0.5;
+        p.position.x += 0.12;
+        p.position.y += 0.12;
         if (p.opacity < 0) {
           p.opacity = 0;
         }
