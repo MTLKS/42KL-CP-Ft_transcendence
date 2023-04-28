@@ -1,15 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
+import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
 
-interface SpitsProps {
-  position: Offset
-  size: BoxSize;
-  speed: Offset;
-  color: number;
-}
-
+let texture1: PIXI.Texture;
+let texture2: PIXI.Texture;
+let texture3: PIXI.Texture;
 interface Particle {
   x: number;
   y: number;
@@ -17,14 +13,14 @@ interface Particle {
   speed: Offset;
 }
 
-const opacity = 1;
-let texture1: PIXI.Texture;
-let texture2: PIXI.Texture;
-let texture3: PIXI.Texture;
-const speedFactor = 1.5;
+interface BlackholeProps {
+  position: Offset
+  size: BoxSize;
+  acceleration: number;
+}
 
-function Spits(props: SpitsProps) {
-  const { position, size, speed, color } = props;
+function Blackhole(props: BlackholeProps) {
+  const { position, size, acceleration } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const [texture, setTexture] = useState<PIXI.Texture>(texture1);
   const app = useApp();
@@ -48,22 +44,6 @@ function Spits(props: SpitsProps) {
 
   }, []);
 
-  useEffect(() => {
-    switch (color) {
-      case 0:
-        setTexture(texture1);
-        break;
-      case 1:
-        setTexture(texture2);
-        break;
-      case 2:
-        setTexture(texture3);
-        break;
-      default:
-        break;
-    }
-  }, [color]);
-
   useTick((delta) => {
     setParticles((particles) => {
       const newParticle = [...particles]
@@ -71,25 +51,31 @@ function Spits(props: SpitsProps) {
         if (p.opacity <= 0) {
           newParticle.shift();
         }
-        p.opacity -= 0.02;
+        p.opacity -= 0.005;
         if (p.opacity < 0) {
           p.opacity = 0;
         }
+        if (p.x > position.x - 5 && p.x < position.x + 5 && p.y > position.y - 5 && p.y < position.y + 5) {
+          p.opacity = 0;
+        }
+
         p.x += p.speed.x;
         p.y += p.speed.y;
         // p.speed.x -= p.speed.x * 0.5;
         // p.speed.y -= p.speed.y * 0.5;
-        p.speed.x *= 0.95;
-        p.speed.y *= 0.95;
+        p.speed.x += (position.x - p.x) * acceleration * 0.001;
+        p.speed.y += (position.y - p.y) * acceleration * 0.001;
       });
       for (let i = 0; i < 2; i++) {
+        var x = position.x + (Math.random() > 0.5 ? 1 : -1) * 50 + 30 * (Math.random() - 0.5);
+        var y = position.y + (Math.random() > 0.5 ? 1 : -1) * 50 + 30 * (Math.random() - 0.5);
         newParticle.push({
-          x: position.x + 5 - size.w / 2,
-          y: position.y + 5 - size.h / 2,
-          opacity: opacity,
+          x: x,
+          y: y,
+          opacity: 1,
           speed: {
-            x: speed.x * speedFactor + (Math.random() - 0.5) * 3,
-            y: speed.y * speedFactor + (Math.random() - 0.5) * 3
+            x: (position.x - x) / 10 + 7 * (Math.random() - 0.5),
+            y: (y - position.y) / 10 + 7 * (Math.random() - 0.5)
           },
         });
       }
@@ -99,13 +85,12 @@ function Spits(props: SpitsProps) {
     });
   });
 
-
-
   const particleComponent = particles.map((p, i) => {
     return (
-      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={texture} />
+      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={PIXI.Texture.WHITE} />
     )
   });
+
   return (
     <ParticleContainer properties={{ position: true }}>
       {particleComponent}
@@ -113,4 +98,4 @@ function Spits(props: SpitsProps) {
   )
 }
 
-export default Spits
+export default Blackhole

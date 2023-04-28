@@ -13,6 +13,7 @@ import Trail from './game_objects/Trail';
 import Spits from './game_objects/Spits';
 import SocketApi from '../api/socketApi';
 import { GameSocket } from './GameStage';
+import Blackhole from './game_objects/Blackhole';
 
 
 let pongSpeed: Offset = { x: 12, y: 5 };
@@ -129,7 +130,7 @@ function Game(props: GameProps) {
       <Trail position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} />
       {/* <Trail position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} /> */}
       {/* <PongEffect position={{ x: pongPosition.x + 5, y: pongPosition.y + 5 }} size={{ w: 10, h: 10 }} speed={pongSpeed} mode={Mode.FAST} /> */}
-
+      <Blackhole position={{ x: 1000, y: 300 }} size={{ w: 5, h: 5 }} acceleration={5} />
 
     </Container>
   )
