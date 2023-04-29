@@ -11,11 +11,11 @@ let GameSocket = createContext<SocketApi>(new SocketApi("game"));
 export { GameSocket };
 
 let socketApi: SocketApi;
-let scale: number;
+let scale: number = 1;
 
 function GameStage() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [boxSize, setBoxSize] = useState<BoxSize>({ w: 0, h: 0 });
+  const [boxSize, setBoxSize] = useState<BoxSize>({ w: 10, h: 10 });
   const [pause, setPause] = useState<boolean>(false);
 
   socketApi = useContext(GameSocket);
