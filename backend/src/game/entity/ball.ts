@@ -6,25 +6,19 @@ export class Ball extends Rect{
 	accX : number;
 	accY : number;
 
-	constructor (posX, posY, width, height, gravityEnabled = false){
+	constructor (posX, posY, width, height){
 		super(posX, posY, width, height);
 		this.velX = 0;
 		this.velY = 0;
-		if (gravityEnabled){
-			this.accX = 0;
-			this.accY = 0.1;
-		}
-		else{
-			this.accX = 0;
-			this.accY = 0;
-		}
+		this.accX = 0;
+		this.accY = 0;
 	}
 
-	update(){
-		this.velX += this.accX * (1/60);
-		this.velY += this.accY * (1/60);
-		this.posX += this.velX ;
-		this.posY += this.velY ;
+	update(deltaTime: number){
+		this.velX += this.accX * deltaTime * deltaTime;
+		this.velY += this.accY * deltaTime * deltaTime;
+		this.posX += this.velX * deltaTime;
+		this.posY += this.velY * deltaTime;
 	}
 
 	initVelocity(velX: number, velY: number){
@@ -62,6 +56,4 @@ export class Ball extends Rect{
 			this.velY *= -1;
 		}
 	}
-	
-	
 }
