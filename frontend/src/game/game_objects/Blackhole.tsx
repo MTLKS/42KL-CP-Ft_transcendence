@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
@@ -6,6 +6,8 @@ import * as PIXI from 'pixi.js';
 let texture1: PIXI.Texture;
 let texture2: PIXI.Texture;
 let texture3: PIXI.Texture;
+let blackHoleTexture: PIXI.Texture;
+
 interface Particle {
   x: number;
   y: number;
@@ -23,9 +25,10 @@ function Blackhole(props: BlackholeProps) {
   const { position, size, acceleration } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const [texture, setTexture] = useState<PIXI.Texture>(texture1);
+  const [blackHole, setBlackHole] = useState<PIXI.Texture>(blackHoleTexture);
   const app = useApp();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const box = new PIXI.Graphics();
     box.beginFill(0xFEF8E2, 0.8);
     box.drawRect(0, 0, 8, 8);
@@ -41,7 +44,13 @@ function Blackhole(props: BlackholeProps) {
     box.drawRect(0, 0, 8, 8);
     box.endFill();
     texture3 = app.renderer.generateTexture(box);
-
+    box.clear();
+    box.beginFill(0xFEF8E2, 0.4);
+    box.drawCircle(0, 0, 20);
+    box.endFill();
+    blackHoleTexture = app.renderer.generateTexture(box);
+    setTexture(texture1);
+    setBlackHole(blackHoleTexture);
   }, []);
 
   useTick((delta) => {
@@ -67,8 +76,8 @@ function Blackhole(props: BlackholeProps) {
         p.speed.y += (position.y - p.y) * acceleration * 0.001;
       });
       for (let i = 0; i < 2; i++) {
-        var x = position.x + (Math.random() > 0.5 ? 1 : -1) * 50 + 30 * (Math.random() - 0.5);
-        var y = position.y + (Math.random() > 0.5 ? 1 : -1) * 50 + 30 * (Math.random() - 0.5);
+        var x = position.x + (Math.random() > 0.5 ? 1 : -1) * 60 + 30 * (Math.random() - 0.5);
+        var y = position.y + (Math.random() > 0.5 ? 1 : -1) * 60 + 30 * (Math.random() - 0.5);
         newParticle.push({
           x: x,
           y: y,
@@ -87,14 +96,17 @@ function Blackhole(props: BlackholeProps) {
 
   const particleComponent = particles.map((p, i) => {
     return (
-      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={PIXI.Texture.WHITE} />
+      <Sprite key={i} x={p.x} y={p.y} width={size.w} height={size.h} alpha={p.opacity} texture={texture} />
     )
   });
-
   return (
-    <ParticleContainer properties={{ position: true }}>
-      {particleComponent}
-    </ParticleContainer>
+    <>
+      <ParticleContainer properties={{ position: true }} maxSize={1000}>
+        {particleComponent}
+      </ParticleContainer>
+      {blackHole && <Sprite x={position.x - 25} y={position.y - 25} width={50} height={50} texture={blackHole} />}
+    </>
+
   )
 }
 

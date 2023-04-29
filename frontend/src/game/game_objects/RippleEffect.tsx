@@ -3,6 +3,7 @@ import { BoxSize, Offset } from '../../modal/GameModels';
 import { Container, Graphics, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import sleep from '../../functions/sleep';
+import { flushSync } from 'react-dom';
 
 
 interface RingProps {
@@ -35,24 +36,25 @@ interface RippleEffectProps {
   size: BoxSize;
 }
 
-let rings: Ring[] = [];
-
 function RippleEffect(props: RippleEffectProps) {
   const { position, size } = props;
+  const [rings, setRings] = useState<Ring[]>([]);
   const addRing = useCallback(async () => {
-
+    const newRings: Ring[] = [...rings];
     for (let i = 0; i < 3; i++) {
-      rings.push({
+      newRings.push({
         position: {
           x: position.x,
           y: position.y
         },
         r: 10,
-        opacity: 0.5
+        opacity: 0.8
+      });
+      flushSync(() => {
+        setRings(newRings);
       });
       await sleep(100);
     }
-
   }, [position]);
 
   useEffect(() => {
