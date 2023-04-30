@@ -37,6 +37,7 @@ function Terminal(pros: TerminalProps) {
         handleCommands={handleCommands}
         availableCommands={availableCommands}
         center={false} ref={promptFieldRef}
+        enableHistory showtip
       />
       {startMatch ? <GameStage /> : null}
       <Clock />
