@@ -16,6 +16,7 @@ import { GameSocket } from './GameStage';
 import Blackhole from './game_objects/Blackhole';
 import PaticleEmittor from './game_objects/PaticleEmittor';
 import TimeZone, { TimeZoneType } from './game_objects/TimeZone';
+import DashLine from './game_objects/DashLine';
 
 
 let pongSpeed: Offset = { x: 12, y: 5 };
@@ -116,6 +117,7 @@ function Game(props: GameProps) {
 
   return (
     <Container width={1600} height={900} scale={scale}>
+      <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} />
       <Paddle left={true} stageSize={boxSize} position={leftPaddlePosition} size={{ w: 15, h: 100 }} />
       <Paddle left={false} stageSize={boxSize} position={rightPaddlePosition} size={{ w: 15, h: 100 }} />
       <Spits position={pongPosition} size={{ w: 10, h: 10 }} speed={pongSpeed} color={1} />
@@ -136,6 +138,7 @@ function Game(props: GameProps) {
       {/* <Blackhole position={{ x: 500, y: 600 }} size={{ w: 5, h: 5 }} acceleration={7} /> */}
       {/* <Blackhole position={{ x: 300, y: 100 }} size={{ w: 5, h: 5 }} acceleration={3} /> */}
       <TimeZone size={{ w: 300, h: 300 }} position={{ x: 300, y: 300 }} type={TimeZoneType.SLOWDOWN} />
+
     </Container>
   )
 }
