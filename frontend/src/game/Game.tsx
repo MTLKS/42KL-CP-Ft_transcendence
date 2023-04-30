@@ -15,7 +15,7 @@ import SocketApi from '../api/socketApi';
 import { GameSocket } from './GameStage';
 import Blackhole from './game_objects/Blackhole';
 import PaticleEmittor from './game_objects/PaticleEmittor';
-import SlowDownZone from './game_objects/SlowDownZone';
+import TimeZone, { TimeZoneType } from './game_objects/TimeZone';
 
 
 let pongSpeed: Offset = { x: 12, y: 5 };
@@ -135,7 +135,7 @@ function Game(props: GameProps) {
       <Blackhole position={{ x: 1000, y: 300 }} size={{ w: 5, h: 5 }} acceleration={5} />
       {/* <Blackhole position={{ x: 500, y: 600 }} size={{ w: 5, h: 5 }} acceleration={7} /> */}
       {/* <Blackhole position={{ x: 300, y: 100 }} size={{ w: 5, h: 5 }} acceleration={3} /> */}
-      <SlowDownZone size={{ w: 300, h: 300 }} position={{ x: 300, y: 300 }} />
+      <TimeZone size={{ w: 300, h: 300 }} position={{ x: 300, y: 300 }} type={TimeZoneType.SLOWDOWN} />
     </Container>
   )
 }
