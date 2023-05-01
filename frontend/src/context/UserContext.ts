@@ -10,14 +10,24 @@ interface UserData {
   userName: string;
 }
 
+let myProfile: UserData = {
+	accessToken: "hidden",
+	avatar: "",
+	elo: 400,
+	intraId: 130305,
+	intraName: "wricky-t",
+	tfaSecret: null,
+	userName: "JOHNDOE"
+}
+
 interface UserContextProps {
-	myProfile: UserData | null;
-	setMyProfile: (profile: UserData | null) => void;
+	myProfile: UserData;
+	setMyProfile: (profile: UserData) => void;
 }
 
 const UserContext = createContext<UserContextProps>({
-	myProfile: null,
-	setMyProfile: () => {};
+	myProfile: myProfile,
+	setMyProfile: (profile) => { myProfile = profile }
 });
 
 export default UserContext;
