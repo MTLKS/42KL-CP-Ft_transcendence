@@ -3,7 +3,8 @@ import FriendActionCard, { ACTION_TYPE } from './FriendActionCard'
 import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../modal/FriendData'
 import { UserData } from '../../../modal/UserData'
-import { FriendsContext } from '../../../contexts/FriendContext'
+import { FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
+import { acceptFriend } from '../../../functions/friendactions'
 
 interface FriendActionProps {
   user: UserData;
@@ -49,27 +50,29 @@ function FriendAction(props: FriendActionProps) {
   }, [command]);
 
   return (
-    <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
-      <input
-        className='w-0 h-0 absolute'
-        onBlur={() => setIsInputFocused(false)}
-        onKeyDown={handleKeyDown}
-        onChange={handleInput}
-        value={inputValue}
-        ref={inputRef}
-      />
-      <div className='px-[2ch] flex flex-col-reverse'>
-        { element.slice(selectedIndex) }
+    <FriendActionContext.Provider value={action}>
+      <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
+        <input
+          className='w-0 h-0 absolute'
+          onBlur={() => setIsInputFocused(false)}
+          onKeyDown={handleKeyDown}
+          onChange={handleInput}
+          value={inputValue}
+          ref={inputRef}
+        />
+        <div className='px-[2ch] flex flex-col-reverse'>
+          { element.slice(selectedIndex) }
+        </div>
+        <p className={`px-[2ch] text-highlight bg-accRed w-fit ${commandNotFound ? 'visible' : 'invisible'}`}>Command not found :{command}</p>
+        <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
+          {
+            inputValue === ""
+            ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
+            : <p>{inputValue}</p>
+          }
+        </div>
       </div>
-      <p className={`px-[2ch] text-highlight bg-accRed w-fit ${commandNotFound ? 'visible' : 'invisible'}`}>Command not found :{command}</p>
-      <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
-        {
-          inputValue === ""
-          ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
-          : <p>{inputValue}</p>
-        }
-      </div>
-    </div>
+    </FriendActionContext.Provider>
   )
 
   function focusOnInput() {
@@ -123,7 +126,6 @@ function FriendAction(props: FriendActionProps) {
           index={index}
           selectedIndex={selectedIndex}
           friend={friend}
-          action={action}
           user={user}
           ignoreAction={ignoreAction}
         />
@@ -142,19 +144,15 @@ function FriendAction(props: FriendActionProps) {
 
     let splitedCommand = command.split(" ");
 
-    // run yesAction on current friend
     if (command === "y" || command === "yes") {
-      console.log(`yas`);
       return ;
     }
 
-    // run yesAction on all friends in the list
     if (command === "Y" || command === "YES") {
       console.log(`yas to all`);
       return ;
     }
 
-    // run noAction
     if (command === "n" || command === "no") {
       console.log(`nope`);
       return ;
@@ -165,26 +163,23 @@ function FriendAction(props: FriendActionProps) {
       return ;
     }
 
-    // ignore current
     if (command === "i" || command == "ignore") {
       ignoreAction();
       console.log(`ignore this`)
       return ;
     }
 
-    // ignore all
     if (command === "I" || command === "IGNORE") {
       console.log(`ignore all`)
       return ;
     }
 
-    // check current user profile
     if (command === "p" || command === "profile") {
-      console.log(`check current user profile`)
+      console.log(`check current user profile`);
+      setInputValue("");
       return ;
     }
 
-    // check a user's profile
     if (splitedCommand.length === 2 && splitedCommand[0] === "profile") {
       // get splitedCommand[1] as a user
     }
@@ -198,11 +193,11 @@ function FriendAction(props: FriendActionProps) {
       case ACTION_TYPE.ACCEPT:
         return friends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != user.intraName);
       case ACTION_TYPE.BLOCK:
-        return friends.filter(friend => (friend.status.toLowerCase() === "accepted"));
+        return friends.filter(friend => ((friend.status.toLowerCase() === "accepted") || (friend.status.toLowerCase() === "pending" && friend.senderIntraName !== user.intraName)));
       case ACTION_TYPE.UNBLOCK:
-        return friends.filter(friend => (friend.status.toLowerCase() === "blocked"));
+        return friends.filter(friend => (friend.status.toLowerCase() === "blocked") && friend.senderIntraName === user.intraName);
       case ACTION_TYPE.UNFRIEND:
-        return friends;
+        return friends.filter(friend => (friend.status.toLowerCase() === "accepted"  || (friend.status.toLowerCase() === "blocked" && friend.senderIntraName === user.intraName)));
       default:
         return [];
     }

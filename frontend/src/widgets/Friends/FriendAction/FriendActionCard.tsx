@@ -2,27 +2,23 @@ import React, { useContext, useMemo, useState } from 'react'
 import { FriendData } from '../../../modal/FriendData'
 import { getRandomString } from '../../../functions/fun';
 import FriendlistEmptyLine from '../Friendlist/FriendlistEmptyLine';
-import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { UserData } from '../../../modal/UserData';
-import { BsPersonPlus } from 'react-icons/bs';
-import api from '../../../api/api';
 import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship } from '../../../functions/friendactions';
 import { AxiosResponse } from 'axios';
 import { getFriendList } from '../../../functions/friendlist';
-import { FriendsContext } from '../../../contexts/FriendContext';
+import { FriendActionContext, FriendsContext } from '../../../contexts/FriendContext';
 
 interface FriendActionCardProps {
   index: number;
   selectedIndex: number;
-  action?: string;
   friend: FriendData;
   user: UserData;
   ignoreAction: () => void;
 }
 
-function FriendActionProfileCard(props: {isCurrentIndex: boolean, user: UserData, friend: FriendData, friendIntraName: string}) {
+function FriendActionProfileCard(props: {isCurrentIndex: boolean, friend: FriendData, friendIntraName: string}) {
 
-  const { isCurrentIndex, user, friend, friendIntraName } = props;
+  const { isCurrentIndex, friend, friendIntraName } = props;
 
   return (
     <div
@@ -55,9 +51,9 @@ function getFriendActionTitle(action: string) {
   return `You are about to ${action} `
 }
 
-function FriendActionConfirmation(props: {action: string}) {
+function FriendActionConfirmation() {
 
-  const { action } = props;
+  const action = useContext(FriendActionContext);
   let style = '';
 
   if (action === ACTION_TYPE.ACCEPT || action === ACTION_TYPE.UNBLOCK)
@@ -73,14 +69,14 @@ function FriendActionConfirmation(props: {action: string}) {
 }
 
 interface FriendActionConfirmationButtonsProps {
-  action: string;
   friendIntraName: string;
   ignoreAction?: () => void;
 }
 
 function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
 
-  const { action, friendIntraName, ignoreAction } = props;
+  const action = useContext(FriendActionContext);
+  const { friendIntraName, ignoreAction } = props;
   let yesAction: (name: string) => Promise<AxiosResponse>;
   let noAction: (name:string) => Promise<AxiosResponse>;
 
@@ -133,6 +129,7 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
         break;
       case ACTION_TYPE.UNFRIEND:
         yesAction = deleteFriendship;
+        console.log(yesAction, noAction);
         break;
       default:
         break;
@@ -141,27 +138,23 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
 
   function handleYesAction() {
     yesAction(friendIntraName)
-      .then((data: any) => console.log(data))
-      .catch(err => console.log(err));
-    
-    getFriendList()
-      .then((data) => {
-        console.log(data.data);
-        setFriends(data.data);
-      })
+      .then(() => getFriendList())
+      .then((data) => setFriends(data.data))
       .catch(err => console.log(err));
   }
 
   function handleNoAction() {
     noAction(friendIntraName)
-      .then((data:any) => console.log(data))
+      .then(() => getFriendList())
+      .then((data) => setFriends(data.data))
       .catch(err => console.log(err));
   }
 }
 
 function FriendActionCard(props: FriendActionCardProps) {
 
-  const { index, selectedIndex, action = "", user, friend, ignoreAction } = props;
+  const action = useContext(FriendActionContext);
+  const { index, selectedIndex, user, friend, ignoreAction } = props;
   const fakeSHAkeyStr = useMemo(() => `+${getRandomString(10)}/${getRandomString(10)}`, []);
   const isCurrentIndex = selectedIndex === index;
   let friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
@@ -170,15 +163,15 @@ function FriendActionCard(props: FriendActionCardProps) {
     <div className={`flex flex-row gap-x-2 ${!isCurrentIndex && 'opacity-20'}`}>
       <p className='w-[3ch] text-right font-extrabold text-highlight/50 overflow-hidden text-sm'>{index}</p>
       <div className='flex flex-col'>
-        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} user={user} friend={friend} friendIntraName={friendIntraName}/>
+        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} friend={friend} friendIntraName={friendIntraName}/>
         <FriendlistEmptyLine />
         <div className='flex flex-col text-base w-full text-highlight'>
           <p>{getFriendActionTitle(action)}'<span className='bg-accCyan select-all'>{friend.userName}</span>'</p>
           <p>PONGSH key fingerprint is SHA256: {fakeSHAkeyStr}</p>
           <div className='flex flex-row whitespace-pre'>
-            <FriendActionConfirmation action={action}/>
+            <FriendActionConfirmation/>
             <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
-              [<FriendActionConfirmationButtons action={action} friendIntraName={friendIntraName} ignoreAction={ignoreAction}/>]
+              [<FriendActionConfirmationButtons friendIntraName={friendIntraName} ignoreAction={ignoreAction}/>]
             </div>
           </div>
         </div>

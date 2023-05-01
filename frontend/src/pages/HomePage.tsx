@@ -245,21 +245,25 @@ function HomePage() {
       // pass in all filtered friends
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
+      return;
     }
-
+    
     if (command[0] === "unblock") {
       // show all blocked friend
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
+      return;
     }
-
+    
     if (command[0] === "unfriend") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />)
+      return;
     }
-
+    
     if (command[0] === "add" && command.length >= 2) {
       // add friend
+      return;
     }
   }
 }

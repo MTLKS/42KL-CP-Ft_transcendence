@@ -111,6 +111,8 @@ function Friendlist(props: FriendlistProps) {
 
   // friendlist: filter friend based on status
   function filterFriends(friends: FriendData[], status: string) {
+    if (status === "blocked")
+      return friends.filter(friend => (friend.status.toLowerCase() === status) && friend.senderIntraName === userData.intraName);
     return friends.filter((friend) => friend.status.toLowerCase() === status);
   }
 
