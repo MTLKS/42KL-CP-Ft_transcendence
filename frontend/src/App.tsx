@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import login, { checkAuth } from "./functions/login";
@@ -27,9 +27,10 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      <MouseCursor>
+      <div className='relative w-full h-full overflow-hidden'>
         {page}
-      </MouseCursor>
+        <MouseCursor />
+      </div>
     </PolkaDotContainer>
   )
 

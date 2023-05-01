@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react'
+import React, { Ref, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
 import sleep from '../functions/sleep';
 
 interface Offset {
@@ -68,11 +68,9 @@ let currentCursorType: CursorType = CursorType.Default;
 const longPressDuration: number = 200;
 let longPressDetected: boolean = false;
 
-interface MouseCursorProps {
-  children: JSX.Element | JSX.Element[];
-}
 
-const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
+
+function MouseCursor(props: any, ref: Ref<any>) {
   const { size1Default, size2Default, size3Default, size4Default } = defaultCurser;
 
   const [offset1, setOffset1] = useState<Offset>({ x: -100, y: -100 });
@@ -85,6 +83,12 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
   const [size4, setSize4] = useState<Size>(size4Default);
 
   // const divRef = useRef<HTMLDivElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    handleHoverStart: handleHoverStart,
+    handleHoverEnd: handleHoverEnd,
+    handleHover: handleHover,
+  }));
 
   useEffect(() => {
     window.onmousedown = handleMouseDown;
@@ -99,13 +103,7 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
   }, []);
 
   return (
-    <div className='relative w-full h-full overflow-hidden'>
-      {/* <div className=' absolute top-[100px] left-[100px] h-[500px] w-[500px] bg-highlight' ref={divRef}
-        onMouseEnter={(e) => handleHoverStart(e, divRef, CursorType.hover)}
-        onMouseMove={(e) => handleHover(e, divRef)}
-        onMouseLeave={handleHoverEnd}
-      /> */}
-      {props.children}
+    <>
       <div className={`absolute pointer-events-none border-highlight border-4 z-50 ${currentCursorType == CursorType.hover ? " " : "transform -translate-x-1/2 -translate-y-1/2 "} `}
         style={{
           left: offset1.x, top: offset1.y, width: size1.width, height: size1.height,
@@ -131,7 +129,7 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
           mixBlendMode: 'difference'
         }}
       />
-    </div>
+    </>
   );
   function onMouseMove(e: MouseEvent) {
     const { clientX, clientY } = e;
@@ -253,7 +251,7 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
     else longPressRealeased();
     longPressDetected = false;
   }
-});
+}
 
 
-export default MouseCursor
+export default forwardRef(MouseCursor)
