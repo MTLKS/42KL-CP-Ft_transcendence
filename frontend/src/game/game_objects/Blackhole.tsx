@@ -30,7 +30,7 @@ function Blackhole(props: BlackholeProps) {
 
   useLayoutEffect(() => {
     const box = new PIXI.Graphics();
-    box.beginFill(0xFEF8E2, 0.8);
+    box.beginFill(0xC5A1FF, 0.8);
     box.drawRect(0, 0, 8, 8);
     box.endFill();
     texture1 = app.renderer.generateTexture(box);
@@ -45,7 +45,28 @@ function Blackhole(props: BlackholeProps) {
     box.endFill();
     texture3 = app.renderer.generateTexture(box);
     box.clear();
-    box.beginFill(0xFEF8E2, 0.4);
+    box.beginFill(0x6B5B85, 1);
+    box.drawCircle(0, 0, 22);
+    box.endFill();
+    box.beginFill(0x6B5B85, 0.8);
+    box.drawCircle(0, 0, 25);
+    box.endFill();
+    box.beginFill(0x6B5B85, 0.6);
+    box.drawCircle(0, 0, 27);
+    box.endFill();
+    box.beginFill(0x6B5B85, 0.5);
+    box.drawCircle(0, 0, 30);
+    box.endFill();
+    box.beginFill(0x6B5B85, 0.3);
+    box.drawCircle(0, 0, 35);
+    box.endFill();
+    box.beginFill(0x6B5B85, 0.2);
+    box.drawCircle(0, 0, 37);
+    box.endFill();
+    box.beginFill(0x6B5B85, 0.1);
+    box.drawCircle(0, 0, 40);
+    box.endFill();
+    box.beginFill(0x000000, 1);
     box.drawCircle(0, 0, 20);
     box.endFill();
     blackHoleTexture = app.renderer.generateTexture(box);
@@ -64,9 +85,9 @@ function Blackhole(props: BlackholeProps) {
         if (p.opacity < 0) {
           p.opacity = 0;
         }
-        if (p.x > position.x - 5 && p.x < position.x + 5 && p.y > position.y - 5 && p.y < position.y + 5) {
-          p.opacity = 0;
-        }
+        // if (p.x > position.x - 5 && p.x < position.x + 5 && p.y > position.y - 5 && p.y < position.y + 5) {
+        //   p.opacity = 0;
+        // }
 
         p.x += p.speed.x;
         p.y += p.speed.y;
@@ -75,16 +96,16 @@ function Blackhole(props: BlackholeProps) {
         p.speed.x += (position.x - p.x) * acceleration * 0.001;
         p.speed.y += (position.y - p.y) * acceleration * 0.001;
       });
-      for (let i = 0; i < 2; i++) {
-        var x = position.x + (Math.random() > 0.5 ? 1 : -1) * 60 + 30 * (Math.random() - 0.5);
-        var y = position.y + (Math.random() > 0.5 ? 1 : -1) * 60 + 30 * (Math.random() - 0.5);
+      for (let i = 0; i < 1; i++) {
+        var x = position.x + (Math.random() > 0.2 ? 1 : -1) * 30 + 30 * (Math.random() - 0.5);
+        var y = position.y + (Math.random() > 0.5 ? 1 : -1) * 30 + 30 * (Math.random() - 0.5);
         newParticle.push({
           x: x,
           y: y,
           opacity: 1,
           speed: {
-            x: (position.x - x) / 10 + 7 * (Math.random() - 0.5),
-            y: (y - position.y) / 10 + 7 * (Math.random() - 0.5)
+            x: (position.x - x) / 10 + 7,
+            y: (y - position.y) / 10 + (Math.random() > 0.5 ? 1 : -1)
           },
         });
       }
