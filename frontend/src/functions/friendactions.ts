@@ -33,14 +33,7 @@ export function blockStranger(toBeBlockedIntraName: string): Promise<AxiosRespon
   })
 }
 
-export function deleteFriendship(toBeUnfriendedIntraName: string) {
-  return api.delete(NAMESPACE, {
-    receiverIntraName: toBeUnfriendedIntraName,
-    status: "DELETE",
-  })
-}
-
-// no need to have another function to unblock stranger
-export function unblockFriend(toBeUnblockedIntraName: string) {
-  return api.delete(`${NAMESPACE}+/:${toBeUnblockedIntraName}`);
+export function deleteFriendship(toBeDeletedIntraName: string) {
+  console.log(`${NAMESPACE}/${toBeDeletedIntraName}`)
+  return api.delete(`${NAMESPACE}/${toBeDeletedIntraName}`);
 }

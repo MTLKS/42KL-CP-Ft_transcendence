@@ -1,12 +1,12 @@
 import React, { useContext, useMemo, useState } from 'react'
 import { FriendData } from '../../../modal/FriendData'
 import { getRandomString } from '../../../functions/fun';
-import FriendlistEmptyLine from '../FriendlistEmptyLine';
+import FriendlistEmptyLine from '../Friendlist/FriendlistEmptyLine';
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { UserData } from '../../../modal/UserData';
 import { BsPersonPlus } from 'react-icons/bs';
 import api from '../../../api/api';
-import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship, unblockFriend } from '../../../functions/friendactions';
+import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship } from '../../../functions/friendactions';
 import { AxiosResponse } from 'axios';
 import { getFriendList } from '../../../functions/friendlist';
 import { FriendsContext } from '../../../contexts/FriendContext';
@@ -67,7 +67,7 @@ function FriendActionConfirmation(props: {action: string}) {
 
   if (action === ACTION_TYPE.ACCEPT)
     return <p>Would you like to <span className={`${style}`}>accept</span> this friend request?</p>
-  else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNBLOCK || action === ACTION_TYPE.UNFRIEND || status === ACTION_TYPE.ADD)
+  else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNBLOCK || action === ACTION_TYPE.UNFRIEND || action === ACTION_TYPE.ADD)
     return <p>Are you sure you want to <span className={`${style}`}>{action}</span> this friend?</p>
   return <></>
 }
@@ -77,33 +77,6 @@ interface FriendActionConfirmationButtonsProps {
   friendIntraName: string;
   ignoreAction?: () => void;
 }
-
-type FriendActionFunction = {
-  yesAction: any;
-  noAction: any;
-}
-
-/**
- * YES
- * request: accept (PATCH)
- * add: send request (POST)
- * block: to "BLOCKED" (PATCH)
- * mute: to "MUTED" (PATCH)
- * unfriend: bye bye (DELETE)
- * unblock: bye bye (DELETE)
- * unmute: to "ACCEPTED" (PATCH)
- */
-
-/**
- * NO
- * request: delete
- * add: skip
- * block: skip
- * mute: skip
- * unfriend: skip
- * unblock: skip
- * unmute: skip
- */
 
 function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
 
@@ -156,7 +129,7 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
         yesAction = blockExistingFriend;
         break;
       case ACTION_TYPE.UNBLOCK:
-        yesAction = unblockFriend;
+        yesAction = deleteFriendship;
         break;
       case ACTION_TYPE.UNFRIEND:
         yesAction = deleteFriendship;
@@ -173,6 +146,7 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
     
     getFriendList()
       .then((data) => {
+        console.log(data.data);
         setFriends(data.data);
       })
       .catch(err => console.log(err));

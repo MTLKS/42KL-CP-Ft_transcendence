@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
-import { FriendData } from '../../modal/FriendData'
-import Highlighter from '../../components/Highlighter';
-import socketApi from '../../api/socketApi';
+import { FriendData } from '../../../modal/FriendData'
+import Highlighter from '../../../components/Highlighter';
+import socketApi from '../../../api/socketApi';
 
 interface FriendInfoProps {
   friend: FriendData,

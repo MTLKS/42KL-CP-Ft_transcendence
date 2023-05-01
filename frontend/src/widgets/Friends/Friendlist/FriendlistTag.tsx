@@ -1,5 +1,5 @@
 import React from 'react'
-import Highlighter from '../../components/Highlighter';
+import Highlighter from '../../../components/Highlighter';
 
 interface FriendlistTagType {
   type: string;

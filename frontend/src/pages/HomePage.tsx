@@ -10,12 +10,12 @@ import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
 import { FriendData } from '../modal/FriendData';
-import Friendlist from '../widgets/Friendlist/Friendlist';
-import FriendRequestPopup from '../widgets/Friendlist/FriendRequest/FriendRequestPopup';
+import Friendlist from '../widgets/Friends/Friendlist/Friendlist';
+import FriendRequestPopup from '../widgets/Friends/FriendRequest/FriendRequestPopup';
 import SocketApi from '../api/socketApi';
 import Cowsay from '../widgets/TerminalCards/Cowsay';
-import FriendActionCard, { ACTION_TYPE } from '../widgets/Friendlist/FriendAction/FriendActionCard';
-import FriendAction from '../widgets/Friendlist/FriendAction/FriendAction';
+import FriendActionCard, { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
+import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
 import { FriendsContext } from '../contexts/FriendContext';
 
 const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
