@@ -1,36 +1,30 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'message' })
+@Entity( { name: 'message' } )
 export class Message {
-  constructor(
-    intraName: string,
-    channelId: number,
-    channel: boolean,
-    message: string,
-    timeStamp: string,
-  ) {
-    this.intraName = intraName;
-    this.channelId = channelId;
-    this.channel = channel;
-    this.message = message;
-    this.timeStamp = timeStamp;
-  }
+	constructor(intraName: string, channelId: number, channel: boolean, message: string, timeStamp: string) {
+		this.intraName = intraName;
+		this.channelId = channelId;
+		this.channel = channel;
+		this.message = message;
+		this.timeStamp = timeStamp;
+	}
 
-  @PrimaryGeneratedColumn()
-  messageId: number;
+	@PrimaryGeneratedColumn()
+	messageId: number;
 
-  @Column()
-  intraName: string;
+	@Column()
+	intraName: string;
 
-  @Column()
-  channelId: number;
+	@Column()
+	channelId: number;
 
-  @Column()
-  channel: boolean;
+	@Column()
+	channel: boolean;
 
-  @Column()
-  message: string;
+	@Column()
+	message: string;
 
-  @Column()
-  timeStamp: string;
+	@Column()
+	timeStamp: string;
 }

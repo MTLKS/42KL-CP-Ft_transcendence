@@ -1,42 +1,34 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity({ name: 'member' })
+@Entity( { name: 'member' } )
 export class Member {
-  constructor(
-    channelId: number,
-    intraName: string,
-    admin: boolean,
-    banned: boolean,
-    muted: boolean,
-    lastRead: string,
-  ) {
-    this.channelId = channelId;
-    this.intraName = intraName;
-    this.admin = admin;
-    this.banned = banned;
-    this.muted = muted;
-    this.lastRead = lastRead;
-  }
+	constructor(channelId: number, intraName: string, admin: boolean, banned: boolean, muted: boolean, lastRead: string) {
+		this.channelId = channelId;
+		this.intraName = intraName;
+		this.admin = admin;
+		this.banned = banned;
+		this.muted = muted;
+		this.lastRead = lastRead;
+	}
+	
+	@PrimaryGeneratedColumn()
+	memberId: number;
 
-  @PrimaryGeneratedColumn()
-  memberId: number;
+	@Column()
+	channelId: number;
+	
+	@Column()
+	intraName: string;
 
-  @Column()
-  channelId: number;
+	@Column()
+	admin: boolean;
 
-  @Column()
-  intraName: string;
+	@Column()
+	banned: boolean;
 
-  @Column()
-  admin: boolean;
+	@Column()
+	muted: boolean;
 
-  @Column()
-  banned: boolean;
-
-  @Column()
-  muted: boolean;
-
-  @Column()
-  lastRead: string;
+	@Column()
+	lastRead: string;
 }
