@@ -6,7 +6,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Member } from "src/entity/member.entity";
 import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { Socket } from "socket.io";
 
 @Injectable()
 export class ChatService {
@@ -18,8 +17,7 @@ export class ChatService {
 		if (USER_DATA.error !== undefined)
 			return { "error": USER_DATA.error };
 		const DM_ROOM = await this.channelRepository.find({ where: {channelName: USER_DATA.intraName, isRoom: false} });
-		if (DM_ROOM.length === 0)
-		{
+		if (DM_ROOM.length === 0) {
 			const NEW_ROOM = await this.channelRepository.save(new Channel(USER_DATA.intraName, USER_DATA.intraName, true, null, false));
 			await this.memberRepository.save(new Member(NEW_ROOM.channelId, USER_DATA.intraName, true, false, false, new Date().toISOString()));
 		} else {
@@ -58,55 +56,5 @@ export class ChatService {
 	// 	const SAVED_CHANNEL = await this.channelRepository.save(new Channel(roomName, SENDER.intraName, isPrivate, password, true, null));
 	// 	await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
 	// 	return SAVED_CHANNEL;
-	// }
-	
-	//Used when user connect, join the user 
-	async joinAllRoom(client: Socket) {
-		//Search for all rooms the user is in and join all
-	}
-
-	//Used when user leave a group chat
-	leaveRoom(channelId: string, client: Socket) {
-		//Remove roomID from user
-		client.leave(channelId);
-	}
-
-	//Used when user disconnect or is playing game. Make sure incoming message not disturb the user
-	leaveAllRoom(client: Socket){
-		//Search for all rooms the user is in and leave all
-	}
-
-	checkRoomExist(channelId: string): any {
-		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		// return TARGET_ROOM ? true : false;
-	}
-
-	findAllMessages(channelId: string): any {
-		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		// if (!TARGET_ROOM){
-			// return [];
-		// }
-		// return TARGET_ROOM.messages;
-	}
-
-	// addMessage(channelId: string, message: string) {
-		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		// TARGET_ROOM.messages.push(message);
-	// }
-
-	// async getAllChatByID(id: string): Promise<string[]>{
-	// 	//return all user chat
-	// }
-
-	// async newChat(userId: number, visibility: string, password: string, members: number[]): Promise<string>{
-	// 	//Create a new chat room with given information
-	// }
-
-	// async updateChatSetting(userId: number, chatId: string, visibility: string, password: string): Promise<string>{
-	// 	//check if user is owner, if yes, update chat setting
-	// }
-
-	// async updateChatMember(userId: number, chatId: string, memberId: number, action: string): Promise<string>{
-	// 	//check if user is admin, if yes, update chat member
 	// }
 }
