@@ -12,7 +12,6 @@ interface ProfileProps {
   expanded?: boolean;
 }
 
-
 function Profile(props: ProfileProps) {
   const { userData } = props;
   const [pixelSize, setPixelSize] = useState(400);

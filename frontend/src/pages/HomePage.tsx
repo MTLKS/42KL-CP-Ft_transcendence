@@ -1,4 +1,4 @@
-import React, { cloneElement, useEffect, useRef } from 'react'
+import React, { cloneElement, useContext, useEffect, useRef } from 'react'
 import Pong from './Pong'
 import login from '../functions/login';
 import rickroll from '../functions/rickroll';
@@ -18,26 +18,27 @@ import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
+import UserContext from '../context/UserContext';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
-let myProfile: UserData = {
-  accessToken: "hidden",
-  avatar: "",
-  elo: 400,
-  intraId: 130305,
-  intraName: "wricky-t",
-  tfaSecret: null,
-  userName: "JOHNDOE"
-};
+// let myProfile: UserData = {
+//   accessToken: "hidden",
+//   avatar: "",
+//   elo: 400,
+//   intraId: 130305,
+//   intraName: "wricky-t",
+//   tfaSecret: null,
+//   userName: "JOHNDOE"
+// };
 
 function HomePage() {
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [topWidget, setTopWidget] = React.useState(<Profile userData={myProfile} />);
+  const [topWidget, setTopWidget] = React.useState(useContext(UserContext));
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
@@ -45,6 +46,7 @@ function HomePage() {
   const [expandProfile, setExpandProfile] = React.useState(false);
   const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = React.useState(0);
+  const { myProfile, setMyProfile } = useContext(UserContext);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -82,8 +84,9 @@ function HomePage() {
 
   useEffect(() => {
     getMyProfile().then((profile) => {
-      myProfile = profile.data as UserData;
-      setTopWidget(<Profile userData={myProfile} />);
+      // myProfile = profile.data as UserData;
+      // setTopWidget(<Profile userData={myProfile} />);
+      setMyProfile(profile.data as UserData);
     });
 
     initFriendshipSocket();
@@ -176,10 +179,11 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "whoami":
-        const newWhoamiCard = <Profile userData={myProfile} />;
+        const newWhoamiCard = useContext(UserContext);
         setTopWidget(newWhoamiCard);
         break;
       case "less":
+        // const
         setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
           setLeftWidget(null);
         }} />);
@@ -243,7 +247,7 @@ function HomePage() {
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile userData={myProfile} />;
+      const newProfileCard = useContext(UserContext);
       setTopWidget(newProfileCard);
     }
     return newList;
