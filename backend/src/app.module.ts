@@ -56,7 +56,6 @@ import { GameService } from './game/game.service';
     AuthService,
     UserService,
     TFAService,
-    FriendshipGateway,
     FriendshipService,
     StatusGateway,
     StatusService,

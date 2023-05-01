@@ -6,10 +6,10 @@ import {
   MessageBody,
   OnGatewayConnection,
 } from '@nestjs/websockets';
-import { AuthGuard } from 'src/guard/AuthGuard';
+import { Socket, Server } from 'socket.io';
 import { ChatService } from './chat.service';
 import { UseGuards } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import { AuthGuard } from 'src/guard/AuthGuard';
 
 @WebSocketGateway({ cors: { origin: '*' }, namespace: '/chat' })
 export class ChatGateway implements OnGatewayConnection {
