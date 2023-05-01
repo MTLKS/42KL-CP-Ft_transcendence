@@ -16,6 +16,7 @@ import SocketApi from '../api/socketApi';
 import Cowsay from '../widgets/TerminalCards/Cowsay';
 import FriendActionCard, { ACTION_TYPE } from '../widgets/Friendlist/FriendAction/FriendActionCard';
 import FriendAction from '../widgets/Friendlist/FriendAction/FriendAction';
+import { FriendsContext } from '../contexts/FriendContext';
 
 const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
 const emptyWidget = <div></div>;
@@ -46,10 +47,6 @@ function HomePage() {
   const pageRef = useRef<HTMLDivElement>(null);
 
   let incomingRequests: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName);
-  let blockedFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "blocked"));
-  let mutedFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "muted"));
-  let acceptedFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "accepted"));
-  let pendingFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending"));
 
   const friendshipSocket = new SocketApi("friendship");
 
@@ -80,10 +77,6 @@ function HomePage() {
 
   useEffect(() => {
     incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName);
-    pendingFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "pending"));
-    blockedFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "blocked"));
-    mutedFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "muted"));
-    acceptedFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "accepted"));
     setFriendRequests(incomingRequests.length);
   }, [myFriends]);
 
@@ -102,23 +95,25 @@ function HomePage() {
   }, []);
 
   return (
-    <div className='h-full w-full p-7'>
-      {startMatch && <Pong />}
-      {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
-        ref={pageRef}
-      >
-        <div className='h-full flex-1'>
-          {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
-        </div>
-        <div className=' bg-highlight h-full w-1' />
-        <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-          {topWidget}
-          {midWidget}
-          {botWidget}
+    <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
+      <div className='h-full w-full p-7'>
+        {startMatch && <Pong />}
+        {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
+        <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
+          ref={pageRef}
+        >
+          <div className='h-full flex-1'>
+            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+          </div>
+          <div className=' bg-highlight h-full w-1' />
+          <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+            {topWidget}
+            {midWidget}
+            {botWidget}
+          </div>
         </div>
       </div>
-    </div>
+    </FriendsContext.Provider>
   )
 
   function handleCommands(command: string[]) {
@@ -236,52 +231,31 @@ function HomePage() {
       return;
     }
 
-    const visibleFriends = acceptedFriends.concat(mutedFriends);
-
-    // pass in incoming friend requests
-    if (command[0] === "requests" && command.length === 1) {
-      setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.ACCEPT} friends={incomingRequests} onQuit={() => setLeftWidget(null)} />);
-      return;
-    }
-
-    // pass in all friends
     if (command[0] === "list" && command.length === 1) {
-      setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => setLeftWidget(null)} />);
+      setLeftWidget(<Friendlist userData={myProfile} onQuit={() => setLeftWidget(null)} />);
       return;
     }
 
-    // pass in accepted & muted friends
+    if (command[0] === "requests" && command.length === 1) {
+      setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.ACCEPT} onQuit={() => setLeftWidget(null)} />);
+      return;
+    }
+
     if (command[0] === "block") {
       // pass in all filtered friends
       if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} friends={visibleFriends} onQuit={() => setLeftWidget(null)} />);
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
     }
-    
-    // pass in blocked friends
+
     if (command[0] === "unblock") {
       // show all blocked friend
       if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} friends={blockedFriends} onQuit={() => setLeftWidget(null)} />);
-    }
-      
-    // pass in accepted friends
-    if (command[0] === "mute") {
-      if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.MUTE} friends={acceptedFriends} onQuit={() => setLeftWidget(null)} />);
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
     }
 
-    // pass in muted friends
-    if (command[0] === "unmute") {
-      // show all muted friends
-      if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNMUTE} friends={mutedFriends} onQuit={() => setLeftWidget(null)} />);
-    }
-
-    // pass in accepted, muted, pending friends
     if (command[0] === "unfriend") {
-      // show all friends that can be deleted
       if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} friends={visibleFriends.concat(pendingFriends)} onQuit={() => setLeftWidget(null)} />)
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />)
     }
 
     if (command[0] === "add" && command.length >= 2) {

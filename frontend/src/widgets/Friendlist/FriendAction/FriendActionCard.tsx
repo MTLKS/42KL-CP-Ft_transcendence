@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 import { FriendData } from '../../../modal/FriendData'
 import { getRandomString } from '../../../functions/fun';
 import FriendlistEmptyLine from '../FriendlistEmptyLine';
@@ -6,6 +6,10 @@ import { FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import { UserData } from '../../../modal/UserData';
 import { BsPersonPlus } from 'react-icons/bs';
 import api from '../../../api/api';
+import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship, unblockFriend } from '../../../functions/friendactions';
+import { AxiosResponse } from 'axios';
+import { getFriendList } from '../../../functions/friendlist';
+import { FriendsContext } from '../../../contexts/FriendContext';
 
 interface FriendActionCardProps {
   index: number;
@@ -16,10 +20,9 @@ interface FriendActionCardProps {
   ignoreAction: () => void;
 }
 
-function FriendActionProfileCard(props: {isCurrentIndex: boolean, user: UserData, friend: FriendData}) {
+function FriendActionProfileCard(props: {isCurrentIndex: boolean, user: UserData, friend: FriendData, friendIntraName: string}) {
 
-  const { isCurrentIndex, user, friend } = props;
-  let intraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+  const { isCurrentIndex, user, friend, friendIntraName } = props;
 
   return (
     <div
@@ -32,7 +35,7 @@ function FriendActionProfileCard(props: {isCurrentIndex: boolean, user: UserData
         alt=""
       />
       <div className='group-hover:bg-highlight h-full p-3.5'>
-        <p className='text-highlight group-hover:text-dimshadow font-extrabold text-base w-full h-full select-none'>{friend.userName} ({intraName})</p>
+        <p className='text-highlight group-hover:text-dimshadow font-extrabold text-base w-full h-full select-none'>{friend.userName} ({friendIntraName})</p>
       </div>
     </div>
   )
@@ -40,11 +43,10 @@ function FriendActionProfileCard(props: {isCurrentIndex: boolean, user: UserData
 
 export const ACTION_TYPE = {
   ACCEPT: "accept",
+  ADD: "add",
   BLOCK: "block",
-  MUTE: "mute",
   UNFRIEND: "unfriend",
   UNBLOCK: "unblock",
-  UNMUTE: "unmute"
 }
 
 function getFriendActionTitle(action: string) {
@@ -60,22 +62,19 @@ function FriendActionConfirmation(props: {action: string}) {
 
   if (action === ACTION_TYPE.ACCEPT || action === ACTION_TYPE.UNBLOCK)
     style = 'bg-accGreen';
-  else if (action === ACTION_TYPE.MUTE || action === ACTION_TYPE.UNMUTE)
-    style = 'bg-accCyan';
   else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNFRIEND)
     style = 'bg-accRed';
 
   if (action === ACTION_TYPE.ACCEPT)
     return <p>Would you like to <span className={`${style}`}>accept</span> this friend request?</p>
-  else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNBLOCK || action === ACTION_TYPE.UNFRIEND
-    || action === ACTION_TYPE.MUTE || action === ACTION_TYPE.UNMUTE)
+  else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNBLOCK || action === ACTION_TYPE.UNFRIEND || status === ACTION_TYPE.ADD)
     return <p>Are you sure you want to <span className={`${style}`}>{action}</span> this friend?</p>
   return <></>
 }
 
 interface FriendActionConfirmationButtonsProps {
   action: string;
-  friend: FriendData;
+  friendIntraName: string;
   ignoreAction?: () => void;
 }
 
@@ -108,18 +107,27 @@ type FriendActionFunction = {
 
 function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
 
-  const { action, friend, ignoreAction } = props;
-  let actionFunctions: FriendActionFunction;
+  const { action, friendIntraName, ignoreAction } = props;
+  let yesAction: (name: string) => Promise<AxiosResponse>;
+  let noAction: (name:string) => Promise<AxiosResponse>;
+
+  const { setFriends } = useContext(FriendsContext);
 
   setActionFunctions();
 
   return (
     <>
-      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={() => console.log("yes")}>
+      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={handleYesAction}>
         <span className='font-extrabold'>y</span>es
       </button>
       /
-      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={() => console.log("no")}>
+      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`}
+        onClick={
+          ignoreAction === undefined
+          ? handleNoAction
+          : ignoreAction
+        }
+      >
         <span className='font-extrabold'>n</span>o
       </button>
       {
@@ -136,13 +144,44 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
   )
 
   function setActionFunctions() {
-    const NAMESPACE = "/friendship";
-
     switch (action) {
+      case ACTION_TYPE.ADD:
+        yesAction = addFriend;
+        break;
       case ACTION_TYPE.ACCEPT:
-        actionFunctions.yesAction = api.patch(NAMESPACE, { ...friend, status: "ACCEPTED" });
-        actionFunctions.noAction = api.delete(NAMESPACE, {} = friend)
+        yesAction = acceptFriend;
+        noAction = deleteFriendship;
+        break;
+      case ACTION_TYPE.BLOCK:
+        yesAction = blockExistingFriend;
+        break;
+      case ACTION_TYPE.UNBLOCK:
+        yesAction = unblockFriend;
+        break;
+      case ACTION_TYPE.UNFRIEND:
+        yesAction = deleteFriendship;
+        break;
+      default:
+        break;
     }
+  }
+
+  function handleYesAction() {
+    yesAction(friendIntraName)
+      .then((data: any) => console.log(data))
+      .catch(err => console.log(err));
+    
+    getFriendList()
+      .then((data) => {
+        setFriends(data.data);
+      })
+      .catch(err => console.log(err));
+  }
+
+  function handleNoAction() {
+    noAction(friendIntraName)
+      .then((data:any) => console.log(data))
+      .catch(err => console.log(err));
   }
 }
 
@@ -151,12 +190,13 @@ function FriendActionCard(props: FriendActionCardProps) {
   const { index, selectedIndex, action = "", user, friend, ignoreAction } = props;
   const fakeSHAkeyStr = useMemo(() => `+${getRandomString(10)}/${getRandomString(10)}`, []);
   const isCurrentIndex = selectedIndex === index;
+  let friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
 
   return (
     <div className={`flex flex-row gap-x-2 ${!isCurrentIndex && 'opacity-20'}`}>
       <p className='w-[3ch] text-right font-extrabold text-highlight/50 overflow-hidden text-sm'>{index}</p>
       <div className='flex flex-col'>
-        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} user={user} friend={friend}/>
+        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} user={user} friend={friend} friendIntraName={friendIntraName}/>
         <FriendlistEmptyLine />
         <div className='flex flex-col text-base w-full text-highlight'>
           <p>{getFriendActionTitle(action)}'<span className='bg-accCyan select-all'>{friend.userName}</span>'</p>
@@ -164,7 +204,7 @@ function FriendActionCard(props: FriendActionCardProps) {
           <div className='flex flex-row whitespace-pre'>
             <FriendActionConfirmation action={action}/>
             <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
-              [<FriendActionConfirmationButtons action={action} friend={friend} ignoreAction={ignoreAction}/>]
+              [<FriendActionConfirmationButtons action={action} friendIntraName={friendIntraName} ignoreAction={ignoreAction}/>]
             </div>
           </div>
         </div>

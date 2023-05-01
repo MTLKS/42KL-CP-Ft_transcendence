@@ -1,62 +1,46 @@
 import { FriendData } from "../modal/FriendData";
 import { UserData } from "../modal/UserData";
 import api from "../api/api";
+import { AxiosResponse } from "axios";
 
 const NAMESPACE = "/friendship"
 
-export function addFriend(newFriendIntraName: string) {
+export function addFriend(newFriendIntraName: string): Promise<AxiosResponse> {
   return api.post(NAMESPACE, {
     receiverIntraName: newFriendIntraName,
     status: "PENDING",
   });
 }
 
-export function acceptFriend(incomingFriendIntraName: string) {
+export function acceptFriend(incomingFriendIntraName: string): Promise<AxiosResponse> {
   return api.patch(NAMESPACE, {
     receiverIntraName: incomingFriendIntraName,
     status: "ACCEPTED",
   });
 }
 
-export function blockExistingFriend(toBeBlockedIntraName: string) {
+export function blockExistingFriend(toBeBlockedIntraName: string): Promise<AxiosResponse> {
   return api.patch(NAMESPACE, {
     receiverIntraName: toBeBlockedIntraName,
     status: "BLOCKED",
   })
 }
 
-export function blockStranger(toBeBlockedIntraName: string) {
+export function blockStranger(toBeBlockedIntraName: string): Promise<AxiosResponse> {
   return api.post(NAMESPACE, {
     receiverIntraName: toBeBlockedIntraName,
     status: "BLOCKED",
   })
 }
 
-export function muteFriend(toBeMutedIntraName: string) {
-  return api.patch(NAMESPACE, {
-    receiverIntraName: toBeMutedIntraName,
-    status: "MUTED",
-  })
-}
-
-export function unfriendFriend(toBeUnfriendedIntraName: string) {
+export function deleteFriendship(toBeUnfriendedIntraName: string) {
   return api.delete(NAMESPACE, {
     receiverIntraName: toBeUnfriendedIntraName,
-    status: "DELETE" // ?
+    status: "DELETE",
   })
 }
 
 // no need to have another function to unblock stranger
 export function unblockFriend(toBeUnblockedIntraName: string) {
-  return api.delete(NAMESPACE, {
-    receiverIntraName: toBeUnblockedIntraName,
-    status: "DELETE" // ?
-  })
-}
-
-export function unmuteFriend(toBeUnmutedIntraName: string) {
-  return api.patch(NAMESPACE, {
-    receiverIntraName: toBeUnmutedIntraName,
-    status: "ACCEPTED"
-  })
+  return api.delete(`${NAMESPACE}+/:${toBeUnblockedIntraName}`);
 }

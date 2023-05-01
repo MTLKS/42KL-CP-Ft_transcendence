@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import FriendlistTitle from './FriendlistTitle'
 import FriendlistCategory from './FriendlistCategory';
 import EmptyFriendlist from './EmptyFriendlist';
@@ -7,17 +7,18 @@ import { FriendData, FriendTags } from '../../modal/FriendData';
 import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
+import { FriendsContext } from '../../contexts/FriendContext';
 
 interface FriendlistProps {
   userData: UserData;
-  friendsData: FriendData[];
   onQuit: () => void;
 }
 
 function Friendlist(props: FriendlistProps) {
 
   // Props
-  const { userData, friendsData, onQuit } = props;
+  const { userData, onQuit } = props;
+  const { friends } = useContext(FriendsContext);
 
   // Use Hooks
   const [inputValue, setInputValue] = useState("");
@@ -30,9 +31,9 @@ function Friendlist(props: FriendlistProps) {
   const divRef = useRef<HTMLDivElement>(null);
 
   // Filtered Raw data
-  const acceptedFriends = filterFriends(friendsData, FriendTags.accepted);
-  const pendingFriends = filterFriends(friendsData, FriendTags.pending);
-  const blockedFriends = filterFriends(friendsData, FriendTags.blocked);
+  const acceptedFriends = filterFriends(friends, FriendTags.accepted);
+  const pendingFriends = filterFriends(friends, FriendTags.pending);
+  const blockedFriends = filterFriends(friends, FriendTags.blocked);
   const sortedFriends = acceptedFriends.concat(pendingFriends, blockedFriends);
 
   // convert sorted friends into lines
@@ -71,15 +72,15 @@ function Friendlist(props: FriendlistProps) {
       />
       <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
         {
-          friendsData.length === 0
+          friends.length === 0
             ? <EmptyFriendlist />
             : lines.slice(startingIndex, endingIndex)
         }
       </div>
-      <p className={`absolute bottom-0 left-0 ${friendsData.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
+      <p className={`absolute bottom-0 left-0 ${friends.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
         {
           (!isSearching || inputValue === "")
-            ? `./usr/${userData.userName}/friends ${friendsData.length === 0 ? '' : `line [${startingIndex + 1}-${endingIndex}]/${lines.length}`}  press 'q' to quit`
+            ? `./usr/${userData.userName}/friends ${friends.length === 0 ? '' : `line [${startingIndex + 1}-${endingIndex}]/${lines.length}`}  press 'q' to quit`
             : inputValue
         }
       </p>
