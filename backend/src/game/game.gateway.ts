@@ -1,13 +1,18 @@
-import { WebSocketGateway, SubscribeMessage, ConnectedSocket, MessageBody, WebSocketServer } from "@nestjs/websockets";
+import { WebSocketGateway, SubscribeMessage, ConnectedSocket, MessageBody, WebSocketServer, OnGatewayConnection } from "@nestjs/websockets";
 import { GameService } from "./game.service";
 import { Socket, Server } from 'socket.io';
 
 @WebSocketGateway({ cors : {origin: '*'}, namespace: 'game'})
-export class GameGateway {
+export class GameGateway implements OnGatewayConnection{
 	constructor (private readonly gameService: GameService) {}
 
 	@WebSocketServer()
 	server: Server;
+
+	handleConnection(client: Socket, ...args: any[]) {
+		// console.log("Client connected", client.id);
+		this.server.emit("test", "BOO");
+	}
 
 	@SubscribeMessage('joinQueue')
 	async handleJoinQueue(@ConnectedSocket() client: Socket) {
@@ -36,7 +41,7 @@ export class GameGateway {
 
 	@SubscribeMessage('playerMove')
 	async handleKeyDown(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		console.log(body);
-		this.gameService.playerUpdate(client.id, body.value);
+		// console.log(body);
+		this.gameService.playerUpdate(client.id, body.y);
 	}
 }
