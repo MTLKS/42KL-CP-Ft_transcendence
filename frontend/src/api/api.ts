@@ -60,6 +60,10 @@ class Api {
     return this.reqInstance.post<T>(url, data, config);
   }
 
+  patch<T>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+    return this.reqInstance.patch<T>(url, data, config);
+  }
+
   put<T>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
     return this.reqInstance.put<T>(url, data, config);
   }

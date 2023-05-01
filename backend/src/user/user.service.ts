@@ -129,7 +129,7 @@ export class UserService {
 		const FS = require('fs');
 		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
 		if (NEW_USER.length !== 0)
-			return { "erroro": "Invalid accessToken - user information already exists, use PATCH to update instead" };
+			return { "error": "Invalid accessToken - user information already exists, use PATCH to update instead" };
 		const EXISTING = await this.userRepository.find({ where: {userName} });
 		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
 			return ERROR_DELETE("Invalid username - username already exists or invalid");
