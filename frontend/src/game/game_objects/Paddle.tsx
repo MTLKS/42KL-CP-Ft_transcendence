@@ -1,24 +1,33 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 import { Container, Graphics, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
+import { GameTickCtx } from '../GameStage';
 
 
 interface PaddleProps {
   left: boolean;
   stageSize: BoxSize;
-  position: Offset
   size: BoxSize;
 }
 
 function Paddle(props: PaddleProps) {
-  const { left, stageSize, position, size } = props;
+  const { left, stageSize, size } = props;
   const [rot, setRot] = React.useState(0);
-
+  const [position, setPosition] = React.useState<Offset>({ x: 0, y: 0 });
+  const gameTick = useContext(GameTickCtx);
   useTick((delta) => {
     setRot(rot + 5);
   }, false);
 
+  useTick((delta) => {
+    if (left) {
+      setPosition(gameTick.leftPaddlePosition);
+    }
+    else {
+      setPosition(gameTick.rightPaddlePosition);
+    }
+  });
   const draw = useCallback((g: any) => {
     const lightAngle = (position.y - stageSize.h / 2) / 4
     const shadowDirection = left ? -100 : 100;

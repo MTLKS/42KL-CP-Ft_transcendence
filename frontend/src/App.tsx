@@ -27,9 +27,9 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      {/* <MouseCursor> */}
-      {page}
-      {/* </MouseCursor> */}
+      <MouseCursor>
+        {page}
+      </MouseCursor>
     </PolkaDotContainer>
   )
 

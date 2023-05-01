@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
+import { GameTickCtx } from '../GameStage';
 
 interface SpitsProps {
-  position: Offset
   size: BoxSize;
-  speed: Offset;
   color: number;
 }
 
@@ -18,35 +17,35 @@ interface Particle {
 }
 
 const opacity = 1;
-let texture1: PIXI.Texture;
-let texture2: PIXI.Texture;
-let texture3: PIXI.Texture;
+
 const speedFactor = 1.5;
 
 function Spits(props: SpitsProps) {
-  const { position, size, speed, color } = props;
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [texture, setTexture] = useState<PIXI.Texture>(texture1);
+  const { size, color } = props;
   const app = useApp();
-
-  useEffect(() => {
+  const { texture1, texture2, texture3 } = useMemo(() => {
     const box = new PIXI.Graphics();
     box.beginFill(0xFEF8E2, 0.8);
     box.drawRect(0, 0, 8, 8);
     box.endFill();
-    texture1 = app.renderer.generateTexture(box);
+    const texture1 = app.renderer.generateTexture(box);
     box.clear();
     box.beginFill(0x5F928F, 0.8);
     box.drawRect(0, 0, 8, 8);
     box.endFill();
-    texture2 = app.renderer.generateTexture(box);
+    const texture2 = app.renderer.generateTexture(box);
     box.clear();
     box.beginFill(0xAD6454, 0.8);
     box.drawRect(0, 0, 8, 8);
     box.endFill();
-    texture3 = app.renderer.generateTexture(box);
-
+    const texture3 = app.renderer.generateTexture(box);
+    return { texture1, texture2, texture3 }
   }, []);
+  const [particles, setParticles] = useState<Particle[]>([]);
+  const [texture, setTexture] = useState<PIXI.Texture>(texture1);
+  const gameTick = useContext(GameTickCtx);
+
+
 
   useEffect(() => {
     switch (color) {
@@ -84,12 +83,12 @@ function Spits(props: SpitsProps) {
       });
       for (let i = 0; i < 2; i++) {
         newParticle.push({
-          x: position.x + 5 - size.w / 2,
-          y: position.y + 5 - size.h / 2,
+          x: gameTick.pongPosition.x + 5 - size.w / 2,
+          y: gameTick.pongPosition.y + 5 - size.h / 2,
           opacity: opacity,
           speed: {
-            x: speed.x * speedFactor + (Math.random() - 0.5) * 3,
-            y: speed.y * speedFactor + (Math.random() - 0.5) * 3
+            x: gameTick.pongSpeed.x * speedFactor + (Math.random() - 0.5) * 3,
+            y: gameTick.pongSpeed.y * speedFactor + (Math.random() - 0.5) * 3
           },
         });
       }

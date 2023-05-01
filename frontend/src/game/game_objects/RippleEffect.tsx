@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import { Container, Graphics, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import sleep from '../../functions/sleep';
-import { flushSync } from 'react-dom';
+import { GameTickCtx } from '../GameStage';
 
 
 interface RingProps {
@@ -32,45 +32,42 @@ interface Ring {
 }
 
 interface RippleEffectProps {
-  position: Offset
-  size: BoxSize;
+  stageSize: BoxSize;
+
 }
 
 function RippleEffect(props: RippleEffectProps) {
-  const { position, size } = props;
+  const { stageSize } = props;
   const [rings, setRings] = useState<Ring[]>([]);
+  const gameTick = useContext(GameTickCtx);
   const addRing = useCallback(async () => {
     const newRings: Ring[] = [...rings];
+    const hitPosition = gameTick.pongPosition;
     for (let i = 0; i < 3; i++) {
       newRings.push({
-        position: {
-          x: position.x,
-          y: position.y
-        },
+        position: hitPosition,
         r: 10,
         opacity: 0.8
       });
-      flushSync(() => {
-        setRings(newRings);
-      });
+      setRings(newRings);
       await sleep(100);
     }
-  }, [position]);
-
-  useEffect(() => {
-
-
-    addRing();
-  }, [position]);
+  }, [gameTick.pongPosition]);
 
   useTick((delta) => {
+    if (gameTick.pongPosition.x <= 0 || gameTick.pongPosition.y <= 0) addRing();
+    if (gameTick.pongPosition.x >= stageSize.w - 10 || gameTick.pongPosition.y >= stageSize.h - 10) addRing();
     if (rings.length === 0) return;
-    rings.forEach((item) => {
-      if (item.opacity <= 0) {
-        rings.shift();
-      }
-      item.r += 3 * delta;
-      item.opacity -= 0.01 * delta;
+    setRings((rings) => {
+      const newRings = [...rings];
+      newRings.forEach((item) => {
+        if (item.opacity <= 0) {
+          newRings.shift();
+        }
+        item.r += 3 * delta;
+        item.opacity -= 0.01 * delta;
+      });
+      return newRings;
     });
   });
   const ringComponent = rings.map((item, i) => <Ring key={i} position={item.position} r={item.r} opacity={item.opacity} />);

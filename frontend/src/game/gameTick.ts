@@ -9,6 +9,7 @@ export class GameTick {
   leftPaddlePosition: Offset;
   rightPaddlePosition: Offset;
   usingLocalTick: boolean = false;
+  isLeft: boolean = true;
 
   constructor() {
     console.log("gameTick created");
@@ -27,15 +28,24 @@ export class GameTick {
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     this.pongPosition = { x: data.ballPosX, y: data.ballPosY };
-    this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
-    this.rightPaddlePosition = { x: 1600 - 30, y: data.rightPaddlePosY };
+    if (this.isLeft) {
+      this.rightPaddlePosition = { x: 1600 - 46, y: data.rightPaddlePosY };
+    } else {
+      this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
+    }
     this.pongSpeed = { x: data.velX, y: data.velY };
   };
-  get ponfPosition() {
-    return this.pongPosition;
+
+  set isLeftPlayer(isLeft: boolean) {
+    this.isLeft = isLeft;
   }
 
-  sendPlayerMove(y: number) {
+  updatePlayerPosition(y: number) {
+    if (this.isLeft) {
+      this.leftPaddlePosition = { x: 30, y: y };
+    } else {
+      this.rightPaddlePosition = { x: 1600 - 46, y: y };
+    }
     this.socketApi.sendMessages("playerMove", { y: y });
   }
 

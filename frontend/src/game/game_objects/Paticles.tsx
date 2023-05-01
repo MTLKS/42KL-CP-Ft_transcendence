@@ -1,12 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
+import { GameTickCtx } from '../GameStage';
 
 interface PaticlesProps {
-  position: Offset
   size: BoxSize;
-  speed: Offset;
 }
 
 interface Particle {
@@ -23,9 +22,10 @@ let texture2: PIXI.Texture;
 let texture3: PIXI.Texture;
 
 function Paticles(props: PaticlesProps) {
-  const { position, size, speed } = props;
+  const { size } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const app = useApp();
+  const gameTick = useContext(GameTickCtx);
 
   useEffect(() => {
     const box = new PIXI.Graphics();
@@ -55,12 +55,12 @@ function Paticles(props: PaticlesProps) {
         p.y += p.speed.y;
       });
       newParticle.push({
-        x: position.x - 5 + 20 * Math.random(),
-        y: position.y - 5 + 20 * Math.random(),
+        x: gameTick.pongPosition.x - 5 + 20 * Math.random(),
+        y: gameTick.pongPosition.y - 5 + 20 * Math.random(),
         opacity: opacity,
         speed: {
-          x: speed.y * (Math.random() - 0.5) * 0.3,
-          y: speed.x * (Math.random() - 0.5) * 0.3
+          x: gameTick.pongSpeed.y * (Math.random() - 0.5) * 0.3,
+          y: gameTick.pongSpeed.x * (Math.random() - 0.5) * 0.3
         },
         color: Math.random() > 0.5 ? 1 : 2
       });

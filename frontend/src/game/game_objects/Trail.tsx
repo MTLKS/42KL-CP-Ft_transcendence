@@ -1,11 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Graphics, ParticleContainer, PixiComponent, Sprite, render, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
+import { GameTickCtx } from '../GameStage';
 interface TrailProps {
-  position: Offset
   size: BoxSize;
-  speed: Offset;
 }
 
 interface Particle {
@@ -20,9 +19,10 @@ let texture: PIXI.Texture;
 let tickCount = 0;
 
 function Trail(props: TrailProps) {
-  const { position, size, speed } = props;
+  const { size } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const app = useApp();
+  const gameTick = useContext(GameTickCtx);
 
   useEffect(() => {
     const box = new PIXI.Graphics();
@@ -34,6 +34,7 @@ function Trail(props: TrailProps) {
   }, []);
 
   useTick((delta) => {
+
     setParticles((particles) => {
       const newParticle = [...particles]
       newParticle.forEach((p) => {
@@ -53,10 +54,7 @@ function Trail(props: TrailProps) {
       });
 
       newParticle.push({
-        position: {
-          x: position.x,
-          y: position.y,
-        },
+        position: gameTick.pongPosition,
         opacity: opacity,
         speed: {
           x: 0,
