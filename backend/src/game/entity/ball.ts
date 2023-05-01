@@ -14,16 +14,21 @@ export class Ball extends Rect{
 		this.accY = 0;
 	}
 
-	update(deltaTime: number){
-		this.velX += this.accX * deltaTime * deltaTime;
-		this.velY += this.accY * deltaTime * deltaTime;
-		this.posX += this.velX * deltaTime;
-		this.posY += this.velY * deltaTime;
+	update(){
+		this.velX += this.accX * (1/60);
+		this.velY += this.accY * (1/60);
+		this.posX += this.velX;
+		this.posY += this.velY;
 	}
 
 	initVelocity(velX: number, velY: number){
 		this.velX = velX;
 		this.velY = velY;
+	}
+
+	addAcceleration(accX: number, accY: number){
+		this.accX = accX;
+		this.accY = accY;
 	}
 
 	checkContraint(borderWidth: number, borderHeight: number){
@@ -48,7 +53,6 @@ export class Ball extends Rect{
 	collisionResponse(collideTime: number, normalX: number, normalY: number){
 		this.posX += this.velX * collideTime;
 		this.posY += this.velY * collideTime;
-
 		if (Math.abs(normalX) > 0.001){
 			this.velX *= -1;
 		}

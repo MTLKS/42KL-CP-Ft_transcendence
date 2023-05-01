@@ -45,19 +45,19 @@ export class GameService {
     10,
     10,
   );
-  private LEFT_PADDLE = new Paddle(0, this.gameState.leftPaddlePosY, 10, 100);
+  private LEFT_PADDLE = new Paddle(30, this.gameState.leftPaddlePosY, 15, 100);
   private RIGHT_PADDLE = new Paddle(
-    this.gameData.canvasWidth - 10,
+    this.gameData.canvasWidth - 30,
     this.gameState.rightPaddlePosY,
-    10,
+    15,
     100,
   );
   private interval: NodeJS.Timer | null = null;
   private lastTimeFrame: number | null = null;
 
   //Game config settings
-  private BALL_SPEED_X = 9;
-  private BALL_SPEED_Y = 3;
+  private BALL_SPEED_X = 0;
+  private BALL_SPEED_Y = 5;
 
   //Lobby functions
 
@@ -151,30 +151,35 @@ export class GameService {
     this.BALL.posY = this.gameData.canvasHeight / 2;
     if (this.gameData.lastWinner.length == 0) {
       this.BALL.velX =
-        this.BALL_SPEED_X * Math.round(Math.random()) === 0 ? -1 : 1;
+        this.BALL_SPEED_X * (Math.round(Math.random()) === 0 ? -1 : 1);
       this.BALL.velY =
-        this.BALL_SPEED_Y * Math.round(Math.random()) === 0 ? -1 : 1;
+        this.BALL_SPEED_Y * (Math.round(Math.random()) === 0 ? -1 : 1);
     } else if (this.gameData.lastWinner == 'player1') {
       this.BALL.velX = this.BALL_SPEED_X;
       this.BALL.velY =
-        this.BALL_SPEED_Y * Math.round(Math.random()) === 0 ? -1 : 1;
+        this.BALL_SPEED_Y * (Math.round(Math.random()) === 0 ? -1 : 1);
     } else if (this.gameData.lastWinner == 'player2') {
       this.BALL.velX = -this.BALL_SPEED_X;
       this.BALL.velY =
-        this.BALL_SPEED_Y * Math.round(Math.random()) === 0 ? -1 : 1;
+        this.BALL_SPEED_Y * (Math.round(Math.random()) === 0 ? -1 : 1);
     }
   }
 
   playerUpdate(socketId: string, value: number) {
-    if (socketId == this.gameData.player1_id) {
-      this.gameState.leftPaddlePosY = value;
-    } else if (socketId == this.gameData.player2_id) {
-      this.gameState.rightPaddlePosY = value;
-    }
+    this.LEFT_PADDLE.posY = value - 50;
+    this.RIGHT_PADDLE.posY = value - 50;
+    // if (socketId == this.gameData.player1_id){
+    // 	this.gameState.leftPaddlePosY = value;
+    // }
+    // else if (socketId == this.gameData.player2_id){
+    // 	this.gameState.rightPaddlePosY = value;
+    // }
   }
 
-  gameUpdate(deltaTime: number) {
-    this.BALL.update(deltaTime);
+  gameUpdate() {
+    this.BALL.update();
+    // this.BALL.accX = 1;
+    // this.BALL.accY = 3;
     this.BALL.checkContraint(
       this.gameData.canvasWidth,
       this.gameData.canvasHeight,
@@ -184,16 +189,19 @@ export class GameService {
     this.gameState.ballPosY = this.BALL.posY;
     this.gameState.velX = this.BALL.velX;
     this.gameState.velY = this.BALL.velY;
+    this.gameState.leftPaddlePosY = this.LEFT_PADDLE.posY + 50;
+    this.gameState.rightPaddlePosY = this.RIGHT_PADDLE.posY + 50;
+    console.log(this.BALL.posY, this.BALL.velY);
   }
 
   async gameLoop(server: any) {
     this.resetGame();
-    await this.simpleCountdown(10);
+    // await this.simpleCountdown(3);
     this.interval = setInterval(() => {
       const CURRENT_TIME = Date.now();
       if (this.lastTimeFrame != null) {
         const DELTA_TIME = CURRENT_TIME - this.lastTimeFrame;
-        this.gameUpdate(DELTA_TIME);
+        this.gameUpdate();
       }
       this.lastTimeFrame = CURRENT_TIME;
       server.emit('gameLoop', this.gameState);
