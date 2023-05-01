@@ -23,7 +23,7 @@ function App() {
   }
   else if (logged) {
     page = <HomePage />;
-  } 
+  }
 
   return (
     <PolkaDotContainer>
