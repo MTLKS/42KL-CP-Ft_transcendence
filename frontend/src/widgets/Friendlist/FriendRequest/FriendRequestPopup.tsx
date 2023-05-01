@@ -1,6 +1,6 @@
 import React from 'react'
 import { FaHandshake } from 'react-icons/fa'
-import { CollapsiblePopup } from '../../components/Popup'
+import { CollapsiblePopup } from '../../../components/Popup'
 
 interface FriendRequestProps {
   total: number

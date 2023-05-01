@@ -16,6 +16,12 @@ function FriendInfo(props: FriendInfoProps) {
   const [onlineStatus, setOnlineStatus] = useState("");
   const { friend, intraName, searchTerm } = props;
   let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
+  let friendshipStatus = friend.status.toLowerCase();
+
+  friendshipStatus = (friendshipStatus !== "pending"
+                        ? friendshipStatus
+                        : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
+                     )
 
 
   // Handle user's online/offline status
@@ -51,7 +57,7 @@ function FriendInfo(props: FriendInfoProps) {
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
-        <FriendlistTag type={friend.status} searchTerm={searchTerm}/>
+        <FriendlistTag type={friendshipStatus} searchTerm={searchTerm}/>
       </div>
       {
         <>

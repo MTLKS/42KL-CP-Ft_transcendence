@@ -1,25 +1,23 @@
-import React, { cloneElement, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Pong from './Pong'
-import login from '../functions/login';
-import rickroll from '../functions/rickroll';
 import Card, { CardType } from '../components/Card';
 import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
-import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Chat from '../widgets/Chat/Chat';
-import Less from '../widgets/Less';
-import api from '../api/api';
 import { UserData } from '../modal/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
-import { FriendData, FriendRequestType } from '../modal/FriendData';
+import { FriendData } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
-import FriendRequestPopup from '../widgets/Friendlist/FriendRequestPopup';
+import FriendRequestPopup from '../widgets/Friendlist/FriendRequest/FriendRequestPopup';
 import SocketApi from '../api/socketApi';
+import Cowsay from '../widgets/TerminalCards/Cowsay';
+import FriendActionCard, { ACTION_TYPE } from '../widgets/Friendlist/FriendAction/FriendActionCard';
+import FriendAction from '../widgets/Friendlist/FriendAction/FriendAction';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
+const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
@@ -34,19 +32,24 @@ let myProfile: UserData = {
 };
 
 function HomePage() {
-  const [elements, setElements] = React.useState<JSX.Element[]>([])
-  const [index, setIndex] = React.useState(0);
-  const [startMatch, setStartMatch] = React.useState(false);
-  const [topWidget, setTopWidget] = React.useState(<Profile userData={myProfile} />);
-  const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
-  // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
-  const [botWidget, setBotWidget] = React.useState(<Chat />);
-  const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
-  const [expandProfile, setExpandProfile] = React.useState(false);
-  const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
-  const [friendRequests, setFriendRequests] = React.useState(0);
+  const [elements, setElements] = useState<JSX.Element[]>([])
+  const [index, setIndex] = useState(0);
+  const [startMatch, setStartMatch] = useState(false);
+  const [topWidget, setTopWidget] = useState(<Profile userData={myProfile} />);
+  const [midWidget, setMidWidget] = useState(<MatrixRain />);
+  const [botWidget, setBotWidget] = useState(<Chat />);
+  const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
+  const [expandProfile, setExpandProfile] = useState(false);
+  const [myFriends, setMyFriends] = useState<FriendData[]>([]);
+  const [friendRequests, setFriendRequests] = useState(0);
 
   const pageRef = useRef<HTMLDivElement>(null);
+
+  let incomingRequests: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName);
+  let blockedFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "blocked"));
+  let mutedFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "muted"));
+  let acceptedFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "accepted"));
+  let pendingFriends: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending"));
 
   const friendshipSocket = new SocketApi("friendship");
 
@@ -76,8 +79,12 @@ function HomePage() {
   }
 
   useEffect(() => {
-    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName).length;
-    setFriendRequests(totalFriendRequests);
+    incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName);
+    pendingFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "pending"));
+    blockedFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "blocked"));
+    mutedFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "muted"));
+    acceptedFriends = myFriends.filter(friend => (friend.status.toLowerCase() === "accepted"));
+    setFriendRequests(incomingRequests.length);
   }, [myFriends]);
 
   useEffect(() => {
@@ -117,27 +124,16 @@ function HomePage() {
   function handleCommands(command: string[]) {
     let newList: JSX.Element[] = [];
     switch (command[0]) {
-      case "login":
-        login();
-        break;
       case "sudo":
         const newEmbed = <YoutubeEmbed key={"rickroll" + index} />
         newList = [newEmbed].concat(elements);
         setIndex(index + 1);
-        // rickroll();
         break;
-      // case "ls":
-      //   rickroll();
-      //   break;
       case "start":
-        if (!startMatch) {
-          setStartMatch(true);
-        }
+        if (!startMatch) setStartMatch(true);
         break;
       case "end":
-        if (startMatch) {
-          setStartMatch(false);
-        }
+        if (startMatch) setStartMatch(false);
         break;
       case "add":
         const newCard = card(index);
@@ -145,26 +141,15 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "cowsay":
-        const newCowsay = <Card key={index} type={CardType.SUCCESS}>
-          <p>
-            {` _${new Array(command[1].length + 1).join("_")}_ `}<br />
-            {`< ${command[1]} >`}<br />
-            {` -${new Array(command[1].length + 1).join("-")}- `}<br />
-            {"        \\   ^__^"}<br />
-            {"         \\  (oo)\_______"}<br />
-            {"            (__)\       )\\/\\"}<br />
-            {"                ||----w |"}<br />
-            {"                ||     ||"}
-          </p>
-        </Card>;
+        const newCowsay = <Cowsay index={index} commands={command.slice(1)}/>
         newList = [newCowsay].concat(elements);
         setIndex(index + 1);
         break;
       case "profile":
         newList = handleProfileCommand(command);
         break;
-      case "friends":
-
+      case "friend":
+        handleFriendCommand(command.slice(1));
         break;
       case "clear":
         newList = elements.filter((element) => element.type === YoutubeEmbed);
@@ -179,11 +164,6 @@ function HomePage() {
         const newWhoamiCard = <Profile userData={myProfile} />;
         setTopWidget(newWhoamiCard);
         break;
-      case "less":
-        setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
-          setLeftWidget(null);
-        }} />);
-        break;
       default:
         const newErrorCard = errorCard();
         newList = [newErrorCard].concat(elements);
@@ -194,9 +174,10 @@ function HomePage() {
   }
 
   function card(index: number) {
-    return <Card key={index} type={CardType.SUCCESS}>
-      <p className='text-gray-300 text-2xl tracking-tighter mb-5 h-15'>This is a card</p>
-    </Card>;
+    // return <Card key={index} type={CardType.SUCCESS}>
+    //   <p className='text-gray-300 text-2xl tracking-tighter mb-5 h-15'>This is a card</p>
+    // </Card>;
+    return <></>
   }
 
   function helpCard() {
@@ -212,7 +193,7 @@ function HomePage() {
         exit:        logout from your account <br />
         ls:          list files <br />
         ok:          ok <br />
-        sudo:        give you admin privilige <br />
+        sudo:        give you admin privilege <br />
       </p>
     </Card>;
   }
@@ -249,15 +230,63 @@ function HomePage() {
     return newList;
   }
 
-  function handleFriendsCommand(command: string[]): JSX.Element[] {
-    let newList: JSX.Element[] = [];
-    if (command.length === 1) {
-
-    } else if (command.length === 2) {
-
-    } else if (command.length === 4) {
+  function handleFriendCommand(command: string[]) {
+    if (command.length === 0) {
+      console.log("show help");
+      return;
     }
-    return newList;
+
+    const visibleFriends = acceptedFriends.concat(mutedFriends);
+
+    // pass in incoming friend requests
+    if (command[0] === "requests" && command.length === 1) {
+      setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.ACCEPT} friends={incomingRequests} onQuit={() => setLeftWidget(null)} />);
+      return;
+    }
+
+    // pass in all friends
+    if (command[0] === "list" && command.length === 1) {
+      setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => setLeftWidget(null)} />);
+      return;
+    }
+
+    // pass in accepted & muted friends
+    if (command[0] === "block") {
+      // pass in all filtered friends
+      if (command.length === 1)
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} friends={visibleFriends} onQuit={() => setLeftWidget(null)} />);
+    }
+    
+    // pass in blocked friends
+    if (command[0] === "unblock") {
+      // show all blocked friend
+      if (command.length === 1)
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} friends={blockedFriends} onQuit={() => setLeftWidget(null)} />);
+    }
+      
+    // pass in accepted friends
+    if (command[0] === "mute") {
+      if (command.length === 1)
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.MUTE} friends={acceptedFriends} onQuit={() => setLeftWidget(null)} />);
+    }
+
+    // pass in muted friends
+    if (command[0] === "unmute") {
+      // show all muted friends
+      if (command.length === 1)
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNMUTE} friends={mutedFriends} onQuit={() => setLeftWidget(null)} />);
+    }
+
+    // pass in accepted, muted, pending friends
+    if (command[0] === "unfriend") {
+      // show all friends that can be deleted
+      if (command.length === 1)
+        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} friends={visibleFriends.concat(pendingFriends)} onQuit={() => setLeftWidget(null)} />)
+    }
+
+    if (command[0] === "add" && command.length >= 2) {
+      // add friend
+    }
   }
 }
 

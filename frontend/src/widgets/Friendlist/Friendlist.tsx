@@ -48,7 +48,6 @@ function Friendlist(props: FriendlistProps) {
   useEffect(() => {
     if (inputValue === "")
       setIsSearching(false);
-    console.log(inputValue);
   }, [inputValue]);
 
   // calibrate the value of start and ending index
@@ -87,6 +86,7 @@ function Friendlist(props: FriendlistProps) {
     </div>
   )
 
+  // less: handle resize
   function handleResize() {
     if (divRef.current) {
       const height = divRef.current.clientHeight;
@@ -97,6 +97,7 @@ function Friendlist(props: FriendlistProps) {
     }
   }
 
+  // less: observer div's changes
   function observerSetup() {
     const divElement = divRef.current as Element;
     const observer = new ResizeObserver(handleResize);
@@ -107,10 +108,12 @@ function Friendlist(props: FriendlistProps) {
     return () => observer.unobserve(divElement);
   }
 
+  // friendlist: filter friend based on status
   function filterFriends(friends: FriendData[], status: string) {
     return friends.filter((friend) => friend.status.toLowerCase() === status);
   }
 
+  // friendlist: create list of friend info component
   function createFriendlistComponents(sortedFriends: FriendData[]) {
     let prevCategory = '';
     let targetCategory: FriendData[] = [];
@@ -158,10 +161,12 @@ function Friendlist(props: FriendlistProps) {
     return (components);
   }
 
+  // less: focus on the hidden input field
   function focusOnInput() {
     inputRef.current?.focus();
   }
 
+  // less/friendlist: handle keydown
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     const { key } = event;
     const isLastLine = (startingIndex + maxDisplayLines > lines.length);
@@ -181,11 +186,10 @@ function Friendlist(props: FriendlistProps) {
 
     // Forward one line or Start searching
     if (key === "Enter") {
-      if (inputValue === "" && !isLastLine)
+      if (inputValue === "" && !isLastLine) {
         setStartingIndex(startingIndex + 1);
-      else {
+      } else {
         setSearchTerm(inputValue.substring(1));
-        console.log(`here`);
       }
       setInputValue("");
       return;
@@ -198,6 +202,7 @@ function Friendlist(props: FriendlistProps) {
     }
   }
 
+  // less: handle input
   function handleInput(e: React.FormEvent<HTMLInputElement>) {
     let value = e.currentTarget.value;
 

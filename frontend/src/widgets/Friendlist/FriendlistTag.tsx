@@ -17,7 +17,7 @@ const getFriendTagStyle = (type: string) => {
   }
   else if (type === "accepted")
     bgColor = `bg-accCyan`;
-  else if (type === "pending")
+  else if (type === "incoming" || type === "outgoing" || type === "pending")
     bgColor = `bg-accYellow`;
   else if (type === "blocked")
     bgColor = `bg-accRed`;
