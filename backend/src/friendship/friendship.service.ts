@@ -134,8 +134,8 @@ export class FriendshipService {
 		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, "ACCEPTED");
 		if (ERROR)
 			return ERROR;
-		const SENDER = await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} });
-		if (SENDER.length === 0)
+		const SENDER = [...await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} }), ...await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })];
+		if (SENDER.length === 0 || SENDER[0].status.toUpperCase() !== "ACCEPTED")
 			return { "error": "Friendship does not exist - use POST method to create" }
 		await this.friendshipRepository.delete(SENDER[0]);
 		return SENDER[0];
