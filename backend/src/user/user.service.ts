@@ -1,6 +1,6 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { Injectable } from "@nestjs/common";
 import { User } from "../entity/user.entity";
+import { Injectable } from "@nestjs/common";
 import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
