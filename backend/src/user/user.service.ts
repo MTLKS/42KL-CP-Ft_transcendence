@@ -114,7 +114,37 @@ export class UserService {
 
 	// Creates new user by saving their userName and avatar
 	async newUserInfo(accessToken: string, userName: string, file: any): Promise<any> {
-		const ERROR_DELETE = (errMsg) => {
+		const ERROR_DELETE = (errMsg: string) => {
+			if (FS.existsSync(file.path) && (process.env.DOMAIN + ':' + process.env.BE_PORT + '/user/' + file.path) !== NEW_USER[0].avatar)
+				FS.unlink(file.path, () => {});
+			return { "error": errMsg }
+		}
+		if (file === undefined)
+			return { "error": "Invalid file path - no avatar image given" }
+		try {
+			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+		} catch {
+			accessToken = null;
+		}
+		const FS = require('fs');
+		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
+		if (NEW_USER.length !== 0)
+			return { "erroro": "Invalid accessToken - user information already exists, use PATCH to update instead" };
+		const EXISTING = await this.userRepository.find({ where: {userName} });
+		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
+			return ERROR_DELETE("Invalid username - username already exists or invalid");
+		if (userName.length > 16 || userName.length < 1)
+			return ERROR_DELETE("Invalid username - username must be 1-16 characters only");
+		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + file.path;
+		NEW_USER[0].userName = userName;
+		await this.userRepository.save(NEW_USER[0]);
+		NEW_USER[0].accessToken = "hidden";
+		return NEW_USER[0];
+	}
+
+	// Updates existing user by saving their userName and avatar
+	async updateUserInfo(accessToken: string, userName: string, file: any): Promise<any> {
+		const ERROR_DELETE = (errMsg: string) => {
 			if (FS.existsSync(file.path) && (process.env.DOMAIN + ':' + process.env.BE_PORT + '/user/' + file.path) !== NEW_USER[0].avatar)
 				FS.unlink(file.path, () => {});
 			return { "error": errMsg }
