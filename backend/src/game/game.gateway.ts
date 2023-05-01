@@ -1,17 +1,25 @@
-import { WebSocketGateway, SubscribeMessage, ConnectedSocket, MessageBody, WebSocketServer } from "@nestjs/websockets";
+import { WebSocketGateway, SubscribeMessage, ConnectedSocket, MessageBody, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
 import { GameService } from "./game.service";
 import { Socket, Server } from 'socket.io';
 
 @WebSocketGateway({ cors : {origin: '*'}, namespace: 'game'})
-export class GameGateway {
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor (private readonly gameService: GameService) {}
 
 	@WebSocketServer()
 	server: Server;
 
+	handleConnection(@ConnectedSocket() client: Socket) {
+		this.gameService.handleConnection(client);
+	}
+
+	handleDisconnect(@ConnectedSocket() client: Socket) {
+		this.gameService.handleDisconnect(client);
+	}
+
 	@SubscribeMessage('joinQueue')
-	async handleJoinQueue(@ConnectedSocket() client: Socket) {
-		this.gameService.joinQueue(client, this.server);
+	async handleJoinQueue(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.joinQueue(client, body.queue, this.server);
 	}
 
 	@SubscribeMessage('leaveQueue')

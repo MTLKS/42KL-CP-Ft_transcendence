@@ -13,13 +13,20 @@ interface GameData {
 	lastWinner: string;
 }
 
+const LOBBY_LOGGING = true;
+
 @Injectable()
 export class GameService {
 	constructor(private readonly userService: UserService) {}
 	
 	//Lobby variables
-	queue = [];
-	ingame = [];
+
+	private queues = {
+		"standard": [],
+		"power": [],
+		"sudden": []
+	};
+	private ingame = [];
 	
 	//Game logic parameters
 	private gameState : GameDTO = {
@@ -56,31 +63,84 @@ export class GameService {
 			return 'room';
 	}
 
-	async joinQueue(client: Socket, server: Server) {
+	async handleConnection(client: Socket) {
+		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		if (USER_DATA.error !== undefined) {
+			client.disconnect(true);
+			return;
+		}
+
+		if (LOBBY_LOGGING)
+			console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
+
+		// TODO: if player is ingame, reconnect player to game
+	}
+
+	async handleDisconnect(client: Socket) {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
 			return;
-		if (this.ingame.find(e => e.intraName === USER_DATA.intraName)) {
-			console.log(`${USER_DATA.intraName} is already in a game.`);
-			client.emit('error', { error: 'already ingame' });
+
+		Object.keys(this.queues).forEach(queueType => {
+			if (this.queues[queueType].find(e => e.intraName === USER_DATA.intraName)) {
+				this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== USER_DATA.intraName });
+
+				if (LOBBY_LOGGING)
+					console.log(`${USER_DATA.intraName} left ${queueType} queue due to disconnect.`);
+			}
+		});
+
+		// TODO: if player is ingame, pause game and wait for reconnect, abandon game after x seconds
+	}
+
+	async joinQueue(client: Socket, clientQueue: string, server: Server) {
+		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		if (USER_DATA.error !== undefined)
+			return;
+
+		// Check if queue is known
+		if (!(clientQueue in this.queues)) {
+			if (LOBBY_LOGGING)
+				console.log(`${USER_DATA.intraName} tried to join unknown queue "${clientQueue}".`);
+			client.emit('error', { error: 'unknown queue' });
 			return;
 		}
-		if (this.queue.find(e => e.intraName === USER_DATA.intraName)) {
-			console.log(`${USER_DATA.intraName} is already in the queue.`);
+
+		// Check if player is already in a game
+		if (this.ingame.find(e => e.intraName === USER_DATA.intraName)) {
+			if (LOBBY_LOGGING)
+				console.log(`${USER_DATA.intraName} is already in a game.`);
+			client.emit('error', { error: 'already in game' });
+			return;
+		}
+
+		// Check if player if already in a queue
+		const IN_QUEUE = Object.keys(this.queues).find(queueType => {
+			return (this.queues[queueType].find(e => e.intraName === USER_DATA.intraName))
+		});
+		if (IN_QUEUE !== undefined) {
+			if (LOBBY_LOGGING)
+				console.log(`${USER_DATA.intraName} is already in ${IN_QUEUE} queue.`);
 			client.emit('error', { error: 'already in queue' });
 			return;
 		}
-		console.log(`${USER_DATA.intraName} joins queue as ${client.id}.`);
-		this.queue.push({intraName: USER_DATA.intraName, socket: client});
-		console.log(this.queue);
+
+		// Puts player in the queue
+		if (LOBBY_LOGGING)
+			console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
+		this.queues[clientQueue].push({intraName: USER_DATA.intraName, socket: client});
 		
-		if (this.queue.length >= 2) {
-			var player1 = this.queue.pop();
+		// Run queue logic
+		// TODO: right now it is FIFO, may want to change to be based on ELO.
+		if (this.queues[clientQueue].length >= 2) {
+			var player1 = this.queues[clientQueue].pop();
 			this.ingame.push(player1);
-			var player2 = this.queue.pop();
+			var player2 = this.queues[clientQueue].pop();
 			this.ingame.push(player2);
 
-			this.startGame(player1, player2, server);
+			// this.startGame(player1, player2, server);
+			if (LOBBY_LOGGING)
+				console.log(`Game start ${player1.intraName} ${player2.intraName}`);
 		}
 	}
 
@@ -88,9 +148,13 @@ export class GameService {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 			if (USER_DATA.error !== undefined)
 				return;
-			this.queue = this.queue.filter(function(e) { return e.intraName !== USER_DATA.intraName });
-			console.log(`${USER_DATA.intraName} left queue as ${client.id}.`);
-			console.log(this.queue);
+
+		Object.keys(this.queues).forEach(queueType => {
+			var hasPlayer = this.queues[queueType].find(e => e.intraName === USER_DATA.intraName);
+			this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== USER_DATA.intraName });
+			if (hasPlayer && LOBBY_LOGGING)
+				console.log(`${USER_DATA.intraName} left ${queueType} queue.`);
+		})
 	}
 
 	//Game functions
@@ -99,7 +163,6 @@ export class GameService {
 		// console.log(`Game start with ${player1.intraName} and ${player2.intraName}`);
 		// player1.socket.emit('game', `game start: opponent = ${player2.intraName}`);
 		// player2.socket.emit('game', `game start: opponent = ${player1.intraName}`);
-		// console.log(player1, player2);
 		
 		//Leave lobby room
 		player1.join(this.createGameRoom());
