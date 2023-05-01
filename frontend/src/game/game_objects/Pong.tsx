@@ -1,51 +1,27 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { Container, Graphics, useTick } from '@pixi/react'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Container, Graphics } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
-import { GameTickCtx, gameTick } from '../GameStage';
-import { GameTick } from '../gameTick';
 interface PongProps {
 	stageSize: BoxSize;
-	// position: Offset
+	position: Offset
 	size: BoxSize;
 }
 
 let p1: Offset = { x: 0, y: 0 }
 let p2: Offset = { x: 0, y: 0 }
 let p3: Offset = { x: 0, y: 0 }
-// let gameTick: GameTick;
 
 function Pong(props: PongProps) {
-	const { stageSize, size } = props;
+	const { stageSize, position, size } = props;
 	const [particles, setParticles] = useState<JSX.Element[]>([]);
-	const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
-	// const [gameTick, setGameTick] = useState<GameTick>(new GameTick());
-
-	// useEffect(() => {
-	// 	const gameTick = new GameTick();
-	// 	const intervalId = setInterval(() => {
-	// 		setPosition(gameTick.getPongPosition);
-	// 	}, 100);
-
-	// 	return () => {
-	// 		clearInterval(intervalId);
-	// 		gameTick.destructor();
-	// 	};
-	// }, []);
-
-
-	useTick((delta) => {
-		// console.log("gameTick", gameTick);
-		setPosition(gameTick.pongPosition);
-	});
-
-	// useEffect(() => {
-	// 	setTimeout(() => {
-	// 		p3 = p2;
-	// 		p2 = p1;
-	// 		p1 = position;
-	// 	}, 5);
-	// }, [position]);
+	useEffect(() => {
+		setTimeout(() => {
+			p3 = p2;
+			p2 = p1;
+			p1 = position;
+		}, 5);
+	}, [position]);
 
 	// useEffect(() => {
 	// 	const interval = setInterval(() => {
