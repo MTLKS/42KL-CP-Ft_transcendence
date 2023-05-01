@@ -18,6 +18,7 @@ import PaticleEmittor from './game_objects/PaticleEmittor';
 import TimeZone, { TimeZoneType } from './game_objects/TimeZone';
 import DashLine from './game_objects/DashLine';
 import GameText from './game_objects/GameText';
+import { GameDTO } from '../modal/GameDTO';
 
 
 let pongSpeed: Offset = { x: 12, y: 5 };
@@ -37,35 +38,45 @@ interface GameProps {
   scale: number;
 }
 const boxSize: BoxSize = { w: 1600, h: 900 };
-const tick: boolean = true;
+const tick: boolean = false;
 
 let socketApi: SocketApi;
 function Game(props: GameProps) {
-  const { leftPaddlePosition, rightPaddlePosition, pause, scale } = props;
+  const { pause, scale } = props;
   const [ripplePosition, setRipplePosition] = useState<Offset>({ y: -100, x: -100 });
   const [pongPosition, setPongPosition] = useState<Offset>({ y: 100, x: 100 });
-  // const [pongSpeed, setPongSpeed] = useState<Offset>({ y: 0, x: 0 });
+  const [pongSpeed, setPongSpeed] = useState<Offset>({ y: 0, x: 0 });
+  const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ y: 100, x: 100 });
+  const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ y: 100, x: 100 });
   socketApi = useContext(GameSocket);
 
-  // useEffect(() => {
-  //   socketApi.sendMessages("startGame", { ok: "ok" });
-  //   socketApi.listen("gameLoop", (data: any) => {
-  //     // console.log("gameLoop", data);
-  //     setPongSpeed({
-  //       x: data.velX,
-  //       y: data.velY
-  //     });
-  //     setPongPosition({
-  //       x: data.ballPosX,
-  //       y: data.ballPosY
-  //     });
+  useEffect(() => {
+    socketApi.sendMessages("startGame", { ok: "ok" });
+    socketApi.listen("gameLoop", (data: GameDTO) => {
+      // console.log("gameLoop", data);
+      setPongSpeed({
+        x: data.velX,
+        y: data.velY
+      });
+      setPongPosition({
+        x: data.ballPosX,
+        y: data.ballPosY
+      });
+      setLeftPaddlePosition({
+        x: 30,
+        y: data.leftPaddlePosY
+      });
+      setRightPaddlePosition({
+        x: 1600 - 30,
+        y: data.rightPaddlePosY
+      });
 
-  //   });
+    });
 
-  //   return () => {
-  //     socketApi.removeListener("gameLoop");
-  //   }
-  // }, []);
+    return () => {
+      socketApi.removeListener("gameLoop");
+    }
+  }, []);
 
 
   useTick((delta) => {
