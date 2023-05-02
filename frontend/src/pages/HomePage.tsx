@@ -17,7 +17,7 @@ import Cowsay from '../widgets/TerminalCards/Cowsay';
 import FriendActionCard, { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
 import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
 import { FriendsContext } from '../contexts/FriendContext';
-import UserContext from '../context/UserContext';
+import UserContext from '../contexts/UserContext';
 
 const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
 const emptyWidget = <div></div>;
@@ -129,7 +129,7 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "cowsay":
-        const newCowsay = <Cowsay index={index} commands={command.slice(1)}/>
+        const newCowsay = <Cowsay index={index} commands={command.slice(1)} />
         newList = [newCowsay].concat(elements);
         setIndex(index + 1);
         break;
@@ -149,7 +149,7 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "whoami":
-        const newWhoamiCard = <Profile/>
+        const newWhoamiCard = <Profile />
         setTopWidget(newWhoamiCard);
         break;
       default:
@@ -212,7 +212,7 @@ function HomePage() {
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile/>
+      const newProfileCard = <Profile />
       setTopWidget(newProfileCard);
     }
     return newList;
@@ -240,20 +240,20 @@ function HomePage() {
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
       return;
     }
-    
+
     if (command[0] === "unblock") {
       // show all blocked friend
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
       return;
     }
-    
+
     if (command[0] === "unfriend") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />)
       return;
     }
-    
+
     if (command[0] === "add" && command.length >= 2) {
       // add friend
       return;
