@@ -1,4 +1,4 @@
-import React, { cloneElement, useEffect, useRef } from 'react'
+import React, { cloneElement, useContext, useEffect, useRef } from 'react'
 import Pong from './Pong'
 import login from '../functions/login';
 import rickroll from '../functions/rickroll';
@@ -18,26 +18,18 @@ import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
+import UserContext from '../context/UserContext';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
-let myProfile: UserData = {
-  accessToken: "hidden",
-  avatar: "",
-  elo: 400,
-  intraId: 130305,
-  intraName: "wricky-t",
-  tfaSecret: null,
-  userName: "JOHNDOE"
-};
-
 function HomePage() {
+  const [myProfile, setMyProfile] = React.useState<UserData>({} as UserData);
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [topWidget, setTopWidget] = React.useState(<Profile userData={myProfile} />);
+  const [topWidget, setTopWidget] = React.useState(<Profile/>);
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
@@ -76,14 +68,13 @@ function HomePage() {
   }
 
   useEffect(() => {
-    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName).length;
+    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile?.intraName).length;
     setFriendRequests(totalFriendRequests);
   }, [myFriends]);
 
   useEffect(() => {
     getMyProfile().then((profile) => {
-      myProfile = profile.data as UserData;
-      setTopWidget(<Profile userData={myProfile} />);
+      setMyProfile(profile.data as UserData);
     });
 
     initFriendshipSocket();
@@ -95,23 +86,25 @@ function HomePage() {
   }, []);
 
   return (
-    <div className='h-full w-full p-7'>
-      {startMatch && <Pong />}
-      {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
-        ref={pageRef}
-      >
-        <div className='h-full flex-1'>
-          {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
-        </div>
-        <div className=' bg-highlight h-full w-1' />
-        <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-          {topWidget}
-          {midWidget}
-          {botWidget}
+    <UserContext.Provider value={{ myProfile, setMyProfile }}>
+      <div className='h-full w-full p-7'>
+        {startMatch && <Pong />}
+        {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
+        <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
+          ref={pageRef}
+        >
+          <div className='h-full flex-1'>
+            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+          </div>
+          <div className=' bg-highlight h-full w-1' />
+          <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+            {topWidget}
+            {midWidget}
+            {botWidget}
+          </div>
         </div>
       </div>
-    </div>
+    </UserContext.Provider>
   )
 
   function handleCommands(command: string[]) {
@@ -176,7 +169,7 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "whoami":
-        const newWhoamiCard = <Profile userData={myProfile} />;
+        const newWhoamiCard = <Profile/>
         setTopWidget(newWhoamiCard);
         break;
       case "less":
@@ -236,14 +229,15 @@ function HomePage() {
           return newList;
         }
         newList = elements;
-        const newProfileCard = <Profile userData={currentPreviewProfile as UserData} expanded={expandProfile} />;
+        const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
+        setMyProfile(currentPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile userData={myProfile} />;
+      const newProfileCard = <Profile/>
       setTopWidget(newProfileCard);
     }
     return newList;

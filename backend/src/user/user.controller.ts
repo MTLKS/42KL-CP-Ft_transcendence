@@ -46,14 +46,14 @@ export class UserController {
 	@Post()
 	@UseGuards(AuthGuard)
 	@UseInterceptors(FileInterceptor('image', INTERCEPTOR_CONFIG))
-	newUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() file: any): any {
-		return this.userService.newUserInfo(accessToken, body.userName, file);
+	newUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() image: any): any {
+		return this.userService.newUserInfo(accessToken, body.userName, image);
 	}
 
 	@Patch()
 	@UseGuards(AuthGuard)
 	@UseInterceptors(FileInterceptor('image', INTERCEPTOR_CONFIG))
-	updateUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() file: any): any {
-		return this.userService.updateUserInfo(accessToken, body.userName, file);
+	updateUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() image: any): any {
+		return this.userService.updateUserInfo(accessToken, body.userName, image);
 	}
 }

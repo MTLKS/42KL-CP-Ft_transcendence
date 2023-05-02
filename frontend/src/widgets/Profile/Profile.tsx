@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../functions/sleep';
 import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
@@ -6,15 +6,14 @@ import RecentMatches from './RecentMatches/RecentMatches';
 import { UserData } from '../../modal/UserData';
 import SocketApi from '../../api/socketApi';
 import { status } from '../../functions/friendlist';
+import UserContext from '../../context/UserContext';
 
 interface ProfileProps {
-  userData: UserData;
   expanded?: boolean;
 }
 
-
 function Profile(props: ProfileProps) {
-  const { userData } = props;
+  const { myProfile } = useContext(UserContext);
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState("online");
@@ -23,12 +22,13 @@ function Profile(props: ProfileProps) {
   useEffect(() => {
     if (props.expanded) setExpanded(true);
     else setExpanded(false);
+    console.log(myProfile);
   }, [props.expanded]);
 
   useEffect(() => {
     pixelatedToSmooth();
     const socketApi = new SocketApi();
-    socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: true });
+    socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
     socketApi.listen("statusRoom", (data: any) => {
       if (data !== undefined && data.status !== undefined)
         setStatus((data.status as string).toLowerCase());
@@ -36,15 +36,15 @@ function Profile(props: ProfileProps) {
 
     return () => {
       socketApi.removeListener("statusRoom");
-      socketApi.sendMessages("statusRoom", { intraName: userData.intraName, joining: false });
+      socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
     }
-  }, [userData.avatar, userData.intraName]);
+  }, [myProfile.avatar, myProfile.intraName]);
 
   return (<div className='w-full bg-highlight flex flex-col items-center box-border'
     onClick={onProfileClick}
   >
-    <ProfileHeader expanded={expanded} userData={userData} status={status} />
-    <ProfileBody expanded={expanded} pixelSize={pixelSize} userData={userData} status={status} />
+    <ProfileHeader expanded={expanded} status={status} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} />
     <RecentMatches expanded={expanded} />
   </div>);
 
