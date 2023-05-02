@@ -13,3 +13,15 @@ export const FriendsContext = createContext<FriendsContextType>({
 });
 
 export const FriendActionContext = createContext<string>("");
+
+interface ActionCardsContextType {
+  actionCards: JSX.Element[],
+  selectedIndex: number,
+  setSelectedIndex: (num: number) => void,
+}
+
+export const ActionCardsContext = createContext<ActionCardsContextType>({
+  actionCards: [],
+  selectedIndex: 0,
+  setSelectedIndex: (num: number) => {},
+});

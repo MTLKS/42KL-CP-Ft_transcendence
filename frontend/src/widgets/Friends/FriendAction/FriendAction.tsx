@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import FriendActionCard, { ACTION_TYPE } from './FriendActionCard'
 import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../modal/FriendData'
 import { UserData } from '../../../modal/UserData'
-import { FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
+import { ActionCardsContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
 import { acceptFriend } from '../../../functions/friendactions'
 
 interface FriendActionProps {
@@ -31,13 +31,13 @@ function FriendAction(props: FriendActionProps) {
 
   // hooks
   const [isInputFocused, setIsInputFocused] = useState(true);
-  const [selectedIndex, setSeletectIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [command, setCommand] = useState("");
   const [commandNotFound, setCommandNotFound] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  let element: JSX.Element[] =[];
+  let actionCards: JSX.Element[] =[];
   
   createFriendActionCards();
 
@@ -51,27 +51,29 @@ function FriendAction(props: FriendActionProps) {
 
   return (
     <FriendActionContext.Provider value={action}>
-      <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
-        <input
-          className='w-0 h-0 absolute'
-          onBlur={() => setIsInputFocused(false)}
-          onKeyDown={handleKeyDown}
-          onChange={handleInput}
-          value={inputValue}
-          ref={inputRef}
-        />
-        <div className='px-[2ch] flex flex-col-reverse'>
-          { element.slice(selectedIndex) }
+      <ActionCardsContext.Provider value={{ actionCards, selectedIndex, setSelectedIndex }}>
+        <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
+          <input
+            className='w-0 h-0 absolute'
+            onBlur={() => setIsInputFocused(false)}
+            onKeyDown={handleKeyDown}
+            onChange={handleInput}
+            value={inputValue}
+            ref={inputRef}
+          />
+          <div className='px-[2ch] flex flex-col-reverse'>
+            { actionCards.slice(selectedIndex) }
+          </div>
+          <p className={`px-[2ch] text-highlight bg-accRed w-fit ${commandNotFound ? 'visible' : 'invisible'}`}>Command not found :{command}</p>
+          <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
+            {
+              inputValue === ""
+              ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
+              : <p>{inputValue}</p>
+            }
+          </div>
         </div>
-        <p className={`px-[2ch] text-highlight bg-accRed w-fit ${commandNotFound ? 'visible' : 'invisible'}`}>Command not found :{command}</p>
-        <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
-          {
-            inputValue === ""
-            ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
-            : <p>{inputValue}</p>
-          }
-        </div>
-      </div>
+      </ActionCardsContext.Provider>
     </FriendActionContext.Provider>
   )
 
@@ -85,10 +87,10 @@ function FriendAction(props: FriendActionProps) {
     const { key } = event;
 
     if (key === "ArrowUp" && selectedIndex < filteredFriends.length - 1)
-      setSeletectIndex(selectedIndex + 1);
+      setSelectedIndex(selectedIndex + 1);
 
     if (key === "ArrowDown" && selectedIndex > 0)
-      setSeletectIndex(selectedIndex - 1);
+      setSelectedIndex(selectedIndex - 1);
 
     if (key === "Enter" && inputValue !== "") {
       if (inputValue.slice(1) === "") {
@@ -120,11 +122,10 @@ function FriendAction(props: FriendActionProps) {
 
   function createFriendActionCards() {
     filteredFriends.map((friend, index) => 
-      element.push(
+      actionCards.push(
         <FriendActionCard
           key={friend.id}
           index={index}
-          selectedIndex={selectedIndex}
           friend={friend}
           user={user}
           ignoreAction={ignoreAction}
@@ -135,7 +136,7 @@ function FriendAction(props: FriendActionProps) {
 
   function ignoreAction() {
     if (selectedIndex < filteredFriends.length - 1)
-      setSeletectIndex(selectedIndex + 1);
+      setSelectedIndex(selectedIndex + 1);
   }
 
   function runFriendActionCommands() {

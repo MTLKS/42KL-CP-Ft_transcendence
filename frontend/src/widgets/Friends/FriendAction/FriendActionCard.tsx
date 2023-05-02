@@ -6,11 +6,10 @@ import { UserData } from '../../../modal/UserData';
 import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship } from '../../../functions/friendactions';
 import { AxiosResponse } from 'axios';
 import { getFriendList } from '../../../functions/friendlist';
-import { FriendActionContext, FriendsContext } from '../../../contexts/FriendContext';
+import { ActionCardsContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext';
 
 interface FriendActionCardProps {
   index: number;
-  selectedIndex: number;
   friend: FriendData;
   user: UserData;
   ignoreAction: () => void;
@@ -76,6 +75,7 @@ interface FriendActionConfirmationButtonsProps {
 function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
 
   const action = useContext(FriendActionContext);
+  let { actionCards, selectedIndex, setSelectedIndex } = useContext(ActionCardsContext);
   const { friendIntraName, ignoreAction } = props;
   let yesAction: (name: string) => Promise<AxiosResponse>;
   let noAction: (name:string) => Promise<AxiosResponse>;
@@ -92,7 +92,7 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
       /
       <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`}
         onClick={
-          ignoreAction === undefined
+          action === ACTION_TYPE.ACCEPT
           ? handleNoAction
           : ignoreAction
         }
@@ -129,7 +129,6 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
         break;
       case ACTION_TYPE.UNFRIEND:
         yesAction = deleteFriendship;
-        console.log(yesAction, noAction);
         break;
       default:
         break;
@@ -139,14 +138,33 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
   function handleYesAction() {
     yesAction(friendIntraName)
       .then(() => getFriendList())
-      .then((data) => setFriends(data.data))
+      .then((data) => {
+        setFriends(data.data);
+        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
+        if (selectedIndex >= newActionCards.length) {
+          setSelectedIndex(newActionCards.length - 1);
+        } else {
+          setSelectedIndex(selectedIndex);
+        }
+        actionCards = newActionCards;
+      })
       .catch(err => console.log(err));
   }
 
   function handleNoAction() {
     noAction(friendIntraName)
       .then(() => getFriendList())
-      .then((data) => setFriends(data.data))
+      .then((data) => {
+        console.log(data);
+        setFriends(data.data);
+        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
+        if (selectedIndex >= newActionCards.length) {
+          setSelectedIndex(newActionCards.length - 1);
+        } else {
+          setSelectedIndex(selectedIndex);
+        }
+        actionCards = newActionCards;
+      })
       .catch(err => console.log(err));
   }
 }
@@ -154,7 +172,8 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
 function FriendActionCard(props: FriendActionCardProps) {
 
   const action = useContext(FriendActionContext);
-  const { index, selectedIndex, user, friend, ignoreAction } = props;
+  const { selectedIndex } = useContext(ActionCardsContext);
+  const { index, user, friend, ignoreAction } = props;
   const fakeSHAkeyStr = useMemo(() => `+${getRandomString(10)}/${getRandomString(10)}`, []);
   const isCurrentIndex = selectedIndex === index;
   let friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
