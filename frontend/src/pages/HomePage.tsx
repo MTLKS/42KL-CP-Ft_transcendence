@@ -231,6 +231,7 @@ function HomePage() {
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
+        setMyProfile(currentPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
