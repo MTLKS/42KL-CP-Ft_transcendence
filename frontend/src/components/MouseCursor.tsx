@@ -1,4 +1,4 @@
-import React, { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
+import React, { Ref, forwardRef, useCallback, useDeferredValue, useEffect, useImperativeHandle, useState } from 'react'
 import sleep from '../functions/sleep';
 import { debounce } from 'lodash';
 import { Offset } from '../modal/GameModels';
@@ -102,7 +102,7 @@ function MouseCursor(props: any, ref: Ref<any>) {
 
     const animate = () => {
       if (animated) {
-        console.log('animate', frameCounter);
+        // console.log('animate', frameCounter);
         if (frameCounter++ % 1 == 0)
           setMousePosition({
             offset1: offset1,

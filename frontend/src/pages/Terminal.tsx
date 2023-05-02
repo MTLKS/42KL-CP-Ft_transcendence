@@ -39,7 +39,7 @@ function Terminal(pros: TerminalProps) {
         center={false} ref={promptFieldRef}
         enableHistory showtip
       />
-      {startMatch ? <GameStage /> : null}
+      {/* {startMatch ? <GameStage /> : null} */}
       <Clock />
     </div>
   )

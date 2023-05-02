@@ -48,14 +48,21 @@ function GameStage() {
     if (!containerRef.current) return;
     const { top } = containerRef.current.getBoundingClientRect();
     gameTick.updatePlayerPosition((e.clientY - top) / scale);
-  }, 0.1), []);
+  }, 8), []);
 
   return (
     <div className=' absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full aspect-video overflow-hidden rounded-md border-highlight border-4'
       ref={containerRef}
     >
       <GameTickCtx.Provider value={gameTick}>
-        <Stage width={boxSize.w} height={boxSize.h} options={{ backgroundColor: 0x242424, sharedTicker: true }}
+        <Stage width={boxSize.w} height={boxSize.h}
+          options={{
+            backgroundColor: 0x242424,
+            sharedTicker: true,
+            antialias: true,
+            autoDensity: true,
+            powerPreference: 'high-performance',
+          }}
           onPointerMove={onPointerMove}
           onClick={() => {
             setPause(!pause)

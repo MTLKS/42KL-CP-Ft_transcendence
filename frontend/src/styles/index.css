@@ -13,8 +13,12 @@
   }
 
   body {
-    @apply bg-highlight;
+    @apply bg-highlight relative;
   }
+}
+
+.pixiApp {
+  @apply absolute top-0 left-0;
 }
 
 @layer utilities {
@@ -38,10 +42,8 @@
   .polka-dot {
     @apply h-screen w-screen rounded-3xl border-[4px] border-solid border-highlight;
     background-color: rgb(var(--dimmer-shadow));
-    background-image: radial-gradient(
-      rgba(var(--highlight-color)) 0.5px,
-      transparent 0.5px
-    );
+    background-image: radial-gradient(rgba(var(--highlight-color)) 0.5px,
+        transparent 0.5px);
     background-size: 20px 20px;
   }
 
@@ -55,7 +57,7 @@
     bottom: 0;
     z-index: -1;
   }
-  
+
   .hover:hover {
     @apply bg-highlight text-dimshadow;
   }

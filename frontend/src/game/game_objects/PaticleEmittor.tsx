@@ -16,12 +16,12 @@ const Emitter = PixiComponent<ParticleProps, PIXI.ParticleContainer>('Emitter', 
   create: props => {
     const { position, size, speed, color, container } = props;
 
-    console.log("create");
 
     return container;
   },
   applyProps: (instance, _, props) => {
     const { position } = props;
+    console.log("create");
     instance.position.set(position.x, position.y);
   }
 });

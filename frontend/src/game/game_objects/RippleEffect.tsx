@@ -36,6 +36,12 @@ interface RippleEffectProps {
 
 }
 
+const blurFilter: PIXI.BlurFilter = new PIXI.BlurFilter(2);
+const displacementFilter: PIXI.DisplacementFilter = new PIXI.DisplacementFilter(
+  PIXI.Sprite.from('https://pixijs.io/examples/examples/assets/pixi-filters/displacement_map_repeat.jpg'),
+  100,
+);
+
 function RippleEffect(props: RippleEffectProps) {
   const { stageSize } = props;
   const [rings, setRings] = useState<Ring[]>([]);
@@ -73,7 +79,7 @@ function RippleEffect(props: RippleEffectProps) {
   const ringComponent = rings.map((item, i) => <Ring key={i} position={item.position} r={item.r} opacity={item.opacity} />);
 
   return (
-    <Container>
+    <Container filters={[blurFilter, displacementFilter]}>
       {ringComponent}
     </Container>
   )
