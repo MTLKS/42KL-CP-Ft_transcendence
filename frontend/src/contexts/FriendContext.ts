@@ -25,3 +25,15 @@ export const ActionCardsContext = createContext<ActionCardsContextType>({
   selectedIndex: 0,
   setSelectedIndex: (num: number) => {},
 });
+
+interface ActionOutputContextType {
+  setOutputStyle: (str: string) => void,
+  setOutputStr: (str: string) => void,
+  setShowOutput: (show: boolean) => void,
+}
+
+export const ActionOutputContext = createContext<ActionOutputContextType>({
+  setOutputStyle: (str: string) => {},
+  setOutputStr: (str: string) => {},
+  setShowOutput: (show: boolean) => {},
+})

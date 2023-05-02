@@ -3,7 +3,7 @@ import FriendActionCard, { ACTION_TYPE } from './FriendActionCard'
 import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../modal/FriendData'
 import { UserData } from '../../../modal/UserData'
-import { ActionCardsContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
+import { ActionCardsContext, ActionOutputContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
 import { acceptFriend } from '../../../functions/friendactions'
 
 interface FriendActionProps {
@@ -35,6 +35,9 @@ function FriendAction(props: FriendActionProps) {
   const [inputValue, setInputValue] = useState("");
   const [command, setCommand] = useState("");
   const [commandNotFound, setCommandNotFound] = useState(false);
+  const [showOutput, setShowOutput] = useState(false);
+  const [outputStyle, setOutputStyle] = useState("bg-accRed");
+  const [outputStr, setOutputStr] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   let actionCards: JSX.Element[] =[];
@@ -52,27 +55,29 @@ function FriendAction(props: FriendActionProps) {
   return (
     <FriendActionContext.Provider value={action}>
       <ActionCardsContext.Provider value={{ actionCards, selectedIndex, setSelectedIndex }}>
-        <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
-          <input
-            className='w-0 h-0 absolute'
-            onBlur={() => setIsInputFocused(false)}
-            onKeyDown={handleKeyDown}
-            onChange={handleInput}
-            value={inputValue}
-            ref={inputRef}
-          />
-          <div className='px-[2ch] flex flex-col-reverse'>
-            { actionCards.slice(selectedIndex) }
+        <ActionOutputContext.Provider value={{ setOutputStyle, setOutputStr, setShowOutput }}>
+          <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
+            <input
+              className='w-0 h-0 absolute'
+              onBlur={() => setIsInputFocused(false)}
+              onKeyDown={handleKeyDown}
+              onChange={handleInput}
+              value={inputValue}
+              ref={inputRef}
+            />
+            <div className='px-[2ch] flex flex-col-reverse'>
+              { actionCards.slice(selectedIndex) }
+            </div>
+            <p className={`px-[2ch] text-highlight ${outputStyle} w-fit ${commandNotFound || showOutput ? 'visible' : 'invisible'}`}>{outputStr}</p>
+            <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
+              {
+                inputValue === ""
+                ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
+                : <p>{inputValue}</p>
+              }
+            </div>
           </div>
-          <p className={`px-[2ch] text-highlight bg-accRed w-fit ${commandNotFound ? 'visible' : 'invisible'}`}>Command not found :{command}</p>
-          <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
-            {
-              inputValue === ""
-              ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
-              : <p>{inputValue}</p>
-            }
-          </div>
-        </div>
+        </ActionOutputContext.Provider>
       </ActionCardsContext.Provider>
     </FriendActionContext.Provider>
   )
@@ -109,8 +114,10 @@ function FriendAction(props: FriendActionProps) {
   function handleInput(e: React.FormEvent<HTMLInputElement>) {
     let value = e.currentTarget.value;
 
-    if (value !== "")
+    if (value !== "") {
       setCommandNotFound(false);
+      setShowOutput(false);
+    }
 
     if (value[0] !== 'q' && value[0] !== ':') {
       setInputValue("");
@@ -185,6 +192,7 @@ function FriendAction(props: FriendActionProps) {
       // get splitedCommand[1] as a user
     }
 
+    setOutputStr(`Command not found: ${command}`);
     setCommandNotFound(true);
     setInputValue("");
   }

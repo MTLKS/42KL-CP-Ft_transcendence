@@ -6,7 +6,7 @@ import { UserData } from '../../../modal/UserData';
 import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship } from '../../../functions/friendactions';
 import { AxiosResponse } from 'axios';
 import { getFriendList } from '../../../functions/friendlist';
-import { ActionCardsContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext';
+import { ActionCardsContext, ActionOutputContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext';
 
 interface FriendActionCardProps {
   index: number;
@@ -69,14 +69,17 @@ function FriendActionConfirmation() {
 
 interface FriendActionConfirmationButtonsProps {
   friendIntraName: string;
+  friendUserName: string;
   ignoreAction?: () => void;
 }
 
 function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
 
   const action = useContext(FriendActionContext);
-  let { actionCards, selectedIndex, setSelectedIndex } = useContext(ActionCardsContext);
-  const { friendIntraName, ignoreAction } = props;
+  let { actionCards } = useContext(ActionCardsContext);
+  const { selectedIndex, setSelectedIndex } = useContext(ActionCardsContext);
+  let { setOutputStr, setOutputStyle, setShowOutput } = useContext(ActionOutputContext);
+  const { friendIntraName, friendUserName, ignoreAction } = props;
   let yesAction: (name: string) => Promise<AxiosResponse>;
   let noAction: (name:string) => Promise<AxiosResponse>;
 
@@ -135,6 +138,21 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
     }
   }
 
+  function getOutputString() {
+    switch (action) {
+      case ACTION_TYPE.ACCEPT || ACTION_TYPE.ADD:
+        return `'${friendUserName}' is your friend now! HOORAY!`
+      case ACTION_TYPE.BLOCK:
+        return `'${friendUserName}' has been blocked. :(`
+      case ACTION_TYPE.UNBLOCK:
+        return `'${friendUserName}' has been unblocked. You need to send another friend request to be his/her friend again.`
+      case ACTION_TYPE.UNFRIEND:
+        return `'${friendUserName}' has been unfriended. Bye bye friend...`
+      default:
+        return '';
+    }
+  }
+
   function handleYesAction() {
     yesAction(friendIntraName)
       .then(() => getFriendList())
@@ -147,15 +165,19 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
           setSelectedIndex(selectedIndex);
         }
         actionCards = newActionCards;
+        if (action !== ACTION_TYPE.UNFRIEND)
+          setOutputStyle("bg-accCyan");
+        setOutputStr(getOutputString());
+        setShowOutput(true);
       })
       .catch(err => console.log(err));
-  }
-
-  function handleNoAction() {
-    noAction(friendIntraName)
+    }
+    
+    // will only used by ACTION.TYPE = ACCEPT
+    function handleNoAction() {
+      noAction(friendIntraName)
       .then(() => getFriendList())
       .then((data) => {
-        console.log(data);
         setFriends(data.data);
         const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
         if (selectedIndex >= newActionCards.length) {
@@ -164,6 +186,9 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
           setSelectedIndex(selectedIndex);
         }
         actionCards = newActionCards;
+        setOutputStyle("bg-accRed");
+        setOutputStr(`You rejected friend request from '${friendUserName}'`);
+        setShowOutput(true);
       })
       .catch(err => console.log(err));
   }
@@ -190,7 +215,7 @@ function FriendActionCard(props: FriendActionCardProps) {
           <div className='flex flex-row whitespace-pre'>
             <FriendActionConfirmation/>
             <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
-              [<FriendActionConfirmationButtons friendIntraName={friendIntraName} ignoreAction={ignoreAction}/>]
+              [<FriendActionConfirmationButtons friendUserName={friend.userName} friendIntraName={friendIntraName} ignoreAction={ignoreAction}/>]
             </div>
           </div>
         </div>
