@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Pong from './Pong'
 import Card, { CardType } from '../components/Card';
 import Terminal from './Terminal';
@@ -17,30 +17,22 @@ import Cowsay from '../widgets/TerminalCards/Cowsay';
 import FriendActionCard, { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
 import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
 import { FriendsContext } from '../contexts/FriendContext';
+import UserContext from '../context/UserContext';
 
 const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
-let myProfile: UserData = {
-  accessToken: "hidden",
-  avatar: "",
-  elo: 400,
-  intraId: 130305,
-  intraName: "wricky-t",
-  tfaSecret: null,
-  userName: "JOHNDOE"
-};
-
 function HomePage() {
   const [elements, setElements] = useState<JSX.Element[]>([])
   const [index, setIndex] = useState(0);
   const [startMatch, setStartMatch] = useState(false);
-  const [topWidget, setTopWidget] = useState(<Profile userData={myProfile} />);
+  const [topWidget, setTopWidget] = useState(<Profile />);
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = useState(false);
+  const [myProfile, setMyProfile] = useState<UserData>({} as UserData);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = useState(0);
 
@@ -82,8 +74,7 @@ function HomePage() {
 
   useEffect(() => {
     getMyProfile().then((profile) => {
-      myProfile = profile.data as UserData;
-      setTopWidget(<Profile userData={myProfile} />);
+      setMyProfile(profile.data as UserData);
     });
 
     initFriendshipSocket();
@@ -95,25 +86,27 @@ function HomePage() {
   }, []);
 
   return (
-    <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
-      <div className='h-full w-full p-7'>
-        {startMatch && <Pong />}
-        {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
-        <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
-          ref={pageRef}
-        >
-          <div className='h-full flex-1'>
-            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
-          </div>
-          <div className=' bg-highlight h-full w-1' />
-          <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-            {topWidget}
-            {midWidget}
-            {botWidget}
+    <UserContext.Provider value={{ myProfile, setMyProfile }}>
+      <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
+        <div className='h-full w-full p-7'>
+          {startMatch && <Pong />}
+          {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
+          <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
+            ref={pageRef}
+          >
+            <div className='h-full flex-1'>
+              {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+            </div>
+            <div className=' bg-highlight h-full w-1' />
+            <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+              {topWidget}
+              {midWidget}
+              {botWidget}
+            </div>
           </div>
         </div>
-      </div>
-    </FriendsContext.Provider>
+      </FriendsContext.Provider>
+    </UserContext.Provider>
   )
 
   function handleCommands(command: string[]) {
@@ -156,7 +149,7 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "whoami":
-        const newWhoamiCard = <Profile userData={myProfile} />;
+        const newWhoamiCard = <Profile/>
         setTopWidget(newWhoamiCard);
         break;
       default:
@@ -212,14 +205,14 @@ function HomePage() {
           return newList;
         }
         newList = elements;
-        const newProfileCard = <Profile userData={currentPreviewProfile as UserData} expanded={expandProfile} />;
+        const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile userData={myProfile} />;
+      const newProfileCard = <Profile/>
       setTopWidget(newProfileCard);
     }
     return newList;
