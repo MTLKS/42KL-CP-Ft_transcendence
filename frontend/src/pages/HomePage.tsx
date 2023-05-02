@@ -19,8 +19,9 @@ import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
 import UserContext from '../context/UserContext';
+import Tfa from '../components/Tfa';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
@@ -31,7 +32,6 @@ function HomePage() {
   const [startMatch, setStartMatch] = React.useState(false);
   const [topWidget, setTopWidget] = React.useState(<Profile/>);
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
-  // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = React.useState(false);
@@ -49,22 +49,6 @@ function HomePage() {
         setMyFriends(newFriendsData);
       });
     })
-
-    // function addToFriendRoom(intraName: string) {
-    //   console.log(intraName);
-    //   friendshipSocket.sendMessages("friendshipRoom", {intraName: intraName});
-    //   friendshipSocket.listen("friendshipRoom", (data: any) => {
-    //     console.log(data);
-    //   })
-    // }
-
-    // await api.post("/friendship", {receiverIntraName: "itan", status: "PENDING"})
-    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
-    //         .catch((err) => console.log(err));
-
-    // await api.post("/friendship", {receiverIntraName: "schuah", status: "PENDING"})
-    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
-    //         .catch((err) => console.log(err));
   }
 
   useEffect(() => {
@@ -117,20 +101,14 @@ function HomePage() {
         const newEmbed = <YoutubeEmbed key={"rickroll" + index} />
         newList = [newEmbed].concat(elements);
         setIndex(index + 1);
-        // rickroll();
         break;
-      // case "ls":
-      //   rickroll();
-      //   break;
       case "start":
-        if (!startMatch) {
+        if (!startMatch)
           setStartMatch(true);
-        }
         break;
       case "end":
-        if (startMatch) {
+        if (startMatch)
           setStartMatch(false);
-        }
         break;
       case "add":
         const newCard = card(index);
@@ -182,7 +160,9 @@ function HomePage() {
         }} />);
         break;
       case "set":
-
+        newList = [<Card key={index} type={CardType.SUCCESS}><Tfa/></Card>].concat(elements);
+        setIndex(index + 1);
+        break;
       default:
         const newErrorCard = errorCard();
         newList = [newErrorCard].concat(elements);
