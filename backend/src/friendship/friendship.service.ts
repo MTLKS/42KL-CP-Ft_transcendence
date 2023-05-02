@@ -51,6 +51,8 @@ export class FriendshipService {
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverIntraName: intraName} });
 		for (let i = 0; i < RECEIVER.length; i++) {
 			const USER = await this.userRepository.find({ where: {intraName: RECEIVER[i].senderIntraName} });
+			if (USER.length === 0)
+				continue;
 			RECEIVER[i]['userName'] = USER[0].userName;
 			RECEIVER[i]['elo'] = USER[0].elo;
 			RECEIVER[i]['avatar'] = USER[0].avatar;
@@ -58,6 +60,8 @@ export class FriendshipService {
 		const SENDER = await this.friendshipRepository.find({ where: {senderIntraName: intraName} });
 		for (let i = 0; i < SENDER.length; i++) {
 			const USER = await this.userRepository.find({ where: {intraName: SENDER[i].receiverIntraName} });
+			if (USER.length === 0)
+				continue;
 			SENDER[i]['userName'] = USER[0].userName;
 			SENDER[i]['elo'] = USER[0].elo;
 			SENDER[i]['avatar'] = USER[0].avatar;
