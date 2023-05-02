@@ -66,7 +66,11 @@ function FriendAction(props: FriendActionProps) {
               ref={inputRef}
             />
             <div className='px-[2ch] flex flex-col-reverse'>
-              { actionCards.slice(selectedIndex) }
+              { 
+                actionCards.length === 0
+                  ? <></>
+                  : actionCards.slice(selectedIndex)
+              }
             </div>
             <p className={`px-[2ch] text-highlight ${outputStyle} w-fit ${commandNotFound || showOutput ? 'visible' : 'invisible'}`}>{outputStr}</p>
             <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>

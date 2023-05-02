@@ -3,37 +3,16 @@ import { FriendData } from '../../../modal/FriendData'
 import { getRandomString } from '../../../functions/fun';
 import FriendlistEmptyLine from '../Friendlist/FriendlistEmptyLine';
 import { UserData } from '../../../modal/UserData';
-import { acceptFriend, addFriend, blockExistingFriend, deleteFriendship } from '../../../functions/friendactions';
-import { AxiosResponse } from 'axios';
-import { getFriendList } from '../../../functions/friendlist';
-import { ActionCardsContext, ActionOutputContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext';
+import { ActionCardsContext, FriendActionContext } from '../../../contexts/FriendContext';
+import FriendActionProfileCard from './FriendActionProfileCard';
+import FriendActionConfirmationButtons from './FriendActionConfirmationButtons';
+import FriendActionConfirmation from './FriendActionConfirmation';
 
 interface FriendActionCardProps {
   index: number;
   friend: FriendData;
   user: UserData;
   ignoreAction: () => void;
-}
-
-function FriendActionProfileCard(props: {isCurrentIndex: boolean, friend: FriendData, friendIntraName: string}) {
-
-  const { isCurrentIndex, friend, friendIntraName } = props;
-
-  return (
-    <div
-      className={`flex flex-row ${isCurrentIndex ? 'group cursor-pointer' : ''} group-hover:bg-highlight items-center h-12 w-fit select-none`}
-      onClick={() => console.log(`Check this person's profile`)}
-    >
-      <img
-        className="aspect-square h-full object-cover"
-        src={friend.avatar}
-        alt=""
-      />
-      <div className='group-hover:bg-highlight h-full p-3.5'>
-        <p className='text-highlight group-hover:text-dimshadow font-extrabold text-base w-full h-full select-none'>{friend.userName} ({friendIntraName})</p>
-      </div>
-    </div>
-  )
 }
 
 export const ACTION_TYPE = {
@@ -48,150 +27,6 @@ function getFriendActionTitle(action: string) {
   if (action === ACTION_TYPE.ACCEPT)
     return "You have received a friend request from "
   return `You are about to ${action} `
-}
-
-function FriendActionConfirmation() {
-
-  const action = useContext(FriendActionContext);
-  let style = '';
-
-  if (action === ACTION_TYPE.ACCEPT || action === ACTION_TYPE.UNBLOCK)
-    style = 'bg-accGreen';
-  else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNFRIEND)
-    style = 'bg-accRed';
-
-  if (action === ACTION_TYPE.ACCEPT)
-    return <p>Would you like to <span className={`${style}`}>accept</span> this friend request?</p>
-  else if (action === ACTION_TYPE.BLOCK || action === ACTION_TYPE.UNBLOCK || action === ACTION_TYPE.UNFRIEND || action === ACTION_TYPE.ADD)
-    return <p>Are you sure you want to <span className={`${style}`}>{action}</span> this friend?</p>
-  return <></>
-}
-
-interface FriendActionConfirmationButtonsProps {
-  friendIntraName: string;
-  friendUserName: string;
-  ignoreAction?: () => void;
-}
-
-function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
-
-  const action = useContext(FriendActionContext);
-  let { actionCards } = useContext(ActionCardsContext);
-  const { selectedIndex, setSelectedIndex } = useContext(ActionCardsContext);
-  let { setOutputStr, setOutputStyle, setShowOutput } = useContext(ActionOutputContext);
-  const { friendIntraName, friendUserName, ignoreAction } = props;
-  let yesAction: (name: string) => Promise<AxiosResponse>;
-  let noAction: (name:string) => Promise<AxiosResponse>;
-
-  const { setFriends } = useContext(FriendsContext);
-
-  setActionFunctions();
-
-  return (
-    <>
-      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={handleYesAction}>
-        <span className='font-extrabold'>y</span>es
-      </button>
-      /
-      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`}
-        onClick={
-          action === ACTION_TYPE.ACCEPT
-          ? handleNoAction
-          : ignoreAction
-        }
-      >
-        <span className='font-extrabold'>n</span>o
-      </button>
-      {
-        action === ACTION_TYPE.ACCEPT
-        ? <>
-            /
-            <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={ignoreAction}>
-              <span className='font-extrabold'>i</span>gnore
-            </button>
-          </>
-        : <></>
-      }
-    </>
-  )
-
-  function setActionFunctions() {
-    switch (action) {
-      case ACTION_TYPE.ADD:
-        yesAction = addFriend;
-        break;
-      case ACTION_TYPE.ACCEPT:
-        yesAction = acceptFriend;
-        noAction = deleteFriendship;
-        break;
-      case ACTION_TYPE.BLOCK:
-        yesAction = blockExistingFriend;
-        break;
-      case ACTION_TYPE.UNBLOCK:
-        yesAction = deleteFriendship;
-        break;
-      case ACTION_TYPE.UNFRIEND:
-        yesAction = deleteFriendship;
-        break;
-      default:
-        break;
-    }
-  }
-
-  function getOutputString() {
-    switch (action) {
-      case ACTION_TYPE.ACCEPT || ACTION_TYPE.ADD:
-        return `'${friendUserName}' is your friend now! HOORAY!`
-      case ACTION_TYPE.BLOCK:
-        return `'${friendUserName}' has been blocked. :(`
-      case ACTION_TYPE.UNBLOCK:
-        return `'${friendUserName}' has been unblocked. You need to send another friend request to be his/her friend again.`
-      case ACTION_TYPE.UNFRIEND:
-        return `'${friendUserName}' has been unfriended. Bye bye friend...`
-      default:
-        return '';
-    }
-  }
-
-  function handleYesAction() {
-    yesAction(friendIntraName)
-      .then(() => getFriendList())
-      .then((data) => {
-        setFriends(data.data);
-        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
-        if (selectedIndex >= newActionCards.length) {
-          setSelectedIndex(newActionCards.length - 1);
-        } else {
-          setSelectedIndex(selectedIndex);
-        }
-        actionCards = newActionCards;
-        if (action !== ACTION_TYPE.UNFRIEND)
-          setOutputStyle("bg-accCyan");
-        setOutputStr(getOutputString());
-        setShowOutput(true);
-      })
-      .catch(err => console.log(err));
-    }
-    
-    // will only used by ACTION.TYPE = ACCEPT
-    function handleNoAction() {
-      noAction(friendIntraName)
-      .then(() => getFriendList())
-      .then((data) => {
-        setFriends(data.data);
-        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
-        if (selectedIndex >= newActionCards.length) {
-          setSelectedIndex(newActionCards.length - 1);
-        } else {
-          setSelectedIndex(selectedIndex);
-        }
-        actionCards = newActionCards;
-        setOutputStyle("bg-accRed");
-        setOutputStr(`You rejected friend request from '${friendUserName}'`);
-        setShowOutput(true);
-      })
-      .catch(err => console.log(err));
-  }
 }
 
 function FriendActionCard(props: FriendActionCardProps) {
