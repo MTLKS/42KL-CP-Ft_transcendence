@@ -44,7 +44,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('playerMove')
 	async handleKeyDown(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		// console.log(body);
-		this.gameService.playerUpdate(client.id, body.y);
+		const ROOM_ID = Object.keys(client.rooms)[1];
+		// this.gameService.playerUpdate(client.id, body.y);
 	}
 }
