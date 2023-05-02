@@ -138,16 +138,20 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "cowsay":
+        let say = "";
+        for (let word of command.slice(1)) {
+          say += word + " ";
+        }
         const newCowsay = <Card key={index} type={CardType.SUCCESS}>
           <p>
-            {` _${new Array(command[1].length + 1).join("_")}_ `}<br />
-            {`< ${command[1]} >`}<br />
-            {` -${new Array(command[1].length + 1).join("-")}- `}<br />
+            {` _${new Array(say.length + 1).join("_")}_ `}<br />
+            {`< ${say} >`}<br />
+            {` -${new Array(say.length + 1).join("-")}- `}<br />
             {"        \\   ^__^"}<br />
-            {"         \\  (oo)\_______"}<br />
-            {"            (__)\       )\\/\\"}<br />
-            {"                ||----w |"}<br />
-            {"                ||     ||"}
+            {"         \\  (oo)\________"}<br />
+            {"            (__)\        )\\/\\"}<br />
+            {"               ||-----w|"}<br />
+            {"               ||     ||"}
           </p>
         </Card>;
         newList = [newCowsay].concat(elements);
@@ -177,6 +181,8 @@ function HomePage() {
           setLeftWidget(null);
         }} />);
         break;
+      case "set":
+
       default:
         const newErrorCard = errorCard();
         newList = [newErrorCard].concat(elements);
