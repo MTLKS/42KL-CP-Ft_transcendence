@@ -1,10 +1,8 @@
-import React, { Ref, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import React, { Ref, forwardRef, useCallback, useEffect, useImperativeHandle, useState } from 'react'
 import sleep from '../functions/sleep';
+import { debounce } from 'lodash';
+import { Offset } from '../modal/GameModels';
 
-interface Offset {
-  x: number
-  y: number
-}
 
 interface Size {
   width: number
@@ -68,19 +66,55 @@ let currentCursorType: CursorType = CursorType.Default;
 const longPressDuration: number = 200;
 let longPressDetected: boolean = false;
 
+let offset1: Offset = { x: -100, y: -100 };
+let offset2: Offset = { x: -100, y: -100 };
+let offset3: Offset = { x: -100, y: -100 };
+let offset4: Offset = { x: -100, y: -100 };
+let animated: boolean = true;
 
+interface MousePosition {
+  offset1: Offset;
+  offset2: Offset;
+  offset3: Offset;
+  offset4: Offset;
+}
+let frameCounter: number = 0;
+
+const setDelayPosition = debounce(async (offset: Offset) => {
+  await sleep(10);
+  offset2 = offset;
+  await sleep(10);
+  offset3 = offset;
+  await sleep(10);
+  offset4 = offset;
+}, 1)
 
 function MouseCursor(props: any, ref: Ref<any>) {
   const { size1Default, size2Default, size3Default, size4Default } = defaultCurser;
-
-  const [offset1, setOffset1] = useState<Offset>({ x: -100, y: -100 });
-  const [offset2, setOffset2] = useState<Offset>({ x: -100, y: -100 });
-  const [offset3, setOffset3] = useState<Offset>({ x: -100, y: -100 });
-  const [offset4, setOffset4] = useState<Offset>({ x: -100, y: -100 });
+  const [mousePosition, setMousePosition] = useState<MousePosition>({} as MousePosition);
   const [size1, setSize1] = useState<Size>(size1Default);
   const [size2, setSize2] = useState<Size>(size2Default);
   const [size3, setSize3] = useState<Size>(size3Default);
   const [size4, setSize4] = useState<Size>(size4Default);
+
+
+  useEffect(() => {
+
+    const animate = () => {
+      if (animated) {
+        console.log('animate', frameCounter);
+        if (frameCounter++ % 1 == 0)
+          setMousePosition({
+            offset1: offset1,
+            offset2: offset2,
+            offset3: offset3,
+            offset4: offset4,
+          });
+        requestAnimationFrame(animate);
+      }
+    };
+    requestAnimationFrame(animate);
+  }, []);
 
   // const divRef = useRef<HTMLDivElement>(null);
 
@@ -131,24 +165,16 @@ function MouseCursor(props: any, ref: Ref<any>) {
       />
     </>
   );
+
   function onMouseMove(e: MouseEvent) {
     const { clientX, clientY } = e;
+    const offset: Offset = { x: clientX, y: clientY };
 
     // Update offset1 without delay
     if (currentCursorType !== CursorType.hover) {
-      setOffset1({ x: clientX, y: clientY });
+      offset1 = offset;
     }
-
-    // Use a single `setTimeout` call to update offset2, offset3, and offset4 with varying delays
-    setTimeout(() => {
-      setOffset2({ x: clientX, y: clientY });
-      setTimeout(() => {
-        setOffset3({ x: clientX, y: clientY });
-        setTimeout(() => {
-          setOffset4({ x: clientX, y: clientY });
-        }, 100);
-      }, 60);
-    }, 40);
+    // setDelayPosition(offset);
   }
 
   async function shortPressAnimation() {
@@ -181,7 +207,7 @@ function MouseCursor(props: any, ref: Ref<any>) {
     setSize1({ width: width + 10, height: height + 10 });
     const leftOffset = (e.clientX - left! - width / 2) / 4;
     const topOffset = (e.clientY - top! - height / 2) / 4;
-    setOffset1({ x: left! + leftOffset - 9, y: top! + topOffset - 9 });
+    offset1 = { x: left! + leftOffset - 9, y: top! + topOffset - 9 };
   }
 
   function handleHover(e: React.MouseEvent, ref: React.RefObject<HTMLDivElement>,) {
@@ -190,7 +216,7 @@ function MouseCursor(props: any, ref: Ref<any>) {
     setSize1({ width: width + 10, height: height + 10 });
     const leftOffset = (e.clientX - left! - width / 2) / 4;
     const topOffset = (e.clientY - top! - height / 2) / 4;
-    setOffset1({ x: left! + leftOffset - 9, y: top! + topOffset - 9 });
+    offset1 = { x: left! + leftOffset - 9, y: top! + topOffset - 9 };
   }
 
   function handleHoverEnd() {

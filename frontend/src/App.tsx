@@ -27,10 +27,10 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      <div className='relative w-full h-full overflow-hidden'>
-        {page}
-        <MouseCursor />
-      </div>
+      {/* <div className='relative w-full h-full overflow-hidden cursor-none'> */}
+      {page}
+      {/* <MouseCursor /> */}
+      {/* </div> */}
     </PolkaDotContainer>
   )
 
