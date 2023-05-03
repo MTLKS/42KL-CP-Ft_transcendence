@@ -160,7 +160,7 @@ function HomePage() {
         }} />);
         break;
       case "tfa":
-        newList = [<Card key={index} type={CardType.SUCCESS}><Tfa commands={command}/></Card>].concat(elements);
+        newList = [<Tfa key={index} commands={command}/>].concat(elements);
         setIndex(index + 1);
         break;
       default:
