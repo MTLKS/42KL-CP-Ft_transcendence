@@ -1,7 +1,7 @@
 import { Ball } from "./ball";
 import { Paddle } from "./paddle";
 import { GameSetting } from "./settings";
-import { Socket, Server } from "socket.io";
+import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
 
 
@@ -43,12 +43,15 @@ export class GameRoom{
 	}
 
 	generateRoomID(player1_name: string, player2_name: string){
-		this.roomID = "Game: " + player1_name + ' vs ' + player2_name;
+		this.roomID = "Test";
+		// this.roomID = "Game: " + player1_name + ' vs ' + player2_name;
 	}
 
 	async run(server: Server){
+		this.resetGame();
 		if (this.interval == null && !this.gameEnded){
 			this.interval = setInterval(() => {
+				this.gameUpdate();
 				server.emit('gameLoop',
 					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 						this.Ball.velY,this.leftPaddle.posY, this.rightPaddle.posY, this.player1Score, this.player2Score));
@@ -59,6 +62,8 @@ export class GameRoom{
 	gameUpdate(){
 		this.Ball.update();
 		this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+		// console.log(this.leftPaddle.posY);
+		this.gameCollisionDetection();
 	}
 
 	objectCollision(ball: Ball, paddle: Paddle){

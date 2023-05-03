@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
-import { GameDTO } from "src/dto/game.dto";
 import { GameRoom } from "./entity/gameRoom";
 import { GameSetting } from "./entity/settings";
 import { Socket, Server } from "socket.io";
-
 
 const LOBBY_LOGGING = true;
 
 @Injectable()
 export class GameService {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService, )
+		{}
 	
 	//Lobby variables
 	private queues = {
@@ -26,14 +26,14 @@ export class GameService {
 
 	//Lobby functions 
 	async handleConnection(client: Socket) {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined) {
-			client.disconnect(true);
-			return;
-		}
+		// const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		// if (USER_DATA.error !== undefined) {
+		// 	client.disconnect(true);
+		// 	return;
+		// }
 
-		if (LOBBY_LOGGING)
-			console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
+		// if (LOBBY_LOGGING)
+		// 	console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
 
 		// TODO: if player is ingame, reconnect player to game
 	}
@@ -121,9 +121,14 @@ export class GameService {
 
 	async joinGame(player1: Socket, player2: Socket, server: Server): Promise<string>{
 		const ROOM = new GameRoom(player1.id, player2.id, this.gameSettings);
-		// ROOM.generateRoomID();
+		// ROOM.generateRoomID()
+		player1.join(ROOM.roomID);
+		player2.join(ROOM.roomID);
+		server.to(ROOM.roomID).emit('gameRoom', ROOM.roomID);
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		return (ROOM.roomID);
+
+		//TODO: Generate room ID, decide on to pass in player name or search in database
 	}
 
 	async startGame(roomID: string, server: Server){
@@ -153,66 +158,20 @@ export class GameService {
 	// 	//Change both player status to in game
 	// }
 
-	async gameEnd(player1: any, player2: any){
-		player1.leave(this.createGameRoom());
-		player2.leave(this.createGameRoom());
+	// async gameEnd(player1: any, player2: any){
+	// 	player1.leave(this.createGameRoom());
+	// 	player2.leave(this.createGameRoom());
 
-		//TODO : send result to user service
-		//TODO : remove users from ingame list
-	}
-
-
-	playerUpdate(socketId: string, value: number, roomID: string){
-		
-	}
-
-	gameUpdate(){
-		this.BALL.update();
-		// this.BALL.accX = 1;
-		// this.BALL.accY = 3;
-		this.BALL.checkContraint(this.gameData.canvasWidth,this.gameData.canvasHeight);
-		this.gameCollisionDetection();
-		this.gameState.ballPosX = this.BALL.posX;
-		this.gameState.ballPosY = this.BALL.posY;
-		this.gameState.velX = this.BALL.velX;
-		this.gameState.velY = this.BALL.velY;
-		this.gameState.leftPaddlePosY = this.LEFT_PADDLE.posY + 50;
-		this.gameState.rightPaddlePosY = this.RIGHT_PADDLE.posY + 50;
-		console.log(this.BALL.posY, this.BALL.velY);
-	}
-
-	async gameLoop(server: any){
-		this.resetGame();
-		// await this.simpleCountdown(3);
-		this.interval = setInterval(() => {
-			const CURRENT_TIME = Date.now();
-			if (this.lastTimeFrame != null){
-				const DELTA_TIME = (CURRENT_TIME - this.lastTimeFrame);
-				this.gameUpdate();
-			}
-			this.lastTimeFrame = CURRENT_TIME;
-			server.emit('gameLoop', this.gameState);
-		}, 1000/60);
-	}
-
-	gameCollisionDetection(){
-		//Ball at right side of canvas, check right paddle
-		if (this.BALL.posX > this.gameData.canvasWidth /2){
-			this.ballCollisionDetection(this.BALL, this.RIGHT_PADDLE);
-		}
-		else{
-			this.ballCollisionDetection(this.BALL, this.LEFT_PADDLE);
-		}
-	}
-
-	//TODO : get the room id from client, used to sent the player update to correct room
-	// getGameRoomID(client: Socket){
-	// 	const ROOMS = client.rooms;
-	// 	for (let room in ROOMS){
-	// 		if (room != client.id){
-	// 			return room;
-	// 		}
-	// 	}
-	// 	return null;
+	// 	//TODO : send result to user service
+	// 	//TODO : remove users from ingame list
 	// }
+
+
+	playerUpdate(socketId: string, roomID: string, value: number){
+		const ROOM = this.gameRooms.get(roomID);
+		if (ROOM === undefined){
+			return;
+		}
+		ROOM.updatePlayerPos(socketId, value);
+	}
 }
