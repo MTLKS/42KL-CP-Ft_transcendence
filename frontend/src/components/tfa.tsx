@@ -12,7 +12,7 @@ function Tfa() {
 	}, [])
 	return (
 		<figure>
-			<img src={tfa.qr} className='rounded-md mx-auto min-w-128 min-h-128 object-cover'></img>
+			<img src={tfa.qr} className='rounded-md mx-auto object-cover h-48'></img>
 			<p className='text-center'>SECRET: {tfa.secretKey}</p>
 		</figure>
 	)

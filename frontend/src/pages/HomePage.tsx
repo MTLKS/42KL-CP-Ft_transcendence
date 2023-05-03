@@ -19,7 +19,7 @@ import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
 import UserContext from '../context/UserContext';
-import Tfa from '../components/Tfa';
+import Tfa from '../components/tfa';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set"];
 const emptyWidget = <div></div>;
