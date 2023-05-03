@@ -35,7 +35,6 @@ function Tfa(props: TFAProps) {
 	const [tfa, setTfa] = React.useState<ITFAData>({} as ITFAData);
 	const [result, setResult] = React.useState<TFACommands>(TFACommands.exist);
 	
-	console.log(result);
 	if (commands.length === 2) {
 		if (commands[1] === "set") {
 			console.log(commands[1])
@@ -52,13 +51,6 @@ function Tfa(props: TFAProps) {
 					setResult(TFACommands.unset)
 				})
 			}, [])
-		} else if (commands[1] === "reset") {
-			console.log("reset");
-			return (
-				<p>
-					{commands[1]}
-				</p>
-			)
 		} else if (commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
 			useEffect(() => {
 				checkTFA(commands[1]).then((data) => {
@@ -95,8 +87,3 @@ function Tfa(props: TFAProps) {
 }
 
 export default Tfa
-
-// tfa => tfa help
-// tfa set => Sets and enables tfa
-// tfa 123456 => Checks whether the code is valid or not
-// tfa unset => Disables tfa
