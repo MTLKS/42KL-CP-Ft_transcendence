@@ -1,8 +1,8 @@
 export interface GameDTO {
   ballPosX: number;
-  ballPosY: number;
-  velX: number;
-  velY: number;
+	ballPosY: number;
+	ballVelX: number;
+	ballVelY: number;
   leftPaddlePosY: number;
   rightPaddlePosY: number;
 }

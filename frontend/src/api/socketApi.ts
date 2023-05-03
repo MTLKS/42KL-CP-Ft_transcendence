@@ -10,7 +10,8 @@ export type Events =
   | "friendshipRoom"
   | "startGame"
   | "gameLoop"
-  | "playerMove";
+  | "playerMove"
+  | "gameRoom";
 
 class SocketApi {
   socket: Socket;
