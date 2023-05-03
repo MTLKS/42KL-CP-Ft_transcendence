@@ -8,3 +8,7 @@ export async function getTFA(): Promise<any> {
 export async function removeTFA(): Promise<any> {
 	return (await Api.delete("/2fa")).data as ITFAData;
 }
+
+export async function checkTFA(otp: string): Promise<any> {
+	return (await Api.post("/2fa", {otp: otp})).data as ITFAData;
+}

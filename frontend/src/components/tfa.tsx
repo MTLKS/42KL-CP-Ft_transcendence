@@ -1,4 +1,4 @@
-import { getTFA, removeTFA } from '../functions/tfa';
+import { getTFA, removeTFA, checkTFA } from '../functions/tfa';
 import { ITFAData } from '../modal/TfaData';
 import React, { useEffect } from 'react'
 
@@ -6,32 +6,36 @@ interface TFAProps {
 	commands: string[];
 }
 
-enum TfaCommands {
+enum TFACommands {
 	help,
 	set,
 	unset,
-	exist
+	exist,
+	success,
+	fail
 }
 
 function Tfa(props: TFAProps) {
 	
 	const { commands } = props;
 	const [tfa, setTfa] = React.useState<ITFAData>({} as ITFAData);
-	const [result, setResult] = React.useState<TfaCommands>(TfaCommands.exist);
+	const [result, setResult] = React.useState<TFACommands>(TFACommands.exist);
 	
-	if (commands.length === 2) {
+	if (commands.length !== 2) {
+		setResult(TFACommands.help)
+	} else {
 		if (commands[1] === "set") {
 			useEffect(() => {
 				console.log("Using")
 				getTFA().then((data) => {
 					setTfa(data);
-					setResult(data.qr === null && data.secretKey === null ? TfaCommands.exist : TfaCommands.set)
+					setResult(data.qr === null && data.secretKey === null ? TFACommands.exist : TFACommands.set)
 				})
 			}, [])
 		} else if (commands[1] === "unset") {
 			useEffect(() => {
 				removeTFA().then(() => {
-					setResult(TfaCommands.unset)
+					setResult(TFACommands.unset)
 				})
 			}, [])
 		} else if (commands[1] === "reset") {
@@ -42,26 +46,30 @@ function Tfa(props: TFAProps) {
 				</p>
 			)
 		} else if (commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
-			console.log("Check");
-			return (
-				<p>
-					{commands[1]}
-				</p>
-			)
+			useEffect(() => {
+				checkTFA(commands[1]).then((data) => {
+					console.log(data);
+					setResult(data.boolean ? TFACommands.success : TFACommands.fail)
+				})
+			}, [])
 		}
 	}
 
-	if (result === TfaCommands.set) {
+	if (result === TFACommands.set) {
 		return (
 			<figure>
 				<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
 				<p className='text-center'>SECRET: {tfa.secretKey}</p>
 			</figure>
 		)
-	} else if (result === TfaCommands.unset) {
+	} else if (result === TFACommands.unset) {
 		return (<p>TFA unset and disabled</p>)
-	} else if (result === TfaCommands.exist) {
-		return (<p>TFA already set, use command "tfa unset" to disable tfa</p>)
+	} else if (result === TFACommands.exist) {
+		return (<p>TFA already set</p>)
+	} else if (result === TFACommands.success) {
+		return (<p>TFA OTP is correct</p>)
+	} else if (result === TFACommands.fail) {
+		return (<p>TFA OTP is incorrect</p>)
 	}
 	return (
 		<p>
