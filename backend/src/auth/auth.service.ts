@@ -27,7 +27,7 @@ export class AuthService {
 			"client_id": process.env.APP_UID,
 			"client_secret": process.env.APP_SECRET,
 			"code": code,
-			"redirect_uri": process.env.CLIENT_DOMAIN + ':' + process.env.FE_PORT
+			"redirect_uri": process.env.APP_REDIRECT
 		};
 		const API_RESPONSE = await fetch("https://api.intra.42.fr/oauth/token", {
 			method: 'POST',
