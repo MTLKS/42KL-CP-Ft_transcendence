@@ -121,14 +121,15 @@ export class GameService {
 
 	async joinGame(player1: Socket, player2: Socket, server: Server): Promise<string>{
 		const ROOM = new GameRoom(player1.id, player2.id, this.gameSettings);
-		// ROOM.generateRoomID()
+
+		//TODO: Generate room ID, decide on to pass in player name or search in database
+		ROOM.generateRoomID(player1.id, player2.id)
+
 		player1.join(ROOM.roomID);
 		player2.join(ROOM.roomID);
 		server.to(ROOM.roomID).emit('gameRoom', ROOM.roomID);
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		return (ROOM.roomID);
-
-		//TODO: Generate room ID, decide on to pass in player name or search in database
 	}
 
 	async startGame(roomID: string, server: Server){

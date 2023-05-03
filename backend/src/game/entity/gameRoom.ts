@@ -43,8 +43,8 @@ export class GameRoom{
 	}
 
 	generateRoomID(player1_name: string, player2_name: string){
-		this.roomID = "Test";
-		// this.roomID = "Game: " + player1_name + ' vs ' + player2_name;
+		// this.roomID = "Test";
+		this.roomID = "Game: " + player1_name + ' vs ' + player2_name;
 	}
 
 	async run(server: Server){
@@ -52,7 +52,7 @@ export class GameRoom{
 		if (this.interval == null && !this.gameEnded){
 			this.interval = setInterval(() => {
 				this.gameUpdate();
-				server.emit('gameLoop',
+				server.to(this.roomID).emit('gameLoop',
 					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 						this.Ball.velY,this.leftPaddle.posY, this.rightPaddle.posY, this.player1Score, this.player2Score));
 			},1000/60);

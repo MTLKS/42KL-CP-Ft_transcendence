@@ -19,7 +19,6 @@ import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/user.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
-import { GameModule } from './game/game.module';
 import { GameGateway } from './game/game.gateway';
 import { GameService } from './game/game.service';
 
