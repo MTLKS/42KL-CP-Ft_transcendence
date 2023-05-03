@@ -21,14 +21,16 @@ function App() {
   if (newUser) {
     page = <UserForm userData={userData} />;
   }
-  else if (logged) {
+  else if (!logged) {
     page = <HomePage />;
   }
 
   return (
     <PolkaDotContainer>
       {/* <div className='relative w-full h-full overflow-hidden cursor-none'> */}
-      {page}
+      <MouseCursor>
+        {page}
+      </MouseCursor>
       {/* <MouseCursor /> */}
       {/* </div> */}
     </PolkaDotContainer>
