@@ -8,7 +8,6 @@ import RippleEffect from './game_objects/RippleEffect';
 import * as PIXI from 'pixi.js';
 import Trail from './game_objects/Trail';
 import Spits from './game_objects/Spits';
-import { GameTickCtx } from './GameStage';
 import Blackhole from './game_objects/Blackhole';
 import TimeZone, { TimeZoneType } from './game_objects/TimeZone';
 import DashLine from './game_objects/DashLine';

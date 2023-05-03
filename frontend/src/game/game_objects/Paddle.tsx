@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { Container, Graphics, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
-import { GameTickCtx } from '../GameStage';
+import { GameTickCtx } from '../../GameApp';
 
 
 interface PaddleProps {

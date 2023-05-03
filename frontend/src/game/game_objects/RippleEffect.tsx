@@ -3,7 +3,7 @@ import { BoxSize, Offset } from '../../modal/GameModels';
 import { Container, Graphics, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import sleep from '../../functions/sleep';
-import { GameTickCtx } from '../GameStage';
+import { GameTickCtx } from '../../GameApp';
 
 
 interface RingProps {

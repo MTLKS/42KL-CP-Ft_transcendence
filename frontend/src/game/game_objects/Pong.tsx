@@ -2,8 +2,8 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Container, Graphics, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
-import { GameTickCtx, gameTick } from '../GameStage';
 import { GameTick } from '../gameTick';
+import { GameTickCtx } from '../../GameApp';
 interface PongProps {
 	stageSize: BoxSize;
 	// position: Offset
@@ -19,6 +19,7 @@ function Pong(props: PongProps) {
 	const { stageSize, size } = props;
 	const [particles, setParticles] = useState<JSX.Element[]>([]);
 	const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
+	const gameTick = useContext<GameTick>(GameTickCtx);
 	// const [gameTick, setGameTick] = useState<GameTick>(new GameTick());
 
 	// useEffect(() => {
@@ -35,7 +36,6 @@ function Pong(props: PongProps) {
 
 
 	useTick((delta) => {
-		console.log("position", gameTick.pongPosition);
 		setPosition(gameTick.pongPosition);
 	});
 
