@@ -18,7 +18,6 @@ import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
-import { GameTickCtx, gameTick } from '../game/GameStage';
 import { AppProvider } from '@pixi/react';
 import Game from '../game/Game';
 
@@ -49,10 +48,13 @@ function HomePage() {
   const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = React.useState(0);
 
+  let friendshipSocket: SocketApi;
+
   const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
 
-  const friendshipSocket = new SocketApi("friendship");
-
+    friendshipSocket = new SocketApi("friendship");
+  }, []);
   const initFriendshipSocket = () => {
     friendshipSocket.listen("friendshipRoom", (data: any) => {
       getFriendList().then((friends) => {

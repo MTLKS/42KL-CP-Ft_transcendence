@@ -1,10 +1,8 @@
-import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './styles/index.css'
-import { AppProvider, createRoot, Text } from '@pixi/react';
+import { createRoot } from '@pixi/react';
 import { Application } from 'pixi.js';
-import Game from './game/Game';
 
 import { GameTick } from './game/gameTick';
 import GameApp from './GameApp';

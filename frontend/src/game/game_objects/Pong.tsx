@@ -17,7 +17,6 @@ let p3: Offset = { x: 0, y: 0 }
 
 function Pong(props: PongProps) {
 	const { stageSize, size } = props;
-	const [particles, setParticles] = useState<JSX.Element[]>([]);
 	const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
 	const gameTick = useContext<GameTick>(GameTickCtx);
 	// const [gameTick, setGameTick] = useState<GameTick>(new GameTick());

@@ -23,6 +23,8 @@ export class GameTick {
     this.leftPaddlePosition = { x: 0, y: 0 };
     this.rightPaddlePosition = { x: 0, y: 0 };
     this.pongSpeed = { x: 0, y: 0 };
+    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
+    this.socketApi.listen("gameState", this.listenToGameState);
   }
 
   destructor() {
@@ -66,6 +68,7 @@ export class GameTick {
 
   useLocalTick() {
     this.usingLocalTick = true;
+    this.pongSpeed = { x: 5, y: 5 };
     this._localTick();
   }
 
@@ -75,6 +78,11 @@ export class GameTick {
 
   private _localTick() {
     if (!this.useLocalTick) return;
+    if (this.pongPosition.x < 0 || this.pongPosition.x > 1600 - 46)
+      this.pongSpeed.x *= -1;
+    if (this.pongPosition.y < 0 || this.pongPosition.y > 900 - 46)
+      this.pongSpeed.y *= -1;
+
     this.pongPosition.x += this.pongSpeed.x;
     this.pongPosition.y += this.pongSpeed.y;
     requestAnimationFrame(this.useLocalTick);
