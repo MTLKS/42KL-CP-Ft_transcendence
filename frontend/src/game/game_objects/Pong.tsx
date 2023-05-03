@@ -35,7 +35,7 @@ function Pong(props: PongProps) {
 
 
 	useTick((delta) => {
-		// console.log("gameTick", gameTick);
+		console.log("position", gameTick.pongPosition);
 		setPosition(gameTick.pongPosition);
 	});
 

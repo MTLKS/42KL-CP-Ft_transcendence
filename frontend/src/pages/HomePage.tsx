@@ -18,6 +18,9 @@ import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
+import { GameTickCtx, gameTick } from '../game/GameStage';
+import { AppProvider } from '@pixi/react';
+import Game from '../game/Game';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
 const emptyWidget = <div></div>;

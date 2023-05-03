@@ -1,6 +1,8 @@
+import { Application, ICanvas } from "pixi.js";
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../modal/GameDTO";
-import { Offset } from "../modal/GameModels";
+import { BoxSize, Offset } from "../modal/GameModels";
+import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 
 export class GameTick {
   socketApi: SocketApi;
@@ -10,10 +12,9 @@ export class GameTick {
   rightPaddlePosition: Offset;
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
-
-  //New
   roomID: string = "";
-  //
+
+  setScale?: (scale: number) => void;
 
   constructor() {
     console.log("gameTick created");
@@ -22,14 +23,15 @@ export class GameTick {
     this.leftPaddlePosition = { x: 0, y: 0 };
     this.rightPaddlePosition = { x: 0, y: 0 };
     this.pongSpeed = { x: 0, y: 0 };
-    this.socketApi.sendMessages("startGame", { ok: "ok" });
-    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
-    this.socketApi.listen("gameState", this.listenToGameState);
   }
 
   destructor() {
     this.socketApi.removeListener("gameLoop");
     this.socketApi.removeListener("gameState");
+  }
+
+  set setSetScale(setScale: (scale: number) => void) {
+    this.setScale = setScale;
   }
 
   listenToGameState = (data: any) => {

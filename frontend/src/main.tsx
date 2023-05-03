@@ -4,10 +4,11 @@ import App from './App'
 import './styles/index.css'
 import { AppProvider, createRoot, Text } from '@pixi/react';
 import { Application } from 'pixi.js';
-import GameStage, { gameTick, GameTickCtx } from './game/GameStage';
+import GameStage, { GameTickCtx } from './game/GameStage';
 import Game from './game/Game';
 
 import { GameTick } from './game/gameTick';
+import GameApp from './GameApp';
 
 const reactApp = document.getElementById('root') as HTMLElement
 const reactRoot = ReactDOM.createRoot(reactApp)
@@ -17,6 +18,7 @@ reactRoot.render(
   // </React.StrictMode>,
 )
 
+export const gameTick = new GameTick();
 const pixiApp = new Application({
   width: 1600,
   height: 900,
@@ -29,10 +31,4 @@ window.addEventListener('mousemove', (e) => {
 });
 
 const pixiRoot = createRoot(pixiApp.stage);
-pixiRoot.render(
-  <AppProvider value={pixiApp}>
-    <GameTickCtx.Provider value={gameTick}>
-      <Game pause={false} scale={1} />
-    </GameTickCtx.Provider>
-  </AppProvider>
-);
+pixiRoot.render(<GameApp pixiApp={pixiApp} gameTick={gameTick} />);
