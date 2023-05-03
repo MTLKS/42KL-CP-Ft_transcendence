@@ -159,8 +159,8 @@ function HomePage() {
           setLeftWidget(null);
         }} />);
         break;
-      case "set":
-        newList = [<Card key={index} type={CardType.SUCCESS}><Tfa/></Card>].concat(elements);
+      case "tfa":
+        newList = [<Card key={index} type={CardType.SUCCESS}><Tfa commands={command}/></Card>].concat(elements);
         setIndex(index + 1);
         break;
       default:
@@ -182,16 +182,15 @@ function HomePage() {
     return <Card key={index} type={CardType.SUCCESS}>
       <p >
         <span className=' text-2xl neonText-white font-bold'>HELP</span><br />
-        add:         add a card <br />
-        clear:       clear the screen <br />
-        cowsay:      make a cow say something <br />
-        help:        show this help message <br />
-        leaderboard: show the leaderboard <br />
-        login:       login to your account <br />
-        exit:        logout from your account <br />
-        ls:          list files <br />
-        ok:          ok <br />
-        sudo:        give you admin privilige <br />
+        add:          add a card <br />
+        clear:        clear the screen <br />
+        cowsay:       make a cow say something <br />
+        help:         show this help message <br />
+        leaderboard:  show the leaderboard <br />
+        login:        login to your account <br />
+        exit:         logout from your account <br />
+        tfa:          set and unset tfa <br />
+        sudo:         give you admin privilige <br />
       </p>
     </Card>;
   }

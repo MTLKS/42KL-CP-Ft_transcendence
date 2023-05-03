@@ -8,8 +8,8 @@ export class TFAController{
 
 	@Get()
 	@UseGuards(AuthGuard)
-	async requestSecret(@Headers('Authorization') accessToken: string) {
-		return await this.tfaService.requestSecret(accessToken);
+	async requestNewSecret(@Headers('Authorization') accessToken: string) {
+		return await this.tfaService.requestNewSecret(accessToken);
 	}
 	
 	@Post()
