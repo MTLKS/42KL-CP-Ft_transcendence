@@ -24,22 +24,17 @@ export class GameTick {
     this.pongSpeed = { x: 0, y: 0 };
     this.socketApi.sendMessages("startGame", { ok: "ok" });
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
-
-    //New
-    this.socketApi.listen("gameRoom", this.listenToGameRoom);
-    //
+    this.socketApi.listen("gameState", this.listenToGameState);
   }
 
   destructor() {
     this.socketApi.removeListener("gameLoop");
+    this.socketApi.removeListener("gameState");
   }
 
-  //New
-  listenToGameRoom = (data: any) => {
-    this.roomID = data;
-    console.log("roomID", this.roomID);
+  listenToGameState = (data: any) => {
+    console.log(data);
   };
-  //
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
@@ -63,10 +58,8 @@ export class GameTick {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
 
-    // this.socketApi.sendMessages("playerMove", { y: y });
-    //New
-    this.socketApi.sendMessages("playerMove", { y: y, roomID: this.roomID });
-    //
+    if (this.roomID)
+      this.socketApi.sendMessages("playerMove", { y: y, roomID: this.roomID });
   }
 
   useLocalTick() {
@@ -80,8 +73,8 @@ export class GameTick {
 
   private _localTick() {
     if (!this.useLocalTick) return;
-    // this.pongPosition.x += this.pongSpeed.x;
-    // this.pongPosition.y += this.pongSpeed.y;
+    this.pongPosition.x += this.pongSpeed.x;
+    this.pongPosition.y += this.pongSpeed.y;
     requestAnimationFrame(this.useLocalTick);
   }
 }
