@@ -18,6 +18,8 @@ import FriendActionCard, { ACTION_TYPE } from '../widgets/Friends/FriendAction/F
 import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
 import { FriendsContext } from '../contexts/FriendContext';
 import UserContext from '../contexts/UserContext';
+import { addFriend, deleteFriendship } from '../functions/friendactions';
+import { AxiosResponse } from 'axios';
 
 const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
 const emptyWidget = <div></div>;
@@ -196,7 +198,7 @@ function HomePage() {
     let newList: JSX.Element[] = [];
     if (command.length === 2) {
       getProfileOfUser(command[1]).then((response) => {
-        currentPreviewProfile = response.data;
+        currentPreviewProfile = response.data as UserData;
         if (currentPreviewProfile as any === '') {
           const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
           newList = [newErrorCard].concat(elements);
@@ -235,28 +237,144 @@ function HomePage() {
     }
 
     if (command[0] === "block") {
-      // pass in all filtered friends
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
+      else if (command.length >= 2)
+       performActionOnMultipleUsers(ACTION_TYPE.BLOCK, command.slice(1));
       return;
     }
 
     if (command[0] === "unblock") {
-      // show all blocked friend
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
+      else if (command.length >= 2)
+       performActionOnMultipleUsers(ACTION_TYPE.UNBLOCK, command.slice(1));
       return;
     }
-
+      
     if (command[0] === "unfriend") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />)
+      else if (command.length >= 2)
+        performActionOnMultipleUsers(ACTION_TYPE.UNFRIEND, command.slice(1));
       return;
     }
 
     if (command[0] === "add" && command.length >= 2) {
-      // add friend
-      return;
+      addMultipleFriends(command.slice(1));
+    }
+
+    async function addMultipleFriends(friends: string[]) {
+      try {
+        // try get their userdata
+        const friendProfiles = await Promise.all(
+          friends.map(friend => getProfileOfUser(friend))
+        );
+
+        // filter out users that are not found
+        const userNotFoundErrors = friendProfiles.filter(friend => (friend.data as any === ''));
+        if (userNotFoundErrors.length > 0) {
+          console.log("Users not found:", userNotFoundErrors);
+        }
+
+        // newFriends
+        const newFriends = friendProfiles.filter(friend => (friend.data as any !== ''));
+        if (newFriends.length === 0) {
+          console.log("No one to add");
+        }
+
+        // Add new friends
+        const results = await Promise.all(
+          newFriends.map(friend => addFriend((friend.data as UserData).intraName))
+        );
+
+        // Filter out add friends error
+        const addFriendErrors = results.filter(result => (result.data as ErrorData).error);
+        if (addFriendErrors.length > 0) {
+          console.log("Friendship existed:", addFriendErrors);
+        }
+
+        // Update the latest friendlist
+        const updatedFriendList = await getFriendList();
+        setMyFriends(updatedFriendList.data);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
+    function userDataToFriendData(user: UserData): FriendData {
+      const friend: FriendData = {
+        id: user.intraId,
+        senderIntraName: myProfile.intraName,
+        receiverIntraName: user.intraName,
+        elo: 0,
+        status: "STRANGER",
+        userName: user.userName,
+        avatar: user.avatar,
+      };
+      return friend;
+    }
+
+    function checkIfFriendPresent(friends: FriendData[], friendIntraName: string) {
+      for (const friend of friends) {
+        if (friend.receiverIntraName === friendIntraName || friend.senderIntraName === friendIntraName) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /**
+       * BLOCK: ACCEPTED, PENDING
+       * UNBLOCK: those BLOCKED
+       * UNFRIEND: those ACCEPTED & BLOCKED
+       */
+    function belongsTotheDesireCategory(action: string, status: string) {
+      if (action === ACTION_TYPE.BLOCK && (status === "ACCEPTED" || status === "PENDING")) return true;
+
+      if (action === ACTION_TYPE.UNBLOCK && status === "BLOCKED") return true;
+
+      if (action === ACTION_TYPE.UNFRIEND && (status === "ACCEPTED" || status === "BLOCKED" || status === "PENDING")) return true;
+
+      return false;
+    }
+
+    async function performActionOnMultipleUsers(action: string, userIntraNames: string[]) {
+
+      let selectedFriends: FriendData[] = [];
+
+      // get all user data
+      const userProfiles = await Promise.all(
+        userIntraNames.map(intraName => getProfileOfUser(intraName))
+      );
+
+      // categorized user data
+      const categorizedUsers = userProfiles.map((user, index) => {
+
+        if (user.data as any === '') return userIntraNames[index];
+
+        const userData: UserData = user.data as UserData;
+        let relationshipType: string = checkIfFriendPresent(myFriends, userData.intraName) ? "FRIEND" : "STRANGER";
+        return { user: userData, type: relationshipType };
+      });
+
+      for (const user of categorizedUsers) {
+        if (typeof user === 'string') {
+          // create an error to show that the user is not found
+          console.log("User not found: ", user);
+        } else if (typeof user === 'object' && user.type === "STRANGER" && action === ACTION_TYPE.BLOCK) {
+          const fakeFriend = userDataToFriendData(user.user);
+          selectedFriends.push(fakeFriend);
+        } else if (typeof user === 'object' && user.type === "FRIEND") {
+          const friend = myFriends.find(
+            friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
+          );
+          (belongsTotheDesireCategory(action, friend!.status))
+            ? selectedFriends.push(friend!)
+            : console.log("Invalid relationship: ", friend);
+        }
+      }
+      console.log(selectedFriends);
     }
   }
 }

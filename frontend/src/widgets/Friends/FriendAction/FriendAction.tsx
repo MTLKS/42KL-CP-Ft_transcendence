@@ -3,12 +3,15 @@ import FriendActionCard, { ACTION_TYPE } from './FriendActionCard'
 import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../modal/FriendData'
 import { UserData } from '../../../modal/UserData'
-import { ActionCardsContext, ActionOutputContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
-import { acceptFriend } from '../../../functions/friendactions'
+import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
+import { acceptFriend, addFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../functions/friendactions'
+import { AxiosResponse } from 'axios'
+import { getFriendList } from '../../../functions/friendlist'
 
 interface FriendActionProps {
   user: UserData;
   action: string;
+  selectedFriends?: FriendData[];
   onQuit: () => void;
 }
 
@@ -24,38 +27,39 @@ function getFileName(action: string) {
 function FriendAction(props: FriendActionProps) {
 
   // props
-  const { user, action, onQuit } = props;
-  const { friends } = useContext(FriendsContext);
+  const { user, action, selectedFriends, onQuit } = props;
   const fileString = `./usr/${user.userName}/friend/${getFileName(action)} `;
-  const filteredFriends: FriendData[] = filterFriends();
-
+  
   // hooks
+  const { friends } = useContext(FriendsContext);
   const [isInputFocused, setIsInputFocused] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [inputValue, setInputValue] = useState("");
-  const [command, setCommand] = useState("");
+  const [isCommandMode, setIsCommandMode] = useState(false);
   const [commandNotFound, setCommandNotFound] = useState(false);
   const [showOutput, setShowOutput] = useState(false);
   const [outputStyle, setOutputStyle] = useState("bg-accRed");
   const [outputStr, setOutputStr] = useState("");
+  const { setFriends } = useContext(FriendsContext);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  let actionCards: JSX.Element[] =[];
   
+  let actionCards: JSX.Element[] =[];
+  let yesAction: (name: string) => Promise<AxiosResponse>;
+  let noAction: (name:string) => Promise<AxiosResponse>;
+
+  const filteredFriends: FriendData[] = selectedFriends !== undefined ? selectedFriends : filterFriends();
   createFriendActionCards();
+  setActionFunctions();
 
   useEffect(() => {
     focusOnInput();
+    setActionFunctions();
   }, []);
-
-  useEffect(() => {
-    runFriendActionCommands();
-  }, [command]);
 
   return (
     <FriendActionContext.Provider value={action}>
       <ActionCardsContext.Provider value={{ actionCards, selectedIndex, setSelectedIndex }}>
-        <ActionOutputContext.Provider value={{ setOutputStyle, setOutputStr, setShowOutput }}>
+        <ActionFunctionsContext.Provider value={{yesAction: handleYesAction, noAction: handleNoAction}}>
           <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
             <input
               className='w-0 h-0 absolute'
@@ -81,7 +85,7 @@ function FriendAction(props: FriendActionProps) {
               }
             </div>
           </div>
-        </ActionOutputContext.Provider>
+        </ActionFunctionsContext.Provider>
       </ActionCardsContext.Provider>
     </FriendActionContext.Provider>
   )
@@ -102,21 +106,109 @@ function FriendAction(props: FriendActionProps) {
       setSelectedIndex(selectedIndex - 1);
 
     if (key === "Enter" && inputValue !== "") {
-      if (inputValue.slice(1) === "") {
-        setInputValue("");
-        return ;
-      }
-      setCommand(inputValue.slice(1));
+      runFriendActionCommands(inputValue.slice(1));
+      setInputValue("");
+      setIsCommandMode(false);
     }
 
-    if (key === "q") {
+    if (key === "q" && !isCommandMode) {
       setTimeout(() => onQuit(), 10);
       return;
     }
   }
 
+  function setActionFunctions() {
+    switch (action) {
+      case ACTION_TYPE.ACCEPT:
+        yesAction = acceptFriend;
+        noAction = deleteFriendship;
+        break;
+      case ACTION_TYPE.BLOCK:
+        yesAction = blockExistingFriend;
+        break;
+      case ACTION_TYPE.UNBLOCK:
+        yesAction = deleteFriendship;
+        break;
+      case ACTION_TYPE.UNFRIEND:
+        yesAction = deleteFriendship;
+        break;
+      default:
+        break;
+    }
+  }
+
+  function handleYesAction(friendIntraName: string, shouldShow: boolean) {
+    yesAction(friendIntraName)
+      .then(() => getFriendList())
+      .then((data) => {
+        setFriends(data.data);
+        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
+        if (selectedIndex >= newActionCards.length) {
+          setSelectedIndex(newActionCards.length - 1);
+        } else {
+          setSelectedIndex(selectedIndex);
+        }
+        actionCards = newActionCards;
+        if (shouldShow) {
+          if (action !== ACTION_TYPE.UNFRIEND) setOutputStyle("bg-accCyan");
+          setOutputStr(getOutputString(friendIntraName));
+          setShowOutput(true);
+        }
+      })
+      .catch(err => console.log(err));
+  }
+
+  function handleNoAction(friendIntraName: string, shouldShow: boolean) {
+    noAction(friendIntraName)
+      .then(() => getFriendList())
+      .then((data) => {
+        setFriends(data.data);
+        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
+        if (selectedIndex >= newActionCards.length) {
+          setSelectedIndex(newActionCards.length - 1);
+        } else {
+          setSelectedIndex(selectedIndex);
+        }
+        actionCards = newActionCards;
+        if (shouldShow) {
+          setOutputStyle("bg-accRed");
+          setOutputStr(`You rejected friend request from '${friendIntraName}'`);
+          setShowOutput(true);
+        }
+      })
+      .catch(err => console.log(err));
+  }
+
+  function blockStrangerAction(strangerIntraName: string, shouldShow: boolean) {
+    blockStranger(strangerIntraName)
+      .then((data) => {
+        console.log(data);
+        return getFriendList()
+      })
+      .then((data) => {
+        setFriends(data.data);
+        const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
+        if (selectedIndex >= newActionCards.length) {
+          setSelectedIndex(newActionCards.length - 1);
+        } else {
+          setSelectedIndex(selectedIndex);
+        }
+        actionCards = newActionCards;
+        if (shouldShow) {
+          setOutputStyle("bg-accRed");
+          setOutputStr(`You rejected friend request from '${strangerIntraName}'`);
+          setShowOutput(true);
+        }
+      })
+      .catch(err => console.log(err));
+  }
+
   function handleInput(e: React.FormEvent<HTMLInputElement>) {
     let value = e.currentTarget.value;
+
+    if (value === "") {
+      setIsCommandMode(false);
+    }
 
     if (value !== "") {
       setCommandNotFound(false);
@@ -128,12 +220,27 @@ function FriendAction(props: FriendActionProps) {
       return ;
     }
 
+    if (value[0] === ':') {
+      setIsCommandMode(true);
+    }
+
     setInputValue(value);
   }
 
   function createFriendActionCards() {
     filteredFriends.map((friend, index) => 
-      actionCards.push(
+      (friend.status === "STRANGER" && action === ACTION_TYPE.BLOCK)
+      ? actionCards.push(
+        <FriendActionCard
+          key={friend.id}
+          index={index}
+          friend={friend}
+          user={user}
+          ignoreAction={ignoreAction}
+          alternativeAction={() => blockStrangerAction(friend.receiverIntraName, true)}
+        />
+      )
+      : actionCards.push(
         <FriendActionCard
           key={friend.id}
           index={index}
@@ -150,55 +257,93 @@ function FriendAction(props: FriendActionProps) {
       setSelectedIndex(selectedIndex + 1);
   }
 
-  function runFriendActionCommands() {
+  function getOutputString(friendUserName:string) {
+    switch (action) {
+      case ACTION_TYPE.ACCEPT:
+        return `'${friendUserName}' is your friend now! HOORAY!`
+      case ACTION_TYPE.BLOCK:
+        return `'${friendUserName}' has been blocked. :(`
+      case ACTION_TYPE.UNBLOCK:
+        return `'${friendUserName}' has been unblocked. You need to send another friend request to be his/her friend again.`
+      case ACTION_TYPE.UNFRIEND:
+        return `'${friendUserName}' has been unfriended. Bye bye friend...`
+      default:
+        return '';
+    }
+  }
+
+  function runFriendActionCommands(command: string) {
+
+    if (yesAction === undefined|| noAction === undefined) setActionFunctions();
 
     if (command === "") return ;
 
     let splitedCommand = command.split(" ");
 
     if (command === "y" || command === "yes") {
-      return ;
+      const friend = filteredFriends[selectedIndex];
+      const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+      handleYesAction(friendIntraName, true);
+      return;
     }
-
+    
     if (command === "Y" || command === "YES") {
-      console.log(`yas to all`);
-      return ;
+      for (const friend of friends) {
+        const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+        handleYesAction(friendIntraName, false);
+        setOutputStyle("bg-accCyan");
+        setOutputStr(`${action}ed all friend requests!`);
+        setShowOutput(true);
+      }
+      return;
     }
-
+    
     if (command === "n" || command === "no") {
-      console.log(`nope`);
-      return ;
+      if (action !== ACTION_TYPE.ACCEPT) {
+        ignoreAction();
+      } else {
+        const friend = filteredFriends[selectedIndex];
+        const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+        handleNoAction(friendIntraName, true);
+      }
+      return;
     }
     
     if (command === "N" || command === "NO") {
-      console.log(`nope to all`);
-      return ;
+      if (action !== ACTION_TYPE.ACCEPT) {
+        setTimeout(() => onQuit(), 10);
+      } else {
+        for (const friend of friends) {
+          const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+          handleNoAction(friendIntraName, false);
+          setOutputStyle("bg-accRed");
+          setOutputStr(`Rejected all friend requests!`);
+          setShowOutput(true);
+        }
+      }
+      return;
     }
 
-    if (command === "i" || command == "ignore") {
+    if ((command === "i" || command == "ignore") && action === ACTION_TYPE.ACCEPT) {
       ignoreAction();
-      console.log(`ignore this`)
-      return ;
+      return;
     }
 
-    if (command === "I" || command === "IGNORE") {
-      console.log(`ignore all`)
-      return ;
+    if ((command === "I" || command === "IGNORE") && action === ACTION_TYPE.ACCEPT) {
+      setTimeout(() => onQuit(), 10);
+      return;
     }
 
     if (command === "p" || command === "profile") {
-      console.log(`check current user profile`);
-      setInputValue("");
-      return ;
+      return;
     }
 
     if (splitedCommand.length === 2 && splitedCommand[0] === "profile") {
       // get splitedCommand[1] as a user
+      return;
     }
-
     setOutputStr(`Command not found: ${command}`);
     setCommandNotFound(true);
-    setInputValue("");
   }
 
   function filterFriends() {

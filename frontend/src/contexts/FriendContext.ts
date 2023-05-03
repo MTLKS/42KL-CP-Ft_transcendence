@@ -26,14 +26,12 @@ export const ActionCardsContext = createContext<ActionCardsContextType>({
   setSelectedIndex: (num: number) => {},
 });
 
-interface ActionOutputContextType {
-  setOutputStyle: (str: string) => void,
-  setOutputStr: (str: string) => void,
-  setShowOutput: (show: boolean) => void,
+interface ActionFunctionsContextType {
+  yesAction: (name:string, show:boolean) => void,
+  noAction: (name:string, show:boolean) => void,
 }
 
-export const ActionOutputContext = createContext<ActionOutputContextType>({
-  setOutputStyle: (str: string) => {},
-  setOutputStr: (str: string) => {},
-  setShowOutput: (show: boolean) => {},
+export const ActionFunctionsContext = createContext<ActionFunctionsContextType>({
+  yesAction: (name:string, show:boolean) => {},
+  noAction: (name:string, show:boolean) => {},
 })

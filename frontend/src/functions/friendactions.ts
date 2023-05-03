@@ -34,6 +34,5 @@ export function blockStranger(toBeBlockedIntraName: string): Promise<AxiosRespon
 }
 
 export function deleteFriendship(toBeDeletedIntraName: string) {
-  console.log(`${NAMESPACE}/${toBeDeletedIntraName}`)
   return api.delete(`${NAMESPACE}/${toBeDeletedIntraName}`);
 }

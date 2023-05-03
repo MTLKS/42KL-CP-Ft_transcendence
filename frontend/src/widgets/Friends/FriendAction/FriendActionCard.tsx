@@ -13,6 +13,7 @@ interface FriendActionCardProps {
   friend: FriendData;
   user: UserData;
   ignoreAction: () => void;
+  alternativeAction?: () => void;
 }
 
 export const ACTION_TYPE = {
@@ -33,7 +34,7 @@ function FriendActionCard(props: FriendActionCardProps) {
 
   const action = useContext(FriendActionContext);
   const { selectedIndex } = useContext(ActionCardsContext);
-  const { index, user, friend, ignoreAction } = props;
+  const { index, user, friend, ignoreAction, alternativeAction } = props;
   const fakeSHAkeyStr = useMemo(() => `+${getRandomString(10)}/${getRandomString(10)}`, []);
   const isCurrentIndex = selectedIndex === index;
   let friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
@@ -50,7 +51,7 @@ function FriendActionCard(props: FriendActionCardProps) {
           <div className='flex flex-row whitespace-pre'>
             <FriendActionConfirmation/>
             <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
-              [<FriendActionConfirmationButtons friendUserName={friend.userName} friendIntraName={friendIntraName} ignoreAction={ignoreAction}/>]
+              [<FriendActionConfirmationButtons friendUserName={friend.userName} friendIntraName={friendIntraName} ignoreAction={ignoreAction} alternativeAction={alternativeAction}/>]
             </div>
           </div>
         </div>
