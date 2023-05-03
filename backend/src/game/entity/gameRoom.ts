@@ -54,7 +54,7 @@ export class GameRoom{
 				this.gameUpdate();
 				server.to(this.roomID).emit('gameLoop',
 					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-						this.Ball.velY,this.leftPaddle.posY, this.rightPaddle.posY, this.player1Score, this.player2Score));
+						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
 			},1000/60);
 		}
 	}
@@ -146,8 +146,8 @@ export class GameRoom{
 	}
 
 	updatePlayerPos(playerID: string, value: number){
-		this.leftPaddle.posY = value;
-		this.rightPaddle.posY = value;
+		this.leftPaddle.posY = value - 50;
+		this.rightPaddle.posY = value - 50;
 		// if (playerID == this.player1Id){
 		// 	this.leftPaddle.posY = value;
 		// }

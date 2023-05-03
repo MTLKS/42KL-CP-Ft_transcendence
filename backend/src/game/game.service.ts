@@ -4,6 +4,13 @@ import { GameRoom } from "./entity/gameRoom";
 import { GameSetting } from "./entity/settings";
 import { Socket, Server } from "socket.io";
 
+//TODO : "gameState" event-> game start, game end, field effect
+
+interface GameState{
+	type : "GameStart" | "GameEnd" | "FieldEffect";
+	data : any;
+}
+
 const LOBBY_LOGGING = true;
 
 @Injectable()
@@ -127,7 +134,7 @@ export class GameService {
 
 		player1.join(ROOM.roomID);
 		player2.join(ROOM.roomID);
-		server.to(ROOM.roomID).emit('gameRoom', ROOM.roomID);
+		server.to(ROOM.roomID).emit('gameState', ROOM.roomID);
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		return (ROOM.roomID);
 	}
@@ -137,7 +144,7 @@ export class GameService {
 		if (ROOM === undefined)
 			return;
 		await ROOM.run(server);
-		this.gameRooms.delete(roomID);
+		// this.gameRooms.delete(roomID);
 	}
 
 	// async startGame(player1: Socket, player2: Socket, server: Server){

@@ -13,8 +13,8 @@ export class GameSetting{
 	constructor(){
 		this.canvasWidth = 1600;
 		this.canvasHeight = 900;
-		this.ballSpeedX = 9;
-		this.ballSpeedY = 3;
+		this.ballSpeedX = 5;
+		this.ballSpeedY = 1;
 		this.ballSize = 10;
 		this.paddleWidth = 15;
 		this.paddleHeight = 100;
