@@ -1,8 +1,10 @@
 import { ITFAData } from "../modal/TfaData";
 import Api from "../api/api";
 
-async function getTFA(): Promise<any> {
+export async function getTFA(): Promise<any> {
 	return (await Api.get("/2fa")).data as ITFAData;
 }
 
-export default getTFA
+export async function removeTFA(): Promise<any> {
+	return (await Api.delete("/2fa")).data as ITFAData;
+}

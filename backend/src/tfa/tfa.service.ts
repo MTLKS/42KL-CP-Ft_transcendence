@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
 import { Injectable } from "@nestjs/common";
 import { authenticator } from "otplib";
+import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as qrCode from "qrcode";
 
@@ -38,5 +39,11 @@ export class TFAService{
 		} catch {
 			return { boolean: false};
 		}
+	}
+
+	async deleteSecret(accessToken: string) : Promise<any> {
+		const DATA = await this.userRepository.find({ where: {intraName: (await this.userService.getMyUserData(accessToken)).intraName} });
+		DATA[0].tfaSecret = null;
+		return await this.userRepository.save(DATA[0]);
 	}
 }
