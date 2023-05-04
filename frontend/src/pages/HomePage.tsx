@@ -16,12 +16,15 @@ import SocketApi from '../api/socketApi';
 import Cowsay from '../widgets/TerminalCards/Cowsay';
 import FriendActionCard, { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
 import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
-import { FriendsContext } from '../contexts/FriendContext';
+import { FriendActionContext, FriendsContext, SelectedFriendContext } from '../contexts/FriendContext';
 import UserContext from '../contexts/UserContext';
 import { addFriend, deleteFriendship } from '../functions/friendactions';
 import { AxiosResponse } from 'axios';
+import HelpCard from '../widgets/TerminalCards/HelpCard';
+import { allCommands, friendCommands } from '../functions/commandOptions';
+import { friendErrors } from '../functions/errorCodes';
 
-const availableCommands = ["sudo", "start", "add", "clear", "help", "whoami", "end", "profile", "friend"];
+const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
@@ -36,6 +39,7 @@ function HomePage() {
   const [expandProfile, setExpandProfile] = useState(false);
   const [myProfile, setMyProfile] = useState<UserData>({} as UserData);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
+  const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = useState(0);
 
   const pageRef = useRef<HTMLDivElement>(null);
@@ -90,23 +94,25 @@ function HomePage() {
   return (
     <UserContext.Provider value={{ myProfile, setMyProfile }}>
       <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
-        <div className='h-full w-full p-7'>
-          {startMatch && <Pong />}
-          {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
-          <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
-            ref={pageRef}
-          >
-            <div className='h-full flex-1'>
-              {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
-            </div>
-            <div className=' bg-highlight h-full w-1' />
-            <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-              {topWidget}
-              {midWidget}
-              {botWidget}
+        <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
+          <div className='h-full w-full p-7'>
+            {startMatch && <Pong />}
+            {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
+            <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
+              ref={pageRef}
+            >
+              <div className='h-full flex-1'>
+                {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+              </div>
+              <div className=' bg-highlight h-full w-1' />
+              <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+                {topWidget}
+                {midWidget}
+                {botWidget}
+              </div>
             </div>
           </div>
-        </div>
+        </SelectedFriendContext.Provider>
       </FriendsContext.Provider>
     </UserContext.Provider>
   )
@@ -115,9 +121,7 @@ function HomePage() {
     let newList: JSX.Element[] = [];
     switch (command[0]) {
       case "sudo":
-        const newEmbed = <YoutubeEmbed key={"rickroll" + index} />
-        newList = [newEmbed].concat(elements);
-        setIndex(index + 1);
+        newList = appendNewCard(<YoutubeEmbed key={"rickroll" + index} />);
         break;
       case "start":
         if (!startMatch) setStartMatch(true);
@@ -125,72 +129,42 @@ function HomePage() {
       case "end":
         if (startMatch) setStartMatch(false);
         break;
-      case "add":
-        const newCard = card(index);
-        newList = [newCard].concat(elements);
-        setIndex(index + 1);
-        break;
       case "cowsay":
-        const newCowsay = <Cowsay index={index} commands={command.slice(1)} />
-        newList = [newCowsay].concat(elements);
-        setIndex(index + 1);
+        newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
         break;
       case "profile":
         newList = handleProfileCommand(command);
         break;
       case "friend":
-        handleFriendCommand(command.slice(1));
+        newList = handleFriendCommand(command.slice(1));
         break;
       case "clear":
         newList = elements.filter((element) => element.type === YoutubeEmbed);
         setIndex(newList.length - 1);
         break;
       case "help":
-        const newHelpCard = helpCard();
-        newList = [newHelpCard].concat(elements);
-        setIndex(index + 1);
+        newList = appendNewCard(<HelpCard key={index} title="help" option='commands' usage='<command>' commandOptions={allCommands}/>)
         break;
-      case "whoami":
-        const newWhoamiCard = <Profile />
-        setTopWidget(newWhoamiCard);
+      case "ok":
+        newList = appendNewCard(<Card key={index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
         break;
       default:
-        const newErrorCard = errorCard();
-        newList = [newErrorCard].concat(elements);
-        setIndex(index + 1);
+        newList = appendNewCard(commandNotFoundCard());
         break;
     }
+    console.log(newList);
     setElements(newList);
   }
 
-  function card(index: number) {
-    // return <Card key={index} type={CardType.SUCCESS}>
-    //   <p className='text-gray-300 text-2xl tracking-tighter mb-5 h-15'>This is a card</p>
-    // </Card>;
-    return <></>
+  function appendNewCard(newCard: JSX.Element) {
+    const newList = [newCard].concat(elements);
+    setIndex(index + 1);
+    return newList;
   }
 
-  function helpCard() {
-    return <Card key={index} type={CardType.SUCCESS}>
-      <p >
-        <span className=' text-2xl neonText-white font-bold'>HELP</span><br />
-        add:         add a card <br />
-        clear:       clear the screen <br />
-        cowsay:      make a cow say something <br />
-        help:        show this help message <br />
-        leaderboard: show the leaderboard <br />
-        login:       login to your account <br />
-        exit:        logout from your account <br />
-        ls:          list files <br />
-        ok:          ok <br />
-        sudo:        give you admin privilege <br />
-      </p>
-    </Card>;
-  }
-
-  function errorCard() {
+  function commandNotFoundCard() {
     return <Card key={index} type={CardType.ERROR}>
-      <p >command does not exist...     get some help.</p>
+      <p>Command not found... Get some <b className='font-extrabold'>help</b>.</p>
     </Card>;
   }
 
@@ -220,162 +194,174 @@ function HomePage() {
     return newList;
   }
 
+  async function addMultipleFriends(friends: string[]) {
+    try {
+      // try get their userdata
+      const friendProfiles = await Promise.all(
+        friends.map(friend => getProfileOfUser(friend))
+      );
+
+      // filter out users that are not found
+      const userNotFoundErrors = friendProfiles.filter(friend => (friend.data as any === ''));
+      if (userNotFoundErrors.length > 0) {
+        throw new Error(friendErrors.USER_NOT_FOUND.toString());
+      }
+
+      // newFriends
+      const newFriends = friendProfiles.filter(friend => (friend.data as any !== ''));
+
+      // Add new friends
+      const results = await Promise.all(
+        newFriends.map(friend => addFriend((friend.data as UserData).intraName))
+      );
+
+      // Filter out add friends error
+      const addFriendErrors = results.filter(result => (result.data as ErrorData).error);
+      if (addFriendErrors.length > 0) {
+        throw new Error(friendErrors.FRIENDSHIP_EXISTED.toString());
+      }
+
+      // Update the latest friendlist
+      const updatedFriendList = await getFriendList();
+      setMyFriends(updatedFriendList.data);
+    } catch (err: any) {
+      console.log(err.toString());
+    }
+  }
+
+  function userDataToFriendData(user: UserData): FriendData {
+    const friend: FriendData = {
+      id: user.intraId,
+      senderIntraName: myProfile.intraName,
+      receiverIntraName: user.intraName,
+      elo: 0,
+      status: "STRANGER",
+      userName: user.userName,
+      avatar: user.avatar,
+    };
+    return friend;
+  }
+
+  function checkIfFriendPresent(friends: FriendData[], friendIntraName: string) {
+    for (const friend of friends) {
+      if (friend.receiverIntraName === friendIntraName || friend.senderIntraName === friendIntraName) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+     * BLOCK: ACCEPTED, PENDING
+     * UNBLOCK: those BLOCKED
+     * UNFRIEND: those ACCEPTED & BLOCKED
+     */
+  function belongsTotheDesireCategory(action: string, status: string) {
+    if (action === ACTION_TYPE.BLOCK && (status === "ACCEPTED" || status === "PENDING")) return true;
+
+    if (action === ACTION_TYPE.UNBLOCK && status === "BLOCKED") return true;
+
+    if (action === ACTION_TYPE.UNFRIEND && (status === "ACCEPTED" || status === "BLOCKED" || status === "PENDING")) return true;
+
+    return false;
+  }
+
+  async function performActionOnMultipleUsers(action: string, userIntraNames: string[]) {
+
+    const newSelectedFriends: FriendData[] = [];
+
+    // get all user data
+    const userProfiles = await Promise.all(
+      userIntraNames.map(intraName => getProfileOfUser(intraName))
+    );
+
+    // categorized user data
+    const categorizedUsers = userProfiles.map((user, index) => {
+
+      if (user.data as any === '') return userIntraNames[index];
+
+      const userData: UserData = user.data as UserData;
+      let relationshipType: string = checkIfFriendPresent(myFriends, userData.intraName) ? "FRIEND" : "STRANGER";
+      return { user: userData, type: relationshipType };
+    });
+
+    try {
+      for (const user of categorizedUsers) {
+        if (typeof user === 'string') {
+          throw new Error(friendErrors.USER_NOT_FOUND.toString());
+        } else if (typeof user === 'object' && user.type === "STRANGER" && action === ACTION_TYPE.BLOCK) {
+          const fakeFriend = userDataToFriendData(user.user);
+          newSelectedFriends.push(fakeFriend);
+        } else if (typeof user === 'object' && user.type === "FRIEND") {
+          const friend = myFriends.find(
+            friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
+          );
+          if (belongsTotheDesireCategory(action, friend!.status))
+            newSelectedFriends.push(friend!)
+          else
+            throw new Error(friendErrors.FRIENDSHIP_EXISTED.toString());
+        }
+      }
+    } catch (err: any) {
+      console.log(err.toString());
+    }
+
+    setSelectedFriends(newSelectedFriends);
+  }
+
   function handleFriendCommand(command: string[]) {
+
     if (command.length === 0) {
-      console.log("show help");
-      return;
+      return appendNewCard(
+        <HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />
+      );
     }
 
     if (command[0] === "list" && command.length === 1) {
       setLeftWidget(<Friendlist userData={myProfile} onQuit={() => setLeftWidget(null)} />);
-      return;
+      return elements;
     }
 
     if (command[0] === "requests" && command.length === 1) {
       setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.ACCEPT} onQuit={() => setLeftWidget(null)} />);
-      return;
+      return elements;
     }
 
     if (command[0] === "block") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
-      else if (command.length >= 2)
-       performActionOnMultipleUsers(ACTION_TYPE.BLOCK, command.slice(1));
-      return;
+      else if (command.length >= 2) {
+        performActionOnMultipleUsers(ACTION_TYPE.BLOCK, command.slice(1));
+        setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
+      }
+      return elements;
     }
 
     if (command[0] === "unblock") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
-      else if (command.length >= 2)
-       performActionOnMultipleUsers(ACTION_TYPE.UNBLOCK, command.slice(1));
-      return;
+      else if (command.length >= 2) {
+        performActionOnMultipleUsers(ACTION_TYPE.UNBLOCK, command.slice(1));
+        setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
+      }
+      return elements;
     }
-      
+
     if (command[0] === "unfriend") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />)
-      else if (command.length >= 2)
+      else if (command.length >= 2) {
         performActionOnMultipleUsers(ACTION_TYPE.UNFRIEND, command.slice(1));
-      return;
+        setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />);
+      }
+      return elements;
     }
 
     if (command[0] === "add" && command.length >= 2) {
       addMultipleFriends(command.slice(1));
+      return elements;
     }
-
-    async function addMultipleFriends(friends: string[]) {
-      try {
-        // try get their userdata
-        const friendProfiles = await Promise.all(
-          friends.map(friend => getProfileOfUser(friend))
-        );
-
-        // filter out users that are not found
-        const userNotFoundErrors = friendProfiles.filter(friend => (friend.data as any === ''));
-        if (userNotFoundErrors.length > 0) {
-          console.log("Users not found:", userNotFoundErrors);
-        }
-
-        // newFriends
-        const newFriends = friendProfiles.filter(friend => (friend.data as any !== ''));
-        if (newFriends.length === 0) {
-          console.log("No one to add");
-        }
-
-        // Add new friends
-        const results = await Promise.all(
-          newFriends.map(friend => addFriend((friend.data as UserData).intraName))
-        );
-
-        // Filter out add friends error
-        const addFriendErrors = results.filter(result => (result.data as ErrorData).error);
-        if (addFriendErrors.length > 0) {
-          console.log("Friendship existed:", addFriendErrors);
-        }
-
-        // Update the latest friendlist
-        const updatedFriendList = await getFriendList();
-        setMyFriends(updatedFriendList.data);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    function userDataToFriendData(user: UserData): FriendData {
-      const friend: FriendData = {
-        id: user.intraId,
-        senderIntraName: myProfile.intraName,
-        receiverIntraName: user.intraName,
-        elo: 0,
-        status: "STRANGER",
-        userName: user.userName,
-        avatar: user.avatar,
-      };
-      return friend;
-    }
-
-    function checkIfFriendPresent(friends: FriendData[], friendIntraName: string) {
-      for (const friend of friends) {
-        if (friend.receiverIntraName === friendIntraName || friend.senderIntraName === friendIntraName) {
-          return true;
-        }
-      }
-      return false;
-    }
-
-    /**
-       * BLOCK: ACCEPTED, PENDING
-       * UNBLOCK: those BLOCKED
-       * UNFRIEND: those ACCEPTED & BLOCKED
-       */
-    function belongsTotheDesireCategory(action: string, status: string) {
-      if (action === ACTION_TYPE.BLOCK && (status === "ACCEPTED" || status === "PENDING")) return true;
-
-      if (action === ACTION_TYPE.UNBLOCK && status === "BLOCKED") return true;
-
-      if (action === ACTION_TYPE.UNFRIEND && (status === "ACCEPTED" || status === "BLOCKED" || status === "PENDING")) return true;
-
-      return false;
-    }
-
-    async function performActionOnMultipleUsers(action: string, userIntraNames: string[]) {
-
-      let selectedFriends: FriendData[] = [];
-
-      // get all user data
-      const userProfiles = await Promise.all(
-        userIntraNames.map(intraName => getProfileOfUser(intraName))
-      );
-
-      // categorized user data
-      const categorizedUsers = userProfiles.map((user, index) => {
-
-        if (user.data as any === '') return userIntraNames[index];
-
-        const userData: UserData = user.data as UserData;
-        let relationshipType: string = checkIfFriendPresent(myFriends, userData.intraName) ? "FRIEND" : "STRANGER";
-        return { user: userData, type: relationshipType };
-      });
-
-      for (const user of categorizedUsers) {
-        if (typeof user === 'string') {
-          // create an error to show that the user is not found
-          console.log("User not found: ", user);
-        } else if (typeof user === 'object' && user.type === "STRANGER" && action === ACTION_TYPE.BLOCK) {
-          const fakeFriend = userDataToFriendData(user.user);
-          selectedFriends.push(fakeFriend);
-        } else if (typeof user === 'object' && user.type === "FRIEND") {
-          const friend = myFriends.find(
-            friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
-          );
-          (belongsTotheDesireCategory(action, friend!.status))
-            ? selectedFriends.push(friend!)
-            : console.log("Invalid relationship: ", friend);
-        }
-      }
-      console.log(selectedFriends);
-    }
+    return appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />);
   }
 }
 

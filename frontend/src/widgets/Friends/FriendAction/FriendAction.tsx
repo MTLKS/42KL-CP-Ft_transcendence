@@ -1,9 +1,9 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import FriendActionCard, { ACTION_TYPE } from './FriendActionCard'
 import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../modal/FriendData'
 import { UserData } from '../../../modal/UserData'
-import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, FriendsContext } from '../../../contexts/FriendContext'
+import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, FriendsContext, SelectedFriendContext } from '../../../contexts/FriendContext'
 import { acceptFriend, addFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../functions/friendactions'
 import { AxiosResponse } from 'axios'
 import { getFriendList } from '../../../functions/friendlist'
@@ -11,7 +11,7 @@ import { getFriendList } from '../../../functions/friendlist'
 interface FriendActionProps {
   user: UserData;
   action: string;
-  selectedFriends?: FriendData[];
+  useSelectedFriends?: boolean;
   onQuit: () => void;
 }
 
@@ -27,7 +27,7 @@ function getFileName(action: string) {
 function FriendAction(props: FriendActionProps) {
 
   // props
-  const { user, action, selectedFriends, onQuit } = props;
+  const { user, action, useSelectedFriends, onQuit } = props;
   const fileString = `./usr/${user.userName}/friend/${getFileName(action)} `;
   
   // hooks
@@ -41,25 +41,31 @@ function FriendAction(props: FriendActionProps) {
   const [outputStyle, setOutputStyle] = useState("bg-accRed");
   const [outputStr, setOutputStr] = useState("");
   const { setFriends } = useContext(FriendsContext);
+  const { friends: selectedFriends, setFriends: setSelectedFriends } = useContext(SelectedFriendContext);
   const inputRef = useRef<HTMLInputElement>(null);
   
   let actionCards: JSX.Element[] =[];
   let yesAction: (name: string) => Promise<AxiosResponse>;
   let noAction: (name:string) => Promise<AxiosResponse>;
 
-  const filteredFriends: FriendData[] = selectedFriends !== undefined ? selectedFriends : filterFriends();
-  createFriendActionCards();
-  setActionFunctions();
+  const filteredFriends: FriendData[] = useSelectedFriends !== undefined ? selectedFriends : filterFriends();
 
+  setActionFunctions();
+  createFriendActionCards();
+  
   useEffect(() => {
     focusOnInput();
     setActionFunctions();
   }, []);
 
+  useLayoutEffect(() => {
+    createFriendActionCards();
+  }, []);
+
   return (
     <FriendActionContext.Provider value={action}>
       <ActionCardsContext.Provider value={{ actionCards, selectedIndex, setSelectedIndex }}>
-        <ActionFunctionsContext.Provider value={{yesAction: handleYesAction, noAction: handleNoAction}}>
+        <ActionFunctionsContext.Provider value={{yesAction: handleYesAction, noAction: handleNoAction, alternativeAction: blockStrangerAction}}>
           <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
             <input
               className='w-0 h-0 absolute'
@@ -137,11 +143,19 @@ function FriendAction(props: FriendActionProps) {
     }
   }
 
+  function cleanUpSelectedFriends() {
+    if (selectedFriends === undefined) return ;
+  
+    const newSelectedFriends = [...selectedFriends.slice(0, selectedIndex), ...selectedFriends.slice(selectedIndex + 1)];
+    setSelectedFriends(newSelectedFriends);
+  }
+
   function handleYesAction(friendIntraName: string, shouldShow: boolean) {
     yesAction(friendIntraName)
       .then(() => getFriendList())
       .then((data) => {
         setFriends(data.data);
+        cleanUpSelectedFriends();
         const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
         if (selectedIndex >= newActionCards.length) {
           setSelectedIndex(newActionCards.length - 1);
@@ -163,6 +177,7 @@ function FriendAction(props: FriendActionProps) {
       .then(() => getFriendList())
       .then((data) => {
         setFriends(data.data);
+        cleanUpSelectedFriends();
         const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
         if (selectedIndex >= newActionCards.length) {
           setSelectedIndex(newActionCards.length - 1);
@@ -181,12 +196,10 @@ function FriendAction(props: FriendActionProps) {
 
   function blockStrangerAction(strangerIntraName: string, shouldShow: boolean) {
     blockStranger(strangerIntraName)
-      .then((data) => {
-        console.log(data);
-        return getFriendList()
-      })
+      .then(() => getFriendList())
       .then((data) => {
         setFriends(data.data);
+        cleanUpSelectedFriends();
         const newActionCards = [...actionCards.slice(0, selectedIndex), ...actionCards.slice(selectedIndex + 1)];
         if (selectedIndex >= newActionCards.length) {
           setSelectedIndex(newActionCards.length - 1);
@@ -229,18 +242,7 @@ function FriendAction(props: FriendActionProps) {
 
   function createFriendActionCards() {
     filteredFriends.map((friend, index) => 
-      (friend.status === "STRANGER" && action === ACTION_TYPE.BLOCK)
-      ? actionCards.push(
-        <FriendActionCard
-          key={friend.id}
-          index={index}
-          friend={friend}
-          user={user}
-          ignoreAction={ignoreAction}
-          alternativeAction={() => blockStrangerAction(friend.receiverIntraName, true)}
-        />
-      )
-      : actionCards.push(
+      actionCards.push(
         <FriendActionCard
           key={friend.id}
           index={index}
@@ -283,17 +285,21 @@ function FriendAction(props: FriendActionProps) {
     if (command === "y" || command === "yes") {
       const friend = filteredFriends[selectedIndex];
       const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
-      handleYesAction(friendIntraName, true);
+      if (friend.status === "STRANGER")
+        blockStrangerAction(friendIntraName, true);
+      else
+        handleYesAction(friendIntraName, true);
       return;
     }
     
     if (command === "Y" || command === "YES") {
-      for (const friend of friends) {
+      const friendList = useSelectedFriends ? selectedFriends : friends;
+      for (const friend of friendList) {
         const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
-        handleYesAction(friendIntraName, false);
-        setOutputStyle("bg-accCyan");
-        setOutputStr(`${action}ed all friend requests!`);
-        setShowOutput(true);
+        if (friend.status === "STRANGER")
+          blockStrangerAction(friendIntraName, false);
+        else
+          handleYesAction(friendIntraName, false);
       }
       return;
     }
@@ -313,12 +319,10 @@ function FriendAction(props: FriendActionProps) {
       if (action !== ACTION_TYPE.ACCEPT) {
         setTimeout(() => onQuit(), 10);
       } else {
-        for (const friend of friends) {
+        const friendList = useSelectedFriends ? selectedFriends : friends;
+        for (const friend of friendList) {
           const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
           handleNoAction(friendIntraName, false);
-          setOutputStyle("bg-accRed");
-          setOutputStr(`Rejected all friend requests!`);
-          setShowOutput(true);
         }
       }
       return;
@@ -331,15 +335,6 @@ function FriendAction(props: FriendActionProps) {
 
     if ((command === "I" || command === "IGNORE") && action === ACTION_TYPE.ACCEPT) {
       setTimeout(() => onQuit(), 10);
-      return;
-    }
-
-    if (command === "p" || command === "profile") {
-      return;
-    }
-
-    if (splitedCommand.length === 2 && splitedCommand[0] === "profile") {
-      // get splitedCommand[1] as a user
       return;
     }
     setOutputStr(`Command not found: ${command}`);

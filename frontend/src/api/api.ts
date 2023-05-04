@@ -24,7 +24,6 @@ class Api {
         switch (status) {
           case 403:
             console.error("not-authorised");
-            console.log("n");
             document.cookie = "Authorization=;";
             window.location.assign("/");
             break;

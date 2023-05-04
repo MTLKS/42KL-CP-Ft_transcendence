@@ -8,34 +8,24 @@ import { FriendsContext } from "../../../contexts/FriendContext";
 interface FriendActionConfirmationButtonsProps {
   friendIntraName: string;
   friendUserName: string;
-  ignoreAction?: () => void;
-  alternativeAction?: () => void;
+  ignoreAction: () => void;
+  useAlternativeAction: boolean;
 }
 
 function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsProps) {
 
-  const { setFriends } = useContext(FriendsContext);
   const action = useContext(FriendActionContext);
-  const { yesAction, noAction } = useContext(ActionFunctionsContext);
-  const yesBtnRef = useRef<HTMLButtonElement>(null);
-  const noBtnRef = useRef<HTMLButtonElement>(null);
+  const { yesAction, noAction, alternativeAction } = useContext(ActionFunctionsContext);
   
-  const { friendIntraName, ignoreAction, alternativeAction } = props;
+  const { friendIntraName, ignoreAction, useAlternativeAction } = props;
 
   return (
     <>
-      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={alternativeAction !== undefined ? alternativeAction : handleYesAction} ref={yesBtnRef}>
+      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={handleYesAction}>
         <span className='font-extrabold'>y</span>es
       </button>
       /
-      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`}
-        ref={noBtnRef}
-        onClick={
-          action === ACTION_TYPE.ACCEPT
-          ? handleNoAction
-          : ignoreAction
-        }
-      >
+      <button className={`hover:bg-highlight hover:text-dimshadow font-thin focus:outline-none focus:bg-highlight focus:text-dimshadow`} onClick={handleNoAction}>
         <span className='font-extrabold'>n</span>o
       </button>
       {
@@ -52,11 +42,18 @@ function FriendActionConfirmationButtons(props: FriendActionConfirmationButtonsP
   )
   
   function handleYesAction() {
-    yesAction(friendIntraName, true);
+    if (!useAlternativeAction) {
+      yesAction(friendIntraName, true);
+    } else {
+      alternativeAction(friendIntraName, true)
+    }
   }
 
   function handleNoAction() {
-    noAction(friendIntraName, true);
+    if (action === ACTION_TYPE.ACCEPT)
+      noAction(friendIntraName, true);
+    else
+      ignoreAction();
   }
 }
 

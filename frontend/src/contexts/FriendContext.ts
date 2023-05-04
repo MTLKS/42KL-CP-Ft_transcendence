@@ -12,6 +12,11 @@ export const FriendsContext = createContext<FriendsContextType>({
   setFriends: () => {},
 });
 
+export const SelectedFriendContext = createContext<FriendsContextType>({
+  friends: [],
+  setFriends: () => {},
+})
+
 export const FriendActionContext = createContext<string>("");
 
 interface ActionCardsContextType {
@@ -19,6 +24,7 @@ interface ActionCardsContextType {
   selectedIndex: number,
   setSelectedIndex: (num: number) => void,
 }
+
 
 export const ActionCardsContext = createContext<ActionCardsContextType>({
   actionCards: [],
@@ -29,9 +35,11 @@ export const ActionCardsContext = createContext<ActionCardsContextType>({
 interface ActionFunctionsContextType {
   yesAction: (name:string, show:boolean) => void,
   noAction: (name:string, show:boolean) => void,
+  alternativeAction: (name:string, show:boolean) => void,
 }
 
 export const ActionFunctionsContext = createContext<ActionFunctionsContextType>({
   yesAction: (name:string, show:boolean) => {},
   noAction: (name:string, show:boolean) => {},
+  alternativeAction: (name:string, show: boolean) => {},
 })
