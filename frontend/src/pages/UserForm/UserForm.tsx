@@ -12,6 +12,7 @@ import sleep from '../../functions/sleep';
 import login from '../../functions/login';
 
 enum ErrorCode {
+  IMAGETOOBIG,
   NAMETOOSHORT,
   NAMETOOLONG,
   EMPTYNAME,
@@ -29,6 +30,8 @@ const getError = (code: ErrorCode) => {
       return ("Longer name, please. (MIN: 1 chars)");
     case ErrorCode.NAMETOOLONG:
       return ("Name too epic, please shorten. (MAX: 16 chars)");
+    case ErrorCode.IMAGETOOBIG:
+      return ("Image too good, make it smaller. (MAX: 3MB)")
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -116,7 +119,11 @@ function UserForm(props: UserFormProps) {
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
-      await Api.patch("/user", formData);
+      try {
+        await Api.patch("/user", formData);
+      } catch {
+        return setPopups([ErrorCode.IMAGETOOBIG].map((error) => <ErrorPopup key={error} text={getError(error)} />))
+      }
       setPopups([]);
       await sleep(1000);
       login();
