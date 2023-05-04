@@ -205,6 +205,7 @@ function HomePage(props: HomePageProps) {
         login:        login to your account <br />
         tfa:          set and unset Google TFA <br />
         sudo:         give you admin privilige <br />
+        reset:        reset your profile picture and username <br />
       </p>
     </Card>;
   }

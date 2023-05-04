@@ -11,12 +11,24 @@ import Api from '../../api/api';
 import sleep from '../../functions/sleep';
 import login from '../../functions/login';
 
+interface IAPIResponse {
+  intraId: number,
+  userName: string,
+  intraName: string,
+  elo: number,
+  accessToken: string,
+  avatar: string,
+  tfaSecret: string,
+  error: string
+}
+
 enum ErrorCode {
   IMAGETOOBIG,
   NAMETOOSHORT,
   NAMETOOLONG,
+  NAMETAKEN,
   EMPTYNAME,
-  EMPTYANS,
+  EMPTYANS
 }
 
 const getError = (code: ErrorCode) => {
@@ -32,6 +44,8 @@ const getError = (code: ErrorCode) => {
       return ("Name too epic, please shorten. (MAX: 16 chars)");
     case ErrorCode.IMAGETOOBIG:
       return ("Image too good, make it smaller. (MAX: 3MB)")
+    case ErrorCode.NAMETAKEN:
+      return ("Epic name taken, please choose another one.");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -120,9 +134,14 @@ function UserForm(props: UserFormProps) {
       formData.append("userName", userName);
       formData.append("image", avatarFile);
       try {
-        await Api.patch("/user", formData);
-      } catch {
-        return setPopups([ErrorCode.IMAGETOOBIG].map((error) => <ErrorPopup key={error} text={getError(error)} />))
+        await Api.patch("/user", formData).then((res) => {
+          let retVal = res.data as IAPIResponse;
+          if (retVal.error === "Invalid username - username already exists or invalid") {
+            throw new Error(ErrorCode.NAMETAKEN.toString());
+          }
+        });
+      } catch (Error: any) {
+        return setPopups([parseInt(Error.toString().slice(7))].map((error) => <ErrorPopup key={error} text={getError(error)} />))
       }
       setPopups([]);
       await sleep(1000);
