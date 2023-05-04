@@ -48,14 +48,6 @@ function Profile(props: ProfileProps) {
 
   async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;
-    // style 1 jaggled animation
-    // while (tmp > 1) {
-    //   tmp = Math.floor(tmp / 1.2 - 1);
-    //   if (tmp < 1) tmp = 1;
-    //   setPixelSize(tmp);
-    //   await sleep(80);
-    // }
-    // style 2 smooth animation
     while (tmp > 1) {
       tmp = Math.floor(tmp / 1.05);
       if (tmp < 1) tmp = 1;
