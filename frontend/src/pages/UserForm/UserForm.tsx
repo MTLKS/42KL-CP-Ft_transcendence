@@ -122,6 +122,7 @@ function UserForm(props: UserFormProps) {
     let formData = new FormData();
     let avatarFile;
 
+    sessionStorage.removeItem(`image-${userData.avatar}`)
     if (errors.length === 0) {
       Api.updateToken(
         "Authorization",
