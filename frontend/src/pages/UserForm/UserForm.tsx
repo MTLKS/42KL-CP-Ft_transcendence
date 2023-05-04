@@ -126,8 +126,7 @@ function UserForm(props: UserFormProps) {
       }
       setPopups([]);
       await sleep(1000);
-      login();
-      return;
+      return login();
     }
     setPopups(errors.map((error) => <ErrorPopup key={error} text={getError(error)} />))
   }
