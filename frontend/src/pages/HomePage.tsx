@@ -28,7 +28,13 @@ const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
-function HomePage() {
+interface HomePageProps {
+  setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
+  setUserData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+function HomePage(props: HomePageProps) {
+  const { setNewUser, setUserData } = props;
   const [myProfile, setMyProfile] = React.useState<UserData>({} as UserData);
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
@@ -167,12 +173,10 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "reset":
-        console.log("Reset");
-        <PolkaDotContainer>
-          <MouseCursor>
-            <UserForm userData={myProfile} />
-          </MouseCursor>
-        </PolkaDotContainer>
+        getMyProfile().then((profile) => {
+          setNewUser(true);
+          setUserData(profile.data as UserData);
+        });
         break;
       default:
         const newErrorCard = errorCard();

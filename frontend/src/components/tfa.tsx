@@ -22,7 +22,6 @@ function help() {
 			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
 			<p>
 				tfa set			: Sets and enables tfa<br />
-				tfa reset		: Generates a new tfa<br />
 				tfa unset		: Unsets and disable tfa<br />
 				tfa [code]		: Checks whether code is valid or not<br />
 			</p>

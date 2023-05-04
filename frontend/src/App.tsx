@@ -22,7 +22,7 @@ function App() {
     page = <UserForm userData={userData} />;
   }
   else if (logged) {
-    page = <HomePage />;
+    page = <HomePage setNewUser={setNewUser} setUserData={setUserData}/>;
   }
 
   return (

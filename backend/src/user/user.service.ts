@@ -163,8 +163,6 @@ export class UserService {
 			return ERROR_DELETE("Invalid username - username already exists or invalid");
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
 			return ERROR_DELETE("Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only");
-		if (NEW_USER[0].avatar.includes("avatar/") && (process.env.DOMAIN + ":" + process.env.PORT + "/user/" + image.path) !== NEW_USER[0].avatar)
-			FS.unlink(NEW_USER[0].avatar.substring(NEW_USER[0].avatar.indexOf('avatar/')), () => {});
 		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
 		NEW_USER[0].userName = userName;
 		await this.userRepository.save(NEW_USER[0]);

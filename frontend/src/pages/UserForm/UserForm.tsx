@@ -116,7 +116,7 @@ function UserForm(props: UserFormProps) {
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
-      await Api.patch("/user", formData).then((res) => console.log(res));
+      await Api.patch("/user", formData);
       setPopups([]);
       await sleep(1000);
       login();
