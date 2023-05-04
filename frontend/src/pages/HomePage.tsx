@@ -189,7 +189,7 @@ function HomePage() {
         leaderboard:  show the leaderboard <br />
         login:        login to your account <br />
         exit:         logout from your account <br />
-        tfa:          set and unset tfa <br />
+        tfa:          set and unset Google TFA <br />
         sudo:         give you admin privilige <br />
       </p>
     </Card>;
