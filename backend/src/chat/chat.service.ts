@@ -1,38 +1,15 @@
+import { Friendship } from "src/entity/friendship.entity";
 import { Channel } from "src/entity/channel.entity";
 import { Message } from "src/entity/message.entity";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Member } from "src/entity/member.entity";
-import { Status } from "src/entity/status.entity";
 import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
-import { Socket } from "socket.io";
 
 @Injectable()
 export class ChatService {
-	constructor(@InjectRepository(Channel) private channelRepository: Repository<Channel>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Message) private messageRepository: Repository<Message>, @InjectRepository(Status) private statusRepository: Repository<Status>, private userService: UserService) {}
-
-	// Used to join a room
-	// async joinDM(client: any, server: any, intraName: string): Promise<any> {
-	// 	const MY_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-	// 	const USER_DATA = await this.userService.getUserDataByIntraName(intraName);
-	// 	if (USER_DATA === undefined)
-	// 		return {"error": "Invalid intraName - intraName is not found"};
-	// 	if (MY_DATA.intraName === USER_DATA.intraName)
-	// 		return {"error": "Invalid intraName - no friends so you DM yourself?"};
-	// 	const ROOM = [...await this.channelRepository.find({ where: {roommateIntraName: MY_DATA.intraName} }), ...await this.channelRepository.find({ where: {roommateIntraName: USER_DATA.intraName} })];
-	// 	if (ROOM.length === 0)
-	// 	{
-	// 		const SAVED_CHANNEL = await this.channelRepository.save(new Channel(null, null, true, null, false, USER_DATA.intraName));
-	// 		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, MY_DATA.intraName, true, false, false, new Date().toISOString()));
-	// 		await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, USER_DATA.intraName, true, false, false, new Date().toISOString()));
-	// 		client.join(SAVED_CHANNEL.channelId);
-	// 		console.log(MY_DATA.intraName, "joined", SAVED_CHANNEL.channelId);
-	// 	} else {
-	// 		client.join(ROOM[0].channelId);
-	// 		console.log(MY_DATA.intraName, "joined", ROOM[0].channelId);
-	// 	}
-	// }
+	constructor(@InjectRepository(Channel) private channelRepository: Repository<Channel>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Message) private messageRepository: Repository<Message>, @InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, private userService: UserService) {}
 
 	// Used to connect to own room
 	async userConnect(client: any): Promise<any> {
@@ -40,8 +17,7 @@ export class ChatService {
 		if (USER_DATA.error !== undefined)
 			return { "error": USER_DATA.error };
 		const DM_ROOM = await this.channelRepository.find({ where: {channelName: USER_DATA.intraName, isRoom: false} });
-		if (DM_ROOM.length === 0)
-		{
+		if (DM_ROOM.length === 0) {
 			const NEW_ROOM = await this.channelRepository.save(new Channel(USER_DATA.intraName, USER_DATA.intraName, true, null, false));
 			await this.memberRepository.save(new Member(NEW_ROOM.channelId, USER_DATA.intraName, true, false, false, new Date().toISOString()));
 		} else {
@@ -59,6 +35,11 @@ export class ChatService {
 		if (USER_DATA === undefined)
 			return {"error": "Invalid intraName - intraName is not found"};
 		const CHANNEL = await this.channelRepository.find({ where: {channelName: intraName, ownerIntraName: intraName, isPrivate: true, password: null, isRoom: false} });
+		if (CHANNEL.length === 0)
+			return {"error": "Invalid channel - channel is not found"};
+		const FRIENDSHIP = [...await this.friendshipRepository.find({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} }), ...await this.friendshipRepository.find({ where: {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName} })];
+		if (FRIENDSHIP.length === 0 || FRIENDSHIP[0].status !== "ACCEPTED")
+			return {"error": "Invalid friendhsip - You are not friends with this user"};
 		await this.messageRepository.save(new Message(USER_DATA.intraName, CHANNEL[0].channelId, true, message, new Date().toISOString()));
 		server.to(CHANNEL[0].channelId).emit("message", message);
 	}
@@ -75,55 +56,5 @@ export class ChatService {
 	// 	const SAVED_CHANNEL = await this.channelRepository.save(new Channel(roomName, SENDER.intraName, isPrivate, password, true, null));
 	// 	await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
 	// 	return SAVED_CHANNEL;
-	// }
-	
-	//Used when user connect, join the user 
-	async joinAllRoom(client: Socket) {
-		//Search for all rooms the user is in and join all
-	}
-
-	//Used when user leave a group chat
-	leaveRoom(channelId: string, client: Socket) {
-		//Remove roomID from user
-		client.leave(channelId);
-	}
-
-	//Used when user disconnect or is playing game. Make sure incoming message not disturb the user
-	leaveAllRoom(client: Socket){
-		//Search for all rooms the user is in and leave all
-	}
-
-	checkRoomExist(channelId: string): any {
-		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		// return TARGET_ROOM ? true : false;
-	}
-
-	findAllMessages(channelId: string): any {
-		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		// if (!TARGET_ROOM){
-			// return [];
-		// }
-		// return TARGET_ROOM.messages;
-	}
-
-	// addMessage(channelId: string, message: string) {
-		// const TARGET_ROOM = this.chatRooms.find(room => room.channelId === channelId);
-		// TARGET_ROOM.messages.push(message);
-	// }
-
-	// async getAllChatByID(id: string): Promise<string[]>{
-	// 	//return all user chat
-	// }
-
-	// async newChat(userId: number, visibility: string, password: string, members: number[]): Promise<string>{
-	// 	//Create a new chat room with given information
-	// }
-
-	// async updateChatSetting(userId: number, chatId: string, visibility: string, password: string): Promise<string>{
-	// 	//check if user is owner, if yes, update chat setting
-	// }
-
-	// async updateChatMember(userId: number, chatId: string, memberId: number, action: string): Promise<string>{
-	// 	//check if user is admin, if yes, update chat member
 	// }
 }

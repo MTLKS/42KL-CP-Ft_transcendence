@@ -1,4 +1,4 @@
-import React, { cloneElement, useEffect, useRef } from 'react'
+import React, { cloneElement, useContext, useEffect, useRef } from 'react'
 import Pong from './Pong'
 import login from '../functions/login';
 import rickroll from '../functions/rickroll';
@@ -20,28 +20,23 @@ import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
 import { AppProvider } from '@pixi/react';
 import Game from '../game/Game';
+import UserContext from '../context/UserContext';
+import Tfa from '../components/tfa';
+import UserForm from './UserForm/UserForm';
+import { PolkaDotContainer } from '../components/Background';
+import MouseCursor from '../components/MouseCursor';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set", "reset"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
-let myProfile: UserData = {
-  accessToken: "hidden",
-  avatar: "",
-  elo: 400,
-  intraId: 130305,
-  intraName: "wricky-t",
-  tfaSecret: null,
-  userName: "JOHNDOE"
-};
-
 function HomePage() {
+  const [myProfile, setMyProfile] = React.useState<UserData>({} as UserData);
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [topWidget, setTopWidget] = React.useState(<Profile userData={myProfile} />);
+  const [topWidget, setTopWidget] = React.useState(<Profile />);
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
-  // const [midWidget, setMidWidget] = React.useState(<Leaderboard />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = React.useState(false);
@@ -62,33 +57,16 @@ function HomePage() {
         setMyFriends(newFriendsData);
       });
     })
-
-    // function addToFriendRoom(intraName: string) {
-    //   console.log(intraName);
-    //   friendshipSocket.sendMessages("friendshipRoom", {intraName: intraName});
-    //   friendshipSocket.listen("friendshipRoom", (data: any) => {
-    //     console.log(data);
-    //   })
-    // }
-
-    // await api.post("/friendship", {receiverIntraName: "itan", status: "PENDING"})
-    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
-    //         .catch((err) => console.log(err));
-
-    // await api.post("/friendship", {receiverIntraName: "schuah", status: "PENDING"})
-    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
-    //         .catch((err) => console.log(err));
   }
 
   useEffect(() => {
-    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName).length;
+    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile?.intraName).length;
     setFriendRequests(totalFriendRequests);
   }, [myFriends]);
 
   useEffect(() => {
     getMyProfile().then((profile) => {
-      myProfile = profile.data as UserData;
-      setTopWidget(<Profile userData={myProfile} />);
+      setMyProfile(profile.data as UserData);
     });
 
     initFriendshipSocket();
@@ -100,22 +78,25 @@ function HomePage() {
   }, []);
 
   return (
-    <div className='h-full w-full p-7'>
-      {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
-      <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
-        ref={pageRef}
-      >
-        <div className='h-full flex-1'>
-          {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
-        </div>
-        <div className=' bg-highlight h-full w-1' />
-        <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-          {topWidget}
-          {midWidget}
-          {botWidget}
+    <UserContext.Provider value={{ myProfile, setMyProfile }}>
+      <div className='h-full w-full p-7'>
+        {startMatch && <Pong />}
+        {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
+        <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
+          ref={pageRef}
+        >
+          <div className='h-full flex-1'>
+            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+          </div>
+          <div className=' bg-highlight h-full w-1' />
+          <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+            {topWidget}
+            {midWidget}
+            {botWidget}
+          </div>
         </div>
       </div>
-    </div>
+    </UserContext.Provider>
   )
 
   function handleCommands(command: string[]) {
@@ -128,20 +109,14 @@ function HomePage() {
         const newEmbed = <YoutubeEmbed key={"rickroll" + index} />
         newList = [newEmbed].concat(elements);
         setIndex(index + 1);
-        // rickroll();
         break;
-      // case "ls":
-      //   rickroll();
-      //   break;
       case "start":
-        if (!startMatch) {
+        if (!startMatch)
           setStartMatch(true);
-        }
         break;
       case "end":
-        if (startMatch) {
+        if (startMatch)
           setStartMatch(false);
-        }
         break;
       case "add":
         const newCard = card(index);
@@ -149,16 +124,20 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "cowsay":
+        let say = "";
+        for (let word of command.slice(1)) {
+          say += word + " ";
+        }
         const newCowsay = <Card key={index} type={CardType.SUCCESS}>
           <p>
-            {` _${new Array(command[1].length + 1).join("_")}_ `}<br />
-            {`< ${command[1]} >`}<br />
-            {` -${new Array(command[1].length + 1).join("-")}- `}<br />
+            {` _${new Array(say.length).join("_")}_ `}<br />
+            {`< ${say}>`}<br />
+            {` -${new Array(say.length).join("-")}- `}<br />
             {"        \\   ^__^"}<br />
-            {"         \\  (oo)\_______"}<br />
-            {"            (__)\       )\\/\\"}<br />
-            {"                ||----w |"}<br />
-            {"                ||     ||"}
+            {"         \\  (oo)\________"}<br />
+            {"            (__)\        )\\/\\"}<br />
+            {"               ||-----w|"}<br />
+            {"               ||     ||"}
           </p>
         </Card>;
         newList = [newCowsay].concat(elements);
@@ -180,13 +159,25 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "whoami":
-        const newWhoamiCard = <Profile userData={myProfile} />;
+        const newWhoamiCard = <Profile />
         setTopWidget(newWhoamiCard);
         break;
       case "less":
         setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
           setLeftWidget(null);
         }} />);
+        break;
+      case "tfa":
+        newList = [<Tfa key={index} commands={command} />].concat(elements);
+        setIndex(index + 1);
+        break;
+      case "reset":
+        console.log("Reset");
+        <PolkaDotContainer>
+          <MouseCursor>
+            <UserForm userData={myProfile} />
+          </MouseCursor>
+        </PolkaDotContainer>
         break;
       default:
         const newErrorCard = errorCard();
@@ -207,16 +198,14 @@ function HomePage() {
     return <Card key={index} type={CardType.SUCCESS}>
       <p >
         <span className=' text-2xl neonText-white font-bold'>HELP</span><br />
-        add:         add a card <br />
-        clear:       clear the screen <br />
-        cowsay:      make a cow say something <br />
-        help:        show this help message <br />
-        leaderboard: show the leaderboard <br />
-        login:       login to your account <br />
-        exit:        logout from your account <br />
-        ls:          list files <br />
-        ok:          ok <br />
-        sudo:        give you admin privilige <br />
+        add:          add a card <br />
+        clear:        clear the screen <br />
+        cowsay:       make a cow say something <br />
+        help:         show this help message <br />
+        leaderboard:  show the leaderboard <br />
+        login:        login to your account <br />
+        tfa:          set and unset Google TFA <br />
+        sudo:         give you admin privilige <br />
       </p>
     </Card>;
   }
@@ -240,14 +229,15 @@ function HomePage() {
           return newList;
         }
         newList = elements;
-        const newProfileCard = <Profile userData={currentPreviewProfile as UserData} expanded={expandProfile} />;
+        const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
+        setMyProfile(currentPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile userData={myProfile} />;
+      const newProfileCard = <Profile />
       setTopWidget(newProfileCard);
     }
     return newList;

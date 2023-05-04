@@ -35,9 +35,9 @@ export class FriendshipController {
 	}
 	
 	//Delete friendship by ID
-	@Delete()
+	@Delete(":receiverIntraName")
 	@UseGuards(AuthGuard)
-	deleteFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.deleteFriendship(accessToken, body.receiverIntraName, body.status);
+	deleteFriendship(@Headers('Authorization') accessToken: string, @Param('receiverIntraName') receiverIntraName: string): any {
+		return this.friendshipService.deleteFriendship(accessToken, receiverIntraName);
 	}
 }
