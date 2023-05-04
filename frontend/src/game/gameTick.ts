@@ -19,7 +19,7 @@ export class GameTick {
   constructor() {
     console.log("gameTick created");
     this.socketApi = new SocketApi("game");
-    this._pongPosition = { x: 0, y: 0 };
+    this._pongPosition = { x: 800, y: 450 };
     this.leftPaddlePosition = { x: 0, y: 0 };
     this.rightPaddlePosition = { x: 0, y: 0 };
     this._pongSpeed = { x: 0, y: 0 };
@@ -28,11 +28,11 @@ export class GameTick {
   }
 
   get pongPosition() {
-    return { ...this._pongPosition };
+    return { ...this._pongPosition } as Readonly<Offset>;
   }
 
   get pongSpeed() {
-    return { ...this._pongSpeed };
+    return { ...this._pongSpeed } as Readonly<Offset>;
   }
 
   destructor() {
@@ -87,9 +87,9 @@ export class GameTick {
   private _localTick() {
     if (!this.useLocalTick) return;
     if (this._pongPosition.x < 0 || this._pongPosition.x > 1600 - 46)
-      this.pongSpeed.x *= -1;
+      this._pongSpeed.x *= -1;
     if (this._pongPosition.y < 0 || this._pongPosition.y > 900 - 46)
-      this.pongSpeed.y *= -1;
+      this._pongSpeed.y *= -1;
 
     this._pongPosition.x += this.pongSpeed.x;
     this._pongPosition.y += this.pongSpeed.y;
