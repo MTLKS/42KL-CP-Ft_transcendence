@@ -19,6 +19,7 @@ enum TFACommands {
 function help() {
 	return (
 		<Card type={CardType.SUCCESS}>
+			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
 			<p>
 				tfa set			: Sets and enables tfa<br />
 				tfa reset		: Generates a new tfa<br />
