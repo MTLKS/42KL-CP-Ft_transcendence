@@ -6,8 +6,8 @@ import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 
 export class GameTick {
   socketApi: SocketApi;
-  pongPosition: Offset;
-  pongSpeed: Offset;
+  private _pongPosition: Offset;
+  private _pongSpeed: Offset;
   leftPaddlePosition: Offset;
   rightPaddlePosition: Offset;
   usingLocalTick: boolean = false;
@@ -19,12 +19,20 @@ export class GameTick {
   constructor() {
     console.log("gameTick created");
     this.socketApi = new SocketApi("game");
-    this.pongPosition = { x: 0, y: 0 };
+    this._pongPosition = { x: 0, y: 0 };
     this.leftPaddlePosition = { x: 0, y: 0 };
     this.rightPaddlePosition = { x: 0, y: 0 };
-    this.pongSpeed = { x: 0, y: 0 };
+    this._pongSpeed = { x: 0, y: 0 };
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
+  }
+
+  get pongPosition() {
+    return { ...this._pongPosition };
+  }
+
+  get pongSpeed() {
+    return { ...this._pongSpeed };
   }
 
   destructor() {
@@ -42,13 +50,13 @@ export class GameTick {
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
-    this.pongPosition = { x: data.ballPosX, y: data.ballPosY };
+    this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
       this.rightPaddlePosition = { x: 1600 - 46, y: data.rightPaddlePosY };
     } else {
       this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
     }
-    this.pongSpeed = { x: data.ballVelX, y: data.ballVelY };
+    this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
   };
 
   set isLeftPlayer(isLeft: boolean) {
@@ -68,7 +76,7 @@ export class GameTick {
 
   useLocalTick() {
     this.usingLocalTick = true;
-    this.pongSpeed = { x: 5, y: 5 };
+    this._pongSpeed = { x: 5, y: 5 };
     this._localTick();
   }
 
@@ -78,13 +86,13 @@ export class GameTick {
 
   private _localTick() {
     if (!this.useLocalTick) return;
-    if (this.pongPosition.x < 0 || this.pongPosition.x > 1600 - 46)
+    if (this._pongPosition.x < 0 || this._pongPosition.x > 1600 - 46)
       this.pongSpeed.x *= -1;
-    if (this.pongPosition.y < 0 || this.pongPosition.y > 900 - 46)
+    if (this._pongPosition.y < 0 || this._pongPosition.y > 900 - 46)
       this.pongSpeed.y *= -1;
 
-    this.pongPosition.x += this.pongSpeed.x;
-    this.pongPosition.y += this.pongSpeed.y;
+    this._pongPosition.x += this.pongSpeed.x;
+    this._pongPosition.y += this.pongSpeed.y;
     requestAnimationFrame(this.useLocalTick);
   }
 }

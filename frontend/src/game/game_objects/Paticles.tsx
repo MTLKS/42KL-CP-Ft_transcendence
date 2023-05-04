@@ -54,13 +54,15 @@ function Paticles(props: PaticlesProps) {
         p.x += p.speed.x;
         p.y += p.speed.y;
       });
+      const currentPongPosition = gameTick.pongPosition;
+      const currentPongSpeed = gameTick.pongSpeed;
       newParticle.push({
-        x: gameTick.pongPosition.x - 5 + 20 * Math.random(),
-        y: gameTick.pongPosition.y - 5 + 20 * Math.random(),
+        x: currentPongPosition.x - 5 + 20 * Math.random(),
+        y: currentPongPosition.y - 5 + 20 * Math.random(),
         opacity: opacity,
         speed: {
-          x: gameTick.pongSpeed.y * (Math.random() - 0.5) * 0.3,
-          y: gameTick.pongSpeed.x * (Math.random() - 0.5) * 0.3
+          x: currentPongSpeed.y * (Math.random() - 0.5) * 0.3,
+          y: currentPongSpeed.x * (Math.random() - 0.5) * 0.3
         },
         color: Math.random() > 0.5 ? 1 : 2
       });

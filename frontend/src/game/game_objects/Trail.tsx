@@ -52,9 +52,10 @@ function Trail(props: TrailProps) {
         p.position.x += p.speed.x;
         p.position.y += p.speed.y;
       });
+      const currentPongPosition = gameTick.pongPosition;
 
       newParticle.push({
-        position: gameTick.pongPosition,
+        position: currentPongPosition,
         opacity: opacity,
         speed: {
           x: 0,

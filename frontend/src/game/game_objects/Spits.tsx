@@ -81,14 +81,16 @@ function Spits(props: SpitsProps) {
         p.speed.x *= 0.95;
         p.speed.y *= 0.95;
       });
+      const currentPongPosition = gameTick.pongPosition;
+      const currentPongSpeed = gameTick.pongSpeed;
       for (let i = 0; i < 2; i++) {
         newParticle.push({
-          x: gameTick.pongPosition.x + 5 - size.w / 2,
-          y: gameTick.pongPosition.y + 5 - size.h / 2,
+          x: currentPongPosition.x + 5 - size.w / 2,
+          y: currentPongPosition.y + 5 - size.h / 2,
           opacity: opacity,
           speed: {
-            x: gameTick.pongSpeed.x * speedFactor + (Math.random() - 0.5) * 3,
-            y: gameTick.pongSpeed.y * speedFactor + (Math.random() - 0.5) * 3
+            x: currentPongSpeed.x * speedFactor + (Math.random() - 0.5) * 3,
+            y: currentPongSpeed.y * speedFactor + (Math.random() - 0.5) * 3
           },
         });
       }
