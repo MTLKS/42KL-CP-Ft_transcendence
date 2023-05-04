@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useState } from 're
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
-import { GameTickCtx } from '../../GameApp';
+import { GameDataCtx } from '../../GameApp';
 
 interface SpitsProps {
   size: BoxSize;
@@ -43,7 +43,7 @@ function Spits(props: SpitsProps) {
   }, []);
   const [particles, setParticles] = useState<Particle[]>([]);
   const [texture, setTexture] = useState<PIXI.Texture>(texture1);
-  const gameTick = useContext(GameTickCtx);
+  const gameTick = useContext(GameDataCtx);
 
 
 

@@ -3,7 +3,7 @@ import { BoxSize, Offset } from '../../modal/GameModels';
 import { Container, Graphics, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import sleep from '../../functions/sleep';
-import { GameTickCtx } from '../../GameApp';
+import { GameDataCtx } from '../../GameApp';
 
 
 interface RingProps {
@@ -45,7 +45,7 @@ const displacementFilter: PIXI.DisplacementFilter = new PIXI.DisplacementFilter(
 function RippleEffect(props: RippleEffectProps) {
   const { stageSize } = props;
   const [rings, setRings] = useState<Ring[]>([]);
-  const gameTick = useContext(GameTickCtx);
+  const gameTick = useContext(GameDataCtx);
   const addRing = useCallback(async () => {
     const newRings: Ring[] = [...rings];
     const hitPosition = gameTick.pongPosition;

@@ -1,15 +1,15 @@
 import React, { createContext, useEffect, useState } from 'react'
-import { GameTick } from './game/gameTick'
+import { GameData } from './game/gameData'
 import { AppProvider } from '@pixi/react';
 import { Application, ICanvas } from 'pixi.js';
 import Game from './game/Game';
 
 interface GameAppProps {
   pixiApp: Application<ICanvas>;
-  gameTick: GameTick;
+  gameTick: GameData;
 }
 
-export let GameTickCtx = createContext<GameTick>(undefined as any);
+export let GameDataCtx = createContext<GameData>(undefined as any);
 
 function GameApp(props: GameAppProps) {
   const [scale, setScale] = useState<number>(1);
@@ -22,9 +22,9 @@ function GameApp(props: GameAppProps) {
   }, []);
   return (
     <AppProvider value={pixiApp}>
-      <GameTickCtx.Provider value={gameTick}>
+      <GameDataCtx.Provider value={gameTick}>
         <Game pause={false} scale={scale} />
-      </GameTickCtx.Provider>
+      </GameDataCtx.Provider>
     </AppProvider>
   )
 }

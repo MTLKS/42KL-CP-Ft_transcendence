@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
-import { GameTickCtx } from '../../GameApp';
+import { GameDataCtx } from '../../GameApp';
 
 interface PaticlesProps {
   size: BoxSize;
@@ -25,7 +25,7 @@ function Paticles(props: PaticlesProps) {
   const { size } = props;
   const [particles, setParticles] = useState<Particle[]>([]);
   const app = useApp();
-  const gameTick = useContext(GameTickCtx);
+  const gameTick = useContext(GameDataCtx);
 
   useEffect(() => {
     const box = new PIXI.Graphics();

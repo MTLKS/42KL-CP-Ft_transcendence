@@ -4,7 +4,7 @@ import './styles/index.css'
 import { createRoot } from '@pixi/react';
 import { Application } from 'pixi.js';
 
-import { GameTick } from './game/gameTick';
+import { GameData } from './game/gameData';
 import GameApp from './GameApp';
 
 const reactApp = document.getElementById('root') as HTMLElement
@@ -15,7 +15,7 @@ reactRoot.render(
   // </React.StrictMode>,
 )
 
-export const gameTick = new GameTick();
+export const gameTick = new GameData();
 const pixiApp = new Application({
   width: 1600,
   height: 900,

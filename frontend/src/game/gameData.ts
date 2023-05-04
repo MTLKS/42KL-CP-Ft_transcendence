@@ -4,7 +4,7 @@ import { GameDTO } from "../modal/GameDTO";
 import { BoxSize, Offset } from "../modal/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 
-export class GameTick {
+export class GameData {
   socketApi: SocketApi;
   private _pongPosition: Offset;
   private _pongSpeed: Offset;

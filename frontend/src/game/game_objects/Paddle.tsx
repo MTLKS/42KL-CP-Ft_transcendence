@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useEffect } from 'react'
 import { Container, Graphics, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../modal/GameModels';
 import * as PIXI from 'pixi.js';
-import { GameTickCtx } from '../../GameApp';
+import { GameDataCtx } from '../../GameApp';
 
 
 interface PaddleProps {
@@ -15,7 +15,7 @@ function Paddle(props: PaddleProps) {
   const { left, stageSize, size } = props;
   const [rot, setRot] = React.useState(0);
   const [position, setPosition] = React.useState<Offset>({ x: 0, y: 0 });
-  const gameTick = useContext(GameTickCtx);
+  const gameTick = useContext(GameDataCtx);
   useTick((delta) => {
     setRot(rot + 5);
   }, false);
