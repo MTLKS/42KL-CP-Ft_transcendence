@@ -20,8 +20,11 @@ import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
 import UserContext from '../context/UserContext';
 import Tfa from '../components/tfa';
+import UserForm from './UserForm/UserForm';
+import { PolkaDotContainer } from '../components/Background';
+import MouseCursor from '../components/MouseCursor';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set"];
+const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set", "reset"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
@@ -122,9 +125,9 @@ function HomePage() {
         }
         const newCowsay = <Card key={index} type={CardType.SUCCESS}>
           <p>
-            {` _${new Array(say.length + 1).join("_")}_ `}<br />
-            {`< ${say} >`}<br />
-            {` -${new Array(say.length + 1).join("-")}- `}<br />
+            {` _${new Array(say.length).join("_")}_ `}<br />
+            {`< ${say}>`}<br />
+            {` -${new Array(say.length).join("-")}- `}<br />
             {"        \\   ^__^"}<br />
             {"         \\  (oo)\________"}<br />
             {"            (__)\        )\\/\\"}<br />
@@ -163,6 +166,14 @@ function HomePage() {
         newList = [<Tfa key={index} commands={command}/>].concat(elements);
         setIndex(index + 1);
         break;
+      case "reset":
+        console.log("Reset");
+        <PolkaDotContainer>
+          <MouseCursor>
+            <UserForm userData={myProfile} />
+          </MouseCursor>
+        </PolkaDotContainer>
+        break;
       default:
         const newErrorCard = errorCard();
         newList = [newErrorCard].concat(elements);
@@ -188,7 +199,6 @@ function HomePage() {
         help:         show this help message <br />
         leaderboard:  show the leaderboard <br />
         login:        login to your account <br />
-        exit:         logout from your account <br />
         tfa:          set and unset Google TFA <br />
         sudo:         give you admin privilige <br />
       </p>
