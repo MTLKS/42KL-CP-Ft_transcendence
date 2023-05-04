@@ -80,13 +80,12 @@ function HomePage() {
   return (
     <UserContext.Provider value={{ myProfile, setMyProfile }}>
       <div className='h-full w-full p-7'>
-        {startMatch && <Pong />}
         {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
         <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
           ref={pageRef}
         >
           <div className='h-full flex-1'>
-            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
           </div>
           <div className=' bg-highlight h-full w-1' />
           <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>

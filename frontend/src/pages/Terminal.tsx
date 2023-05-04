@@ -8,7 +8,6 @@ import Pong from './Pong'
 import sleep from '../functions/sleep'
 import Clock from '../widgets/Clock'
 import Game from '../game/Game'
-import GameStage from '../game/GameStage'
 import GameWindow from '../game/GameWindow'
 interface TerminalProps {
   availableCommands: string[];
