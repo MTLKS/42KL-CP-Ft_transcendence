@@ -114,8 +114,11 @@ function HomePage() {
           setStartMatch(true);
         break;
       case "end":
-        if (startMatch)
+        if (startMatch) {
+          const canvas = document.getElementById('pixi') as HTMLCanvasElement;
+          canvas.style.display = "none";
           setStartMatch(false);
+        }
         break;
       case "add":
         const newCard = card(index);
