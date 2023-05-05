@@ -4,6 +4,8 @@ import { Injectable } from "@nestjs/common";
 import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
+import * as sharp from 'sharp';
+import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
@@ -119,7 +121,6 @@ export class UserService {
 		} catch {
 			accessToken = null;
 		}
-		const FS = require('fs');
 		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
 		if (NEW_USER.length === 0)
 			return { "error": "Invalid accessToken - user information does not exists" };
@@ -130,6 +131,7 @@ export class UserService {
 			return { "error": "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
 		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
 		NEW_USER[0].userName = userName;
+		fs.writeFile(image.path, await sharp(image.path).resize({ width: 500, height: 500}).toBuffer(), () => {});
 		await this.userRepository.save(NEW_USER[0]);
 		NEW_USER[0].accessToken = "hidden";
 		return NEW_USER[0];
