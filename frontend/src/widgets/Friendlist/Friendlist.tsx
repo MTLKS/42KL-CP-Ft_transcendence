@@ -48,7 +48,6 @@ function Friendlist(props: FriendlistProps) {
   useEffect(() => {
     if (inputValue === "")
       setIsSearching(false);
-    console.log(inputValue);
   }, [inputValue]);
 
   // calibrate the value of start and ending index
@@ -185,7 +184,6 @@ function Friendlist(props: FriendlistProps) {
         setStartingIndex(startingIndex + 1);
       else {
         setSearchTerm(inputValue.substring(1));
-        console.log(`here`);
       }
       setInputValue("");
       return;

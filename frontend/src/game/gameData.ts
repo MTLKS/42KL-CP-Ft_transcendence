@@ -17,7 +17,6 @@ export class GameData {
   setScale?: (scale: number) => void;
 
   constructor() {
-    console.log("gameTick created");
     this.socketApi = new SocketApi("game");
     this._pongPosition = { x: 800, y: 450 };
     this.leftPaddlePosition = { x: 0, y: 0 };

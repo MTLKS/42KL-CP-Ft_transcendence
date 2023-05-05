@@ -31,7 +31,6 @@ function Room(props: RoomProps) {
   )
 
   function handleCommands(commands: string[], string: string) {
-    console.log(string);
   }
 }
 

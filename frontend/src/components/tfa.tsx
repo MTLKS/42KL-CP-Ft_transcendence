@@ -22,7 +22,6 @@ function help() {
 			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
 			<p>
 				tfa set			: Sets and enables tfa<br />
-				tfa reset		: Generates a new tfa<br />
 				tfa unset		: Unsets and disable tfa<br />
 				tfa [code]		: Checks whether code is valid or not<br />
 			</p>
@@ -38,9 +37,7 @@ function Tfa(props: TFAProps) {
 	
 	if (commands.length === 2) {
 		if (commands[1] === "set") {
-			console.log(commands[1])
 			useEffect(() => {
-				console.log("Using")
 				getTFA().then((data) => {
 					setTfa(data);
 					setResult(data.qr === null && data.secretKey === null ? TFACommands.exist : TFACommands.set)
@@ -55,7 +52,6 @@ function Tfa(props: TFAProps) {
 		} else if (commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
 			useEffect(() => {
 				checkTFA(commands[1]).then((data) => {
-					console.log(data);
 					setResult(data.boolean ? TFACommands.success : TFACommands.fail)
 				})
 			}, [])

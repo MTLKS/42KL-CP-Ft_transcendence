@@ -22,7 +22,7 @@ function App() {
     page = <UserForm userData={userData} />;
   }
   else if (logged) {
-    page = <HomePage />;
+    page = <HomePage setNewUser={setNewUser} setUserData={setUserData}/>;
   }
 
   return (
@@ -45,7 +45,6 @@ function App() {
         loggin = true;
       }
     }).catch((err) => {
-      console.log(err);
       setLogged(false);
     });
 
@@ -58,8 +57,6 @@ function App() {
     if (code.code) {
       checkAuth(code.code).then(async (res) => {
         if (res) {
-          console.log(res);
-          console.log((res as any).data.accessToken);
           localStorage.setItem('Authorization', (res as any).data.accessToken);
           if ((res as any).data.accessToken)
             document.cookie = `Authorization=${(res as any).data.accessToken};`;

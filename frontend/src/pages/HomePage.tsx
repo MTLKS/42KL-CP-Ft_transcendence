@@ -28,10 +28,16 @@ import MouseCursor from '../components/MouseCursor';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set", "reset"];
 const emptyWidget = <div></div>;
-let currentPreviewProfile: UserData | null = null;
+let myProfile: UserData | null = null;
 
-function HomePage() {
-  const [myProfile, setMyProfile] = React.useState<UserData>({} as UserData);
+interface HomePageProps {
+  setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
+  setUserData: React.Dispatch<React.SetStateAction<any>>;
+}
+
+function HomePage(props: HomePageProps) {
+  const { setNewUser, setUserData } = props;
+  const [currentPreviewProfile, setCurrentPreviewProfile] = React.useState<UserData>({} as UserData);
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
@@ -39,7 +45,7 @@ function HomePage() {
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
-  const [expandProfile, setExpandProfile] = React.useState(false);
+  const [expandProfile, setExpandProfile] = React.useState(true);
   const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = React.useState(0);
 
@@ -47,7 +53,6 @@ function HomePage() {
 
   const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-
     friendshipSocket = new SocketApi("friendship");
   }, []);
   const initFriendshipSocket = () => {
@@ -60,13 +65,14 @@ function HomePage() {
   }
 
   useEffect(() => {
-    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile?.intraName).length;
+    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != currentPreviewProfile?.intraName).length;
     setFriendRequests(totalFriendRequests);
   }, [myFriends]);
 
   useEffect(() => {
     getMyProfile().then((profile) => {
-      setMyProfile(profile.data as UserData);
+      myProfile = profile.data as UserData;
+      setCurrentPreviewProfile(profile.data as UserData);
     });
 
     initFriendshipSocket();
@@ -78,7 +84,7 @@ function HomePage() {
   }, []);
 
   return (
-    <UserContext.Provider value={{ myProfile, setMyProfile }}>
+    <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
       <div className='h-full w-full p-7'>
         {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
         <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
@@ -162,7 +168,7 @@ function HomePage() {
         setTopWidget(newWhoamiCard);
         break;
       case "less":
-        setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
+        setLeftWidget(<Friendlist userData={currentPreviewProfile} friendsData={myFriends} onQuit={() => {
           setLeftWidget(null);
         }} />);
         break;
@@ -171,12 +177,10 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "reset":
-        console.log("Reset");
-        <PolkaDotContainer>
-          <MouseCursor>
-            <UserForm userData={myProfile} />
-          </MouseCursor>
-        </PolkaDotContainer>
+        getMyProfile().then((profile) => {
+          setNewUser(true);
+          setUserData(profile.data as UserData);
+        });
         break;
       default:
         const newErrorCard = errorCard();
@@ -205,6 +209,7 @@ function HomePage() {
         login:        login to your account <br />
         tfa:          set and unset Google TFA <br />
         sudo:         give you admin privilige <br />
+        reset:        reset your profile picture and username <br />
       </p>
     </Card>;
   }
@@ -219,8 +224,8 @@ function HomePage() {
     let newList: JSX.Element[] = [];
     if (command.length === 2) {
       getProfileOfUser(command[1]).then((response) => {
-        currentPreviewProfile = response.data;
-        if (currentPreviewProfile as any === '') {
+        const newPreviewProfile = response.data;
+        if (newPreviewProfile as any === '') {
           const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
@@ -230,13 +235,14 @@ function HomePage() {
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
-        setMyProfile(currentPreviewProfile);
+        setCurrentPreviewProfile(newPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile />
+      const newProfileCard = <Profile/>
+      setCurrentPreviewProfile(myProfile!);
       setTopWidget(newProfileCard);
     }
     return newList;
