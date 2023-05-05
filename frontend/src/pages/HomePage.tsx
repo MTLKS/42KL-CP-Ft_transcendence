@@ -14,18 +14,21 @@ import Friendlist from '../widgets/Friends/Friendlist/Friendlist';
 import FriendRequestPopup from '../widgets/Friends/FriendRequest/FriendRequestPopup';
 import SocketApi from '../api/socketApi';
 import Cowsay from '../widgets/TerminalCards/Cowsay';
-import FriendActionCard, { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
+import { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
 import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
-import { FriendActionContext, FriendsContext, SelectedFriendContext } from '../contexts/FriendContext';
+import { FriendsContext, SelectedFriendContext } from '../contexts/FriendContext';
 import UserContext from '../contexts/UserContext';
-import { addFriend, deleteFriendship } from '../functions/friendactions';
-import { AxiosResponse } from 'axios';
+import { addFriend } from '../functions/friendactions';
 import HelpCard from '../widgets/TerminalCards/HelpCard';
 import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
+import Tfa from '../components/tfa';
+import UserForm from './UserForm/UserForm';
+import { PolkaDotContainer } from '../components/Background';
+import MouseCursor from '../components/MouseCursor';
 
-const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay"];
+const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay", "set", "reset"];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
@@ -56,22 +59,6 @@ function HomePage() {
         setMyFriends(newFriendsData);
       });
     })
-
-    // function addToFriendRoom(intraName: string) {
-    //   console.log(intraName);
-    //   friendshipSocket.sendMessages("friendshipRoom", {intraName: intraName});
-    //   friendshipSocket.listen("friendshipRoom", (data: any) => {
-    //     console.log(data);
-    //   })
-    // }
-
-    // await api.post("/friendship", {receiverIntraName: "itan", status: "PENDING"})
-    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
-    //         .catch((err) => console.log(err));
-
-    // await api.post("/friendship", {receiverIntraName: "schuah", status: "PENDING"})
-    //         .then((data: any) =>  {addToFriendRoom(data.data.receiverIntraName)})
-    //         .catch((err) => console.log(err));
   }
 
   useEffect(() => {
@@ -124,14 +111,35 @@ function HomePage() {
       case "sudo":
         newList = appendNewCard(<YoutubeEmbed key={"rickroll" + index} />);
         break;
+      // case "cowsay":
+      //   newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
       case "start":
-        if (!startMatch) setStartMatch(true);
+        if (!startMatch)
+          setStartMatch(true);
         break;
       case "end":
-        if (startMatch) setStartMatch(false);
+        if (startMatch)
+          setStartMatch(false);
         break;
       case "cowsay":
-        newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
+        let say = "";
+        for (let word of command.slice(1)) {
+          say += word + " ";
+        }
+        const newCowsay = <Card key={index} type={CardType.SUCCESS}>
+          <p>
+            {` _${new Array(say.length).join("_")}_ `}<br />
+            {`< ${say}>`}<br />
+            {` -${new Array(say.length).join("-")}- `}<br />
+            {"        \\   ^__^"}<br />
+            {"         \\  (oo)\________"}<br />
+            {"            (__)\        )\\/\\"}<br />
+            {"               ||-----w|"}<br />
+            {"               ||     ||"}
+          </p>
+        </Card>;
+        newList = [newCowsay].concat(elements);
+        setIndex(index + 1);
         break;
       case "profile":
         newList = handleProfileCommand(command);
@@ -152,6 +160,18 @@ function HomePage() {
         break;
       case "ok":
         newList = appendNewCard(<Card key={index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
+        break;
+      case "tfa":
+        newList = [<Tfa key={index} commands={command}/>].concat(elements);
+        setIndex(index + 1);
+        break;
+      case "reset":
+        console.log("Reset");
+        <PolkaDotContainer>
+          <MouseCursor>
+            <UserForm userData={myProfile} />
+          </MouseCursor>
+        </PolkaDotContainer>
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -187,6 +207,7 @@ function HomePage() {
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
+        setMyProfile(currentPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);

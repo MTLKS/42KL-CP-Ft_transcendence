@@ -3,7 +3,6 @@ import sleep from '../../functions/sleep';
 import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
-import { UserData } from '../../modal/UserData';
 import SocketApi from '../../api/socketApi';
 import { status } from '../../functions/friendlist';
 import UserContext from '../../contexts/UserContext';

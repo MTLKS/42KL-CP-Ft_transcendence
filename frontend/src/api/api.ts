@@ -64,6 +64,10 @@ class Api {
   put<T>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
     return this.reqInstance.put<T>(url, data, config);
   }
+
+  delete<T>(url: string, data?: any, config?: any): Promise<AxiosResponse<T>> {
+    return this.reqInstance.delete<T>(url, config);
+  }
 }
 
 export default new Api();
