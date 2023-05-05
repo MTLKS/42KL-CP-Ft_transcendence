@@ -1,6 +1,9 @@
 /* default theme */
 @layer base {
   :root {
+    /* canvas variable */
+    --canvas-top: 0px;
+    --canvas-left: 0px;
     /* color variables */
     --highlight-color: 254 248 226;
     --shadow-color: 27 27 27;
