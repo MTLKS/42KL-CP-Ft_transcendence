@@ -367,7 +367,8 @@ function HomePage() {
     newCards = newCards.concat(generateErrorCards(errors, action));
     setElements(appendNewCard(newCards));
     setSelectedFriends(newSelectedFriends);
-    setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
+    if (newSelectedFriends.length > 0)
+      setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
 
   function handleFriendCommand(command: string[]) {

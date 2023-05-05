@@ -209,7 +209,7 @@ function FriendAction(props: FriendActionProps) {
         actionCards = newActionCards;
         if (shouldShow) {
           setOutputStyle("bg-accRed");
-          setOutputStr(`You rejected friend request from '${strangerIntraName}'`);
+          setOutputStr(getOutputString(strangerIntraName));
           setShowOutput(true);
         }
       })
