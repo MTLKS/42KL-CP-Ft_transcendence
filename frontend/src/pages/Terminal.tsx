@@ -7,14 +7,17 @@ import rickroll from '../functions/rickroll'
 import Pong from './Pong'
 import sleep from '../functions/sleep'
 import Clock from '../widgets/Clock'
+import Game from '../game/Game'
+import GameWindow from '../game/GameWindow'
 interface TerminalProps {
   availableCommands: string[];
   handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
+  startMatch: boolean;
 }
 
 function Terminal(pros: TerminalProps) {
-  const { availableCommands, handleCommands, elements } = pros;
+  const { availableCommands, handleCommands, elements, startMatch } = pros;
 
   const promptFieldRef = useRef<any>(null);
 
@@ -23,7 +26,7 @@ function Terminal(pros: TerminalProps) {
   }, []);
 
   return (
-    <div className='h-full w-full flex flex-col justify-end relative'
+    <div className='h-full flex-1 flex flex-col justify-end relative'
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <ScrollView reverse={true}>
@@ -36,6 +39,8 @@ function Terminal(pros: TerminalProps) {
         center={false} ref={promptFieldRef}
         enableHistory showtip
       />
+      {/* {startMatch ? <GameStage /> : null} */}
+      {startMatch ? <GameWindow /> : null}
       <Clock />
     </div>
   )

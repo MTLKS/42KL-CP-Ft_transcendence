@@ -72,7 +72,7 @@ interface MouseCursorProps {
   children: JSX.Element | JSX.Element[];
 }
 
-const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
+function MouseCursor(props: MouseCursorProps) {
   const { size1Default, size2Default, size3Default, size4Default } = defaultCurser;
 
   const [offset1, setOffset1] = useState<Offset>({ x: -100, y: -100 });
@@ -253,7 +253,7 @@ const MouseCursor = forwardRef((props: MouseCursorProps, ref) => {
     else longPressRealeased();
     longPressDetected = false;
   }
-});
+};
 
 
 export default MouseCursor

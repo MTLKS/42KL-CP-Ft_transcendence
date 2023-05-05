@@ -18,6 +18,8 @@ import { FriendData, FriendRequestType } from '../modal/FriendData';
 import Friendlist from '../widgets/Friendlist/Friendlist';
 import FriendRequest from '../widgets/FriendRequest';
 import SocketApi from '../api/socketApi';
+import { AppProvider } from '@pixi/react';
+import Game from '../game/Game';
 import UserContext from '../context/UserContext';
 import Tfa from '../components/tfa';
 import UserForm from './UserForm/UserForm';
@@ -33,7 +35,7 @@ function HomePage() {
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
-  const [topWidget, setTopWidget] = React.useState(<Profile/>);
+  const [topWidget, setTopWidget] = React.useState(<Profile />);
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
@@ -41,10 +43,13 @@ function HomePage() {
   const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = React.useState(0);
 
+  let friendshipSocket: SocketApi;
+
   const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
 
-  const friendshipSocket = new SocketApi("friendship");
-
+    friendshipSocket = new SocketApi("friendship");
+  }, []);
   const initFriendshipSocket = () => {
     friendshipSocket.listen("friendshipRoom", (data: any) => {
       getFriendList().then((friends) => {
@@ -75,13 +80,12 @@ function HomePage() {
   return (
     <UserContext.Provider value={{ myProfile, setMyProfile }}>
       <div className='h-full w-full p-7'>
-        {startMatch && <Pong />}
         {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
         <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
           ref={pageRef}
         >
           <div className='h-full flex-1'>
-            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+            {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
           </div>
           <div className=' bg-highlight h-full w-1' />
           <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
@@ -154,7 +158,7 @@ function HomePage() {
         setIndex(index + 1);
         break;
       case "whoami":
-        const newWhoamiCard = <Profile/>
+        const newWhoamiCard = <Profile />
         setTopWidget(newWhoamiCard);
         break;
       case "less":
@@ -163,7 +167,7 @@ function HomePage() {
         }} />);
         break;
       case "tfa":
-        newList = [<Tfa key={index} commands={command}/>].concat(elements);
+        newList = [<Tfa key={index} commands={command} />].concat(elements);
         setIndex(index + 1);
         break;
       case "reset":
@@ -232,7 +236,7 @@ function HomePage() {
         }, 500);
       });
     } else {
-      const newProfileCard = <Profile/>
+      const newProfileCard = <Profile />
       setTopWidget(newProfileCard);
     }
     return newList;
