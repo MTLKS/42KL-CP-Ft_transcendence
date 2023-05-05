@@ -54,12 +54,14 @@ function HomePage(props: HomePageProps) {
   // const [myProfile, setMyProfile] = useState<UserData>({} as UserData);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
-  const [friendRequests, setFriendRequests] = useState(0);
   const friendshipSocket = useMemo(() => {
     return new SocketApi("friendship");
   }, [])
 
-  let incomingRequests: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != currentPreviewProfile.intraName);
+  let incomingRequests: FriendData[] = useMemo(
+    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName),
+    [myFriends]
+  );
 
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -71,11 +73,6 @@ function HomePage(props: HomePageProps) {
       });
     })
   }
-
-  useEffect(() => {
-    incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName);
-    setFriendRequests(incomingRequests.length);
-  }, [myFriends]);
 
   useEffect(() => {
     initFriendshipSocket();
@@ -92,7 +89,7 @@ function HomePage(props: HomePageProps) {
         <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
           <div className='h-full w-full p-7'>
             {startMatch && <Pong />}
-            {friendRequests !== 0 && <FriendRequestPopup total={friendRequests} />}
+            {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
             <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
               ref={pageRef}
             >
@@ -268,6 +265,14 @@ function HomePage(props: HomePageProps) {
     return newErrorCards;
   }
 
+  function sendFriendRequestNotification(intraName: string) {
+    console.log(intraName);
+    friendshipSocket.sendMessages("friendshipRoom", { intraName: intraName });
+    friendshipSocket.listen("friendshipRoom", (data: any) => {
+      console.log(data);
+    })
+  }
+
   async function addMultipleFriends(friendIntraNames: string[]) {
 
     const errors: errorType[] = [];
@@ -304,6 +309,7 @@ function HomePage(props: HomePageProps) {
             <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
           </Card>
         )
+        sendFriendRequestNotification(successName);
       }
       // update friend list if there's a successful attempt
       const updatedFriendList = await getFriendList();
@@ -334,11 +340,6 @@ function HomePage(props: HomePageProps) {
     return false;
   }
 
-  /**
-     * BLOCK: ACCEPTED, PENDING
-     * UNBLOCK: those BLOCKED
-     * UNFRIEND: those ACCEPTED & BLOCKED
-     */
   function belongsTotheDesireCategory(action: string, status: string) {
     if (action === ACTION_TYPE.BLOCK && (status === "ACCEPTED" || status === "PENDING")) return true;
 
