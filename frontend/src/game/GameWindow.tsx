@@ -16,6 +16,7 @@ function GameWindow() {
       canvas.height = height - 12;
       canvas.style.width = `${width - 12}px`;
       canvas.style.height = `${height - 12}px`;
+      canvas.style.display = 'block';
       document.documentElement.style.setProperty('--canvas-top', `${top + 6}px`);
       document.documentElement.style.setProperty('--canvas-left', `${left + 6}px`);
       if (gameTick.setScale)

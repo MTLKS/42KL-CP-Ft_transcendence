@@ -12,7 +12,7 @@ export class GameData {
   rightPaddlePosition: Offset;
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
-  roomID: string = "";
+  roomID: string | undefined;
 
   setScale?: (scale: number) => void;
 
@@ -23,6 +23,7 @@ export class GameData {
     this.leftPaddlePosition = { x: 0, y: 0 };
     this.rightPaddlePosition = { x: 0, y: 0 };
     this._pongSpeed = { x: 0, y: 0 };
+    this.socketApi.sendMessages("startGame", {});
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
   }
