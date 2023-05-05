@@ -5,19 +5,56 @@ interface PixelatedImageProps {
   pixelSize?: number;
   className?: string;
 }
+const pixilationWorker = new Worker(new URL('../workers/pixilation.worker.ts', import.meta.url));
 
 function PixelatedImage(props: PixelatedImageProps) {
   const { src, pixelSize = 1, className } = props;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-
   useEffect(() => {
     saveImageToCache(src).then((imageData) => {
+
       const image = new Image();
       image.src = imageData;
-      draw(image);
+      image.crossOrigin = "Anonymous";
+      image.style.objectFit = "cover";
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+        cropToSquare(image, canvas, ctx);
+        const imageData = ctx!.getImageData(0, 0, canvas.width, canvas.height);
+        pixilationWorker.postMessage({
+          type: 'PIXILATE',
+          payload: {
+            imageData: imageData,
+            w: canvas.width,
+            h: canvas.height,
+            pixelSize: pixelSize
+          }
+        });
+      }
     });
   }, [pixelSize]);
+
+  useEffect(() => {
+    pixilationWorker.onmessage = (event) => {
+      const { type, payload } = event.data;
+      switch (type) {
+        case 'PIXILATE':
+          const { imageData, w, h } = payload;
+          if (!canvasRef.current) return;
+          const canvas = canvasRef.current;
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          canvas.width = w;
+          canvas.height = h;
+          if (!ctx) return;
+          ctx.imageSmoothingEnabled = false;
+          ctx.putImageData(imageData, 0, 0);
+          break;
+      }
+    };
+  }, []);
 
   return (
     <canvas id="canvas" ref={canvasRef} className={className} />
@@ -81,7 +118,11 @@ function PixelatedImage(props: PixelatedImageProps) {
       }));
   }
 
-  function cropToSquare(image: HTMLImageElement, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  function cropToSquare(
+    image: HTMLImageElement,
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D
+  ) {
     const size = Math.min(image.width, image.height);
     const x = (image.width - size) / 2;
     const y = (image.height - size) / 2;

@@ -107,48 +107,11 @@ export class UserService {
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
-		if (USER_DATA.length === 0)
-			return { "error": "Invalid intraName - user does not exist" };
-		return USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
-	}
-
-	// Creates new user by saving their userName and avatar
-	async newUserInfo(accessToken: string, userName: string, image: any): Promise<any> {
-		const ERROR_DELETE = (errMsg: string) => {
-			if (FS.existsSync(image.path) && (process.env.DOMAIN + ':' + process.env.BE_PORT + '/user/' + image.path) !== NEW_USER[0].avatar)
-				FS.unlink(image.path, () => {});
-			return { "error": errMsg }
-		}
-		if (image === undefined)
-			return { "error": "Invalid image path - no avatar image given" }
-		try {
-			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
-		} catch {
-			accessToken = null;
-		}
-		const FS = require('fs');
-		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
-		if (NEW_USER.length !== 0)
-			return { "error": "Invalid accessToken - user information already exists, use PATCH to update instead" };
-		const EXISTING = await this.userRepository.find({ where: {userName} });
-		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
-			return ERROR_DELETE("Invalid username - username already exists or invalid");
-		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
-			return ERROR_DELETE("Invalid username - username must be 1-16 alphanumeric characters only (Including '-' and '_') only");
-		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
-		NEW_USER[0].userName = userName;
-		await this.userRepository.save(NEW_USER[0]);
-		NEW_USER[0].accessToken = "hidden";
-		return NEW_USER[0];
+		return USER_DATA.length === 0 ? { "error": "Invalid intraName - user does not exist" } : USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Updates existing user by saving their userName and avatar
 	async updateUserInfo(accessToken: string, userName: string, image: any): Promise<any> {
-		const ERROR_DELETE = (errMsg: string) => {
-			if (FS.existsSync(image.path) && (process.env.DOMAIN + ':' + process.env.BE_PORT + '/user/' + image.path) !== NEW_USER[0].avatar)
-				FS.unlink(image.path, () => {});
-			return { "error": errMsg }
-		}
 		if (image === undefined)
 			return { "error": "Invalid image path - no avatar image given" }
 		try {
@@ -158,13 +121,13 @@ export class UserService {
 		}
 		const FS = require('fs');
 		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
+		if (NEW_USER.length === 0)
+			return { "error": "Invalid accessToken - user information does not exists" };
 		const EXISTING = await this.userRepository.find({ where: {userName} });
 		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
-			return ERROR_DELETE("Invalid username - username already exists or invalid");
+			return { "error": "Invalid username - username already exists or invalid" };
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
-			return ERROR_DELETE("Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only");
-		if (NEW_USER[0].avatar.includes("avatar/") && (process.env.DOMAIN + ":" + process.env.PORT + "/user/" + image.path) !== NEW_USER[0].avatar)
-			FS.unlink(NEW_USER[0].avatar.substring(NEW_USER[0].avatar.indexOf('avatar/')), () => {});
+			return { "error": "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
 		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
 		NEW_USER[0].userName = userName;
 		await this.userRepository.save(NEW_USER[0]);

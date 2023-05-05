@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import Pong from './Pong'
 import Card, { CardType } from '../components/Card';
 import Terminal from './Terminal';
@@ -23,6 +23,9 @@ import HelpCard from '../widgets/TerminalCards/HelpCard';
 import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
+import { AppProvider } from '@pixi/react';
+import Game from '../game/Game';
+// import UserContext from '../context/UserContext';
 import Tfa from '../components/tfa';
 import UserForm from './UserForm/UserForm';
 import { PolkaDotContainer } from '../components/Background';
@@ -30,9 +33,16 @@ import MouseCursor from '../components/MouseCursor';
 
 const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay", "set", "reset"];
 const emptyWidget = <div></div>;
-let currentPreviewProfile: UserData | null = null;
 
-function HomePage() {
+interface HomePageProps {
+  setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
+  setUserData: React.Dispatch<React.SetStateAction<any>>;
+  userData: UserData;
+}
+
+function HomePage(props: HomePageProps) {
+  const { setNewUser, setUserData, userData } = props;
+  const [currentPreviewProfile, setCurrentPreviewProfile] = useState<UserData>(userData);
   const [elements, setElements] = useState<JSX.Element[]>([])
   const [index, setIndex] = useState(0);
   const [startMatch, setStartMatch] = useState(false);
@@ -41,16 +51,17 @@ function HomePage() {
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = useState(false);
-  const [myProfile, setMyProfile] = useState<UserData>({} as UserData);
+  // const [myProfile, setMyProfile] = useState<UserData>({} as UserData);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = useState(0);
+  const friendshipSocket = useMemo(() => {
+    return new SocketApi("friendship");
+  }, [])
+
+  let incomingRequests: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != currentPreviewProfile.intraName);
 
   const pageRef = useRef<HTMLDivElement>(null);
-
-  let incomingRequests: FriendData[] = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName);
-
-  const friendshipSocket = new SocketApi("friendship");
 
   const initFriendshipSocket = () => {
     friendshipSocket.listen("friendshipRoom", (data: any) => {
@@ -62,15 +73,11 @@ function HomePage() {
   }
 
   useEffect(() => {
-    incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== myProfile.intraName);
+    incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName);
     setFriendRequests(incomingRequests.length);
   }, [myFriends]);
 
   useEffect(() => {
-    getMyProfile().then((profile) => {
-      setMyProfile(profile.data as UserData);
-    });
-
     initFriendshipSocket();
 
     getFriendList().then((friends) => {
@@ -80,7 +87,7 @@ function HomePage() {
   }, []);
 
   return (
-    <UserContext.Provider value={{ myProfile, setMyProfile }}>
+    <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
       <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
         <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
           <div className='h-full w-full p-7'>
@@ -90,7 +97,7 @@ function HomePage() {
               ref={pageRef}
             >
               <div className='h-full flex-1'>
-                {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+                {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
               </div>
               <div className=' bg-highlight h-full w-1' />
               <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
@@ -145,7 +152,7 @@ function HomePage() {
         newList = handleProfileCommand(command);
         break;
       case "friend":
-        newList = handleFriendCommand(command.slice(1));
+        handleFriendCommand(command.slice(1));
         break;
       case "leaderboard":
         newList = elements;
@@ -162,16 +169,14 @@ function HomePage() {
         newList = appendNewCard(<Card key={index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
         break;
       case "tfa":
-        newList = [<Tfa key={index} commands={command}/>].concat(elements);
+        newList = [<Tfa key={index} commands={command} />].concat(elements);
         setIndex(index + 1);
         break;
       case "reset":
-        console.log("Reset");
-        <PolkaDotContainer>
-          <MouseCursor>
-            <UserForm userData={myProfile} />
-          </MouseCursor>
-        </PolkaDotContainer>
+        getMyProfile().then((profile) => {
+          setNewUser(true);
+          setUserData(profile.data as UserData);
+        });
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -196,8 +201,8 @@ function HomePage() {
     let newList: JSX.Element[] = [];
     if (command.length === 2) {
       getProfileOfUser(command[1]).then((response) => {
-        currentPreviewProfile = response.data as UserData;
-        if (currentPreviewProfile as any === '') {
+        const newPreviewProfile = response.data as UserData;
+        if (newPreviewProfile as any === '') {
           const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
@@ -207,13 +212,14 @@ function HomePage() {
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
-        setMyProfile(currentPreviewProfile);
+        setCurrentPreviewProfile(newPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
       });
     } else {
       const newProfileCard = <Profile />
+      setCurrentPreviewProfile(userData!);
       setTopWidget(newProfileCard);
     }
     return newList;
@@ -239,14 +245,14 @@ function HomePage() {
             break;
           case friendErrors.FRIENDSHIP_EXISTED:
             friend = (errAttempt.data as FriendData);
-            friendName = friend.receiverIntraName === myProfile.intraName ? friend.senderIntraName : friend.receiverIntraName;
+            friendName = friend.receiverIntraName === userData.intraName ? friend.senderIntraName : friend.receiverIntraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
               <p>Friendship with <span className="bg-accRed font-extrabold">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
             break;
           case friendErrors.INVALID_RELATIONSHIP:
             friend = (errAttempt.data as FriendData);
-            friendName = friend.receiverIntraName === myProfile.intraName ? friend.senderIntraName : friend.receiverIntraName;
+            friendName = friend.receiverIntraName === userData.intraName ? friend.senderIntraName : friend.receiverIntraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
               <p>Unable to {action} <span className="bg-accRed font-extrabold">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
@@ -309,7 +315,7 @@ function HomePage() {
   function userDataToFriendData(user: UserData): FriendData {
     const friend: FriendData = {
       id: user.intraId,
-      senderIntraName: myProfile.intraName,
+      senderIntraName: userData.intraName,
       receiverIntraName: user.intraName,
       elo: 0,
       status: "STRANGER",
@@ -366,13 +372,13 @@ function HomePage() {
 
     for (const user of categorizedUsers) {
       if (typeof user === 'string') {
-        errors.push({ error: friendErrors.USER_NOT_FOUND, data: user as string});
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: user as string });
       } else if (typeof user === 'object' && user.type === "STRANGER") {
         if (action === ACTION_TYPE.BLOCK) {
           const fakeFriend = userDataToFriendData(user.user);
           newSelectedFriends.push(fakeFriend);
         } else {
-          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: user.user.intraName});
+          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: user.user.intraName });
         }
       } else if (typeof user === 'object' && user.type === "FRIEND") {
         const friend = myFriends.find(
@@ -381,49 +387,63 @@ function HomePage() {
         if (belongsTotheDesireCategory(action, friend!.status))
           newSelectedFriends.push(friend!)
         else
-          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend! as FriendData});
+          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend! as FriendData });
       }
     }
-    
+
     newCards = newCards.concat(generateErrorCards(errors, action));
     setElements(appendNewCard(newCards));
     setSelectedFriends(newSelectedFriends);
     if (newSelectedFriends.length > 0)
-      setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
+      setLeftWidget(<FriendAction user={userData} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
 
-  function handleFriendCommand(command: string[]) {
+  async function handleFriendCommand(command: string[]) {
+
+    let newList: JSX.Element[] = [];
+    let recognizable: boolean = false;
 
     if (command.length === 0) {
-      return appendNewCard(
+      recognizable = true;
+      newList = appendNewCard(
         <HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />
       );
     }
 
+    const updatedFriendlist = await getFriendList();
+    setMyFriends(updatedFriendlist.data);
+
     if (command[0] === "list" && command.length === 1) {
-      setLeftWidget(<Friendlist userData={myProfile} onQuit={() => setLeftWidget(null)} />);
-      return elements;
+      setLeftWidget(<Friendlist userData={userData} onQuit={() => setLeftWidget(null)} />);
+      recognizable = true;
+      newList = elements;
     }
 
     if (command[0] === "requests" && command.length === 1) {
-      setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.ACCEPT} onQuit={() => setLeftWidget(null)} />);
-      return elements;
+      setLeftWidget(<FriendAction user={userData} action={ACTION_TYPE.ACCEPT} onQuit={() => setLeftWidget(null)} />);
+      recognizable = true;
+      newList = elements;
     }
 
     if (command[0] === "block" || command[0] === "unblock" || command[0] === "unfriend") {
       if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={command[0]} onQuit={() => setLeftWidget(null)} />);
+        setLeftWidget(<FriendAction user={userData} action={command[0]} onQuit={() => setLeftWidget(null)} />);
       else if (command.length >= 2) {
         performActionOnMultipleUsers(command[0], command.slice(1));
       }
-      return elements;
+      recognizable = true;
+      newList = elements;
     }
 
     if (command[0] === "add" && command.length >= 2) {
       addMultipleFriends(command.slice(1));
-      return elements;
+      recognizable = true;
+      newList = elements;
     }
-    return appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />);
+
+    if (recognizable === false)
+      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />);
+    setElements(newList);
   }
 }
 
