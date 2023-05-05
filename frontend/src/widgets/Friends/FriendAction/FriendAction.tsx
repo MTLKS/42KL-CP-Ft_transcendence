@@ -280,8 +280,6 @@ function FriendAction(props: FriendActionProps) {
 
     if (command === "") return ;
 
-    let splitedCommand = command.split(" ");
-
     if (command === "y" || command === "yes") {
       const friend = filteredFriends[selectedIndex];
       const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
@@ -293,7 +291,7 @@ function FriendAction(props: FriendActionProps) {
     }
     
     if (command === "Y" || command === "YES") {
-      const friendList = useSelectedFriends ? selectedFriends : friends;
+      const friendList = useSelectedFriends ? selectedFriends : filteredFriends;
       for (const friend of friendList) {
         const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
         if (friend.status === "STRANGER")
@@ -319,7 +317,7 @@ function FriendAction(props: FriendActionProps) {
       if (action !== ACTION_TYPE.ACCEPT) {
         setTimeout(() => onQuit(), 10);
       } else {
-        const friendList = useSelectedFriends ? selectedFriends : friends;
+        const friendList = useSelectedFriends ? selectedFriends : filteredFriends;
         for (const friend of friendList) {
           const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
           handleNoAction(friendIntraName, false);
@@ -346,7 +344,7 @@ function FriendAction(props: FriendActionProps) {
       case ACTION_TYPE.ACCEPT:
         return friends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != user.intraName);
       case ACTION_TYPE.BLOCK:
-        return friends.filter(friend => ((friend.status.toLowerCase() === "accepted") || (friend.status.toLowerCase() === "pending" && friend.senderIntraName !== user.intraName)));
+        return friends.filter(friend => ((friend.status.toLowerCase() === "accepted") || (friend.status.toLowerCase() === "pending")));
       case ACTION_TYPE.UNBLOCK:
         return friends.filter(friend => (friend.status.toLowerCase() === "blocked") && friend.senderIntraName === user.intraName);
       case ACTION_TYPE.UNFRIEND:

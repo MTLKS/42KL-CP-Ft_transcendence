@@ -2,6 +2,8 @@ enum friendErrors {
   INVALID_RELATIONSHIP,
   USER_NOT_FOUND,
   FRIENDSHIP_EXISTED,
+  INVALID_OPERATION_ON_STRANGER,
+  SUCCESS,
 };
 
 export { friendErrors };

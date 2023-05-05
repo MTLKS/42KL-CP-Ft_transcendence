@@ -22,7 +22,6 @@ function Profile(props: ProfileProps) {
   useEffect(() => {
     if (props.expanded) setExpanded(true);
     else setExpanded(false);
-    console.log(myProfile);
   }, [props.expanded]);
 
   useEffect(() => {

@@ -38,11 +38,13 @@ function HelpCard(props: HelpCardProps) {
   function displayAllOptions() {
     const allOptions: JSX.Element[] = [];
     const maxKeyLength = getMaxLengthOfKey(commandOptions);
+    let index = 0;
     for (const option of commandOptions) {
       allOptions.push(
-        <CommandOption options={option} spaces={maxKeyLength} />,
-        <br />
+        <CommandOption key={title + `option` + index} options={option} spaces={maxKeyLength} />,
+        <br key={"br"+index}/>
       )
+      index++;
     }
     return allOptions;
   }

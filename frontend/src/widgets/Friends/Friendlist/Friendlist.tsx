@@ -126,7 +126,7 @@ function Friendlist(props: FriendlistProps) {
 
     components.push(
       <FriendlistEmptyLine key="el0" />,
-      <FriendlistTitle searchTerm={searchTerm} />
+      <FriendlistTitle key="friendlist_title" searchTerm={searchTerm} />
     );
 
     sortedFriends.map((friend) => {
@@ -148,7 +148,7 @@ function Friendlist(props: FriendlistProps) {
 
         components.push(
           <FriendlistEmptyLine key={friend.status + `_el1`} />,
-          <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm} />,
+          <FriendlistTag key={friend.id+friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm} />,
           <FriendlistEmptyLine key={friend.status + `_el2`} />
         );
         prevCategory = friend.status;

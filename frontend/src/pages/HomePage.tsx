@@ -23,6 +23,7 @@ import { AxiosResponse } from 'axios';
 import HelpCard from '../widgets/TerminalCards/HelpCard';
 import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
+import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 
 const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay"];
 const emptyWidget = <div></div>;
@@ -74,7 +75,7 @@ function HomePage() {
   }
 
   useEffect(() => {
-    incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile.intraName);
+    incomingRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== myProfile.intraName);
     setFriendRequests(incomingRequests.length);
   }, [myFriends]);
 
@@ -138,12 +139,16 @@ function HomePage() {
       case "friend":
         newList = handleFriendCommand(command.slice(1));
         break;
+      case "leaderboard":
+        newList = elements;
+        setMidWidget(<Leaderboard />);
+        break;
       case "clear":
         newList = elements.filter((element) => element.type === YoutubeEmbed);
         setIndex(newList.length - 1);
         break;
       case "help":
-        newList = appendNewCard(<HelpCard key={index} title="help" option='commands' usage='<command>' commandOptions={allCommands}/>)
+        newList = appendNewCard(<HelpCard key={index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />)
         break;
       case "ok":
         newList = appendNewCard(<Card key={index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
@@ -152,12 +157,11 @@ function HomePage() {
         newList = appendNewCard(commandNotFoundCard());
         break;
     }
-    console.log(newList);
     setElements(newList);
   }
 
-  function appendNewCard(newCard: JSX.Element) {
-    const newList = [newCard].concat(elements);
+  function appendNewCard(newCard: JSX.Element | JSX.Element[]) {
+    const newList = ([] as JSX.Element[]).concat(newCard, elements);
     setIndex(index + 1);
     return newList;
   }
@@ -194,39 +198,91 @@ function HomePage() {
     return newList;
   }
 
-  async function addMultipleFriends(friends: string[]) {
-    try {
-      // try get their userdata
-      const friendProfiles = await Promise.all(
-        friends.map(friend => getProfileOfUser(friend))
-      );
+  interface errorType {
+    error: friendErrors;
+    data: FriendData | UserData | string;
+  }
 
-      // filter out users that are not found
-      const userNotFoundErrors = friendProfiles.filter(friend => (friend.data as any === ''));
-      if (userNotFoundErrors.length > 0) {
-        throw new Error(friendErrors.USER_NOT_FOUND.toString());
+  function generateErrorCards(errors: errorType[], action: string) {
+    const newErrorCards: JSX.Element[] = [];
+    let friend, friendName;
+
+    if (errors.length > 0) {
+      for (const errAttempt of errors) {
+        let errIndex: number = 0;
+        switch (errAttempt.error) {
+          case friendErrors.USER_NOT_FOUND:
+            newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
+              <p>Looks like you're trying to {action} a ghost. User not found: <span className='bg-accRed font-extrabold text-sm text-highlight'>{errAttempt.data as string}</span></p>
+            </Card>)
+            break;
+          case friendErrors.FRIENDSHIP_EXISTED:
+            friend = (errAttempt.data as FriendData);
+            friendName = friend.receiverIntraName === myProfile.intraName ? friend.senderIntraName : friend.receiverIntraName;
+            newErrorCards.push(<Card key={friendName + errIndex + index}>
+              <p>Friendship with <span className="bg-accRed font-extrabold">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
+            </Card>)
+            break;
+          case friendErrors.INVALID_RELATIONSHIP:
+            friend = (errAttempt.data as FriendData);
+            friendName = friend.receiverIntraName === myProfile.intraName ? friend.senderIntraName : friend.receiverIntraName;
+            newErrorCards.push(<Card key={friendName + errIndex + index}>
+              <p>Unable to {action} <span className="bg-accRed font-extrabold">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
+            </Card>)
+            break;
+          case friendErrors.INVALID_OPERATION_ON_STRANGER:
+            newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
+              <p>Unable to {action} <span className="bg-accRed font-extrabold">{errAttempt.data as string}</span>. You two are not friends.</p>
+            </Card>)
+        }
+        errIndex++;
       }
+    }
+    return newErrorCards;
+  }
 
-      // newFriends
-      const newFriends = friendProfiles.filter(friend => (friend.data as any !== ''));
+  async function addMultipleFriends(friendIntraNames: string[]) {
 
-      // Add new friends
-      const results = await Promise.all(
-        newFriends.map(friend => addFriend((friend.data as UserData).intraName))
-      );
+    const errors: errorType[] = [];
+    const successes: string[] = [];
+    let newCards: JSX.Element[] = [];
 
-      // Filter out add friends error
-      const addFriendErrors = results.filter(result => (result.data as ErrorData).error);
-      if (addFriendErrors.length > 0) {
-        throw new Error(friendErrors.FRIENDSHIP_EXISTED.toString());
+    // iterate through the names and attempt get their user data to add as friend
+    for (const friendName of friendIntraNames) {
+      // try get the user data
+      const friendProfile = await getProfileOfUser(friendName);
+      // if data is "", meaning user not found
+      if (!friendProfile.data) {
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: friendName as string });
+        continue;
       }
-
-      // Update the latest friendlist
+      // try to add the user
+      const result = await addFriend((friendProfile.data as UserData).intraName);
+      // if the response has a "error" field meaning friendship existed, cannot send friend request again
+      if (result.data.error) {
+        errors.push({
+          error: friendErrors.FRIENDSHIP_EXISTED,
+          data: (myFriends.find((friend) => friend.receiverIntraName === friendName || friend.senderIntraName === friendName) as FriendData)
+        });
+      } else {
+        successes.push(friendName);
+      }
+    }
+    newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.ADD));
+    // create card for each success friend request sent
+    if (successes.length > 0) {
+      for (const successName of successes) {
+        newCards.push(
+          <Card key={`${successName}_added`} type={CardType.SUCCESS}>
+            <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
+          </Card>
+        )
+      }
+      // update friend list if there's a successful attempt
       const updatedFriendList = await getFriendList();
       setMyFriends(updatedFriendList.data);
-    } catch (err: any) {
-      console.log(err.toString());
     }
+    setElements(appendNewCard(newCards));
   }
 
   function userDataToFriendData(user: UserData): FriendData {
@@ -269,6 +325,8 @@ function HomePage() {
   async function performActionOnMultipleUsers(action: string, userIntraNames: string[]) {
 
     const newSelectedFriends: FriendData[] = [];
+    const errors: errorType[] = [];
+    let newCards: JSX.Element[] = [];
 
     // get all user data
     const userProfiles = await Promise.all(
@@ -285,28 +343,31 @@ function HomePage() {
       return { user: userData, type: relationshipType };
     });
 
-    try {
-      for (const user of categorizedUsers) {
-        if (typeof user === 'string') {
-          throw new Error(friendErrors.USER_NOT_FOUND.toString());
-        } else if (typeof user === 'object' && user.type === "STRANGER" && action === ACTION_TYPE.BLOCK) {
+    for (const user of categorizedUsers) {
+      if (typeof user === 'string') {
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: user as string});
+      } else if (typeof user === 'object' && user.type === "STRANGER") {
+        if (action === ACTION_TYPE.BLOCK) {
           const fakeFriend = userDataToFriendData(user.user);
           newSelectedFriends.push(fakeFriend);
-        } else if (typeof user === 'object' && user.type === "FRIEND") {
-          const friend = myFriends.find(
-            friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
-          );
-          if (belongsTotheDesireCategory(action, friend!.status))
-            newSelectedFriends.push(friend!)
-          else
-            throw new Error(friendErrors.FRIENDSHIP_EXISTED.toString());
+        } else {
+          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: user.user.intraName});
         }
+      } else if (typeof user === 'object' && user.type === "FRIEND") {
+        const friend = myFriends.find(
+          friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
+        );
+        if (belongsTotheDesireCategory(action, friend!.status))
+          newSelectedFriends.push(friend!)
+        else
+          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend! as FriendData});
       }
-    } catch (err: any) {
-      console.log(err.toString());
     }
-
+    
+    newCards = newCards.concat(generateErrorCards(errors, action));
+    setElements(appendNewCard(newCards));
     setSelectedFriends(newSelectedFriends);
+    setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
 
   function handleFriendCommand(command: string[]) {
@@ -327,32 +388,11 @@ function HomePage() {
       return elements;
     }
 
-    if (command[0] === "block") {
+    if (command[0] === "block" || command[0] === "unblock" || command[0] === "unfriend") {
       if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
+        setLeftWidget(<FriendAction user={myProfile} action={command[0]} onQuit={() => setLeftWidget(null)} />);
       else if (command.length >= 2) {
-        performActionOnMultipleUsers(ACTION_TYPE.BLOCK, command.slice(1));
-        setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={ACTION_TYPE.BLOCK} onQuit={() => setLeftWidget(null)} />);
-      }
-      return elements;
-    }
-
-    if (command[0] === "unblock") {
-      if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
-      else if (command.length >= 2) {
-        performActionOnMultipleUsers(ACTION_TYPE.UNBLOCK, command.slice(1));
-        setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={ACTION_TYPE.UNBLOCK} onQuit={() => setLeftWidget(null)} />);
-      }
-      return elements;
-    }
-
-    if (command[0] === "unfriend") {
-      if (command.length === 1)
-        setLeftWidget(<FriendAction user={myProfile} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />)
-      else if (command.length >= 2) {
-        performActionOnMultipleUsers(ACTION_TYPE.UNFRIEND, command.slice(1));
-        setLeftWidget(<FriendAction user={myProfile} useSelectedFriends={true} action={ACTION_TYPE.UNFRIEND} onQuit={() => setLeftWidget(null)} />);
+        performActionOnMultipleUsers(command[0], command.slice(1));
       }
       return elements;
     }
