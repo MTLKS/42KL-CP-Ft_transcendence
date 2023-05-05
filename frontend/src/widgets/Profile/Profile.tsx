@@ -25,7 +25,9 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     pixelatedToSmooth();
-    const socketApi = new SocketApi();
+    let socketApi: SocketApi;
+    if (!myProfile.intraName) return ;
+    socketApi = new SocketApi();
     socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
     socketApi.listen("statusRoom", (data: any) => {
       if (data !== undefined && data.status !== undefined)
@@ -36,7 +38,7 @@ function Profile(props: ProfileProps) {
       socketApi.removeListener("statusRoom");
       socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
     }
-  }, [myProfile.avatar, myProfile.intraName]);
+  }, [myProfile.intraName]);
 
   return (<div className='w-full bg-highlight flex flex-col items-center box-border'
     onClick={onProfileClick}

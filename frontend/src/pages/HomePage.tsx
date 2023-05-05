@@ -53,7 +53,6 @@ function HomePage(props: HomePageProps) {
 
   const pageRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-
     friendshipSocket = new SocketApi("friendship");
   }, []);
   const initFriendshipSocket = () => {
