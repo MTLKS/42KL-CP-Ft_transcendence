@@ -26,7 +26,7 @@ import MouseCursor from '../components/MouseCursor';
 
 const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set", "reset"];
 const emptyWidget = <div></div>;
-let currentPreviewProfile: UserData | null = null;
+let myProfile: UserData | null = null;
 
 interface HomePageProps {
   setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
@@ -35,7 +35,7 @@ interface HomePageProps {
 
 function HomePage(props: HomePageProps) {
   const { setNewUser, setUserData } = props;
-  const [myProfile, setMyProfile] = React.useState<UserData>({} as UserData);
+  const [currentPreviewProfile, setCurrentPreviewProfile] = React.useState<UserData>({} as UserData);
   const [elements, setElements] = React.useState<JSX.Element[]>([])
   const [index, setIndex] = React.useState(0);
   const [startMatch, setStartMatch] = React.useState(false);
@@ -43,7 +43,7 @@ function HomePage(props: HomePageProps) {
   const [midWidget, setMidWidget] = React.useState(<MatrixRain />);
   const [botWidget, setBotWidget] = React.useState(<Chat />);
   const [leftWidget, setLeftWidget] = React.useState<JSX.Element | null>(null);
-  const [expandProfile, setExpandProfile] = React.useState(false);
+  const [expandProfile, setExpandProfile] = React.useState(true);
   const [myFriends, setMyFriends] = React.useState<FriendData[]>([]);
   const [friendRequests, setFriendRequests] = React.useState(0);
 
@@ -61,13 +61,14 @@ function HomePage(props: HomePageProps) {
   }
 
   useEffect(() => {
-    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != myProfile?.intraName).length;
+    const totalFriendRequests = myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != currentPreviewProfile?.intraName).length;
     setFriendRequests(totalFriendRequests);
   }, [myFriends]);
 
   useEffect(() => {
     getMyProfile().then((profile) => {
-      setMyProfile(profile.data as UserData);
+      myProfile = profile.data as UserData;
+      setCurrentPreviewProfile(profile.data as UserData);
     });
 
     initFriendshipSocket();
@@ -79,7 +80,7 @@ function HomePage(props: HomePageProps) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ myProfile, setMyProfile }}>
+    <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
       <div className='h-full w-full p-7'>
         {startMatch && <Pong />}
         {friendRequests !== 0 && <FriendRequest total={friendRequests} />}
@@ -164,7 +165,7 @@ function HomePage(props: HomePageProps) {
         setTopWidget(newWhoamiCard);
         break;
       case "less":
-        setLeftWidget(<Friendlist userData={myProfile} friendsData={myFriends} onQuit={() => {
+        setLeftWidget(<Friendlist userData={currentPreviewProfile} friendsData={myFriends} onQuit={() => {
           setLeftWidget(null);
         }} />);
         break;
@@ -220,8 +221,8 @@ function HomePage(props: HomePageProps) {
     let newList: JSX.Element[] = [];
     if (command.length === 2) {
       getProfileOfUser(command[1]).then((response) => {
-        currentPreviewProfile = response.data;
-        if (currentPreviewProfile as any === '') {
+        const newPreviewProfile = response.data;
+        if (newPreviewProfile as any === '') {
           const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
@@ -231,13 +232,14 @@ function HomePage(props: HomePageProps) {
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
         setTopWidget(newProfileCard);
-        setMyProfile(currentPreviewProfile);
+        setCurrentPreviewProfile(newPreviewProfile);
         setTimeout(() => {
           setExpandProfile(true);
         }, 500);
       });
     } else {
       const newProfileCard = <Profile/>
+      setCurrentPreviewProfile(myProfile!);
       setTopWidget(newProfileCard);
     }
     return newList;

@@ -40,10 +40,8 @@ function PixelatedImage(props: PixelatedImageProps) {
   useEffect(() => {
     pixilationWorker.onmessage = (event) => {
       const { type, payload } = event.data;
-      console.log(type);
       switch (type) {
         case 'PIXILATE':
-          console.log(payload);
           const { imageData, w, h } = payload;
           if (!canvasRef.current) return;
           const canvas = canvasRef.current;

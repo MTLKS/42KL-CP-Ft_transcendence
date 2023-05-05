@@ -43,7 +43,6 @@ function draw(data: DrawData) {
 }
 
 self.onmessage = (e) => {
-  console.log(e.data);
   if (e.data.type === "PIXILATE") {
     draw(e.data.payload);
   }
