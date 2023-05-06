@@ -5,7 +5,7 @@ import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
 import SocketApi from '../../api/socketApi';
 import { status } from '../../functions/friendlist';
-import UserContext from '../../context/UserContext';
+import UserContext from '../../contexts/UserContext';
 
 interface ProfileProps {
   expanded?: boolean;

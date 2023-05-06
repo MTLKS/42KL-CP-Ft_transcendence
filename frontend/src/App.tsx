@@ -7,11 +7,12 @@ import AxiosResponse from 'axios';
 import MouseCursor from "./components/MouseCursor";
 import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./functions/profile";
+import { UserData } from "./modal/UserData";
 
 function App() {
   const [logged, setLogged] = useState(false);
   const [newUser, setNewUser] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData>({} as UserData);
 
   useEffect(() => {
     checkIfLoggedIn();
@@ -22,7 +23,7 @@ function App() {
     page = <UserForm userData={userData} />;
   }
   else if (logged) {
-    page = <HomePage setNewUser={setNewUser} setUserData={setUserData}/>;
+    page = <HomePage setNewUser={setNewUser} setUserData={setUserData} userData={userData} />;
   }
 
   return (
@@ -40,7 +41,8 @@ function App() {
     let loggin = false;
 
     getMyProfile().then((res) => {
-      if (res.data.accessToken) {
+      if ((res.data as UserData).accessToken) {
+        setUserData(res.data as UserData);
         setLogged(true);
         loggin = true;
       }
@@ -61,7 +63,7 @@ function App() {
           if ((res as any).data.accessToken)
             document.cookie = `Authorization=${(res as any).data.accessToken};`;
           if ((res as any).data.newUser) {
-            setUserData((await getMyProfile()).data);
+            setUserData((await getMyProfile()).data as UserData);
             setNewUser(true);
           }
           else

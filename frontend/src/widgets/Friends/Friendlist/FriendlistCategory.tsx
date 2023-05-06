@@ -1,5 +1,5 @@
 import React from 'react'
-import { FriendData } from '../../modal/FriendData'
+import { FriendData } from '../../../modal/FriendData'
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
 

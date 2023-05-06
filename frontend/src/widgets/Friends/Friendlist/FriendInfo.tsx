@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
-import { FriendData } from '../../modal/FriendData'
-import Highlighter from '../../components/Highlighter';
-import socketApi from '../../api/socketApi';
+import { FriendData } from '../../../modal/FriendData'
+import Highlighter from '../../../components/Highlighter';
+import socketApi from '../../../api/socketApi';
 
 interface FriendInfoProps {
   friend: FriendData,
@@ -16,6 +16,12 @@ function FriendInfo(props: FriendInfoProps) {
   const [onlineStatus, setOnlineStatus] = useState("");
   const { friend, intraName, searchTerm } = props;
   let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
+  let friendshipStatus = friend.status.toLowerCase();
+
+  friendshipStatus = (friendshipStatus !== "pending"
+                        ? friendshipStatus
+                        : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
+                     )
 
 
   // Handle user's online/offline status
@@ -51,7 +57,7 @@ function FriendInfo(props: FriendInfoProps) {
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
-        <FriendlistTag type={friend.status} searchTerm={searchTerm}/>
+        <FriendlistTag type={friendshipStatus} searchTerm={searchTerm}/>
       </div>
       {
         <>

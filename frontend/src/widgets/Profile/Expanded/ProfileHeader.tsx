@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
-import StatusIndicator from '../../StatusIndicator';
+import StatusIndicator from '../StatusIndicator';
 import { UserData } from '../../../modal/UserData';
-import UserContext from '../../../context/UserContext';
+import UserContext from '../../../contexts/UserContext';
 
 interface ProfileHeaderProps {
   expanded: boolean;
