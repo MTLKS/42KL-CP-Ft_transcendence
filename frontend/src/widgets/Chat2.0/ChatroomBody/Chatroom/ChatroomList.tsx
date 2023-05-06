@@ -9,8 +9,8 @@ function ChatroomList() {
     <div className='relative flex flex-col overflow-y-scroll scrollbar-hide border-box h-full'>
       <Chatroom />
       <div className='absolute bottom-0 right-0 flex flex-row gap-x-3.5 mb-5 mr-5'>
-        <ChatButton icon={<HiServer className='text-dimshadow text-lg' />} title="join channel" />
-        <ChatButton icon={<FaPlusSquare className='text-dimshadow text-lg' />} title="new chat" />
+        <ChatButton icon={<HiServer />} title="join channel" />
+        <ChatButton icon={<FaPlusSquare />} title="new chat/channel" />
       </div>
     </div>
   )

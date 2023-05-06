@@ -21,7 +21,7 @@ function ChatMember() {
           src="../../../../assets/images/mofyduck.jpeg"
           alt=""
         />
-        <div className={`absolute w-full h-full bg-dimshadow/50 top-0 ${isSelected ? 'block' : 'hidden group-hover:block'} transition-all duration-150 ease-in-out p-3`}>
+        <div className={`absolute w-full h-full bg-dimshadow/80 top-0 ${isSelected ? 'block' : 'hidden group-hover:block'} transition-all duration-150 ease-in-out p-3`}>
           <FaCheck className='text-2xl text-highlight'/>
         </div>
       </div>

@@ -10,8 +10,8 @@ function ChatEmptyState() {
       <FaSadTear className='text-accYellow text-7xl'/>
       <p className='text-xl font-extrabold'>No messages, yet.</p>
       <p className='text-center'>Ready to ball out? Chat with friends or join a channel to rally up.</p>
-      <ChatButton icon={<HiServer className='text-dimshadow text-lg' />} title="join channel" />
-      <ChatButton icon={<FaPlusSquare className='text-dimshadow text-lg' />} title="new chat" />
+      <ChatButton icon={<HiServer />} title="join channel" />
+      <ChatButton icon={<FaPlusSquare />} title="new chat" />
     </div>
   )
 }
