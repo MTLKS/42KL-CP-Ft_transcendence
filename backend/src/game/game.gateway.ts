@@ -45,7 +45,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('playerMove')
 	async handleMouse(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		console.log(body);
-		this.gameService.playerUpdate(client.id, body.roomID, body.y);
+		this.gameService.playerUpdate(client, body.roomID, body.y);
 	}
 }

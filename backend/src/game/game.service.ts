@@ -7,8 +7,8 @@ import { Player } from "./entity/player";
 
 //TODO : "gameState" event-> game start, game end, field effect
 
-interface GameState{
-	type : "GameStart" | "GameEnd" | "FieldEffect";
+interface GameState {
+	type : "GameStart" | "GameEnd" | "FieldEffect" | "IsLeft";
 	data : any;
 }
 
@@ -27,7 +27,8 @@ export class GameService {
 		"sudden": []
 	};
 	private ingame = [];
-	
+	private connected = [];
+
 	private gameSettings : GameSetting = new GameSetting();
 	private gameRooms = new Map<string, GameRoom>();
 
@@ -38,6 +39,17 @@ export class GameService {
 			// client.disconnect(true);
 			return;
 		}
+
+		// Checks if user is already connected, if they are then send error and disconnect
+		if (this.connected.find((e: Player) => e.intraName === USER_DATA.intraName)) {
+			client.emit('gameError', { error: 'already connected' });
+			client.disconnect(true);
+			return;
+		}
+
+		// Keeps track of users that are connected
+		let player = new Player(USER_DATA.intraName, client);
+		this.connected.push(player);
 
 		if (LOBBY_LOGGING)
 			console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
@@ -51,7 +63,7 @@ export class GameService {
 			return;
 
 		Object.keys(this.queues).forEach(queueType => {
-			if (this.queues[queueType].find(e => e.intraName === USER_DATA.intraName)) {
+			if (this.queues[queueType].find((e: Player) => e.intraName === USER_DATA.intraName && e.socket.id === client.id)) {
 				this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== USER_DATA.intraName });
 
 				if (LOBBY_LOGGING)
@@ -59,7 +71,13 @@ export class GameService {
 			}
 		});
 
+		// Removes user from connection tracking
+		this.connected = this.connected.filter(function(e) { return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id});
+		
 		// TODO: if player is ingame, pause game and wait for reconnect, abandon game after x seconds
+	
+		if (LOBBY_LOGGING)
+			console.log(`${USER_DATA.intraName} disconnected from ${client.id}.`);
 	}
 
 	async joinQueue(client: Socket, clientQueue: string, server: Server) {
@@ -71,7 +89,7 @@ export class GameService {
 		if (!(clientQueue in this.queues)) {
 			if (LOBBY_LOGGING)
 				console.log(`${USER_DATA.intraName} tried to join unknown queue "${clientQueue}".`);
-			client.emit('error', { error: 'unknown queue' });
+			client.emit('gameError', { error: 'unknown queue' });
 			return;
 		}
 
@@ -79,7 +97,7 @@ export class GameService {
 		if (this.ingame.find(e => e.intraName === USER_DATA.intraName)) {
 			if (LOBBY_LOGGING)
 				console.log(`${USER_DATA.intraName} is already in a game.`);
-			client.emit('error', { error: 'already in game' });
+			client.emit('gameError', { error: 'already in game' });
 			return;
 		}
 
@@ -90,7 +108,7 @@ export class GameService {
 		if (IN_QUEUE !== undefined) {
 			if (LOBBY_LOGGING)
 				console.log(`${USER_DATA.intraName} is already in ${IN_QUEUE} queue.`);
-			client.emit('error', { error: 'already in queue' });
+			client.emit('gameError', { error: 'already in queue' });
 			return;
 		}
 
@@ -136,8 +154,12 @@ export class GameService {
 
 		player1.socket.join(ROOM.roomID);
 		player2.socket.join(ROOM.roomID);
-		server.to(ROOM.roomID).emit('gameState', ROOM.roomID);
+
+		player1.socket.emit('gameState', { type: "IsLeft", data: true });
+		player2.socket.emit('gameState', { type: "IsLeft", data: false });
+		server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
 		this.gameRooms.set(ROOM.roomID, ROOM);
+		await ROOM.run(server);
 		return (ROOM.roomID);
 	}
 
@@ -177,11 +199,15 @@ export class GameService {
 	// }
 
 
-	playerUpdate(socketId: string, roomID: string, value: number){
+	async playerUpdate(client: Socket, roomID: string, value: number){
+		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		if (USER_DATA.error !== undefined)
+			return;
+
 		const ROOM = this.gameRooms.get(roomID);
 		if (ROOM === undefined){
 			return;
 		}
-		ROOM.updatePlayerPos(socketId, value);
+		ROOM.updatePlayerPos(client.id, value);
 	}
 }

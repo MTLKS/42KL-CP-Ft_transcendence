@@ -45,8 +45,7 @@ export class GameRoom{
 	}
 
 	generateRoomID(player1_name: string, player2_name: string){
-		// this.roomID = "Test";
-		this.roomID = "Game: " + player1_name + ' vs ' + player2_name;
+		this.roomID = player1_name + player2_name;
 	}
 
 	async run(server: Server){
@@ -148,14 +147,12 @@ export class GameRoom{
 	}
 
 	updatePlayerPos(playerID: string, value: number){
-		this.leftPaddle.posY = value - 50;
-		this.rightPaddle.posY = value - 50;
-		// if (playerID == this.player1Id){
-		// 	this.leftPaddle.posY = value;
-		// }
-		// else if (playerID == this.player2Id){
-		// 	this.rightPaddle.posY = value;
-		// }
+		if (playerID == this.player1Id){
+			this.leftPaddle.posY = value - 50;
+		}
+		else if (playerID == this.player2Id){
+			this.rightPaddle.posY = value - 50;
+		}
 	}
 
 	/**

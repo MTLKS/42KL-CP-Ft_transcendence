@@ -23,9 +23,10 @@ export class GameData {
     this.leftPaddlePosition = { x: 0, y: 0 };
     this.rightPaddlePosition = { x: 0, y: 0 };
     this._pongSpeed = { x: 0, y: 0 };
-    this.socketApi.sendMessages("startGame", {});
+    this.socketApi.sendMessages("joinQueue", { queue: "standard" });
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
+    this.socketApi.listen("gameError", this.listenToGameError);
   }
 
   get pongPosition() {
@@ -47,21 +48,26 @@ export class GameData {
 
   listenToGameState = (data: any) => {
     console.log(data);
+    
+    if (data.type === "GameStart")
+      this.roomID = data.data;
+    else if (data.type === "IsLeft")
+      this.isLeft = data.data;
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
     this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
-      this.rightPaddlePosition = { x: 1600 - 46, y: data.rightPaddlePosY };
+      this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
     } else {
       this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
     }
     this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
   };
 
-  set isLeftPlayer(isLeft: boolean) {
-    this.isLeft = isLeft;
+  listenToGameError = (data: any) => {
+    console.log(data.error);
   }
 
   updatePlayerPosition(y: number) {
