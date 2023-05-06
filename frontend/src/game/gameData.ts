@@ -7,7 +7,7 @@ import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 export class GameData {
   socketApi: SocketApi;
   private _pongPosition: Offset = { x: 800, y: 450 };
-  private _pongSpeed: Offset = { x: 0, y: 0 };
+  private _pongSpeed: Offset = { x: 12, y: 8 };
   leftPaddlePosition: Offset = { x: 0, y: 0 };
   rightPaddlePosition: Offset = { x: 0, y: 0 };
   usingLocalTick: boolean = false;

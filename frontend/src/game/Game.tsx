@@ -13,6 +13,7 @@ import TimeZone, { TimeZoneType } from './game_objects/TimeZone';
 import DashLine from './game_objects/DashLine';
 import GameText from './game_objects/GameText';
 import { GameDataCtx } from '../GameApp';
+import ParticlesRenderer from './game_objects/ParticlesRenderer';
 
 
 interface GameProps {
@@ -40,18 +41,19 @@ function Game(props: GameProps) {
         <TimeZone size={{ w: 300, h: 300 }} position={{ x: 300, y: 300 }} type={TimeZoneType.SLOWDOWN} />
         <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} />
         <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} />
-        <Spits size={{ w: 10, h: 10 }} color={1} />
-        <Spits size={{ w: 5, h: 5 }} color={0} />
+        {/* <Spits size={{ w: 10, h: 10 }} color={1} /> */}
+        {/* <Spits size={{ w: 5, h: 5 }} color={0} /> */}
         <Pong stageSize={boxSize} size={{ w: 10, h: 10 }} />
         <RippleEffect key={'ripple'} stageSize={{ w: 1600, h: 900 }} />
-        <Paticles size={{ w: 3, h: 3 }} />
-        <Trail size={{ w: 10, h: 10 }} />
+        {/* <Paticles size={{ w: 3, h: 3 }} /> */}
+        {/* <Trail size={{ w: 10, h: 10 }} /> */}
         {/* <Trail size={{ w: 10, h: 10 }}  /> */}
         {/* <PongEffect position={{ x: pongPosition.x + 5, y: pongPosition.y + 5 }} size={{ w: 10, h: 10 }} speed={pongSpeed} mode={Mode.FAST} /> */}
-        <Blackhole position={{ x: 1000, y: 300 }} size={{ w: 5, h: 5 }} acceleration={5} />
+        {/* <Blackhole position={{ x: 1000, y: 300 }} size={{ w: 5, h: 5 }} acceleration={5} /> */}
         {/* <Blackhole position={{ x: 500, y: 600 }} size={{ w: 5, h: 5 }} acceleration={7} /> */}
         {/* <Blackhole position={{ x: 300, y: 100 }} size={{ w: 5, h: 5 }} acceleration={3} /> */}
         {/* <PaticleEmittor /> */}
+        <ParticlesRenderer />
       </Container> :
       <></>
   )
