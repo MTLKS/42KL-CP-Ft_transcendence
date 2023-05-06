@@ -3,7 +3,7 @@ import PixelatedImage from '../../../components/PixelatedImage'
 import ProfileSmall from './ProfileSmall';
 import ProfileElo from './ProfileElo';
 import ProfileStat from './ProfileStat';
-import { UserData } from '../../../modal/UserData';
+import { UserData } from '../../../model/UserData';
 import UserContext from '../../../context/UserContext';
 
 interface ProfileBodyProps {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { UserData } from '../../modal/UserData'
+import { UserData } from '../../model/UserData'
 
 interface UserFormNameProps {
   user: UserData,

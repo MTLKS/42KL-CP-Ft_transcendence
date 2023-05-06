@@ -1,7 +1,7 @@
 import { Application, ICanvas } from "pixi.js";
 import SocketApi from "../api/socketApi";
-import { GameDTO } from "../modal/GameDTO";
-import { BoxSize, Offset } from "../modal/GameModels";
+import { GameDTO } from "../model/GameDTO";
+import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 
 export class GameData {

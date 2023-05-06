@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
-import { FriendData } from '../../modal/FriendData'
+import { FriendData } from '../../model/FriendData'
 import Highlighter from '../../components/Highlighter';
 import socketApi from '../../api/socketApi';
 
@@ -39,27 +39,27 @@ function FriendInfo(props: FriendInfoProps) {
   return (
     <div className='flex flex-row text-highlight'>
       <div className='w-[16ch] normal-case'>
-        <Highlighter text={friend.userName} searchTerm={searchTerm}/>
+        <Highlighter text={friend.userName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className='w-[16ch]'>
-        <Highlighter text={friendIntraName} searchTerm={searchTerm}/>
+        <Highlighter text={friendIntraName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className='w-[9ch]'>
-        <Highlighter text={friend.elo.toString()} searchTerm={searchTerm}/>
+        <Highlighter text={friend.elo.toString()} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
-        <FriendlistTag type={friend.status} searchTerm={searchTerm}/>
+        <FriendlistTag type={friend.status} searchTerm={searchTerm} />
       </div>
       {
         <>
           <div className={`${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
-            <FriendlistSeparator/>
+            <FriendlistSeparator />
           </div>
           <div className={`w-[9ch] ${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
-            <Highlighter text={onlineStatus.toLowerCase()} searchTerm={searchTerm}/>
+            <Highlighter text={onlineStatus.toLowerCase()} searchTerm={searchTerm} />
           </div>
         </>
       }

@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Stage, Container, Text, Graphics, useTick, withFilters, useApp } from '@pixi/react'
 import Paddle from './game_objects/Paddle';
-import { BoxSize, Offset } from '../modal/GameModels';
+import { BoxSize, Offset } from '../model/GameModels';
 import Pong from './game_objects/Pong';
 import Paticles from './game_objects/Paticles';
 import RippleEffect from './game_objects/RippleEffect';

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { BoxSize, Offset } from '../../modal/GameModels';
+import { BoxSize, Offset } from '../../model/GameModels';
 import { Container, Graphics, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
 import sleep from '../../functions/sleep';

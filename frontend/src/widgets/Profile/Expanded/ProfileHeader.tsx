@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
 import StatusIndicator from '../../StatusIndicator';
-import { UserData } from '../../../modal/UserData';
+import { UserData } from '../../../model/UserData';
 import UserContext from '../../../context/UserContext';
 
 interface ProfileHeaderProps {

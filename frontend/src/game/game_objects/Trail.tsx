@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Graphics, ParticleContainer, PixiComponent, Sprite, render, useApp, useTick } from '@pixi/react'
-import { BoxSize, Offset } from '../../modal/GameModels';
+import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { GameDataCtx } from '../../GameApp';
 interface TrailProps {
