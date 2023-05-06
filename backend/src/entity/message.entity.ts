@@ -1,15 +1,23 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity( { name: 'message' } )
-export class Friendship {
+export class Message {
+	constructor(intraName: string, channelId: number, channel: boolean, message: string, timeStamp: string) {
+		this.intraName = intraName;
+		this.channelId = channelId;
+		this.channel = channel;
+		this.message = message;
+		this.timeStamp = timeStamp;
+	}
+
 	@PrimaryGeneratedColumn()
 	messageId: number;
 
 	@Column()
-	senderId: number;
+	intraName: string;
 
 	@Column()
-	receiverId: number;
+	channelId: number;
 
 	@Column()
 	channel: boolean;

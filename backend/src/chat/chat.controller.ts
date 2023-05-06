@@ -1,9 +1,23 @@
-import { Body, Controller, Get, Param, Patch, Post } from "@nestjs/common";
+import { Controller, Get, Headers } from "@nestjs/common";
+import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
+import { UseGuards } from "@nestjs/common";
 
 @Controller("chat")
 export class ChatController {
 	constructor (private readonly chatService: ChatService) {}
+
+	@Get('dm')
+	@UseGuards(AuthGuard)
+	getAllDM(@Headers('Authorization') accessToken: string): any {
+		
+	}
+
+	// @Post('dm')
+	// @UseGuards(AuthGuard)
+	// createNewDM(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+	// 	return this.chatService.createNewDM(accessToken, body.receiverIntraName);
+	// }
 
 	// //Get all chat of a user
 	// @Get(':id')

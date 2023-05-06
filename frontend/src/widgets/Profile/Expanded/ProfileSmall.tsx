@@ -1,16 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
 import StatusIndicator from '../../StatusIndicator';
 import { UserData } from '../../../modal/UserData';
+import UserContext from '../../../context/UserContext';
 
 interface ProfileSmallProps {
   expanded: boolean;
-  userData: UserData;
+  status: string;
 }
 
 function ProfileSmall(props: ProfileSmallProps) {
-  const { expanded, userData } = props;
-  const { userName } = userData;
+  const { expanded, status } = props;
+  const { myProfile } = useContext(UserContext);
+  const { userName } = myProfile;
   const [width, setWidth] = useState("w-0");
 
   useEffect(() => {
@@ -29,7 +31,7 @@ function ProfileSmall(props: ProfileSmallProps) {
       </div>
       <div className=' bg-dimshadow w-1 h-16 mr-5' />
       <div>
-        <StatusIndicator status="offline" />
+        <StatusIndicator status={status} />
       </div>
     </div>
   )

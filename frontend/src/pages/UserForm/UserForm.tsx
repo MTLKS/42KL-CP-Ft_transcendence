@@ -26,9 +26,9 @@ const getError = (code: ErrorCode) => {
     case ErrorCode.EMPTYANS:
       return ("No answer? OK! We'll just sit here and wait...");
     case ErrorCode.NAMETOOSHORT:
-      return ("Longer name, please. (MIN: 5 chars)");
+      return ("Longer name, please. (MIN: 1 chars)");
     case ErrorCode.NAMETOOLONG:
-      return ("Name too epic, please shorten. (MAX: 15 chars)");
+      return ("Name too epic, please shorten. (MAX: 16 chars)");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -90,7 +90,7 @@ function UserForm(props: UserFormProps) {
 
     if (!userName || userName.trim() === '')
       errors.push(ErrorCode.EMPTYNAME);
-    if (userName.length < 5 && !errors.includes(ErrorCode.EMPTYNAME))
+    if (userName.length < 1 && !errors.includes(ErrorCode.EMPTYNAME))
       errors.push(ErrorCode.NAMETOOSHORT);
     if (userName.length > 16)
       errors.push(ErrorCode.NAMETOOLONG);
@@ -116,7 +116,7 @@ function UserForm(props: UserFormProps) {
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
-      await Api.post("/user", formData).then((res) => console.log(res));
+      await Api.patch("/user", formData).then((res) => console.log(res));
       setPopups([]);
       await sleep(1000);
       login();

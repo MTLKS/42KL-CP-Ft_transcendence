@@ -42,7 +42,7 @@ function Chat() {
   const [filter, setFilter] = useState<boolean>(false);
 
   useEffect(() => {
-    console.log(filtered);
+    // console.log(filtered);
     setExpanded(expanded);
   }, [rooms]);
 

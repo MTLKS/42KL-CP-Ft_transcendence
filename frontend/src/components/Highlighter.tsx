@@ -19,10 +19,10 @@ function Highlighter(props: HighlighterProps) {
   return (
     <>
       {splitText.map((word, i) => (
-        <>
+        <span key={i}>
           {word}
-          {i < matches.length && <span className={style} key={i}>{matches[i]}</span>}
-        </>
+          {i < matches.length && <span className={style} key={text+`_`+i}>{matches[i]}</span>}
+        </span>
       ))}
     </>
   );

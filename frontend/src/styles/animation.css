@@ -84,11 +84,28 @@
   }
 }
 
-@keyframes right-to-left {
+@keyframes left-to-right {
   0% {
-    right: -100%;
+    left: -100%;
   }
   100% {
-    right: 0%;
+    left: 0%;
   }
+}
+
+@keyframes shine {
+  0% {
+    top: -50%;
+  }
+  100% {
+    top: 150%;
+  }
+}
+
+@keyframes h-shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(10px); }
+  50% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+  100% { transform: translateX(0); }
 }

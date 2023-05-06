@@ -1,7 +1,6 @@
-import { Get, UseGuards, Param, Post, Body, Patch, Delete, Headers } from '@nestjs/common';
+import { Get, UseGuards, Param, Post, Body, Patch, Delete, Headers, Controller } from '@nestjs/common';
 import { FriendshipService } from './friendship.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
-import { Controller } from '@nestjs/common';
 
 @Controller('friendship')
 export class FriendshipController {
@@ -14,7 +13,7 @@ export class FriendshipController {
 		return this.friendshipService.getFriendship(accessToken);
 	}
 
-	// Get all friendship by ID
+	// Get all friendship by intraName
 	@Get(":intraName")
 	@UseGuards(AuthGuard)
 	getFriendshipByID(@Param('intraName') intraName: string): any {
@@ -25,20 +24,20 @@ export class FriendshipController {
 	@Post()
 	@UseGuards(AuthGuard)
 	newFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.newFriendship(accessToken, body.receiverId, body.status);
+		return this.friendshipService.newFriendship(accessToken, body.receiverIntraName, body.status);
 	}
 
 	// Update friendship by ID
 	@Patch()
 	@UseGuards(AuthGuard)
 	updateFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.updateFriendship(accessToken, body.receiverId, body.status);
+		return this.friendshipService.updateFriendship(accessToken, body.receiverIntraName, body.status);
 	}
 	
 	//Delete friendship by ID
-	@Delete()
+	@Delete(":receiverIntraName")
 	@UseGuards(AuthGuard)
-	deleteFriendship(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.friendshipService.deleteFriendship(accessToken, body.receiverId, body.status);
+	deleteFriendship(@Headers('Authorization') accessToken: string, @Param('receiverIntraName') receiverIntraName: string): any {
+		return this.friendshipService.deleteFriendship(accessToken, receiverIntraName);
 	}
 }

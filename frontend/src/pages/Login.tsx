@@ -36,12 +36,22 @@ function SkewedPattern() {
 function Login() {
 
   const [errorCount, setErrorCount] = useState(0);
+  const [errorStyle, setErrorStyle] = useState("");
 
   const promptFieldRef = useRef<any>(null);
 
   useEffect(() => {
     promptFieldRef.current?.focusOnInput();
   }, []);
+
+  useEffect(() => {
+    if (errorCount === 0)
+      return ;
+    setTimeout(() => {
+      setErrorStyle("animate-h-shake");
+    }, 5);
+    setErrorStyle("");
+  }, [errorCount]);
 
   return (
     <div className='w-[80%] h-full mx-auto flex flex-col justify-center items-center text-highlight'>
@@ -52,15 +62,17 @@ function Login() {
         </div>
         <LoginBadge />
       </div>
-      <PromptField
-        handleCommands={handleCommands}
-        availableCommands={["LOGIN"]}
-        center={true}
-        capitalize={true}
-        ref={promptFieldRef}
-      />
+      <div className={`${errorStyle} duration-[0.1s]`}>
+        <PromptField
+          handleCommands={handleCommands}
+          availableCommands={["LOGIN"]}
+          center={true}
+          capitalize={true}
+          ref={promptFieldRef}
+        />
+      </div>
       {
-        (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0'>Have you tried using the 'login' command?</div>)
+        (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0 mt-3'>Have you tried using 'login'?</div>)
       }
     </div >
   )

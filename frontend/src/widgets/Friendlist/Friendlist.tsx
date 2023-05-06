@@ -20,10 +20,12 @@ function Friendlist(props: FriendlistProps) {
   const { userData, friendsData, onQuit } = props;
 
   // Use Hooks
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searching, setSearching] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const [maxDisplayLines, setMaxDisplayLines] = useState(0);
-  const [currentLine, setCurrentLine] = useState(0);
+  const [startingIndex, setStartingIndex] = useState(0);
+  const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
 
@@ -43,31 +45,43 @@ function Friendlist(props: FriendlistProps) {
     observerSetup();
   }, []);
 
-  // testing
   useEffect(() => {
-    console.log(currentLine);
-  }, [currentLine]);
+    if (inputValue === "")
+      setIsSearching(false);
+    console.log(inputValue);
+  }, [inputValue]);
+
+  // calibrate the value of start and ending index
+  useEffect(() => {
+    if (maxDisplayLines > lines.length) {
+      setEndingIndex(lines.length);
+      setStartingIndex(0);
+    }
+    else
+      setEndingIndex(startingIndex + maxDisplayLines - 1);
+  }, [startingIndex])
 
   return (
     <div className='w-full h-full flex flex-col overflow-hidden text-base uppercase bg-dimshadow px-[2ch] relative' onClick={focusOnInput}>
       <input
         className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        onInput={handleInput}
+        onChange={handleInput}
+        value={inputValue}
         ref={inputRef}
       />
-        <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
-          {
-            friendsData.length === 0
-              ? <EmptyFriendlist />
-              : lines.slice(currentLine, currentLine + maxDisplayLines)
-          }
-        </div>
+      <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
+        {
+          friendsData.length === 0
+            ? <EmptyFriendlist />
+            : lines.slice(startingIndex, endingIndex)
+        }
+      </div>
       <p className={`absolute bottom-0 left-0 ${friendsData.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
         {
-          !searching
-            ? `./usr/${userData.userName}/friends ${friendsData.length === 0 ? '' : `line ${currentLine + 1}/${lines.length}`}  press 'q' to quit`
-            : searchTerm
+          (!isSearching || inputValue === "")
+            ? `./usr/${userData.userName}/friends ${friendsData.length === 0 ? '' : `line [${startingIndex + 1}-${endingIndex}]/${lines.length}`}  press 'q' to quit`
+            : inputValue
         }
       </p>
     </div>
@@ -77,22 +91,10 @@ function Friendlist(props: FriendlistProps) {
     if (divRef.current) {
       const height = divRef.current.clientHeight;
       const lineHeight = 24;
-      setMaxDisplayLines(Math.floor(height / lineHeight) + countExtraLine());
+      const max = Math.floor(height / lineHeight);
+      setMaxDisplayLines(max);
+      (max - 1 < lines.length) ? setEndingIndex(max - 1) : setEndingIndex(lines.length);
     }
-  }
-
-  function countExtraLine() {
-    let lines = 0;
-
-    if (friendsData.length !== 0)
-      lines += 2;
-    if (acceptedFriends.length !== 0)
-      lines += 2;
-    if (pendingFriends.length !== 0)
-      lines += 2;
-    if (blockedFriends.length !== 0)
-      lines += 2;
-    return (lines);
   }
 
   function observerSetup() {
@@ -117,8 +119,8 @@ function Friendlist(props: FriendlistProps) {
     if (sortedFriends.length === 0) return [<EmptyFriendlist />];
 
     components.push(
-      <FriendlistEmptyLine />,
-      <FriendlistTitle searchTerm={searchTerm}/>
+      <FriendlistEmptyLine key="el0" />,
+      <FriendlistTitle searchTerm={searchTerm} />
     );
 
     sortedFriends.map((friend) => {
@@ -139,15 +141,15 @@ function Friendlist(props: FriendlistProps) {
         }
 
         components.push(
-          <FriendlistEmptyLine />,
-          <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm}/>,
-          <FriendlistEmptyLine />
-          );
+          <FriendlistEmptyLine key={friend.status + `_el1`} />,
+          <FriendlistTag key={friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm} />,
+          <FriendlistEmptyLine key={friend.status + `_el2`} />
+        );
         prevCategory = friend.status;
       }
       components.push(
         <FriendInfo
-          key={`${friend.status}_${friend.id}`}
+          key={friend.id}
           friend={friend}
           intraName={userData.intraName}
           searchTerm={searchTerm}
@@ -160,23 +162,39 @@ function Friendlist(props: FriendlistProps) {
     inputRef.current?.focus();
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    switch (e.key) {
-      case "ArrowUp":
-        if (currentLine > 0) setCurrentLine(currentLine - 1);
-        break;
-      case "ArrowDown":
-        if (currentLine + 1 < lines.length) setCurrentLine(currentLine + 1);
-        break;
-      case "Enter":
-        if (searchTerm === '')
-          setCurrentLine(currentLine + 1);
-        break;
-      case "q":
-        if (!searching) setTimeout(() => onQuit(), 10);
-        break;
-      default:
-        break;
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    const { key } = event;
+    const isLastLine = (startingIndex + maxDisplayLines > lines.length);
+    const isFirstLine = startingIndex <= 0;
+
+    // Backward one line
+    if (key === "ArrowUp") {
+      if (!isFirstLine) setStartingIndex(startingIndex - 1);
+      return;
+    }
+
+    // Forward one line
+    if (key === "ArrowDown") {
+      if (!isLastLine) setStartingIndex(startingIndex + 1);
+      return;
+    }
+
+    // Forward one line or Start searching
+    if (key === "Enter") {
+      if (inputValue === "" && !isLastLine)
+        setStartingIndex(startingIndex + 1);
+      else {
+        setSearchTerm(inputValue.substring(1));
+        console.log(`here`);
+      }
+      setInputValue("");
+      return;
+    }
+
+    // Quit friendlist
+    if (key === "q" && !isSearching) {
+      setTimeout(() => onQuit(), 10);
+      return;
     }
   }
 
@@ -185,8 +203,12 @@ function Friendlist(props: FriendlistProps) {
 
     if (value[value.length - 1] == '\\') value += '\\';
 
-    setSearchTerm(value);
-    if (value[0] === '/') setSearching(true);
+    setInputValue(value.toLowerCase());
+    if (value[0] === '/') {
+      setIsSearching(true);
+      return;
+    }
+    setInputValue("");
   }
 }
 

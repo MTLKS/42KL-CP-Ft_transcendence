@@ -2,9 +2,9 @@ import { ChatDTO } from './chat.dto';
 
 export class RoomDTO {
 	constructor(id : string) {
-		this.roomId = id;
+		this.channelId = id;
 		this.messages = [];
 	}
-	roomId: string;
+	channelId: string;
 	messages : ChatDTO[];
 }
