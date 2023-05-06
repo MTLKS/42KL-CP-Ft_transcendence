@@ -31,6 +31,6 @@ import { GameService } from './game/game.service';
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message]), MulterModule.register(MULTER_CONFIG)],
   controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController],
-  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService],
+  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService],
 })
 export class AppModule {}
