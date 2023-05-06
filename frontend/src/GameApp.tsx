@@ -18,7 +18,7 @@ function GameApp(props: GameAppProps) {
   useEffect(() => {
     gameTick.setSetScale = setScale;
     // gameTick.useLocalTick();
-    return () => gameTick.destructor();
+    return () => gameTick.endGame();
   }, []);
   return (
     <AppProvider value={pixiApp}>

@@ -6,27 +6,21 @@ import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 
 export class GameData {
   socketApi: SocketApi;
-  private _pongPosition: Offset;
-  private _pongSpeed: Offset;
-  leftPaddlePosition: Offset;
-  rightPaddlePosition: Offset;
+  private _pongPosition: Offset = { x: 800, y: 450 };
+  private _pongSpeed: Offset = { x: 0, y: 0 };
+  leftPaddlePosition: Offset = { x: 0, y: 0 };
+  rightPaddlePosition: Offset = { x: 0, y: 0 };
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
+  gameStarted: boolean = false;
   roomID: string | undefined;
 
   setScale?: (scale: number) => void;
+  setShouldRender?: (shouldRender: boolean) => void;
 
   constructor() {
     console.log("gameTick created");
     this.socketApi = new SocketApi("game");
-    this._pongPosition = { x: 800, y: 450 };
-    this.leftPaddlePosition = { x: 0, y: 0 };
-    this.rightPaddlePosition = { x: 0, y: 0 };
-    this._pongSpeed = { x: 0, y: 0 };
-    this.socketApi.sendMessages("joinQueue", { queue: "standard" });
-    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
-    this.socketApi.listen("gameState", this.listenToGameState);
-    this.socketApi.listen("gameError", this.listenToGameError);
   }
 
   get pongPosition() {
@@ -37,7 +31,25 @@ export class GameData {
     return { ...this._pongSpeed } as Readonly<Offset>;
   }
 
-  destructor() {
+  startGame() {
+    if (this.gameStarted) {
+      console.error("game already started");
+      return;
+    }
+    console.log("start game");
+    this.gameStarted = true;
+    this.setShouldRender?.(true);
+    this.socketApi.sendMessages("joinQueue", { queue: "standard" });
+    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
+    this.socketApi.listen("gameState", this.listenToGameState);
+    this.socketApi.listen("gameError", this.listenToGameError);
+  }
+
+  endGame() {
+    console.log("end game");
+    if (!this.gameStarted) return;
+    this.gameStarted = false;
+    this.setShouldRender?.(false);
     this.socketApi.removeListener("gameLoop");
     this.socketApi.removeListener("gameState");
     this.socketApi.removeListener("gameError");
@@ -47,13 +59,15 @@ export class GameData {
     this.setScale = setScale;
   }
 
+  set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
+    this.setShouldRender = setShouldRender;
+  }
+
   listenToGameState = (data: any) => {
     console.log(data);
-    
-    if (data.type === "GameStart")
-      this.roomID = data.data;
-    else if (data.type === "IsLeft")
-      this.isLeft = data.data;
+
+    if (data.type === "GameStart") this.roomID = data.data;
+    else if (data.type === "IsLeft") this.isLeft = data.data;
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
@@ -69,7 +83,7 @@ export class GameData {
 
   listenToGameError = (data: any) => {
     console.log(data.error);
-  }
+  };
 
   updatePlayerPosition(y: number) {
     if (this.isLeft) {

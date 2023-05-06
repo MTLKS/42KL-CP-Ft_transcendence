@@ -25,8 +25,25 @@ import Tfa from '../components/tfa';
 import UserForm from './UserForm/UserForm';
 import { PolkaDotContainer } from '../components/Background';
 import MouseCursor from '../components/MouseCursor';
+import { gameTick } from '../main';
 
-const availableCommands = ["login", "sudo", "ls", "start", "add", "clear", "help", "whoami", "end", "less", "profile", "friends", "set", "reset"];
+const availableCommands = [
+  "login",
+  "sudo",
+  "ls",
+  "display",
+  "start",
+  "add",
+  "clear",
+  "help",
+  "whoami",
+  "end",
+  "less",
+  "profile",
+  "friends",
+  "set",
+  "reset"
+];
 const emptyWidget = <div></div>;
 let currentPreviewProfile: UserData | null = null;
 
@@ -109,9 +126,12 @@ function HomePage() {
         newList = [newEmbed].concat(elements);
         setIndex(index + 1);
         break;
-      case "start":
+      case "display":
         if (!startMatch)
           setStartMatch(true);
+        break;
+      case "start":
+        gameTick.startGame();
         break;
       case "end":
         if (startMatch) {
