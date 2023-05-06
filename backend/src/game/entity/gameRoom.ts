@@ -3,13 +3,14 @@ import { Paddle } from "./paddle";
 import { GameSetting } from "./settings";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
+import { Player } from "./player";
 
 
 export class GameRoom{
 	roomID: string;
 	gameType: string;
-	player1Id: string;
-	player2Id: string;
+	player1: Player;
+	player2: Player;
 	canvasWidth: number;
 	canvasHeight: number;
 	ballInitSpeedX: number;
@@ -22,12 +23,13 @@ export class GameRoom{
 	player1Score: number;
 	player2Score: number;
 	gameEnded: boolean;
+	_players: Array<string>;
 
-	constructor(player1_id: string, player2_id: string, gameType: string, setting: GameSetting){
-		this.roomID = 'Game: ';
+	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting){
+		this.roomID = player1.intraName + player2.intraName;
 		this.gameType = gameType;
-		this.player1Id = player1_id;
-		this.player2Id = player2_id;
+		this.player1 = player1;
+		this.player2 = player2;
 		this.canvasWidth = setting.canvasWidth;
 		this.canvasHeight = setting.canvasHeight;
 		this.ballInitSpeedX = setting.ballSpeedX;
@@ -38,14 +40,11 @@ export class GameRoom{
 		this.rightPaddle = new Paddle(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.paddleHeight);
 		this.interval = null;
 		
+		this._players = [player1.intraName, player2.intraName];
 		this.lastWinner = '';
 		this.player1Score = 0;
 		this.player2Score = 0;
 		this.gameEnded = false;
-	}
-
-	generateRoomID(player1_name: string, player2_name: string){
-		this.roomID = player1_name + player2_name;
 	}
 
 	async run(server: Server){
@@ -146,13 +145,30 @@ export class GameRoom{
 		}
 	}
 
-	updatePlayerPos(playerID: string, value: number){
-		if (playerID == this.player1Id){
+	updatePlayerPos(socketId: string, value: number){
+		if (socketId == this.player1.socket.id){
 			this.leftPaddle.posY = value - 50;
 		}
-		else if (playerID == this.player2Id){
+		else if (socketId == this.player2.socket.id){
 			this.rightPaddle.posY = value - 50;
 		}
+	}
+
+	resumeGame(player: Player) {
+		if (player.intraName === this.player1.intraName)
+			this.player1 = player;
+		else if (player.intraName === this.player2.intraName)
+			this.player2 = player;
+
+		player.socket.join(this.roomID);
+		player.socket.emit('gameState', { type: "IsLeft", data: player === this.player1 });
+		player.socket.emit('gameState', { type: "GameStart", data: this.roomID });
+		console.log(`${player.intraName} reconnected to ${this.roomID}`);
+	}
+
+	// TODO: wait for reconnect, abandon game after x seconds
+	pauseGame() {
+		console.log(`game ${this.roomID} paused due to player disconnect`);
 	}
 
 	/**

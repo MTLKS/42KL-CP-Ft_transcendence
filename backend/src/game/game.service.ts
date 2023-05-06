@@ -54,7 +54,12 @@ export class GameService {
 		if (LOBBY_LOGGING)
 			console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
 
-		// TODO: if player is ingame, reconnect player to game
+		// If player is ingame, reconnect player to game
+		this.gameRooms.forEach((gameRoom) => {
+			if (gameRoom._players.includes(USER_DATA.intraName)) {
+				gameRoom.resumeGame(player);
+			}
+		})
 	}
 
 	async handleDisconnect(client: Socket) {
@@ -71,11 +76,16 @@ export class GameService {
 			}
 		});
 
+		// If player is ingame, pause game 
+		this.gameRooms.forEach((gameRoom) => {
+			if (gameRoom._players.includes(USER_DATA.intraName)) {
+				gameRoom.pauseGame();
+			}
+		})
+
 		// Removes user from connection tracking
 		this.connected = this.connected.filter(function(e) { return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id});
 		
-		// TODO: if player is ingame, pause game and wait for reconnect, abandon game after x seconds
-	
 		if (LOBBY_LOGGING)
 			console.log(`${USER_DATA.intraName} disconnected from ${client.id}.`);
 	}
@@ -147,10 +157,7 @@ export class GameService {
 	}
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
-		const ROOM = new GameRoom(player1.socket.id, player2.socket.id, gameType, this.gameSettings);
-
-		//TODO: Generate room ID, decide on to pass in player name or search in database
-		ROOM.generateRoomID(player1.intraName, player2.intraName)
+		const ROOM = new GameRoom(player1, player2, gameType, this.gameSettings);
 
 		player1.socket.join(ROOM.roomID);
 		player2.socket.join(ROOM.roomID);
