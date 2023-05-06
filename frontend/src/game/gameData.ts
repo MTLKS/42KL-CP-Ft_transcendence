@@ -40,6 +40,7 @@ export class GameData {
   destructor() {
     this.socketApi.removeListener("gameLoop");
     this.socketApi.removeListener("gameState");
+    this.socketApi.removeListener("gameError");
   }
 
   set setSetScale(setScale: (scale: number) => void) {
