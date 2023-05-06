@@ -82,7 +82,8 @@ export function CollapsiblePopup(props: CollapsiblePopup) {
     setTimeout(() => {
       setPosition("0px");
     }, 20);
-  }, []);
+    setIsCollapsed(false);
+  }, [props.content]);
 
   useEffect(() => {
     if (isCollapsed)

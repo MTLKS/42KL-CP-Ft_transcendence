@@ -2,13 +2,13 @@ import { WebSocketGateway, OnGatewayConnection, OnGatewayDisconnect, SubscribeMe
 import { StatusService } from './status.service';
 import { Body, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/guard/AuthGuard';
-import { Socket,Server } from 'socket.io';
+import { Socket } from 'socket.io';
 
-@WebSocketGateway({ cors : {origin: '*'} })
+@WebSocketGateway({ cors: {origin: '*'} })
 export class StatusGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	constructor (private readonly statusService: StatusService) {}
 	
-	@WebSocketServer() server: Server;
+	@WebSocketServer() server: any;
 
 	@UseGuards(AuthGuard)
 	async handleConnection(client: any) {

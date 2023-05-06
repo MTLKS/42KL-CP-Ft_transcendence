@@ -11,14 +11,16 @@ export class StatusService {
 
 	// New user connection
 	async userConnect(client: any, server: any): Promise<any> {
-		client.on('userConnect', () => {});
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
-			return USER_DATA;
+			return { "error": USER_DATA.error };
 		const STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
 		client.join(USER_DATA.intraName);
 		if (STATUS.length !== 0) {
+			if (STATUS[0].status === "ONLINE")
+				return { "error": "User already connected" };
 			STATUS[0].clientId = client.id;
+			STATUS[0].status = "ONLINE";
 			await this.statusRepository.save(STATUS[0]);
 			return STATUS[0];
 		}
@@ -37,7 +39,8 @@ export class StatusService {
 		if (STATUS.length === 0)
 			return server.emit('statusRoom', { "error": "Invalid client id - Client ID not found" });
 		server.to(USER_DATA.intraName).emit('statusRoom', { "intraName": STATUS[0].intraName, "status": "OFFLINE" });
-		return await this.statusRepository.delete({ clientId: client.id });
+		STATUS[0].status = "OFFLINE";
+		return await this.statusRepository.save(STATUS[0]);
 	}
 
 	// User status change
@@ -57,7 +60,7 @@ export class StatusService {
 	// User join status room based on intraName
 	async statusRoom(client: any, server: any, intraName: string, joining: boolean): Promise<any> {
 		if (intraName === undefined)
-			return ;
+			return { "error": "Invalid body - body must include intraName(string)" };
 		if (joining === undefined)
 			return server.to(intraName).emit('statusRoom', { "error": "Invalid body - joining(boolean) is undefined" });
 		if (joining === true) {
@@ -65,15 +68,10 @@ export class StatusService {
 			if (USER_DATA.error !== undefined)
 				return server.emit('statusRoom', { "error": "Invalid token - Token not found" });
 			const FRIEND_STATUS = await this.statusRepository.find({ where: {intraName: intraName} });
-			const MY_STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
-			if (FRIEND_STATUS.length === 0) {
-				client.join(intraName);
-				server.to(intraName).emit('statusRoom', { "intraName": intraName, "status": "OFFLINE" });
-			} else {
-				server.to(intraName).emit('statusRoom', { "intraName": MY_STATUS[0].intraName, "status": MY_STATUS[0].status });
-				client.join(intraName);
-				server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
-			}
+			if (FRIEND_STATUS.length === 0)
+				return server.to(intraName).emit('statusRoom', { "error": "Invalid intraName - IntraName not found" });
+			client.join(intraName);
+			server.to(intraName).emit('statusRoom', { "intraName": FRIEND_STATUS[0].intraName, "status": FRIEND_STATUS[0].status });
 		} else {
 			client.leave(intraName);
 		}

@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/user.entity";
 import { Injectable } from "@nestjs/common";
 import { authenticator } from "otplib";
-import * as CryptoJS from "crypto-js";
+import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as qrCode from "qrcode";
 
@@ -11,13 +11,14 @@ import * as qrCode from "qrcode";
 export class TFAService{
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
-	async requestSecret(accessToken: string) : Promise<any> {
+	async requestNewSecret(accessToken: string) : Promise<any> {
 		try {
-			const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
-			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
-			const DATA = await this.userRepository.find({ where: {accessToken} });
+			const USER_DATA = await this.userService.getMyUserData(accessToken);
+			const DATA = await this.userRepository.find({ where: {intraName: USER_DATA.intraName} });
+			if (DATA[0].tfaSecret != null)
+				return { qr: null, secretKey: null };
 			DATA[0].tfaSecret = authenticator.generateSecret();
-			const ACCOUNT_NAME = INTRA_DTO.name;
+			const ACCOUNT_NAME = USER_DATA.userName;
 			const SERVICE = "PONGSH"
 			const OTP_PATH = authenticator.keyuri(ACCOUNT_NAME, SERVICE, DATA[0].tfaSecret);
 			const IMAGE_URL = await qrCode.toDataURL(OTP_PATH);
@@ -30,14 +31,19 @@ export class TFAService{
 
 	async validateOTP(accessToken: string, otp: string) : Promise<any> {
 		try {
-			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
-			const DATA = await this.userRepository.find({ where: {accessToken} });
+			const DATA = await this.userService.getMyUserData(accessToken);
 			return { boolean: authenticator.verify({
 				token : otp, 
-				secret : DATA[0].tfaSecret,
+				secret : DATA.tfaSecret,
 			}) };
 		} catch {
 			return { boolean: false};
 		}
+	}
+
+	async deleteSecret(accessToken: string) : Promise<any> {
+		const DATA = await this.userRepository.find({ where: {intraName: (await this.userService.getMyUserData(accessToken)).intraName} });
+		DATA[0].tfaSecret = null;
+		return await this.userRepository.save(DATA[0]);
 	}
 }

@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
-import StatusIndicator from '../../StatusIndicator';
+import StatusIndicator from '../StatusIndicator';
 import { UserData } from '../../../modal/UserData';
+import UserContext from '../../../contexts/UserContext';
 
 interface ProfileHeaderProps {
   expanded: boolean;
-  userData: UserData;
   status: string;
 }
 
 function ProfileHeader(props: ProfileHeaderProps) {
-  const { expanded, userData, status } = props;
-  const { userName, intraName } = userData;
+  const { myProfile } = useContext(UserContext);
+  const { expanded, status } = props;
+  const { userName, intraName } = myProfile;
   const maxHeight = 80;
   const [height, setHeight] = useState(0);
 
