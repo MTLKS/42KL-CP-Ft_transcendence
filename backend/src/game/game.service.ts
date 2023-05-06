@@ -3,6 +3,7 @@ import { UserService } from "src/user/user.service";
 import { GameRoom } from "./entity/gameRoom";
 import { GameSetting } from "./entity/settings";
 import { Socket, Server } from "socket.io";
+import { Player } from "./entity/player";
 
 //TODO : "gameState" event-> game start, game end, field effect
 
@@ -30,17 +31,16 @@ export class GameService {
 	private gameSettings : GameSetting = new GameSetting();
 	private gameRooms = new Map<string, GameRoom>();
 
-
 	//Lobby functions 
 	async handleConnection(client: Socket) {
-		// const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		// if (USER_DATA.error !== undefined) {
-		// 	client.disconnect(true);
-		// 	return;
-		// }
+		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		if (USER_DATA.error !== undefined) {
+			// client.disconnect(true);
+			return;
+		}
 
-		// if (LOBBY_LOGGING)
-		// 	console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
+		if (LOBBY_LOGGING)
+			console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
 
 		// TODO: if player is ingame, reconnect player to game
 	}
@@ -97,7 +97,8 @@ export class GameService {
 		// Puts player in the queue
 		if (LOBBY_LOGGING)
 			console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
-		this.queues[clientQueue].push({intraName: USER_DATA.intraName, socket: client});
+		let player = new Player(USER_DATA.intraName, client);
+		this.queues[clientQueue].push(player);
 		
 		// Run queue logic
 		// TODO: right now it is FIFO, may want to change to be based on ELO.
@@ -110,6 +111,7 @@ export class GameService {
 			// this.startGame(player1, player2, server);
 			if (LOBBY_LOGGING)
 				console.log(`Game start ${player1.intraName} ${player2.intraName}`);
+			this.joinGame(player1, player2, clientQueue, server);
 		}
 	}
 
@@ -126,14 +128,14 @@ export class GameService {
 		})
 	}
 
-	async joinGame(player1: Socket, player2: Socket, server: Server): Promise<string>{
-		const ROOM = new GameRoom(player1.id, player2.id, this.gameSettings);
+	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
+		const ROOM = new GameRoom(player1.socket.id, player2.socket.id, gameType, this.gameSettings);
 
 		//TODO: Generate room ID, decide on to pass in player name or search in database
-		ROOM.generateRoomID(player1.id, player2.id)
+		ROOM.generateRoomID(player1.intraName, player2.intraName)
 
-		player1.join(ROOM.roomID);
-		player2.join(ROOM.roomID);
+		player1.socket.join(ROOM.roomID);
+		player2.socket.join(ROOM.roomID);
 		server.to(ROOM.roomID).emit('gameState', ROOM.roomID);
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		return (ROOM.roomID);

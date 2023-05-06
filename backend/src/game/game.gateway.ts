@@ -34,7 +34,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 		//May send info such as clientID, player name through socket.data
 		// console.log(player1.data);
-		const roomName = await this.gameService.joinGame(player1, player2, this.server);
+		const roomName = await this.gameService.joinGame({ intraName: 'test', socket: player1 }, { intraName: 'test', socket: player2 }, 'standard', this.server);
 		await this.gameService.startGame(roomName, this.server);
 	}
 
@@ -45,6 +45,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('playerMove')
 	async handleMouse(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		console.log(body);
 		this.gameService.playerUpdate(client.id, body.roomID, body.y);
 	}
 }

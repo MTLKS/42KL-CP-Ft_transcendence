@@ -7,6 +7,7 @@ import { GameDTO } from "src/dto/game.dto";
 
 export class GameRoom{
 	roomID: string;
+	gameType: string;
 	player1Id: string;
 	player2Id: string;
 	canvasWidth: number;
@@ -22,8 +23,9 @@ export class GameRoom{
 	player2Score: number;
 	gameEnded: boolean;
 
-	constructor(player1_id: string, player2_id: string, setting: GameSetting){
+	constructor(player1_id: string, player2_id: string, gameType: string, setting: GameSetting){
 		this.roomID = 'Game: ';
+		this.gameType = gameType;
 		this.player1Id = player1_id;
 		this.player2Id = player2_id;
 		this.canvasWidth = setting.canvasWidth;
