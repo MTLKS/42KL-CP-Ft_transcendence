@@ -6,11 +6,14 @@ import ChatNavbar from './ChatNavbar';
 import ChatTableTitle from './ChatTableTitle';
 import NewChat from './ChatroomBody/NewChat';
 import ChatroomHeader from './ChatroomBody/Chatroom/ChatroomHeader';
+import Chatroom from './ChatroomBody/Chatroom/Chatroom';
+import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
+import ChatroomContent from './ChatroomBody/Chatroom/ChatroomContent';
 
 function Chat() {
 
   const [expanded, setExpanded] = useState(false);
-  const [chatroomBody, setChatroomBody] = useState(<ChatroomHeader />);
+  const [chatroomBody, setChatroomBody] = useState(<ChatroomContent/>);
 
   return (
     <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'}`}>

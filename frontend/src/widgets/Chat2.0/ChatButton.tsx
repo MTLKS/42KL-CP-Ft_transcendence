@@ -12,11 +12,11 @@ function ChatButton(props: ChatButtonProps) {
 
   return (
     <div
-      className={`flex flex-row bg-highlight rounded p-2 w-fit h-fit ${title !== undefined && 'gap-x-2'} items-center cursor-pointer`}
+      className={`flex flex-row bg-highlight rounded p-2 w-fit h-fit ${title !== undefined && 'gap-x-2'} items-center cursor-pointer group hover:bg-dimshadow border-2 border-highlight transition-all duration-200`}
       onClick={onClick}
     >
-      {icon}
-      <p className='uppercase font-extrabold text-md text-dimshadow'>{title}</p>
+      <p className='group-hover:text-highlight text-dimshadow text-lg'>{icon}</p>
+      <p className='uppercase font-extrabold text-md text-dimshadow group-hover:text-highlight'>{title}</p>
     </div>
   )
 }
