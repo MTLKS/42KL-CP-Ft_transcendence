@@ -21,6 +21,9 @@ export class GameData {
   constructor() {
     console.log("gameTick created");
     this.socketApi = new SocketApi("game");
+    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
+    this.socketApi.listen("gameState", this.listenToGameState);
+    this.socketApi.listen("gameError", this.listenToGameError);
   }
 
   get pongPosition() {
@@ -40,9 +43,6 @@ export class GameData {
     this.gameStarted = true;
     this.setShouldRender?.(true);
     this.socketApi.sendMessages("joinQueue", { queue: "standard" });
-    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
-    this.socketApi.listen("gameState", this.listenToGameState);
-    this.socketApi.listen("gameError", this.listenToGameError);
   }
 
   endGame() {
