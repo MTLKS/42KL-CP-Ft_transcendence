@@ -32,7 +32,6 @@ function ParticlesRenderer() {
   useTick((delta) => {
     const newParticle = [...particles];
     newParticle.forEach((particle) => {
-      console.log(particle.opacity);
       if (particle.opacity <= 0) {
         newParticle.shift();
         // newParticle.splice(newParticle.indexOf(particle), 1);
@@ -67,7 +66,6 @@ function ParticlesRenderer() {
       <Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[0]} />
     )
   });
-  console.log(particleElements.length);
 
   return (
     <ParticleContainer properties={{ position: true }}>

@@ -5,6 +5,7 @@ import { GameResponse } from "../model/GameResponseDTO";
 import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
+import { debounce } from "lodash";
 
 export class GameData {
   socketApi: SocketApi;
@@ -18,6 +19,7 @@ export class GameData {
 
   setScale?: (scale: number) => void;
   setShouldRender?: (shouldRender: boolean) => void;
+  private sendPlayerMove?: (y: number) => void;
 
   constructor() {
     console.log("gameTick created");
@@ -25,6 +27,10 @@ export class GameData {
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
+    this.sendPlayerMove = debounce((y: number) => {
+      console.log("sending player move");
+      this.socketApi.sendMessages("playerMove", { y: y });
+    }, 1);
   }
 
   get pongPosition() {
@@ -67,8 +73,7 @@ export class GameData {
   listenToGameState = (state: GameStateDTO) => {
     console.log(state);
 
-    if (state.type === "GameStart") 
-    {
+    if (state.type === "GameStart") {
       this.isLeft = (<GameStartDTO>state.data).isLeft;
     }
   };
@@ -94,8 +99,7 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
-    
-    this.socketApi.sendMessages("playerMove", { y: y });
+    this.sendPlayerMove?.(y);
   }
 
   useLocalTick() {
