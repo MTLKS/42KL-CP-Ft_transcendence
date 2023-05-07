@@ -3,6 +3,7 @@ import { Paddle } from "./paddle";
 import { GameSetting } from "./settings";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
+import { GameStartDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
 
 
@@ -155,14 +156,19 @@ export class GameRoom{
 	}
 
 	resumeGame(player: Player) {
+		let opponentIntraName = '';
 		if (player.intraName === this.player1.intraName)
+		{
 			this.player1 = player;
+			opponentIntraName = this.player2.intraName;
+		}
 		else if (player.intraName === this.player2.intraName)
+		{
 			this.player2 = player;
-
+			opponentIntraName = this.player1.intraName;
+		}
 		player.socket.join(this.roomID);
-		player.socket.emit('gameState', { type: "IsLeft", data: player === this.player1 });
-		player.socket.emit('gameState', { type: "GameStart", data: this.roomID });
+		player.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(opponentIntraName,  this.gameType, player === this.player1)));
 		console.log(`${player.intraName} reconnected to ${this.roomID}`);
 	}
 

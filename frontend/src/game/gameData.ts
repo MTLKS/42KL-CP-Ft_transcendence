@@ -1,6 +1,8 @@
 import { Application, ICanvas } from "pixi.js";
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../model/GameDTO";
+import { GameResponse } from "../model/GameResponseDTO";
+import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 
@@ -13,7 +15,6 @@ export class GameData {
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
   gameStarted: boolean = false;
-  roomID: string | undefined;
 
   setScale?: (scale: number) => void;
   setShouldRender?: (shouldRender: boolean) => void;
@@ -23,7 +24,7 @@ export class GameData {
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
-    this.socketApi.listen("gameError", this.listenToGameError);
+    this.socketApi.listen("gameResponse", this.listenToGameResponse);
   }
 
   get pongPosition() {
@@ -52,7 +53,7 @@ export class GameData {
     this.setShouldRender?.(false);
     this.socketApi.removeListener("gameLoop");
     this.socketApi.removeListener("gameState");
-    this.socketApi.removeListener("gameError");
+    this.socketApi.removeListener("gameResponse");
   }
 
   set setSetScale(setScale: (scale: number) => void) {
@@ -63,11 +64,13 @@ export class GameData {
     this.setShouldRender = setShouldRender;
   }
 
-  listenToGameState = (data: any) => {
-    console.log(data);
+  listenToGameState = (state: GameStateDTO) => {
+    console.log(state);
 
-    if (data.type === "GameStart") this.roomID = data.data;
-    else if (data.type === "IsLeft") this.isLeft = data.data;
+    if (state.type === "GameStart") 
+    {
+      this.isLeft = (<GameStartDTO>state.data).isLeft;
+    }
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
@@ -81,8 +84,8 @@ export class GameData {
     this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
   };
 
-  listenToGameError = (data: any) => {
-    console.log(data.error);
+  listenToGameResponse = (data: GameResponse) => {
+    console.log(data);
   };
 
   updatePlayerPosition(y: number) {
@@ -91,9 +94,8 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
-
-    if (this.roomID)
-      this.socketApi.sendMessages("playerMove", { y: y, roomID: this.roomID });
+    
+    this.socketApi.sendMessages("playerMove", { y: y });
   }
 
   useLocalTick() {
