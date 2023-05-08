@@ -1,5 +1,5 @@
 import { getTFA, removeTFA, checkTFA } from '../functions/tfa';
-import { ITFAData } from '../modal/TfaData';
+import { ITFAData } from '../model/TfaData';
 import React, { useEffect } from 'react'
 import Card, { CardType } from './Card';
 
@@ -30,11 +30,11 @@ function help() {
 }
 
 function Tfa(props: TFAProps) {
-	
+
 	const { commands } = props;
 	const [tfa, setTfa] = React.useState<ITFAData>({} as ITFAData);
 	const [result, setResult] = React.useState<TFACommands>(TFACommands.exist);
-	
+
 	if (commands.length === 2 && commands[1] === "set") {
 		useEffect(() => {
 			getTFA().then((data) => {

@@ -89,8 +89,6 @@ function MouseCursor(props: MouseCursorProps) {
   useEffect(() => {
     window.onmousedown = handleMouseDown;
     window.onmouseup = handleMouseUp;
-    window.ontouchstart = handleTouchStart;
-    window.ontouchend = handleTouchEnd;
     window.onmousemove = (e) => onMouseMove(e);
     document.body.style.cursor = 'none';
     return () => {
@@ -234,21 +232,6 @@ function MouseCursor(props: MouseCursorProps) {
 
   function handleMouseUp() {
     if (timerId) clearTimeout(timerId);
-    if (!longPressDetected) shortPress();
-    else longPressRealeased();
-    longPressDetected = false;
-  }
-
-  function handleTouchStart() {
-    longPressDetected = false;
-    timerId = setTimeout(() => {
-      longPress();
-      longPressDetected = true;
-    }, longPressDuration);
-  }
-
-  function handleTouchEnd() {
-    if (timerId) clearTimeout(timerId!);
     if (!longPressDetected) shortPress();
     else longPressRealeased();
     longPressDetected = false;

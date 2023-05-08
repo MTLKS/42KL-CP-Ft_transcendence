@@ -1,7 +1,7 @@
 import React from 'react';
-import { FriendData } from "../../../modal/FriendData";
+import { FriendData } from "../../../model/FriendData";
 
-function FriendActionProfileCard(props: {isCurrentIndex: boolean, friend: FriendData, friendIntraName: string}) {
+function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
 
   const { isCurrentIndex, friend, friendIntraName } = props;
 

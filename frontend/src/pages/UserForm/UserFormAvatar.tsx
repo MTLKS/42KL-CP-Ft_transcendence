@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { UserData } from '../../modal/UserData'
+import { UserData } from '../../model/UserData'
 import { toDataUrl } from '../../functions/toDataURL';
 
 interface UserFormAvatarProps {
@@ -51,7 +51,7 @@ function UserFormAvatar(props: UserFormAvatarProps) {
         ref={inputFileRef}
         onChange={handleChangeAvatar}
       />
-  </div>
+    </div>
   )
 }
 

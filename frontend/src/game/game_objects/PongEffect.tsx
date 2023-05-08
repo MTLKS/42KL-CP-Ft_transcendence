@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useTick, withFilters, } from '@pixi/react';
 import * as PIXI from 'pixi.js';
-import { BoxSize, Offset } from '../../modal/GameModels';
+import { BoxSize, Offset } from '../../model/GameModels';
 
 export enum Mode {
   NORMAL,

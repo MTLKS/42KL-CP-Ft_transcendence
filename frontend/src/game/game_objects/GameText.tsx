@@ -1,7 +1,7 @@
 import { Sprite, Text, useApp } from '@pixi/react'
 import React, { useMemo } from 'react'
 import * as PIXI from 'pixi.js';
-import { Offset } from '../../modal/GameModels';
+import { Offset } from '../../model/GameModels';
 
 interface GameTextProps {
   position?: Offset;
