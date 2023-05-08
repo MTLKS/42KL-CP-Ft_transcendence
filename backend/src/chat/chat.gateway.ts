@@ -17,9 +17,9 @@ export class ChatGateway implements OnGatewayConnection {
 	}
 	
 	@UseGuards(AuthGuard)
-	@SubscribeMessage('sendMessage')
-	async sendMessage(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
-		await this.chatService.sendMessage(client, this.server, body.intraName, body.message);
+	@SubscribeMessage('message')
+	async message(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
+		await this.chatService.message(client, this.server, body.intraName, body.message);
 	}
 
 	// Called when user connect or finish from game. Get all unread messages and join all rooms
