@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
-import StatusIndicator from '../../StatusIndicator';
+import StatusIndicator from '../StatusIndicator';
 import { UserData } from '../../../model/UserData';
 import UserContext from '../../../contexts/UserContext';
 
