@@ -66,7 +66,7 @@ function HomePage(props: HomePageProps) {
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
-    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName),
+    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== userData.intraName),
     [myFriends]
   );
 
@@ -137,11 +137,11 @@ function HomePage(props: HomePageProps) {
         }
         break;
       case "profile":
-        newList = handleProfileCommand(command);
-        break;
+        handleProfileCommand(command);
+        return;
       case "friend":
         handleFriendCommand(command.slice(1));
-        break;
+        return;
       case "leaderboard":
         newList = elements;
         setMidWidget(<Leaderboard />);
@@ -185,7 +185,7 @@ function HomePage(props: HomePageProps) {
     </Card>;
   }
 
-  function handleProfileCommand(command: string[]): JSX.Element[] {
+  function handleProfileCommand(command: string[]) {
     let newList: JSX.Element[] = [];
     if (command.length === 2) {
       getProfileOfUser(command[1]).then((response) => {
@@ -195,7 +195,7 @@ function HomePage(props: HomePageProps) {
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
           setElements(newList);
-          return newList;
+          return ;
         }
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
@@ -210,7 +210,6 @@ function HomePage(props: HomePageProps) {
       setCurrentPreviewProfile(userData!);
       setTopWidget(newProfileCard);
     }
-    return newList;
   }
 
   interface errorType {
@@ -433,8 +432,9 @@ function HomePage(props: HomePageProps) {
     }
 
     if (recognizable === false)
-      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />);
+      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp"+index} />);
     setElements(newList);
+    return newList;
   }
 }
 
