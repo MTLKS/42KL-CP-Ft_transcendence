@@ -59,6 +59,7 @@ export class UserService {
 		if (USER_DATA.length === 0)
 			return USER_DATA[0];
 		USER_DATA[0].accessToken = "hidden";
+		USER_DATA[0].tfaSecret = "hidden";
 		return USER_DATA[0];
 	}
 
@@ -129,11 +130,14 @@ export class UserService {
 			return { "error": "Invalid username - username already exists or invalid" };
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
 			return { "error": "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
+		fs.rename(image.path, "avatar/" + NEW_USER[0].intraName, () => {});
+		image.path = "avatar/" + NEW_USER[0].intraName;
 		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
 		NEW_USER[0].userName = userName;
 		fs.writeFile(image.path, await sharp(image.path).resize({ width: 500, height: 500}).toBuffer(), () => {});
 		await this.userRepository.save(NEW_USER[0]);
 		NEW_USER[0].accessToken = "hidden";
+		NEW_USER[0].tfaSecret = "hidden";
 		return NEW_USER[0];
 	}
 }

@@ -3,6 +3,7 @@ import { INTERCEPTOR_CONFIG } from 'src/config/multer.config';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { UserService } from './user.service';
+import { TFAGuard } from 'src/guard/TFAGuard';
 
 @Controller('user')
 export class UserController {
@@ -44,7 +45,7 @@ export class UserController {
 	}
 
 	@Patch()
-	@UseGuards(AuthGuard)
+	@UseGuards(TFAGuard)
 	@UseInterceptors(FileInterceptor('image', INTERCEPTOR_CONFIG))
 	updateUserInfo(@Headers('Authorization') accessToken: string, @Body() body: any, @UploadedFile() image: any): any {
 		return this.userService.updateUserInfo(accessToken, body.userName, image);
