@@ -76,11 +76,7 @@ function FriendAction(props: FriendActionProps) {
               ref={inputRef}
             />
             <div className='px-[2ch] flex flex-col-reverse'>
-              { 
-                actionCards.length === 0
-                  ? <></>
-                  : actionCards.slice(selectedIndex)
-              }
+              { actionCards.length === 0 ? <></> : actionCards.slice(selectedIndex) }
             </div>
             <p className={`px-[2ch] text-highlight ${outputStyle} w-fit ${commandNotFound || showOutput ? 'visible' : 'invisible'}`}>{outputStr}</p>
             <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
@@ -89,6 +85,20 @@ function FriendAction(props: FriendActionProps) {
                 ? <><LessFileIndicator fileString={fileString}/> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
                 : <p>{inputValue}</p>
               }
+            </div>
+            <div className='flex-col'>
+              <p className='flex-row flex justify-between'>
+                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</span>
+                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:N</span> No to all</span>
+                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span>
+                <div></div>
+              </p>
+              <p className='flex-row flex justify-between'>
+                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:y</span> yes to current</span>
+                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:n</span> no to current</span>
+                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span>
+                <div></div>
+              </p>
             </div>
           </div>
         </ActionFunctionsContext.Provider>
@@ -280,7 +290,7 @@ function FriendAction(props: FriendActionProps) {
 
     if (command === "") return ;
 
-    if (command === "y" || command === "yes") {
+    if (command === "y") {
       const friend = filteredFriends[selectedIndex];
       const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
       if (friend.status === "STRANGER")
@@ -290,7 +300,7 @@ function FriendAction(props: FriendActionProps) {
       return;
     }
     
-    if (command === "Y" || command === "YES") {
+    if (command === "Y") {
       const friendList = useSelectedFriends ? selectedFriends : filteredFriends;
       for (const friend of friendList) {
         const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
@@ -302,7 +312,7 @@ function FriendAction(props: FriendActionProps) {
       return;
     }
     
-    if (command === "n" || command === "no") {
+    if (command === "n") {
       if (action !== ACTION_TYPE.ACCEPT) {
         ignoreAction();
       } else {
@@ -313,7 +323,7 @@ function FriendAction(props: FriendActionProps) {
       return;
     }
     
-    if (command === "N" || command === "NO") {
+    if (command === "N") {
       if (action !== ACTION_TYPE.ACCEPT) {
         setTimeout(() => onQuit(), 10);
       } else {
@@ -326,12 +336,12 @@ function FriendAction(props: FriendActionProps) {
       return;
     }
 
-    if ((command === "i" || command == "ignore") && action === ACTION_TYPE.ACCEPT) {
+    if ((command === "i") && action === ACTION_TYPE.ACCEPT) {
       ignoreAction();
       return;
     }
 
-    if ((command === "I" || command === "IGNORE") && action === ACTION_TYPE.ACCEPT) {
+    if ((command === "I") && action === ACTION_TYPE.ACCEPT) {
       setTimeout(() => onQuit(), 10);
       return;
     }
