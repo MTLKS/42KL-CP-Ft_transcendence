@@ -105,7 +105,6 @@ function HomePage(props: HomePageProps) {
       <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
         <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
           <div className='h-full w-full p-7'>
-            {startMatch && <Pong />}
             {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
             <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
               ref={pageRef}
