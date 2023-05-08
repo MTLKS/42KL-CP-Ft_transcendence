@@ -1,14 +1,25 @@
-import React from 'react';
 import { FriendData } from "../../../model/FriendData";
+import Profile from '../../Profile/Profile';
+import { useState } from 'react';
+import React from 'react';
+
+function replaceProfile(friend: FriendData) {
+  const [currentPreviewProfile, setCurrentPreviewProfile] = React.useState<FriendData | null>(null);
+  const [topWidget, setTopWidget] = useState(<Profile />);
+
+  setCurrentPreviewProfile(friend)
+  setTopWidget(<Profile />)
+}
 
 function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
-
+  
   const { isCurrentIndex, friend, friendIntraName } = props;
 
   return (
     <div
       className={`flex flex-row ${isCurrentIndex ? 'group cursor-pointer' : ''} group-hover:bg-highlight items-center h-12 w-fit select-none`}
-      onClick={() => console.log(`Check this person's profile`)}
+      onClick={() => replaceProfile(friend)
+    }
     >
       <img
         className="aspect-square h-full object-cover"

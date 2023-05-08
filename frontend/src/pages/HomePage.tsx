@@ -60,13 +60,13 @@ function HomePage(props: HomePageProps) {
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
-  const [expandProfile, setExpandProfile] = useState(false);
+  const [expandProfile, setExpandProfile] = useState(true);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
-    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName),
+    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== userData.intraName),
     [myFriends]
   );
 
@@ -258,9 +258,6 @@ function HomePage(props: HomePageProps) {
 
   function sendFriendRequestNotification(intraName: string) {
     friendshipSocket.sendMessages("friendshipRoom", { intraName: intraName });
-    friendshipSocket.listen("friendshipRoom", (data: any) => {
-      console.log(data);
-    })
   }
 
   async function addMultipleFriends(friendIntraNames: string[]) {
