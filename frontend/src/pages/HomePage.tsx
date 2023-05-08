@@ -120,7 +120,7 @@ function HomePage(props: HomePageProps) {
         newList = appendNewCard(<YoutubeEmbed key={"rickroll" + index} />);
         break;
       case "cowsay":
-        newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
+        newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
       case "display":
         if (!startMatch)
@@ -151,10 +151,10 @@ function HomePage(props: HomePageProps) {
         setIndex(newList.length - 1);
         break;
       case "help":
-        newList = appendNewCard(<HelpCard key={index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />)
+        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />)
         break;
       case "ok":
-        newList = appendNewCard(<Card key={index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
+        newList = appendNewCard(<Card key={"ok" + index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
         break;
       case "tfa":
         newList = [<Tfa key={index} commands={command} />].concat(elements);
@@ -295,7 +295,7 @@ function HomePage(props: HomePageProps) {
     if (successes.length > 0) {
       for (const successName of successes) {
         newCards.push(
-          <Card key={`${successName}_added`} type={CardType.SUCCESS}>
+          <Card key={`${successName}_added`+index} type={CardType.SUCCESS}>
             <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
           </Card>
         )
@@ -397,7 +397,7 @@ function HomePage(props: HomePageProps) {
     if (command.length === 0) {
       recognizable = true;
       newList = appendNewCard(
-        <HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />
+        <HelpCard key={"friendhelp"+index} title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} />
       );
     }
 

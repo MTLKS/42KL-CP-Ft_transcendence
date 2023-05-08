@@ -27,7 +27,7 @@ export class GameData {
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = debounce((y: number) => {
-      console.log("sending player move");
+      // console.log("sending player move");
       this.socketApi.sendMessages("playerMove", { y: y });
     }, 1);
   }
