@@ -14,7 +14,6 @@ export class TFAGuard implements CanActivate {
 		if (await new AuthGuard(this.userRepository).canActivate(context) === false)
 			return false;
 		const REQUEST = context.switchToHttp().getRequest();
-		console.log(await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA')));
 		return (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
 	}
 }
