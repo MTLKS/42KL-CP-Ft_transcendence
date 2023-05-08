@@ -17,7 +17,6 @@ export class AuthGuard implements CanActivate {
 	// Check if the access token is valid with the database
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const REQUEST = context.switchToHttp().getRequest();
-		console.log(REQUEST.headers);
 		let authCode: string;
 		try {
 			authCode = REQUEST.header('Authorization');
