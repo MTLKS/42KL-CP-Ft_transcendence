@@ -91,13 +91,13 @@ function FriendAction(props: FriendActionProps) {
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:N</span> No to all</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span>
-                <div></div>
+                <span></span>
               </p>
               <p className='flex-row flex justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:y</span> yes to current</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:n</span> no to current</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span>
-                <div></div>
+                <span></span>
               </p>
             </div>
           </div>

@@ -12,7 +12,6 @@ function replaceProfile(friend: FriendData) {
 }
 
 function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
-  
   const { isCurrentIndex, friend, friendIntraName } = props;
 
   return (
