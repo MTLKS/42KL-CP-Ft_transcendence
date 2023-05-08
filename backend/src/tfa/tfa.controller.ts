@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Delete, UseGuards, Headers, Body } from "@nestjs/common";
 import { AuthGuard } from 'src/guard/AuthGuard';
+import { TFAGuard } from "src/guard/TFAGuard";
 import { TFAService } from "./tfa.service";
 
 @Controller('2fa')
@@ -19,7 +20,7 @@ export class TFAController{
 	}
 
 	@Delete()
-	@UseGuards(AuthGuard)
+	@UseGuards(TFAGuard)
 	async deleteSecret(@Headers('Authorization') accessToken: string): Promise<any> {
 		return await this.tfaService.deleteSecret(accessToken);
 	}
