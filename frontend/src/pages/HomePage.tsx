@@ -290,7 +290,7 @@ function HomePage(props: HomePageProps) {
       }
       // try to add the user
       const result = await addFriend((friendProfile.data as UserData).intraName);
-      // if the response has a "error" field meaning friendship existed, cannot send friend request again
+      // if the response has a error field meaning friendship existed, cannot send friend request again
       if (result.data.error) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
