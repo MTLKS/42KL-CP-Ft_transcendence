@@ -3,9 +3,6 @@ import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } f
 import GameParticle from '../../model/GameParticle';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
-import { BoxSize } from '../../model/GameModels';
-import Trail from './Trail';
-
 const position = { x: 800, y: 450 }
 
 function ParticlesRenderer() {
