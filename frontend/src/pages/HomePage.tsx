@@ -33,7 +33,6 @@ import MouseCursor from '../components/MouseCursor';
 import { gameTick } from '../main';
 
 const availableCommands = [
-  "login",
   "sudo",
   "display",
   "start",

@@ -20,16 +20,16 @@ export class GameData {
 
   setScale?: (scale: number) => void;
   setShouldRender?: (shouldRender: boolean) => void;
-  private sendPlayerMove?: (y: number) => void;
+  private sendPlayerMove?: (y: number, gameRoom: string) => void;
 
   constructor() {
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
-    this.sendPlayerMove = debounce((y: number) => {
+    this.sendPlayerMove = debounce((y: number, gameRoom: string) => {
       // console.log("sending player move");
-      this.socketApi.sendMessages("playerMove", { gameRoom: this.gameRoom, y: y });
+      this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
     }, 1);
   }
 
@@ -98,7 +98,7 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
-    this.sendPlayerMove?.(y);
+    this.sendPlayerMove?.(y, this.gameRoom);
   }
 
   useLocalTick() {

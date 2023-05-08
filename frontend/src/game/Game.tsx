@@ -38,12 +38,13 @@ function Game(props: GameProps) {
         <GameText text='7' anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
         <GameText text='5' anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
         <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} />
-        <TimeZone size={{ w: 300, h: 300 }} position={{ x: 300, y: 300 }} type={TimeZoneType.SLOWDOWN} />
+        <TimeZone size={{ w: 225, h: 225 }} position={{ x: 300, y: 300 }} type={TimeZoneType.SLOWDOWN} />
+        <Pong stageSize={boxSize} size={{ w: 10, h: 10 }} />
+        <ParticlesRenderer />
         <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} />
         <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} />
         {/* <Spits size={{ w: 10, h: 10 }} color={1} /> */}
         {/* <Spits size={{ w: 5, h: 5 }} color={0} /> */}
-        <Pong stageSize={boxSize} size={{ w: 10, h: 10 }} />
         <RippleEffect key={'ripple'} stageSize={{ w: 1600, h: 900 }} />
         {/* <Paticles size={{ w: 3, h: 3 }} /> */}
         {/* <Trail size={{ w: 10, h: 10 }} /> */}
@@ -53,7 +54,6 @@ function Game(props: GameProps) {
         {/* <Blackhole position={{ x: 500, y: 600 }} size={{ w: 5, h: 5 }} acceleration={7} /> */}
         {/* <Blackhole position={{ x: 300, y: 100 }} size={{ w: 5, h: 5 }} acceleration={3} /> */}
         {/* <PaticleEmittor /> */}
-        <ParticlesRenderer />
       </Container> :
       <></>
   )

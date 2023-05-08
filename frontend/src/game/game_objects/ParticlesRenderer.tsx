@@ -3,6 +3,8 @@ import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } f
 import GameParticle from '../../model/GameParticle';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
+import { BoxSize } from '../../model/GameModels';
+import Trail from './Trail';
 
 const position = { x: 800, y: 450 }
 
@@ -23,7 +25,7 @@ function ParticlesRenderer() {
     box.endFill();
     const cyan = app.renderer.generateTexture(box);
     box.clear();
-    box.beginFill(0x5F928F, 0.8);
+    box.beginFill(0xC5A1FF, 0.6);
     box.drawRect(0, 0, 2, 2);
     box.endFill();
     const texture3 = app.renderer.generateTexture(box);
@@ -90,22 +92,41 @@ function ParticlesRenderer() {
       opacity: 1,
       vx: (position.x - x) / 10 + 7,
       vy: (y - position.y) / 10 + (Math.random() > 0.5 ? 1 : -1),
-      opacityDecay: 0.005
+      opacityDecay: 0.005,
+      w: 7,
+      h: 7,
+      colorIndex: 2,
     }))
+    newParticle.push(new GameParticle({
+      x: currentPongPosition.x,
+      y: currentPongPosition.y,
+      opacity: 1,
+      vx: 0.12,
+      vy: 0.12,
+      opacityDecay: 0.03,
+      sizeDecay: 0.3,
+      w: 10,
+      h: 10,
+      colorIndex: 0,
+      gravity: false,
+    }));
 
     setParticles(newParticle);
   }, true);
 
+  const trailElements: JSX.Element[] = [];
   const whiteElements: JSX.Element[] = [];
   const cyanElements: JSX.Element[] = [];
   const purpleElements: JSX.Element[] = [];
 
   particles.forEach((p) => {
-    const { id, x, y, w, h, opacity, colorIndex } = p;
-    if (colorIndex === 0) {
+    const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
+    if (colorIndex === 0 && gravity) {
       whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
     } else if (colorIndex === 1) {
       cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+    } else if (!gravity) {
+      trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
     } else {
       purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
     }
@@ -113,13 +134,16 @@ function ParticlesRenderer() {
 
   return (
     <>
-      <ParticleContainer properties={{ position: true, }}>
+      <ParticleContainer properties={{ position: true, scale: true }}>
+        {trailElements}
+      </ParticleContainer>
+      <ParticleContainer properties={{ position: true }}>
         {cyanElements}
       </ParticleContainer>
-      <ParticleContainer properties={{ position: true, }}>
+      <ParticleContainer properties={{ position: true }}>
         {whiteElements}
       </ParticleContainer>
-      <ParticleContainer properties={{ position: true, }}>
+      <ParticleContainer properties={{ position: true }}>
         {purpleElements}
       </ParticleContainer>
     </>
