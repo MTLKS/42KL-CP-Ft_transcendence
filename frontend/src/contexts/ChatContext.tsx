@@ -12,3 +12,11 @@ export const ChatContext = createContext<ChatContextType>({
   chatBody: <></>,
   setChatBody: (newChatBody: JSX.Element) => {},
 });
+
+interface NewChatContextType {
+  members: string[],
+}
+
+export const NewChatContext = createContext<NewChatContextType>({
+  members: [],
+});
