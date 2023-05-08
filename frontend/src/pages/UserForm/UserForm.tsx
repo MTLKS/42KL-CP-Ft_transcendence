@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import UserFormAvatar from './UserFormAvatar';
-import { UserData } from '../../modal/UserData';
+import { UserData } from '../../model/UserData';
 import UserFormName from './UserFormName';
 import UserFormQuestion from './UserFormQuestion';
 import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions/fun';

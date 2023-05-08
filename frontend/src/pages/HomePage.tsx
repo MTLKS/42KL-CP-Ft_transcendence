@@ -5,11 +5,11 @@ import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Chat from '../widgets/Chat/Chat';
-import { UserData } from '../modal/UserData';
+import { UserData } from '../model/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
-import { FriendData } from '../modal/FriendData';
+import { FriendData } from '../model/FriendData';
 import Friendlist from '../widgets/Friends/Friendlist/Friendlist';
 import FriendRequestPopup from '../widgets/Friends/FriendRequest/FriendRequestPopup';
 import SocketApi from '../api/socketApi';
@@ -23,16 +23,26 @@ import HelpCard from '../widgets/TerminalCards/HelpCard';
 import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
-import { AppProvider } from '@pixi/react';
-import Game from '../game/Game';
-// import UserContext from '../context/UserContext';
 import Tfa from '../components/tfa';
-import UserForm from './UserForm/UserForm';
-import { PolkaDotContainer } from '../components/Background';
-import MouseCursor from '../components/MouseCursor';
+import { gameTick } from '../main';
 
-const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay", "set", "reset"];
-const emptyWidget = <div></div>;
+const availableCommands = [
+  "login",
+  "sudo",
+  "display",
+  "start",
+  "clear",
+  "help",
+  "end",
+  "profile",
+  "ok",
+  "leaderboard",
+  "cowsay",
+  "friend",
+  "set",
+  "reset",
+  "tfa"
+];
 
 interface HomePageProps {
   setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
@@ -51,12 +61,9 @@ function HomePage(props: HomePageProps) {
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = useState(false);
-  // const [myProfile, setMyProfile] = useState<UserData>({} as UserData);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
-  const friendshipSocket = useMemo(() => {
-    return new SocketApi("friendship");
-  }, [])
+  const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
     () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName),
@@ -88,11 +95,8 @@ function HomePage(props: HomePageProps) {
       <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
         <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
           <div className='h-full w-full p-7'>
-            {startMatch && <Pong />}
             {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-            <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden'
-              ref={pageRef}
-            >
+            <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
               <div className='h-full flex-1'>
                 {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
               </div>
@@ -115,35 +119,22 @@ function HomePage(props: HomePageProps) {
       case "sudo":
         newList = appendNewCard(<YoutubeEmbed key={"rickroll" + index} />);
         break;
-      // case "cowsay":
-      //   newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
-      case "start":
+      case "cowsay":
+        newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
+        break;
+      case "display":
         if (!startMatch)
           setStartMatch(true);
         break;
-      case "end":
-        if (startMatch)
-          setStartMatch(false);
+      case "start":
+        gameTick.startGame();
         break;
-      case "cowsay":
-        let say = "";
-        for (let word of command.slice(1)) {
-          say += word + " ";
+      case "end":
+        if (startMatch) {
+          const canvas = document.getElementById('pixi') as HTMLCanvasElement;
+          canvas.style.display = "none";
+          setStartMatch(false);
         }
-        const newCowsay = <Card key={index} type={CardType.SUCCESS}>
-          <p>
-            {` _${new Array(say.length).join("_")}_ `}<br />
-            {`< ${say}>`}<br />
-            {` -${new Array(say.length).join("-")}- `}<br />
-            {"        \\   ^__^"}<br />
-            {"         \\  (oo)\________"}<br />
-            {"            (__)\        )\\/\\"}<br />
-            {"               ||-----w|"}<br />
-            {"               ||     ||"}
-          </p>
-        </Card>;
-        newList = [newCowsay].concat(elements);
-        setIndex(index + 1);
         break;
       case "profile":
         newList = handleProfileCommand(command);
@@ -266,7 +257,6 @@ function HomePage(props: HomePageProps) {
   }
 
   function sendFriendRequestNotification(intraName: string) {
-    console.log(intraName);
     friendshipSocket.sendMessages("friendshipRoom", { intraName: intraName });
     friendshipSocket.listen("friendshipRoom", (data: any) => {
       console.log(data);

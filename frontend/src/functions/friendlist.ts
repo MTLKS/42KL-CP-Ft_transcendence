@@ -1,5 +1,5 @@
 import api from "../api/api";
-import { FriendData } from "../modal/FriendData";
+import { FriendData } from "../model/FriendData";
 
 const NAMESPACE = "/friendship";
 export type status = "pending" | "accepted" | "rejected" | "blocked" | "muted";

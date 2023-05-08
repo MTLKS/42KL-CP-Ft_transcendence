@@ -11,7 +11,6 @@ function GameWindow() {
       if (!ref.current) return;
       const { top, left, width, height } = ref.current.getBoundingClientRect();
       const canvas = document.getElementById('pixi') as HTMLCanvasElement;
-      console.log(canvas);
       canvas.width = width - 12;
       canvas.height = height - 12;
       canvas.style.width = `${width - 12}px`;

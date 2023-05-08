@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { UserData } from '../../modal/UserData'
+import { UserData } from '../../model/UserData'
 
 interface UserFormNameProps {
   user: UserData,
@@ -16,7 +16,7 @@ function UserFormName(props: UserFormNameProps) {
       <p className='font-semibold text-lg lg:text-xl'>
         Your {props.awesomeSynonym} name
       </p>
-      <p className='font-semibold text-lg lg:text-xl'>
+      <p className='font-normal text-sm text-highlight/60'>
         (Alphanumeric, '-', and '_' only)
       </p>
       <input

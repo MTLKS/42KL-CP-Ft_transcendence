@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import * as PIXI from 'pixi.js';
 import { Graphics } from '@pixi/react';
-import { Offset } from '../../modal/GameModels';
+import { Offset } from '../../model/GameModels';
 
 declare module 'pixi.js' {
   export interface Graphics {
