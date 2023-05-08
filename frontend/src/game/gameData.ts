@@ -6,6 +6,7 @@ import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 import { debounce } from "lodash";
+import GameEntity, { GameBlackhole } from "../model/GameEntities";
 
 export class GameData {
   socketApi: SocketApi;
@@ -17,6 +18,7 @@ export class GameData {
   isLeft: boolean = true;
   gameStarted: boolean = false;
   gameRoom: string = "";
+  gameEntities: GameEntity[] = [];
 
   setScale?: (scale: number) => void;
   setShouldRender?: (shouldRender: boolean) => void;
@@ -50,6 +52,9 @@ export class GameData {
     this.gameStarted = true;
     this.setShouldRender?.(true);
     this.socketApi.sendMessages("joinQueue", { queue: "standard" });
+    this.gameEntities.push(
+      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 5)
+    );
   }
 
   endGame() {
