@@ -26,7 +26,7 @@ export class ChatService {
 	}
 
 	// Used to send message to a room
-	async sendMessage(client: any, server: any, intraName: string, message: string): Promise<any> {
+	async message(client: any, server: any, intraName: string, message: string): Promise<any> {
 		if (message === undefined || intraName === undefined)
 			return {"error": "Invalid body - body must include intraName(string) and message(string)"};
 		if (message.length > 1024 || message.length < 1)
