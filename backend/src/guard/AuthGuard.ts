@@ -11,8 +11,7 @@ const	BLUE		= "\x1b[34m";
 const	RESET		= "\x1b[0m";
 
 @Injectable()
-export class AuthGuard implements CanActivate
-{
+export class AuthGuard implements CanActivate {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
 	// Check if the access token is valid with the database
