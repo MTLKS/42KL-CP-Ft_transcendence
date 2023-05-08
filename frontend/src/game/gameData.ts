@@ -21,6 +21,7 @@ export class GameData {
   gameEntities: GameEntity[] = [];
 
   setScale?: (scale: number) => void;
+  setEntities?: (entities: GameEntity[]) => void;
   setShouldRender?: (shouldRender: boolean) => void;
   private sendPlayerMove?: (y: number, gameRoom: string) => void;
 
@@ -62,6 +63,7 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 5)
     );
+    this.setEntities?.(this.gameEntities);
   }
 
   endGame() {
@@ -80,6 +82,10 @@ export class GameData {
 
   set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
     this.setShouldRender = setShouldRender;
+  }
+
+  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
+    this.setEntities = setEntities;
   }
 
   listenToGameState = (state: GameStateDTO) => {

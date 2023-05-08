@@ -3,6 +3,7 @@ import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } f
 import GameParticle from '../../model/GameParticle';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
+import { GameBlackhole } from '../../model/GameEntities';
 const position = { x: 800, y: 450 }
 
 function ParticlesRenderer() {
@@ -37,7 +38,10 @@ function ParticlesRenderer() {
         // newParticle.shift();
         newParticle.splice(newParticle.indexOf(particle), 1);
       }
-      particle.setGravityAccel(position.x, position.y, 2)
+      gameData.gameEntities.forEach((entity) => {
+        if (entity instanceof GameBlackhole)
+          particle.setGravityAccel(entity.x, entity.y, 2)
+      });
       particle.update();
     });
     const currentPongPosition = gameData.pongPosition;
@@ -81,19 +85,23 @@ function ParticlesRenderer() {
     }
 
 
-    var x = position.x + (Math.random() > 0.2 ? 1 : -1) * 30 + 30 * (Math.random() - 0.5);
-    var y = position.y + (Math.random() > 0.5 ? 1 : -1) * 30 + 30 * (Math.random() - 0.5);
-    newParticle.push(new GameParticle({
-      x: x,
-      y: y,
-      opacity: 1,
-      vx: (position.x - x) / 10 + 7,
-      vy: (y - position.y) / 10 + (Math.random() > 0.5 ? 1 : -1),
-      opacityDecay: 0.005,
-      w: 7,
-      h: 7,
-      colorIndex: 2,
-    }))
+    gameData.gameEntities.forEach((entity) => {
+      if (!(entity instanceof GameBlackhole)) return;
+      var x = entity.x + (Math.random() > 0.2 ? 1 : -1) * 30 + 30 * (Math.random() - 0.5);
+      var y = entity.y + (Math.random() > 0.5 ? 1 : -1) * 30 + 30 * (Math.random() - 0.5);
+      newParticle.push(new GameParticle({
+        x: x,
+        y: y,
+        opacity: 1,
+        vx: (entity.x - x) / 10 + 7,
+        vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1),
+        opacityDecay: 0.005,
+        w: 7,
+        h: 7,
+        colorIndex: 2,
+      }))
+    });
+
     newParticle.push(new GameParticle({
       x: currentPongPosition.x,
       y: currentPongPosition.y,
