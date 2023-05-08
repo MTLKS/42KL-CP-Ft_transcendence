@@ -191,7 +191,7 @@ function HomePage(props: HomePageProps) {
       getProfileOfUser(command[1]).then((response) => {
         const newPreviewProfile = response.data as UserData;
         if (newPreviewProfile as any === '') {
-          const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
+          const newErrorCard = <Card key={index}>No user found</Card>;
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
           setElements(newList);
