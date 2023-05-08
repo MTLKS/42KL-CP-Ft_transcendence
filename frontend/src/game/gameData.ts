@@ -43,6 +43,14 @@ export class GameData {
     return { ...this._pongSpeed } as Readonly<Offset>;
   }
 
+  joinQueue(queueType: string) {
+    this.socketApi.sendMessages("joinQueue", { queue: queueType });
+  }
+
+  leaveQueue() {
+    this.socketApi.sendMessages("leaveQueue", { });
+  }
+
   startGame() {
     if (this.gameStarted) {
       console.error("game already started");
@@ -51,7 +59,6 @@ export class GameData {
     console.log("start game");
     this.gameStarted = true;
     this.setShouldRender?.(true);
-    this.socketApi.sendMessages("joinQueue", { queue: "standard" });
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 5)
     );

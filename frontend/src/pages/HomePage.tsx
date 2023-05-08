@@ -36,6 +36,8 @@ const availableCommands = [
   "sudo",
   "display",
   "start",
+  "queue",
+  "dequeue",
   "clear",
   "help",
   "end",
@@ -136,6 +138,12 @@ function HomePage(props: HomePageProps) {
         break;
       case "start":
         gameTick.startGame();
+        break;
+      case "queue":
+        gameTick.joinQueue(command[1]);
+        break;
+      case "dequeue":
+        gameTick.leaveQueue();
         break;
       case "end":
         if (startMatch) {
