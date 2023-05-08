@@ -8,26 +8,6 @@ class Api {
       baseURL: import.meta.env.VITE_API_URL,
       withCredentials: true,
     });
-    this.reqInstance.interceptors.response.use(
-      (res) => res,
-      (error: AxiosError) => {
-        const { data, status, config } = error.response!;
-        switch (status) {
-          case 403:
-            console.error("not-authorised");
-            break;
-
-          case 404:
-            console.error("/not-found");
-            break;
-
-          case 500:
-            console.error("/server-error");
-            break;
-        }
-        return Promise.reject(error);
-      }
-    );
     this.reqInstance.interceptors.request.use(
       (config) => {
         const token = document.cookie
@@ -40,10 +20,23 @@ class Api {
         return config;
       },
       (error) => {
-        if (error.response.status === 403) {
-          document.cookie = "Authorization=;";
-          window.location.assign("/");
+        const { data, status, config } = error.response!;
+        switch (status) {
+          case 403:
+            console.error("not-authorised");
+            document.cookie = "Authorization=;";
+            window.location.assign("/");
+            break;
+
+          case 404:
+            console.error("/not-found");
+            break;
+
+          case 500:
+            console.error("/server-error");
+            break;
         }
+        return Promise.reject(error);
       }
     );
   }

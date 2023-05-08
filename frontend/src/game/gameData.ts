@@ -22,7 +22,6 @@ export class GameData {
   private sendPlayerMove?: (y: number) => void;
 
   constructor() {
-    console.log("gameTick created");
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);

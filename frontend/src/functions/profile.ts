@@ -2,23 +2,9 @@ import api from "../api/api";
 import { UserData } from "../model/UserData";
 
 export function getMyProfile() {
-  api.updateToken(
-    "Authorization",
-    document.cookie
-      .split(";")
-      .find((cookie) => cookie.includes("Authorization"))
-      ?.split("=")[1] ?? ""
-  );
-  return api.get<UserData>("/user");
+  return api.get<UserData | ErrorData>("/user");
 }
 
 export function getProfileOfUser(id: string) {
-  api.updateToken(
-    "Authorization",
-    document.cookie
-      .split(";")
-      .find((cookie) => cookie.includes("Authorization"))
-      ?.split("=")[1] ?? ""
-  );
-  return api.get<UserData>(`/user/${id}`);
+  return api.get<UserData | ErrorData>(`/user/${id}`);
 }

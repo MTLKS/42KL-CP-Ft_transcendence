@@ -5,7 +5,7 @@ import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
 import SocketApi from '../../api/socketApi';
 import { status } from '../../functions/friendlist';
-import UserContext from '../../context/UserContext';
+import UserContext from '../../contexts/UserContext';
 
 interface ProfileProps {
   expanded?: boolean;
@@ -21,12 +21,13 @@ function Profile(props: ProfileProps) {
   useEffect(() => {
     if (props.expanded) setExpanded(true);
     else setExpanded(false);
-    console.log(myProfile);
   }, [props.expanded]);
 
   useEffect(() => {
     pixelatedToSmooth();
-    const socketApi = new SocketApi();
+    let socketApi: SocketApi;
+    if (!myProfile.intraName) return ;
+    socketApi = new SocketApi();
     socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
     socketApi.listen("statusRoom", (data: any) => {
       if (data !== undefined && data.status !== undefined)
@@ -37,7 +38,7 @@ function Profile(props: ProfileProps) {
       socketApi.removeListener("statusRoom");
       socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
     }
-  }, [myProfile.avatar, myProfile.intraName]);
+  }, [myProfile.intraName]);
 
   return (<div className='w-full bg-highlight flex flex-col items-center box-border'
     onClick={onProfileClick}
@@ -49,14 +50,6 @@ function Profile(props: ProfileProps) {
 
   async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;
-    // style 1 jaggled animation
-    // while (tmp > 1) {
-    //   tmp = Math.floor(tmp / 1.2 - 1);
-    //   if (tmp < 1) tmp = 1;
-    //   setPixelSize(tmp);
-    //   await sleep(80);
-    // }
-    // style 2 smooth animation
     while (tmp > 1) {
       tmp = Math.floor(tmp / 1.05);
       if (tmp < 1) tmp = 1;

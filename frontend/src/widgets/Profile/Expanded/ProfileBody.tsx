@@ -4,7 +4,7 @@ import ProfileSmall from './ProfileSmall';
 import ProfileElo from './ProfileElo';
 import ProfileStat from './ProfileStat';
 import { UserData } from '../../../model/UserData';
-import UserContext from '../../../context/UserContext';
+import UserContext from '../../../contexts/UserContext';
 
 interface ProfileBodyProps {
   pixelSize: number

@@ -20,7 +20,8 @@ export default {
         'pulse-short': 'pulse 0.3s ease-in-out 1',
         'left-to-right': 'left-to-right 1',
         'shine': 'shine 2s infinite',
-        'h-shake': 'h-shake 0.5s'
+        'h-shake': 'h-shake 0.5s',
+        'marquee': 'marquee 15s linear infinite',
       }
     },
   },

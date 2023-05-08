@@ -1,6 +1,6 @@
 import React from 'react'
-import { FaUsers } from 'react-icons/fa'
-import { CollapsiblePopup } from '../components/Popup'
+import { FaHandshake } from 'react-icons/fa'
+import { CollapsiblePopup } from '../../../components/Popup'
 
 interface FriendRequestProps {
   total: number
@@ -21,18 +21,18 @@ function FriendRequestContent(props: FriendRequestProps) {
 function FriendRequestIcon() {
   return (
     <div className='h-full w-full bg-accCyan text-3xl hover:text-4xl transition-all duration-[0.2s] ease-in-out select-none'>
-      <FaUsers className='w-fit h-fit m-auto pt-[30px] text-highlight'/>
+      <FaHandshake className='w-fit h-fit m-auto pt-[30px] text-highlight' />
     </div>
   )
 }
 
-function FriendRequest(props: FriendRequestProps) {
+function FriendRequestPopup(props: FriendRequestProps) {
   return (
     <CollapsiblePopup
       icon={<FriendRequestIcon />}
-      content={<FriendRequestContent total={props.total}/>}
+      content={<FriendRequestContent total={props.total} />}
     />
   )
 }
 
-export default FriendRequest
+export default FriendRequestPopup

@@ -11,11 +11,25 @@ import Api from '../../api/api';
 import sleep from '../../functions/sleep';
 import login from '../../functions/login';
 
+interface IAPIResponse {
+  intraId: number,
+  userName: string,
+  intraName: string,
+  elo: number,
+  accessToken: string,
+  avatar: string,
+  tfaSecret: string,
+  error: string
+}
+
 enum ErrorCode {
+  IMAGETOOBIG,
   NAMETOOSHORT,
   NAMETOOLONG,
+  NAMEINVALID,
+  NAMETAKEN,
   EMPTYNAME,
-  EMPTYANS,
+  EMPTYANS
 }
 
 const getError = (code: ErrorCode) => {
@@ -29,6 +43,12 @@ const getError = (code: ErrorCode) => {
       return ("Longer name, please. (MIN: 1 chars)");
     case ErrorCode.NAMETOOLONG:
       return ("Name too epic, please shorten. (MAX: 16 chars)");
+    case ErrorCode.IMAGETOOBIG:
+      return ("Image too good, make it smaller. (MAX: 3MB)")
+    case ErrorCode.NAMETAKEN:
+      return ("Epic name taken, please choose another one.");
+    case ErrorCode.NAMEINVALID:
+      return ("Names like Elon Musk's son not allowed");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -96,6 +116,8 @@ function UserForm(props: UserFormProps) {
       errors.push(ErrorCode.NAMETOOLONG);
     if (!questionAns)
       errors.push(ErrorCode.EMPTYANS);
+    if (/^[a-zA-Z0-9_-]+$/.test(userName) === false)
+      errors.push(ErrorCode.NAMEINVALID);
     return (errors);
   }
 
@@ -105,6 +127,7 @@ function UserForm(props: UserFormProps) {
     let formData = new FormData();
     let avatarFile;
 
+    sessionStorage.removeItem(`image-${userData.avatar}`)
     if (errors.length === 0) {
       Api.updateToken(
         "Authorization",
@@ -116,11 +139,19 @@ function UserForm(props: UserFormProps) {
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
-      await Api.patch("/user", formData).then((res) => console.log(res));
+      try {
+        await Api.patch("/user", formData).then((res) => {
+          let retVal = res.data as IAPIResponse;
+          if (retVal.error === "Invalid username - username already exists or invalid") {
+            throw new Error(ErrorCode.NAMETAKEN.toString());
+          }
+        });
+      } catch (Error: any) {
+        return setPopups([parseInt(Error.toString().slice(7))].map((error) => <ErrorPopup key={error} text={getError(error)} />))
+      }
       setPopups([]);
       await sleep(1000);
-      login();
-      return;
+      return login();
     }
     setPopups(errors.map((error) => <ErrorPopup key={error} text={getError(error)} />))
   }

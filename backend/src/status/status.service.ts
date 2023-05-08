@@ -17,6 +17,8 @@ export class StatusService {
 		const STATUS = await this.statusRepository.find({ where: {intraName: USER_DATA.intraName} });
 		client.join(USER_DATA.intraName);
 		if (STATUS.length !== 0) {
+			if (STATUS[0].status === "ONLINE")
+				return { "error": "User already connected" };
 			STATUS[0].clientId = client.id;
 			STATUS[0].status = "ONLINE";
 			await this.statusRepository.save(STATUS[0]);

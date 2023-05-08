@@ -1,5 +1,5 @@
 import React from 'react'
-import { FriendData } from '../../model/FriendData'
+import { FriendData } from '../../../modal/FriendData'
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
 
@@ -27,5 +27,3 @@ function FriendlistCategory(props: FriendlistCategoryProps) {
     </div>
   )
 }
-
-export default FriendlistCategory

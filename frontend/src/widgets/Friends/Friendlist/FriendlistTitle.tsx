@@ -1,7 +1,7 @@
 import React from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import { TabWidth } from './FriendlistConfig'
-import Highlighter from '../../components/Highlighter';
+import Highlighter from '../../../components/Highlighter';
 
 interface FriendlistTitleProp {
   searchTerm?: string;
