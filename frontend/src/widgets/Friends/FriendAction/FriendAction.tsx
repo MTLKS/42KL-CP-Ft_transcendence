@@ -348,7 +348,9 @@ function FriendAction(props: FriendActionProps) {
       case ACTION_TYPE.UNBLOCK:
         return friends.filter(friend => (friend.status.toLowerCase() === "blocked") && friend.senderIntraName === user.intraName);
       case ACTION_TYPE.UNFRIEND:
-        return friends.filter(friend => (friend.status.toLowerCase() === "accepted" || (friend.status.toLowerCase() === "blocked" && friend.senderIntraName === user.intraName)));
+        return friends.filter(friend => (friend.status.toLowerCase() === "accepted"
+          || (friend.status.toLowerCase() === "blocked" && friend.senderIntraName === user.intraName)
+          || (friend.status.toLowerCase() === "pending" && friend.senderIntraName === user.intraName)));
       default:
         return [];
     }
