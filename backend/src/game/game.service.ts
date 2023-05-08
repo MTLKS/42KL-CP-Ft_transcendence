@@ -139,6 +139,10 @@ export class GameService {
 				console.log(`Game start ${player1.intraName} ${player2.intraName}`);
 			this.joinGame(player1, player2, clientQueue, server);
 		}
+
+		var player1 = this.queues[clientQueue].pop();
+    this.ingame.push(player1);
+    this.joinGame(player1, player1, clientQueue, server);
 	}
 
 	async leaveQueue(client: Socket) {
@@ -161,9 +165,8 @@ export class GameService {
 
 		player1.socket.join(ROOM.roomID);
 		player2.socket.join(ROOM.roomID);
-
-		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true)));
-		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false)));
+		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, ROOM.roomID)));
+		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, ROOM.roomID)));
 		// server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		await ROOM.run(server);
@@ -206,13 +209,13 @@ export class GameService {
 	// }
 
 
-	async playerUpdate(client: Socket, value: number){
+	async playerUpdate(client: Socket, room: string, value: number){
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
 			return;
 
 		this.gameRooms.forEach((gameRoom) => {
-			if (gameRoom._players.includes(USER_DATA.intraName)) {
+			if(gameRoom.roomID === room){
 				gameRoom.updatePlayerPos(client.id, value);
 			}
 		})

@@ -168,7 +168,7 @@ export class GameRoom{
 			opponentIntraName = this.player1.intraName;
 		}
 		player.socket.join(this.roomID);
-		player.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(opponentIntraName,  this.gameType, player === this.player1)));
+		player.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(opponentIntraName,  this.gameType, player === this.player1, this.roomID)));
 		console.log(`${player.intraName} reconnected to ${this.roomID}`);
 	}
 

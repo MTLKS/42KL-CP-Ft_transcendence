@@ -16,6 +16,7 @@ export class GameData {
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
   gameStarted: boolean = false;
+  gameRoom: string = "";
 
   setScale?: (scale: number) => void;
   setShouldRender?: (shouldRender: boolean) => void;
@@ -27,8 +28,8 @@ export class GameData {
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = debounce((y: number) => {
-      console.log("sending player move");
-      this.socketApi.sendMessages("playerMove", { y: y });
+      // console.log("sending player move");
+      this.socketApi.sendMessages("playerMove", { gameRoom: this.gameRoom, y: y });
     }, 1);
   }
 
@@ -70,10 +71,9 @@ export class GameData {
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log(state);
-
     if (state.type === "GameStart") {
       this.isLeft = (<GameStartDTO>state.data).isLeft;
+      this.gameRoom = (<GameStartDTO>state.data).gameRoom;
     }
   };
 
