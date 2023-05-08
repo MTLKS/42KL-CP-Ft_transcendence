@@ -1,5 +1,6 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react'
 import sleep from '../functions/sleep';
+import { unstable_batchedUpdates } from 'react-dom';
 
 interface Offset {
   x: number
@@ -72,6 +73,8 @@ interface MouseCursorProps {
   children: JSX.Element | JSX.Element[];
 }
 
+let mouseLastMoveTime: number = 0;
+
 function MouseCursor(props: MouseCursorProps) {
   const { size1Default, size2Default, size3Default, size4Default } = defaultCurser;
 
@@ -132,6 +135,9 @@ function MouseCursor(props: MouseCursorProps) {
     </div>
   );
   function onMouseMove(e: MouseEvent) {
+    const currentTime = Date.now();
+    if (currentTime - mouseLastMoveTime < 16) return;
+    mouseLastMoveTime = currentTime;
     const { clientX, clientY } = e;
 
     // Update offset1 without delay
@@ -154,21 +160,25 @@ function MouseCursor(props: MouseCursorProps) {
   async function shortPressAnimation() {
     let i: number = 0;
     while (i < 15) {
-      if (currentCursorType != CursorType.hover)
-        setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
-      if (i > 2) setSize2({ width: size2Default.width + i * 2, height: size2Default.height + i * 2 });
-      if (i > 4) setSize3({ width: size3Default.width + i, height: size3Default.height + i });
-      if (i > 8) setSize4({ width: size4Default.width + i, height: size4Default.height + i });
+      unstable_batchedUpdates(() => {
+        if (currentCursorType != CursorType.hover)
+          setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
+        if (i > 2) setSize2({ width: size2Default.width + i * 2, height: size2Default.height + i * 2 });
+        if (i > 4) setSize3({ width: size3Default.width + i, height: size3Default.height + i });
+        if (i > 8) setSize4({ width: size4Default.width + i, height: size4Default.height + i });
+      });
       await sleep(5);
       i++;
     }
     await sleep(20);
     while (i >= 0) {
-      if (currentCursorType != CursorType.hover)
-        setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
-      setSize2({ width: size2Default.width + i * 2, height: size2Default.height + i * 2 });
-      setSize3({ width: size3Default.width + i, height: size3Default.height + i });
-      setSize4({ width: size4Default.width + i, height: size4Default.height + i });
+      unstable_batchedUpdates(() => {
+        if (currentCursorType != CursorType.hover)
+          setSize1({ width: size1Default.width + i * 3, height: size1Default.height + i * 3 });
+        setSize2({ width: size2Default.width + i * 2, height: size2Default.height + i * 2 });
+        setSize3({ width: size3Default.width + i, height: size3Default.height + i });
+        setSize4({ width: size4Default.width + i, height: size4Default.height + i });
+      });
       await sleep(5);
       i--;
     }

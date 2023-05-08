@@ -25,7 +25,12 @@ const pixiApp = new Application({
   view: document.getElementById('pixi') as HTMLCanvasElement,
   antialias: true,
 });
+
+let mouseLastMoveTime: number = 0;
 window.addEventListener('mousemove', (e) => {
+  const currentTime = Date.now();
+  if (currentTime - mouseLastMoveTime < 14) return;
+  mouseLastMoveTime = currentTime;
   gameTick.updatePlayerPosition(e.clientY);
 });
 
