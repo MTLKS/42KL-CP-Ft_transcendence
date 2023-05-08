@@ -5,11 +5,11 @@ import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Chat from '../widgets/Chat/Chat';
-import { UserData } from '../modal/UserData';
+import { UserData } from '../model/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { getFriendList } from '../functions/friendlist';
-import { FriendData } from '../modal/FriendData';
+import { FriendData } from '../model/FriendData';
 import Friendlist from '../widgets/Friends/Friendlist/Friendlist';
 import FriendRequestPopup from '../widgets/Friends/FriendRequest/FriendRequestPopup';
 import SocketApi from '../api/socketApi';
@@ -144,7 +144,8 @@ function HomePage(props: HomePageProps) {
           const canvas = document.getElementById('pixi') as HTMLCanvasElement;
           canvas.style.display = "none";
           setStartMatch(false);
-          break;
+        }
+        break;
       case "cowsay":
         let say = "";
         for (let word of command.slice(1)) {

@@ -1,8 +1,8 @@
 import React, { useContext, useMemo, useState } from 'react'
-import { FriendData } from '../../../modal/FriendData'
+import { FriendData } from '../../../model/FriendData'
 import { getRandomString } from '../../../functions/fun';
 import FriendlistEmptyLine from '../Friendlist/FriendlistEmptyLine';
-import { UserData } from '../../../modal/UserData';
+import { UserData } from '../../../model/UserData';
 import { ActionCardsContext, FriendActionContext } from '../../../contexts/FriendContext';
 import FriendActionProfileCard from './FriendActionProfileCard';
 import FriendActionConfirmationButtons from './FriendActionConfirmationButtons';
@@ -42,13 +42,13 @@ function FriendActionCard(props: FriendActionCardProps) {
     <div className={`flex flex-row gap-x-2 ${!isCurrentIndex && 'opacity-20'}`}>
       <p className='w-[3ch] text-right font-extrabold text-highlight/50 overflow-hidden text-sm'>{index}</p>
       <div className='flex flex-col'>
-        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} friend={friend} friendIntraName={friendIntraName}/>
+        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} friend={friend} friendIntraName={friendIntraName} />
         <FriendlistEmptyLine />
         <div className='flex flex-col text-base w-full text-highlight'>
           <p>{getFriendActionTitle(action)}'<span className='bg-accCyan select-all'>{friend.userName}</span>'</p>
           <p>PONGSH key fingerprint is SHA256: {fakeSHAkeyStr}</p>
           <div className='flex flex-row whitespace-pre'>
-            <FriendActionConfirmation/>
+            <FriendActionConfirmation />
             <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
               [<FriendActionConfirmationButtons
                 friendUserName={friend.userName}

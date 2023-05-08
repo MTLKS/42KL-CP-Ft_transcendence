@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
-import { FriendData } from '../../../modal/FriendData'
+import { FriendData } from '../../../model/FriendData'
 import Highlighter from '../../../components/Highlighter';
 import socketApi from '../../../api/socketApi';
 

@@ -1,9 +1,8 @@
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import FriendlistTitle from './FriendlistTitle'
-import FriendlistCategory from './FriendlistCategory';
 import EmptyFriendlist from './EmptyFriendlist';
-import { UserData } from '../../../modal/UserData';
-import { FriendData, FriendTags } from '../../../modal/FriendData';
+import { UserData } from '../../../model/UserData';
+import { FriendData, FriendTags } from '../../../model/FriendData';
 import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
@@ -219,3 +218,5 @@ function Friendlist(props: FriendlistProps) {
     setInputValue("");
   }
 }
+
+export default Friendlist;
