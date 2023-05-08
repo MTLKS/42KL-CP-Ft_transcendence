@@ -21,9 +21,9 @@ function help() {
 		<Card type={CardType.SUCCESS}>
 			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
 			<p>
-				tfa set				: Sets and enables tfa<br />
-				tfa unset [code]	: Unsets and disable tfa (requires TFA code)<br />
-				tfa [code]			: Checks whether code is valid or not<br />
+				tfa set					: Sets and enables Google tfa<br />
+				tfa unset [OTP code]	: Unsets and disable tfa (requires TFA code)<br />
+				tfa [OTP code]			: Checks whether code is valid or not<br />
 			</p>
 		</Card>
 	)
@@ -63,8 +63,9 @@ function Tfa(props: TFAProps) {
 		return (
 			<Card type={CardType.SUCCESS}>
 				<figure>
+					<p className='text-center'>Scan QR code with your Google Authenticator app</p>
 					<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
-					<p className='text-center'>SECRET: {tfa.secretKey}</p>
+					<p className='text-center'> SECRET: {tfa.secretKey}</p>
 				</figure>
 			</Card>
 		);
