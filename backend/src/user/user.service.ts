@@ -59,6 +59,7 @@ export class UserService {
 		if (USER_DATA.length === 0)
 			return USER_DATA[0];
 		USER_DATA[0].accessToken = "hidden";
+		USER_DATA[0].tfaSecret = "hidden";
 		return USER_DATA[0];
 	}
 
@@ -136,6 +137,7 @@ export class UserService {
 		fs.writeFile(image.path, await sharp(image.path).resize({ width: 500, height: 500}).toBuffer(), () => {});
 		await this.userRepository.save(NEW_USER[0]);
 		NEW_USER[0].accessToken = "hidden";
+		NEW_USER[0].tfaSecret = "hidden";
 		return NEW_USER[0];
 	}
 }
