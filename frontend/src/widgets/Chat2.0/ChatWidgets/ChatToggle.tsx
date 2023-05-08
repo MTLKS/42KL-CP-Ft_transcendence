@@ -20,9 +20,9 @@ function ChatToggle(props: ChatToggleProps) {
         <p className='font-extrabold'>chat</p>
         <BsFillChatLeftFill className='ml-3' />
       </div>
-      { expanded
-          ? <ChatSearchBar />
-          : <ChatMsgIndicator total={0}/>
+      {expanded
+        ? <ChatSearchBar />
+        : <ChatMsgIndicator total={0} />
       }
     </div>
   )

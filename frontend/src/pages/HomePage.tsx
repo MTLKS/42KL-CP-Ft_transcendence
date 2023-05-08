@@ -46,9 +46,7 @@ function HomePage(props: HomePageProps) {
   const [expandProfile, setExpandProfile] = useState(false);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
-  const friendshipSocket = useMemo(() => {
-    return new SocketApi("friendship");
-  }, [])
+  const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
     () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName),

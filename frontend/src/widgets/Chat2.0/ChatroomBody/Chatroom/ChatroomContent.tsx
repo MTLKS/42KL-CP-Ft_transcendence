@@ -1,5 +1,5 @@
 import React from 'react'
-import ChatNavbar from '../../ChatNavbar'
+import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomMessage from './ChatroomMessage'
 import ChatUnreadSeparator from './ChatUnreadSeparator'

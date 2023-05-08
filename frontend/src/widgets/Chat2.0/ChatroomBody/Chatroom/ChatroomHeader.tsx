@@ -1,6 +1,6 @@
 import React from 'react'
 import { ImEarth } from 'react-icons/im'
-import ChatNavbar from '../../ChatNavbar'
+import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 
 function ChatroomHeader() {
   return (

@@ -11,13 +11,13 @@ function ChatButton(props: ChatButtonProps) {
   const { icon, title, onClick } = props;
 
   return (
-    <div
-      className={`flex flex-row bg-highlight rounded p-2 w-fit h-fit items-center cursor-pointer group hover:bg-dimshadow border-2 border-highlight transition-all duration-200`}
+    <button
+      className={`flex flex-row bg-highlight rounded p-2 w-fit h-fit items-center cursor-pointer group hover:bg-dimshadow border-2 border-highlight transition-all duration-200 focus:outline-dimshadow`}
       onClick={onClick}
     >
       <p className={`text-dimshadow group-hover:text-highlight text-lg ${(icon !== undefined && title !== undefined) && 'mr-2'}`}>{icon}</p>
       <p className='uppercase font-extrabold text-md text-dimshadow group-hover:text-highlight text-center'>{title}</p>
-    </div>
+    </button>
   )
 }
 

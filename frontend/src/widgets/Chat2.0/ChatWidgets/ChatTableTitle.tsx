@@ -12,11 +12,11 @@ function ChatTableTitle(props: ChatTableTitleProps) {
   const { title, searchable, filterable } = props;
 
   return (
-    <div className='flex flex-row justify-between'>
+    <div className='flex flex-row justify-between items-center mb-2'>
       <p className='text-sm text-highlight/50 capitalize'>{title}</p>
       <div className='flex flex-row'>
         {filterable && <>sdf</>}
-        {searchable && <ChatSearchBar invert={true}/>}
+        {searchable && <ChatSearchBar invert={true} />}
       </div>
     </div>
   )

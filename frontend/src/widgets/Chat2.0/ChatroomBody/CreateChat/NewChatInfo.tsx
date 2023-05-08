@@ -1,6 +1,6 @@
 import React from 'react'
-import ChatNavbar from '../../ChatNavbar'
-import ChatButton from '../../ChatButton'
+import ChatNavbar from '../../ChatWidgets/ChatNavbar'
+import ChatButton from '../../ChatWidgets/ChatButton'
 
 function NewChatInfo() {
   return (
