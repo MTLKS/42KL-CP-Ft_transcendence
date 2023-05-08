@@ -26,6 +26,7 @@ enum ErrorCode {
   IMAGETOOBIG,
   NAMETOOSHORT,
   NAMETOOLONG,
+  NAMEINVALID,
   NAMETAKEN,
   EMPTYNAME,
   EMPTYANS
@@ -46,6 +47,8 @@ const getError = (code: ErrorCode) => {
       return ("Image too good, make it smaller. (MAX: 3MB)")
     case ErrorCode.NAMETAKEN:
       return ("Epic name taken, please choose another one.");
+    case ErrorCode.NAMEINVALID:
+      return ("Names like Elon Musk's son not allowed");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -113,6 +116,8 @@ function UserForm(props: UserFormProps) {
       errors.push(ErrorCode.NAMETOOLONG);
     if (!questionAns)
       errors.push(ErrorCode.EMPTYANS);
+    if (/^[a-zA-Z0-9_-]+$/.test(userName) === false)
+      errors.push(ErrorCode.NAMEINVALID);
     return (errors);
   }
 
