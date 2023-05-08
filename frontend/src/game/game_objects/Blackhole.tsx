@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
-import { BoxSize, Offset } from '../../modal/GameModels';
+import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 
 let texture1: PIXI.Texture;

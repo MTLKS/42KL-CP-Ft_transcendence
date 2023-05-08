@@ -5,6 +5,7 @@ import { HiServer } from 'react-icons/hi'
 import { FaPlusSquare } from 'react-icons/fa';
 import { ChatContext } from '../../contexts/ChatContext';
 import NewChat from './ChatroomBody/CreateChat/NewChat';
+import ChannelList from './ChatroomBody/Channel/ChannelList';
 
 function ChatEmptyState() {
 
@@ -15,7 +16,7 @@ function ChatEmptyState() {
       <FaSadTear className='text-accYellow text-7xl' />
       <p className='text-xl font-extrabold'>No messages, yet.</p>
       <p className='text-center'>Ready to ball out? Chat with friends or join a channel to rally up.</p>
-      <ChatButton icon={<HiServer />} title="join channel" />
+      <ChatButton icon={<HiServer />} title="join channel" onClick={() => setChatBody(<ChannelList />)} />
       <ChatButton icon={<FaPlusSquare />} title="new chat/channel" onClick={() => setChatBody(<NewChat />)} />
     </div>
   )

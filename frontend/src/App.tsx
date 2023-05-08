@@ -7,7 +7,7 @@ import AxiosResponse from 'axios';
 import MouseCursor from "./components/MouseCursor";
 import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./functions/profile";
-import { UserData } from "./modal/UserData";
+import { UserData } from "./model/UserData";
 
 function App() {
   const [logged, setLogged] = useState(false);

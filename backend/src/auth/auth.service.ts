@@ -35,7 +35,6 @@ export class AuthService {
 			body : JSON.stringify(DATA),
 		});
 		const RETURN_DATA = await API_RESPONSE.json();
-		console.log(RETURN_DATA);
 		if (RETURN_DATA.access_token == null)
 			return { accessToken: null, newUser: false };
 		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()

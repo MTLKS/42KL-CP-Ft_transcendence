@@ -1,5 +1,5 @@
 import api from "../api/api";
-import { UserData } from "../modal/UserData";
+import { UserData } from "../model/UserData";
 
 export function getMyProfile() {
   return api.get<UserData | ErrorData>("/user");
