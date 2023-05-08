@@ -79,9 +79,6 @@ export class GameService {
 
 		// Removes user from connection tracking
 		this.connected = this.connected.filter(function(e) { return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id});
-		
-		if (LOBBY_LOGGING)
-			console.log(`${USER_DATA.intraName} disconnected from ${client.id}.`);
 	}
 
 	async joinQueue(client: Socket, clientQueue: string, server: Server) {
