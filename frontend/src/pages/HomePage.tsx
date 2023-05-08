@@ -24,8 +24,25 @@ import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
+import { gameTick } from '../main';
 
-const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay", "set", "reset"];
+const availableCommands = [
+  "login",
+  "sudo",
+  "display",
+  "start",
+  "clear",
+  "help",
+  "end",
+  "profile",
+  "ok",
+  "leaderboard",
+  "cowsay",
+  "friend",
+  "set",
+  "reset",
+  "tfa"
+];
 
 interface HomePageProps {
   setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
@@ -78,7 +95,6 @@ function HomePage(props: HomePageProps) {
       <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
         <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
           <div className='h-full w-full p-7'>
-            {startMatch && <Pong />}
             {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
             <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
               <div className='h-full flex-1'>
@@ -106,13 +122,19 @@ function HomePage(props: HomePageProps) {
       case "cowsay":
         newList = appendNewCard(<Cowsay index={index} commands={command.slice(1)} />);
         break;
-      case "start":
+      case "display":
         if (!startMatch)
           setStartMatch(true);
         break;
+      case "start":
+        gameTick.startGame();
+        break;
       case "end":
-        if (startMatch)
+        if (startMatch) {
+          const canvas = document.getElementById('pixi') as HTMLCanvasElement;
+          canvas.style.display = "none";
           setStartMatch(false);
+        }
         break;
       case "profile":
         newList = handleProfileCommand(command);

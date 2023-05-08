@@ -1,30 +1,35 @@
 import { Application, ICanvas } from "pixi.js";
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../model/GameDTO";
+import { GameResponse } from "../model/GameResponseDTO";
+import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
+import { debounce } from "lodash";
 
 export class GameData {
   socketApi: SocketApi;
-  private _pongPosition: Offset;
-  private _pongSpeed: Offset;
-  leftPaddlePosition: Offset;
-  rightPaddlePosition: Offset;
+  private _pongPosition: Offset = { x: 800, y: 450 };
+  private _pongSpeed: Offset = { x: 12, y: 8 };
+  leftPaddlePosition: Offset = { x: 0, y: 0 };
+  rightPaddlePosition: Offset = { x: 0, y: 0 };
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
-  roomID: string | undefined;
+  gameStarted: boolean = false;
 
   setScale?: (scale: number) => void;
+  setShouldRender?: (shouldRender: boolean) => void;
+  private sendPlayerMove?: (y: number) => void;
 
   constructor() {
     this.socketApi = new SocketApi("game");
-    this._pongPosition = { x: 800, y: 450 };
-    this.leftPaddlePosition = { x: 0, y: 0 };
-    this.rightPaddlePosition = { x: 0, y: 0 };
-    this._pongSpeed = { x: 0, y: 0 };
-    this.socketApi.sendMessages("startGame", {});
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
+    this.socketApi.listen("gameResponse", this.listenToGameResponse);
+    this.sendPlayerMove = debounce((y: number) => {
+      console.log("sending player move");
+      this.socketApi.sendMessages("playerMove", { y: y });
+    }, 1);
   }
 
   get pongPosition() {
@@ -35,33 +40,57 @@ export class GameData {
     return { ...this._pongSpeed } as Readonly<Offset>;
   }
 
-  destructor() {
+  startGame() {
+    if (this.gameStarted) {
+      console.error("game already started");
+      return;
+    }
+    console.log("start game");
+    this.gameStarted = true;
+    this.setShouldRender?.(true);
+    this.socketApi.sendMessages("joinQueue", { queue: "standard" });
+  }
+
+  endGame() {
+    console.log("end game");
+    if (!this.gameStarted) return;
+    this.gameStarted = false;
+    this.setShouldRender?.(false);
     this.socketApi.removeListener("gameLoop");
     this.socketApi.removeListener("gameState");
+    this.socketApi.removeListener("gameResponse");
   }
 
   set setSetScale(setScale: (scale: number) => void) {
     this.setScale = setScale;
   }
 
-  listenToGameState = (data: any) => {
-    console.log(data);
+  set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
+    this.setShouldRender = setShouldRender;
+  }
+
+  listenToGameState = (state: GameStateDTO) => {
+    console.log(state);
+
+    if (state.type === "GameStart") {
+      this.isLeft = (<GameStartDTO>state.data).isLeft;
+    }
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
     this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
-      this.rightPaddlePosition = { x: 1600 - 46, y: data.rightPaddlePosY };
+      this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
     } else {
       this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
     }
     this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
   };
 
-  set isLeftPlayer(isLeft: boolean) {
-    this.isLeft = isLeft;
-  }
+  listenToGameResponse = (data: GameResponse) => {
+    console.log(data);
+  };
 
   updatePlayerPosition(y: number) {
     if (this.isLeft) {
@@ -69,9 +98,7 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
-
-    if (this.roomID)
-      this.socketApi.sendMessages("playerMove", { y: y, roomID: this.roomID });
+    this.sendPlayerMove?.(y);
   }
 
   useLocalTick() {

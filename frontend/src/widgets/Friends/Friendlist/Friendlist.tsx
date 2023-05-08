@@ -219,4 +219,4 @@ function Friendlist(props: FriendlistProps) {
   }
 }
 
-export default Friendlist
+export default Friendlist;
