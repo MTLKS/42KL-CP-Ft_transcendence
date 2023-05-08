@@ -1,4 +1,4 @@
-interface ChatRoomData {
+export interface ChatRoomData {
   id: string;
   name: string;
   ownerId: string;
@@ -6,7 +6,7 @@ interface ChatRoomData {
   password: string | null;
 }
 
-interface ChatRoomMemberData {
+export interface ChatRoomMemberData {
   channelId: string;
   userId: string;
   admin: boolean;
@@ -19,7 +19,7 @@ Date.prototype.toJSON = function () {
   return this.getTime().toString();
 };
 
-interface ChatRoomMessageData {
+export interface ChatRoomMessageData {
   messageId: string;
   senderId: string;
   recieverId: string;

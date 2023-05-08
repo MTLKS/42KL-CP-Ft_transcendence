@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { FriendData } from "../modal/FriendData";
+import { FriendData } from "../model/FriendData";
 import { AxiosResponse } from "axios";
 
 interface FriendsContextType {

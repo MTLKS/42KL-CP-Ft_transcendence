@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react'
 import { FaUserAlt, FaUserFriends } from 'react-icons/fa';
+import { ChatRoomData } from '../../model/ChatRoomData';
 
 interface ChatRoomProps {
   roomData: ChatRoomData;

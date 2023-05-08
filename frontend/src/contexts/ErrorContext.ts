@@ -1,4 +1,4 @@
-interface ErrorData {
+export interface ErrorData {
   error: string;
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import RoomHeader from './RoomHeader';
 import Messages from './Messages';
 import PromptField from '../../../components/PromptField';
+import { ChatRoomData } from '../../../model/ChatRoomData';
 
 interface RoomProps {
   roomData: ChatRoomData;

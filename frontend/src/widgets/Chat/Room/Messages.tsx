@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import ScrollView from '../../../components/ScrollView';
 import UnreadSep from './UnreadSep';
+import { ChatRoomMessageData } from '../../../model/ChatRoomData';
 
 const messages: ChatRoomMessageData[] = [
   {

@@ -70,7 +70,7 @@ const longPressDuration: number = 200;
 let longPressDetected: boolean = false;
 
 interface MouseCursorProps {
-  children: JSX.Element | JSX.Element[];
+  // children: JSX.Element | JSX.Element[];
 }
 
 let mouseLastMoveTime: number = 0;
@@ -100,13 +100,14 @@ function MouseCursor(props: MouseCursorProps) {
   }, []);
 
   return (
-    <div className='relative w-full h-full overflow-hidden'>
+    <>
+      {/* <div className='relative w-full h-full overflow-hidden'> */}
       {/* <div className=' absolute top-[100px] left-[100px] h-[500px] w-[500px] bg-highlight' ref={divRef}
         onMouseEnter={(e) => handleHoverStart(e, divRef, CursorType.hover)}
         onMouseMove={(e) => handleHover(e, divRef)}
         onMouseLeave={handleHoverEnd}
       /> */}
-      {props.children}
+      {/* {props.children} */}
       <div className={`absolute pointer-events-none border-highlight border-4 z-50 ${currentCursorType == CursorType.hover ? " " : "transform -translate-x-1/2 -translate-y-1/2 "} `}
         style={{
           left: offset1.x, top: offset1.y, width: size1.width, height: size1.height,
@@ -132,11 +133,12 @@ function MouseCursor(props: MouseCursorProps) {
           mixBlendMode: 'difference'
         }}
       />
-    </div>
+      {/* </div> */}
+    </>
   );
   function onMouseMove(e: MouseEvent) {
     const currentTime = Date.now();
-    if (currentTime - mouseLastMoveTime < 16) return;
+    if (currentTime - mouseLastMoveTime < 25) return;
     mouseLastMoveTime = currentTime;
     const { clientX, clientY } = e;
 

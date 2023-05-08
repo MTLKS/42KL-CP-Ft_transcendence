@@ -1,5 +1,6 @@
 import React from 'react'
 import { FaArrowLeft } from 'react-icons/fa';
+import { ChatRoomData } from '../../../model/ChatRoomData';
 
 interface RoomHeaderProps {
   roomData: ChatRoomData;

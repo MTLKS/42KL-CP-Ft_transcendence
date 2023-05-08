@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import ChatToggle from './ChatToggle'
 import ChatRoom from './ChatRoom';
 import Room from './Room/Room';
+import { ChatRoomData } from '../../model/ChatRoomData';
 
 const rooms: ChatRoomData[] = [
   {

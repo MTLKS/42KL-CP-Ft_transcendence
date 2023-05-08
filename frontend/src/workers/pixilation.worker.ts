@@ -1,19 +1,4 @@
-interface PixilationWorkerMessage {
-  type: "PIXILATE";
-  payload: PixilationWorkerData;
-}
-
-interface PixilationWorkerData {
-  imageData: string;
-  pixelSize: number;
-}
-
-interface DrawData {
-  imageData: ImageData;
-  w: number;
-  h: number;
-  pixelSize: number;
-}
+import { DrawData } from "../model/pixilationWorkerData";
 
 function draw(data: DrawData) {
   const { imageData, w, h, pixelSize } = data;

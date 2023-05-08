@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
+import Worker from '../workers/pixilation.worker?worker'
 
 interface PixelatedImageProps {
   src: string;
   pixelSize?: number;
   className?: string;
 }
-const pixilationWorker = new Worker(new URL('../workers/pixilation.worker.ts', import.meta.url));
+const pixilationWorker = new Worker();
 
 function PixelatedImage(props: PixelatedImageProps) {
   const { src, pixelSize = 1, className } = props;
