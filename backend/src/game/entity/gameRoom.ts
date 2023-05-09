@@ -3,7 +3,7 @@ import { Rect } from "./rect";
 import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
-import { GameStartDTO, GameStateDTO } from "src/dto/gameState.dto";
+import { GameStartDTO, GameEndDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
 
 class CollisionResult{
@@ -19,7 +19,6 @@ class CollisionResult{
 		this.normalY = 0;
 	}
 }
-
 
 export class GameRoom{
 	roomID: string;
@@ -62,19 +61,19 @@ export class GameRoom{
 		this.lastWinner = '';
 		this.player1Score = 0;
 		this.player2Score = 0;
-		this.gameEnded = false;
 		this.gameReset = false;
 		this.gamePaused = false;
 
+		//Check for game mode
 		this.roomSettings = setting;
 	}
 
+	
 	async run(server: Server){
 		this.resetGame();
 		await this.countdown(3);
-		if (this.interval == null && !this.gameEnded){
+		if (this.interval == null){
 			this.interval = setInterval(async () => {
-
 				if (this.gameReset == true){
 					this.resetGame();
 					server.to(this.roomID).emit('gameLoop',
@@ -92,6 +91,10 @@ export class GameRoom{
 					this.gameUpdate();
 				}
 
+				if (this.player1Score == this.roomSettings.scoreToWin || this.player2Score == this.roomSettings.scoreToWin){
+					this.endGame(server);
+				}
+
 				server.to(this.roomID).emit('gameLoop',
 					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
@@ -101,7 +104,6 @@ export class GameRoom{
 
 	gameUpdate(){
 		this.Ball.update();
-
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score!=0){
 			if (score == 1){
@@ -198,6 +200,7 @@ export class GameRoom{
 		else if(this.Ball.posX < this.canvasWidth * 0.15){
 			result = this.objectCollision(this.Ball, this.leftPaddle);
 		}
+		
 		if (result && result.collided){
 			this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
 		}
@@ -235,7 +238,9 @@ export class GameRoom{
 		console.log(`game ${this.roomID} paused due to player disconnect`);
 	}
 
-	endGame() {
+	endGame(server: Server) {
+		clearInterval(this.interval);
+		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
 		console.log(`game ${this.roomID} ended`);
 	}
 

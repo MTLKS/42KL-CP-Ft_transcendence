@@ -16,6 +16,10 @@ export class GameEndDTO {
 	winner: string;
 	wonBy: "normal" | "abandon";
 	finalScore: Array<number>;
+
+	constructor(player1Score: number, player2Score: number){
+		
+	}
 }
 
 export class GamePauseDTO {

@@ -180,34 +180,6 @@ export class GameService {
 		await ROOM.run(server);
 	}
 
-	// async startGame(player1: Socket, player2: Socket, server: Server){
-	// 	// console.log(`Game start with ${player1.intraName} and ${player2.intraName}`);
-	// 	// player1.socket.emit('game', `game start: opponent = ${player2.intraName}`);
-	// 	// player2.socket.emit('game', `game start: opponent = ${player1.intraName}`);
-	// 	//Leave lobby room
-
-	// 	const ROOM = new GameRoom(player1.id, player2.id, this.gameSettings);
-	// 	// ROOM.generateRoomID();
-	// 	player1.join(ROOM.roomID);
-	// 	player2.join(ROOM.roomID);
-	// 	await ROOM.run(server);
-	// 	console.log("game finish");
-
-	// 	//Get both player info
-	// 	// console.log(body.name);
-	// 	// const TEST = this.userService.getUserDataByIntraName(body.name);
-	// 	//Change both player status to in game
-	// }
-
-	// async gameEnd(player1: any, player2: any){
-	// 	player1.leave(this.createGameRoom());
-	// 	player2.leave(this.createGameRoom());
-
-	// 	//TODO : send result to user service
-	// 	//TODO : remove users from ingame list
-	// }
-
-
 	async playerUpdate(client: Socket, roomID: string, value: number){
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)

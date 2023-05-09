@@ -15,16 +15,14 @@ export class Ball extends DynamicRect{
 	checkContraint(borderWidth: number, borderHeight: number) : number{
 		if (this.posX < 0){
 			this.posX = 0;
-			// this.velX = 0;
-			// this.velY = 0;
-			this.velX *= -1;
+			this.velX = 0;
+			this.velY = 0;
 			return 2;
 		}
 		if (this.posX + this.width > borderWidth){
 			this.posX = borderWidth - this.width;
-			// this.velX = 0;
-			// this.velY = 0;
-			this.velX *= -1;
+			this.velX = 0;
+			this.velY = 0;
 			return 1;
 		}
 		if (this.posY < 0){
