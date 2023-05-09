@@ -49,7 +49,7 @@ export class GameData {
   }
 
   leaveQueue() {
-    this.socketApi.sendMessages("leaveQueue", { });
+    this.socketApi.sendMessages("leaveQueue", {});
   }
 
   startGame() {
@@ -61,8 +61,9 @@ export class GameData {
     this.gameStarted = true;
     this.setShouldRender?.(true);
     this.gameEntities.push(
-      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 5)
+      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
+    this.joinQueue("standard");
     this.setEntities?.(this.gameEntities);
   }
 
