@@ -9,7 +9,7 @@ interface UserFormNameProps {
 
 function UserFormName(props: UserFormNameProps) {
 
-  const [userName, setUsername] = useState(props.user.intraName);
+  const [userName, setUsername] = useState(props.user.userName);
 
   return (
     <div className="flex flex-col gap-2">
