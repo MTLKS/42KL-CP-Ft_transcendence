@@ -48,9 +48,6 @@ export class GameService {
 		let player = new Player(USER_DATA.intraName, client);
 		this.connected.push(player);
 
-		if (LOBBY_LOGGING)
-			console.log(`${USER_DATA.intraName} connected as ${client.id}.`);
-
 		// If player is ingame, reconnect player to game
 		this.gameRooms.forEach((gameRoom) => {
 			if (gameRoom._players.includes(USER_DATA.intraName)) {
@@ -82,9 +79,6 @@ export class GameService {
 
 		// Removes user from connection tracking
 		this.connected = this.connected.filter(function(e) { return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id});
-		
-		if (LOBBY_LOGGING)
-			console.log(`${USER_DATA.intraName} disconnected from ${client.id}.`);
 	}
 
 	async joinQueue(client: Socket, clientQueue: string, server: Server) {
