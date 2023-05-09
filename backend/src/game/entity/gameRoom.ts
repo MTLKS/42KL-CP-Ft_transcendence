@@ -1,10 +1,24 @@
 import { Ball } from "./ball";
-import { Paddle } from "./paddle";
-import { GameSetting } from "./settings";
+import { Rect } from "./rect";
+import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
 import { GameStartDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
+
+class CollisionResult{
+	collided: boolean;
+	collideTime : number;
+	normalX: number;
+	normalY: number;
+
+	constructor(){
+		this.collided = false;
+		this.collideTime = 0;
+		this.normalX = 0;
+		this.normalY = 0;
+	}
+}
 
 
 export class GameRoom{
@@ -17,8 +31,8 @@ export class GameRoom{
 	ballInitSpeedX: number;
 	ballInitSpeedY: number;
 	Ball: Ball;
-	leftPaddle: Paddle;
-	rightPaddle: Paddle;
+	leftPaddle: Rect;
+	rightPaddle: Rect;
 	interval: NodeJS.Timer | null;
 	lastWinner: string;
 	player1Score: number;
@@ -37,8 +51,8 @@ export class GameRoom{
 		this.ballInitSpeedY = setting.ballSpeedY;
 		
 		this.Ball = new Ball(this.canvasWidth / 2, this.canvasHeight / 2, setting.ballSize, setting.ballSize);
-		this.leftPaddle = new Paddle(setting.paddleOffsetX, this.canvasHeight / 2, setting.paddleWidth, setting.paddleHeight);
-		this.rightPaddle = new Paddle(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.paddleHeight);
+		this.leftPaddle = new Rect(setting.paddleOffsetX, this.canvasHeight / 2, setting.paddleWidth, setting.leftPaddleHeight);
+		this.rightPaddle = new Rect(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.rightPaddleHeight);
 		this.interval = null;
 		
 		this._players = [player1.intraName, player2.intraName];
@@ -67,12 +81,14 @@ export class GameRoom{
 		this.gameCollisionDetection();
 	}
 
-	objectCollision(ball: Ball, paddle: Paddle){
+	objectCollision(ball: Ball, paddle: Rect) : CollisionResult{
 		let xInvEntry, yInvEntry;
 		let xInvExit, yInvExit;
 		let xEntry, yEntry;
 		let xExit, yExit;
 		let entryTime, exitTime;
+
+		let result = new CollisionResult();
 
 		if (ball.velX > 0){
 			xInvEntry = paddle.posX - (ball.posX + ball.width);
@@ -112,37 +128,41 @@ export class GameRoom{
 		exitTime = Math.min(xExit, yExit);
 
 		if (entryTime > exitTime || xEntry < 0 && yEntry < 0 || xEntry > 1 || yEntry > 1){
-			return ;
+			return result;
 		}
 		else{
-			let normalX = 0;
-			let normalY = 0;
+			result.collided = true;
+			result.collideTime = entryTime;
 			if (xEntry > yEntry){
 				if (xInvEntry < 0){
-					normalX = 1;
+					result.normalX = 1;
 				}
 				else{
-					normalX = -1;
+					result.normalX = -1;
 				}
 			}
 			else{
 				if (yInvEntry < 0){
-					normalY = 1;
+					result.normalY = 1;
 				}
 				else{
-					normalY = -1;
+					result.normalY = -1;
 				}
 			}
-			ball.collisionResponse(entryTime, normalX, normalY);
+			return result;
 		}
 	}
 
 	gameCollisionDetection(){
+		let result;
 		if (this.Ball.posX > this.canvasWidth / 2){
-			this.objectCollision(this.Ball, this.rightPaddle);
+			result = this.objectCollision(this.Ball, this.rightPaddle);
 		}
 		else{
-			this.objectCollision(this.Ball, this.leftPaddle);
+			result = this.objectCollision(this.Ball, this.leftPaddle);
+		}
+		if (result.collided){
+			this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
 		}
 	}
 
