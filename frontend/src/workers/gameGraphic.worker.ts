@@ -14,7 +14,7 @@ function eventLoop() {
         gameParticles.splice(gameParticles.indexOf(particle), 1);
       }
       gameEntities.forEach((entity) => {
-        if (entity instanceof GameBlackhole)
+        if (entity.type == "blackhole")
           particle.setGravityAccel(entity.x, entity.y, 2);
       });
       particle.update();
@@ -64,7 +64,7 @@ function eventLoop() {
     }
 
     gameEntities.forEach((entity) => {
-      if (!(entity instanceof GameBlackhole)) return;
+      if (entity.type !== "blackhole") return;
       var x =
         entity.x +
         (Math.random() > 0.2 ? 1 : -1) * 30 +

@@ -14,6 +14,7 @@ class GameEntity {
   vy: number;
   w: number;
   h: number;
+  type: string;
   constructor({ x, y, vx, vy, w, h }: GameEntityData) {
     this.x = x ?? 0;
     this.y = y ?? 0;
@@ -21,6 +22,7 @@ class GameEntity {
     this.vy = vy ?? 0;
     this.w = w ?? 0;
     this.h = h ?? 0;
+    this.type = "entity";
   }
 }
 
@@ -29,6 +31,7 @@ class GameBlackhole extends GameEntity {
   constructor({ x, y, vx, vy, w, h }: GameEntityData, magnitude: number) {
     super({ x, y, vx, vy, w, h });
     this.magnitude = magnitude;
+    this.type = "blackhole";
   }
 }
 
@@ -37,6 +40,7 @@ class GameTimeZone extends GameEntity {
   constructor({ x, y, vx, vy, w, h }: GameEntityData, speedFactor: number) {
     super({ x, y, vx, vy, w, h });
     this.speedFactor = speedFactor ?? 1;
+    this.type = "timezone";
   }
 }
 
@@ -47,6 +51,7 @@ class GameBlock extends GameEntity {
     super({ x, y, vx, vy, w, h });
     this.compressionSpeedX = 0;
     this.compressionSpeedY = 0;
+    this.type = "block";
   }
 
   compressionDecay() {
