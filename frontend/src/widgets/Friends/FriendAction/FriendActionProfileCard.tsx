@@ -1,24 +1,20 @@
+import previewProfileContext from "../../../contexts/PreviewProfileContext";
 import { FriendData } from "../../../model/FriendData";
-import Profile from '../../Profile/Profile';
-import { useState } from 'react';
-import React from 'react';
-
-function replaceProfile(friend: FriendData) {
-  const [currentPreviewProfile, setCurrentPreviewProfile] = React.useState<FriendData | null>(null);
-  const [topWidget, setTopWidget] = useState(<Profile />);
-
-  setCurrentPreviewProfile(friend)
-  setTopWidget(<Profile />)
-}
+import Profile from "../../Profile/Profile";
+import { useState } from "react";
+import { useContext } from "react";
+import { UserData } from "../../../model/UserData";
+import { getProfileOfUser } from "../../../functions/profile";
 
 function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
   const { isCurrentIndex, friend, friendIntraName } = props;
-
+  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(previewProfileContext);
+  
   return (
     <div
       className={`flex flex-row ${isCurrentIndex ? 'group cursor-pointer' : ''} group-hover:bg-highlight items-center h-12 w-fit select-none`}
       onClick={() => replaceProfile(friend)
-    }
+      }
     >
       <img
         className="aspect-square h-full object-cover"
@@ -30,6 +26,13 @@ function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: Frien
       </div>
     </div>
   )
+
+  async function replaceProfile(friend: FriendData) {
+    let friendData = await getProfileOfUser(friendIntraName);
+    console.log(friendData.data as UserData);
+    setPreviewProfileFunction(friendData.data as UserData);
+    setTopWidgetFunction(<Profile expanded={true} />)
+  }
 }
 
 export default FriendActionProfileCard;

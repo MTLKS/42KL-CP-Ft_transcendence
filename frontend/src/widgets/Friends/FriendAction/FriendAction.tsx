@@ -90,13 +90,13 @@ function FriendAction(props: FriendActionProps) {
               <p className='flex-row flex justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:N</span> No to all</span>
-                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span>
+                { action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span> : <></> }
                 <span></span>
               </p>
               <p className='flex-row flex justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:y</span> yes to current</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:n</span> no to current</span>
-                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span>
+                { action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span> : <></> }
                 <span></span>
               </p>
             </div>
@@ -288,8 +288,6 @@ function FriendAction(props: FriendActionProps) {
 
     if (yesAction === undefined || noAction === undefined) setActionFunctions();
 
-    if (command === "") return;
-
     if (command === "y") {
       const friend = filteredFriends[selectedIndex];
       const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
@@ -297,10 +295,7 @@ function FriendAction(props: FriendActionProps) {
         blockStrangerAction(friendIntraName, true);
       else
         handleYesAction(friendIntraName, true);
-      return;
-    }
-    
-    if (command === "Y") {
+    } else if (command === "Y") {
       const friendList = useSelectedFriends ? selectedFriends : filteredFriends;
       for (const friend of friendList) {
         const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
@@ -309,10 +304,7 @@ function FriendAction(props: FriendActionProps) {
         else
           handleYesAction(friendIntraName, false);
       }
-      return;
-    }
-    
-    if (command === "n") {
+    } else if (command === "n") {
       if (action !== ACTION_TYPE.ACCEPT) {
         ignoreAction();
       } else {
@@ -320,10 +312,7 @@ function FriendAction(props: FriendActionProps) {
         const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
         handleNoAction(friendIntraName, true);
       }
-      return;
-    }
-    
-    if (command === "N") {
+    } else if (command === "N") {
       if (action !== ACTION_TYPE.ACCEPT) {
         setTimeout(() => onQuit(), 10);
       } else {
@@ -333,20 +322,14 @@ function FriendAction(props: FriendActionProps) {
           handleNoAction(friendIntraName, false);
         }
       }
-      return;
-    }
-
-    if ((command === "i") && action === ACTION_TYPE.ACCEPT) {
+    } else if ((command === "i") && action === ACTION_TYPE.ACCEPT) {
       ignoreAction();
-      return;
-    }
-
-    if ((command === "I") && action === ACTION_TYPE.ACCEPT) {
+    } else if ((command === "I") && action === ACTION_TYPE.ACCEPT) {
       setTimeout(() => onQuit(), 10);
-      return;
+    } else {
+      setOutputStr(`Command not found: ${command}`);
+      setCommandNotFound(true);
     }
-    setOutputStr(`Command not found: ${command}`);
-    setCommandNotFound(true);
   }
 
   function filterFriends() {

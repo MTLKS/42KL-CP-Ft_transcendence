@@ -88,7 +88,7 @@ export class GameData {
   };
 
   listenToGameResponse = (data: GameResponse) => {
-    console.log(data);
+    // console.log(data);
   };
 
   updatePlayerPosition(y: number) {
