@@ -1,10 +1,9 @@
 import previewProfileContext from "../../../contexts/PreviewProfileContext";
-import { FriendData } from "../../../model/FriendData";
-import Profile from "../../Profile/Profile";
-import { useState } from "react";
-import { useContext } from "react";
-import { UserData } from "../../../model/UserData";
 import { getProfileOfUser } from "../../../functions/profile";
+import { FriendData } from "../../../model/FriendData";
+import { UserData } from "../../../model/UserData";
+import Profile from "../../Profile/Profile";
+import { useContext } from "react";
 
 function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
   const { isCurrentIndex, friend, friendIntraName } = props;
