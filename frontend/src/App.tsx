@@ -3,8 +3,6 @@ import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import login, { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
-import AxiosResponse from 'axios';
-import MouseCursor from "./components/MouseCursor";
 import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./functions/profile";
 import { UserData } from "./model/UserData";
@@ -28,12 +26,7 @@ function App() {
 
   return (
     <PolkaDotContainer>
-      <div className='relative w-full h-full overflow-hidden cursor-none'>
-        {/* <MouseCursor> */}
-        {page}
-        {/* </MouseCursor> */}
-        <MouseCursor />
-      </div>
+      {page}
     </PolkaDotContainer>
   )
 

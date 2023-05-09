@@ -29,7 +29,6 @@ import Game from '../game/Game';
 import Tfa from '../components/tfa';
 import UserForm from './UserForm/UserForm';
 import { PolkaDotContainer } from '../components/Background';
-import MouseCursor from '../components/MouseCursor';
 import { gameTick } from '../main';
 
 const availableCommands = [
