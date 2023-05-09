@@ -1,11 +1,24 @@
 import { Ball } from "./ball";
-import { Paddle } from "./paddle";
-import { GameSetting } from "./settings";
+import { Rect } from "./rect";
+import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
-import { GameStartDTO, GameStateDTO } from "src/dto/gameState.dto";
+import { GameStartDTO, GameEndDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
 
+class CollisionResult{
+	collided: boolean;
+	collideTime : number;
+	normalX: number;
+	normalY: number;
+
+	constructor(){
+		this.collided = false;
+		this.collideTime = 0;
+		this.normalX = 0;
+		this.normalY = 0;
+	}
+}
 
 export class GameRoom{
 	roomID: string;
@@ -17,14 +30,17 @@ export class GameRoom{
 	ballInitSpeedX: number;
 	ballInitSpeedY: number;
 	Ball: Ball;
-	leftPaddle: Paddle;
-	rightPaddle: Paddle;
+	leftPaddle: Rect;
+	rightPaddle: Rect;
 	interval: NodeJS.Timer | null;
 	lastWinner: string;
 	player1Score: number;
 	player2Score: number;
 	gameEnded: boolean;
+	gameReset: boolean;
+	gamePaused: boolean;
 	_players: Array<string>;
+	roomSettings: GameSetting;
 
 	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting){
 		this.roomID = player1.intraName + player2.intraName;
@@ -37,22 +53,48 @@ export class GameRoom{
 		this.ballInitSpeedY = setting.ballSpeedY;
 		
 		this.Ball = new Ball(this.canvasWidth / 2, this.canvasHeight / 2, setting.ballSize, setting.ballSize);
-		this.leftPaddle = new Paddle(setting.paddleOffsetX, this.canvasHeight / 2, setting.paddleWidth, setting.paddleHeight);
-		this.rightPaddle = new Paddle(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.paddleHeight);
+		this.leftPaddle = new Rect(setting.paddleOffsetX, this.canvasHeight / 2, setting.paddleWidth, setting.leftPaddleHeight);
+		this.rightPaddle = new Rect(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.rightPaddleHeight);
 		this.interval = null;
 		
 		this._players = [player1.intraName, player2.intraName];
 		this.lastWinner = '';
 		this.player1Score = 0;
 		this.player2Score = 0;
-		this.gameEnded = false;
+		this.gameReset = false;
+		this.gamePaused = false;
+
+		//Check for game mode
+		this.roomSettings = setting;
 	}
 
+	
 	async run(server: Server){
 		this.resetGame();
-		if (this.interval == null && !this.gameEnded){
-			this.interval = setInterval(() => {
-				this.gameUpdate();
+		await this.countdown(3);
+		if (this.interval == null){
+			this.interval = setInterval(async () => {
+				if (this.gameReset == true){
+					this.resetGame();
+					server.to(this.roomID).emit('gameLoop',
+					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+					await this.countdown(1);
+					this.gameReset = false;
+				}
+
+				else if (this.gamePaused == true){
+
+				}
+
+				else{
+					this.gameUpdate();
+				}
+
+				if (this.player1Score == this.roomSettings.scoreToWin || this.player2Score == this.roomSettings.scoreToWin){
+					this.endGame(server);
+				}
+
 				server.to(this.roomID).emit('gameLoop',
 					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
@@ -62,17 +104,30 @@ export class GameRoom{
 
 	gameUpdate(){
 		this.Ball.update();
-		this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-		// console.log(this.leftPaddle.posY);
+		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+		if (score!=0){
+			if (score == 1){
+				this.player1Score++;
+				this.lastWinner = "player1";
+			}
+			else{
+				this.player2Score++;
+				this.lastWinner = "player2";
+			}
+			this.gameReset = true;
+			// console.log(this.player1Score, ":" , this.player2Score);
+		}
 		this.gameCollisionDetection();
 	}
 
-	objectCollision(ball: Ball, paddle: Paddle){
+	objectCollision(ball: Ball, paddle: Rect) : CollisionResult{
 		let xInvEntry, yInvEntry;
 		let xInvExit, yInvExit;
 		let xEntry, yEntry;
 		let xExit, yExit;
 		let entryTime, exitTime;
+
+		let result = new CollisionResult();
 
 		if (ball.velX > 0){
 			xInvEntry = paddle.posX - (ball.posX + ball.width);
@@ -112,37 +167,42 @@ export class GameRoom{
 		exitTime = Math.min(xExit, yExit);
 
 		if (entryTime > exitTime || xEntry < 0 && yEntry < 0 || xEntry > 1 || yEntry > 1){
-			return ;
+			return result;
 		}
 		else{
-			let normalX = 0;
-			let normalY = 0;
+			result.collided = true;
+			result.collideTime = entryTime;
 			if (xEntry > yEntry){
 				if (xInvEntry < 0){
-					normalX = 1;
+					result.normalX = 1;
 				}
 				else{
-					normalX = -1;
+					result.normalX = -1;
 				}
 			}
 			else{
 				if (yInvEntry < 0){
-					normalY = 1;
+					result.normalY = 1;
 				}
 				else{
-					normalY = -1;
+					result.normalY = -1;
 				}
 			}
-			ball.collisionResponse(entryTime, normalX, normalY);
+			return result;
 		}
 	}
 
 	gameCollisionDetection(){
-		if (this.Ball.posX > this.canvasWidth / 2){
-			this.objectCollision(this.Ball, this.rightPaddle);
+		let result = null;
+		if (this.Ball.posX > this.canvasWidth * 0.85){
+			result = this.objectCollision(this.Ball, this.rightPaddle);
 		}
-		else{
-			this.objectCollision(this.Ball, this.leftPaddle);
+		else if(this.Ball.posX < this.canvasWidth * 0.15){
+			result = this.objectCollision(this.Ball, this.leftPaddle);
+		}
+		
+		if (result && result.collided){
+			this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
 		}
 	}
 
@@ -173,8 +233,15 @@ export class GameRoom{
 	}
 
 	// TODO: wait for reconnect, abandon game after x seconds
-	pauseGame() {
+	togglePause() {
+		this.gamePaused = true;
 		console.log(`game ${this.roomID} paused due to player disconnect`);
+	}
+
+	endGame(server: Server) {
+		clearInterval(this.interval);
+		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
+		console.log(`game ${this.roomID} ended`);
 	}
 
 	/**
@@ -206,5 +273,10 @@ export class GameRoom{
 			counter--;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
+	}
+
+	async fieldChange(){
+		await this.countdown(10);
+		console.log("field changed");
 	}
 }

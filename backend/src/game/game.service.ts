@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { GameRoom } from "./entity/gameRoom";
-import { GameSetting } from "./entity/settings";
+import { GameSetting, GameMode } from "./entity/gameSetting";
 import { Socket, Server } from "socket.io";
 import { Player } from "./entity/player";
 import { GameResponseDTO } from "src/dto/gameResponse.dto";
@@ -9,7 +9,7 @@ import { GameStateDTO, GameStartDTO, GameEndDTO, GamePauseDTO } from "src/dto/ga
 
 //TODO : "gameState" event-> game start, game end, field effect
 
-const LOBBY_LOGGING = true;
+const LOBBY_LOGGING = false;
 
 @Injectable()
 export class GameService {
@@ -26,7 +26,6 @@ export class GameService {
 	private ingame = [];
 	private connected = [];
 
-	private gameSettings : GameSetting = new GameSetting();
 	private gameRooms = new Map<string, GameRoom>();
 
 	//Lobby functions 
@@ -76,7 +75,7 @@ export class GameService {
 		// If player is ingame, pause game 
 		this.gameRooms.forEach((gameRoom) => {
 			if (gameRoom._players.includes(USER_DATA.intraName)) {
-				gameRoom.pauseGame();
+				gameRoom.togglePause();
 			}
 		})
 
@@ -140,9 +139,10 @@ export class GameService {
 			this.joinGame(player1, player2, clientQueue, server);
 		}
 
+		//TESTING
 		var player1 = this.queues[clientQueue].pop();
-    this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server);
+		this.ingame.push(player1);
+		this.joinGame(player1, player1, clientQueue, server);
 	}
 
 	async leaveQueue(client: Socket) {
@@ -161,13 +161,13 @@ export class GameService {
 	}
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
-		const ROOM = new GameRoom(player1, player2, gameType, this.gameSettings);
-
+		const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
+		const ROOM = new GameRoom(player1, player2, gameType, ROOM_SETTING);
 		player1.socket.join(ROOM.roomID);
 		player2.socket.join(ROOM.roomID);
 		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, ROOM.roomID)));
 		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, ROOM.roomID)));
-		// server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
+		server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		await ROOM.run(server);
 		return (ROOM.roomID);
@@ -178,46 +178,15 @@ export class GameService {
 		if (ROOM === undefined)
 			return;
 		await ROOM.run(server);
-		// this.gameRooms.delete(roomID);
 	}
 
-	// async startGame(player1: Socket, player2: Socket, server: Server){
-	// 	// console.log(`Game start with ${player1.intraName} and ${player2.intraName}`);
-	// 	// player1.socket.emit('game', `game start: opponent = ${player2.intraName}`);
-	// 	// player2.socket.emit('game', `game start: opponent = ${player1.intraName}`);
-	// 	//Leave lobby room
-
-	// 	const ROOM = new GameRoom(player1.id, player2.id, this.gameSettings);
-	// 	// ROOM.generateRoomID();
-	// 	player1.join(ROOM.roomID);
-	// 	player2.join(ROOM.roomID);
-	// 	await ROOM.run(server);
-	// 	console.log("game finish");
-
-	// 	//Get both player info
-	// 	// console.log(body.name);
-	// 	// const TEST = this.userService.getUserDataByIntraName(body.name);
-	// 	//Change both player status to in game
-	// }
-
-	// async gameEnd(player1: any, player2: any){
-	// 	player1.leave(this.createGameRoom());
-	// 	player2.leave(this.createGameRoom());
-
-	// 	//TODO : send result to user service
-	// 	//TODO : remove users from ingame list
-	// }
-
-
-	async playerUpdate(client: Socket, room: string, value: number){
+	async playerUpdate(client: Socket, roomID: string, value: number){
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
 			return;
-
-		this.gameRooms.forEach((gameRoom) => {
-			if(gameRoom.roomID === room){
-				gameRoom.updatePlayerPos(client.id, value);
-			}
-		})
+		const ROOM = this.gameRooms.get(roomID);
+		if (ROOM === undefined)
+			return;
+		ROOM.updatePlayerPos(client.id, value);
 	}
 }
