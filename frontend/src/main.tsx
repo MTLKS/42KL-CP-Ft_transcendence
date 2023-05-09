@@ -26,13 +26,5 @@ const pixiApp = new Application({
   antialias: true,
 });
 
-let mouseLastMoveTime: number = 0;
-window.addEventListener('mousemove', (e) => {
-  const currentTime = Date.now();
-  if (currentTime - mouseLastMoveTime < 14) return;
-  mouseLastMoveTime = currentTime;
-  gameTick.updatePlayerPosition(e.clientY);
-});
-
 const pixiRoot = createRoot(pixiApp.stage);
 pixiRoot.render(<GameApp pixiApp={pixiApp} gameTick={gameTick} />);

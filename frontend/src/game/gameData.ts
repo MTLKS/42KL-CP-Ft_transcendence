@@ -63,6 +63,15 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
+    this.gameEntities.push(
+      new GameBlackhole({ x: 300, y: 450, w: 100, h: 100 }, 2)
+    );
+    this.gameEntities.push(
+      new GameBlackhole({ x: 250, y: 200, w: 100, h: 100 }, 2)
+    );
+    this.gameEntities.push(
+      new GameBlackhole({ x: 1100, y: 0, w: 100, h: 100 }, 2)
+    );
     this.joinQueue("standard");
     this.setEntities?.(this.gameEntities);
   }
