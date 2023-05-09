@@ -12,29 +12,29 @@ export class Ball extends DynamicRect{
 	 * Return 1 or 2 if the ball hit the left or right border respectively.
 	 * Return 0 otherwise.
 	 */
-	// checkContraint(borderWidth: number, borderHeight: number) : number{
-	// 	if (this.posX < 0){
-	// 		this.posX = 0;
-	// 		// this.velX = 0;
-	// 		// this.velY = 0;
-	// 		this.velX *= -1;
-	// 		return 1;
-	// 	}
-	// 	if (this.posX + this.width > borderWidth){
-	// 		this.posX = borderWidth - this.width;
-	// 		// this.velX = 0;
-	// 		// this.velY = 0;
-	// 		this.velX *= -1;
-	// 		return 2;
-	// 	}
-	// 	if (this.posY < 0){
-	// 		this.posY = 0;
-	// 		this.velY *= -1;
-	// 	}
-	// 	if (this.posY + this.height > borderHeight){
-	// 		this.posY = borderHeight - this.height;
-	// 		this.velY *= -1;
-	// 	}
-	// 	return 0;
-	// }
+	checkContraint(borderWidth: number, borderHeight: number) : number{
+		if (this.posX < 0){
+			this.posX = 0;
+			// this.velX = 0;
+			// this.velY = 0;
+			this.velX *= -1;
+			return 2;
+		}
+		if (this.posX + this.width > borderWidth){
+			this.posX = borderWidth - this.width;
+			// this.velX = 0;
+			// this.velY = 0;
+			this.velX *= -1;
+			return 1;
+		}
+		if (this.posY < 0){
+			this.posY = 0;
+			this.velY *= -1;
+		}
+		if (this.posY + this.height > borderHeight){
+			this.posY = borderHeight - this.height;
+			this.velY *= -1;
+		}
+		return 0;
+	}
 }

@@ -75,7 +75,7 @@ export class GameService {
 		// If player is ingame, pause game 
 		this.gameRooms.forEach((gameRoom) => {
 			if (gameRoom._players.includes(USER_DATA.intraName)) {
-				gameRoom.pauseGame();
+				gameRoom.togglePause();
 			}
 		})
 

@@ -38,7 +38,10 @@ export class GameRoom{
 	player1Score: number;
 	player2Score: number;
 	gameEnded: boolean;
+	gameReset: boolean;
+	gamePaused: boolean;
 	_players: Array<string>;
+	roomSettings: GameSetting;
 
 	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting){
 		this.roomID = player1.intraName + player2.intraName;
@@ -60,13 +63,35 @@ export class GameRoom{
 		this.player1Score = 0;
 		this.player2Score = 0;
 		this.gameEnded = false;
+		this.gameReset = false;
+		this.gamePaused = false;
+
+		this.roomSettings = setting;
 	}
 
 	async run(server: Server){
 		this.resetGame();
+		await this.countdown(3);
 		if (this.interval == null && !this.gameEnded){
-			this.interval = setInterval(() => {
-				this.gameUpdate();
+			this.interval = setInterval(async () => {
+
+				if (this.gameReset == true){
+					this.resetGame();
+					server.to(this.roomID).emit('gameLoop',
+					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+					await this.countdown(1);
+					this.gameReset = false;
+				}
+
+				else if (this.gamePaused == true){
+
+				}
+
+				else{
+					this.gameUpdate();
+				}
+
 				server.to(this.roomID).emit('gameLoop',
 					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
@@ -76,8 +101,20 @@ export class GameRoom{
 
 	gameUpdate(){
 		this.Ball.update();
-		this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-		// console.log(this.leftPaddle.posY);
+
+		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+		if (score!=0){
+			if (score == 1){
+				this.player1Score++;
+				this.lastWinner = "player1";
+			}
+			else{
+				this.player2Score++;
+				this.lastWinner = "player2";
+			}
+			this.gameReset = true;
+			// console.log(this.player1Score, ":" , this.player2Score);
+		}
 		this.gameCollisionDetection();
 	}
 
@@ -154,14 +191,14 @@ export class GameRoom{
 	}
 
 	gameCollisionDetection(){
-		let result;
-		if (this.Ball.posX > this.canvasWidth / 2){
+		let result = null;
+		if (this.Ball.posX > this.canvasWidth * 0.85){
 			result = this.objectCollision(this.Ball, this.rightPaddle);
 		}
-		else{
+		else if(this.Ball.posX < this.canvasWidth * 0.15){
 			result = this.objectCollision(this.Ball, this.leftPaddle);
 		}
-		if (result.collided){
+		if (result && result.collided){
 			this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
 		}
 	}
@@ -193,8 +230,13 @@ export class GameRoom{
 	}
 
 	// TODO: wait for reconnect, abandon game after x seconds
-	pauseGame() {
+	togglePause() {
+		this.gamePaused = true;
 		console.log(`game ${this.roomID} paused due to player disconnect`);
+	}
+
+	endGame() {
+		console.log(`game ${this.roomID} ended`);
 	}
 
 	/**
@@ -226,5 +268,10 @@ export class GameRoom{
 			counter--;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
+	}
+
+	async fieldChange(){
+		await this.countdown(10);
+		console.log("field changed");
 	}
 }
