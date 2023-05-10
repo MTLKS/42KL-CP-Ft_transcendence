@@ -3,6 +3,7 @@ primaryCommands.set("friend", "Manages your friendship.");
 primaryCommands.set("leaderboard", "Displays the game leaderboard.");
 primaryCommands.set("profile <intraName> ", "Displays profile.");
 primaryCommands.set("tfa", "Sets and unsets Google 2-Factor-Authentication.");
+primaryCommands.set("reset", "Resets your profile (Requires TFA if enabled).");
 
 const utilityCommands = new Map<string, string>();
 utilityCommands.set("clear", "Clears the terminal.");
