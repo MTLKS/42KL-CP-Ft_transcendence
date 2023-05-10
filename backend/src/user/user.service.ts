@@ -18,11 +18,11 @@ export class UserService {
 		} catch {
 			return { error: "Invalid access token - access token is invalid" };
 		}
-		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
-		if (USER_DATA.length === 0)
+		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
+		if (USER_DATA === null)
 			return { error: "Invalid access token - access token does not exist" };
-		USER_DATA[0].accessToken = "hidden";
-		return USER_DATA[0];
+		USER_DATA.accessToken = "hidden";
+		return USER_DATA;
 	}
 	
 	// Use access token to get intra user info
@@ -55,12 +55,12 @@ export class UserService {
 	async getUserDataByIntraName(intraName: string): Promise<any> {
 		if (intraName === undefined)
 			return;
-		const USER_DATA = await this.userRepository.find({ where: {intraName} });
-		if (USER_DATA.length === 0)
-			return USER_DATA[0];
-		USER_DATA[0].accessToken = "hidden";
-		USER_DATA[0].tfaSecret = "hidden";
-		return USER_DATA[0];
+		const USER_DATA = await this.userRepository.findOne({ where: {intraName} });
+		if (USER_DATA === null)
+			return USER_DATA;
+		USER_DATA.accessToken = "hidden";
+		USER_DATA.tfaSecret = "hidden";
+		return USER_DATA;
 	}
 
 	// Use intraName to get intra user info
@@ -103,14 +103,14 @@ export class UserService {
 		} catch {
 			accessToken = null;
 		}
-		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
-		return USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
+		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
+		return USER_DATA.avatar.startsWith("https://") ? res.redirect(USER_DATA.avatar) : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
-		const USER_DATA = await this.userRepository.find({ where: {intraName} });
-		return USER_DATA.length === 0 ? { error: "Invalid intraName - user does not exist" } : USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
+		const USER_DATA = await this.userRepository.findOne({ where: {intraName} });
+		return USER_DATA === null ? { error: "Invalid intraName - user does not exist" } : USER_DATA.avatar.startsWith("https://") ? res.redirect(USER_DATA.avatar) : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Updates existing user by saving their userName and avatar
@@ -122,22 +122,22 @@ export class UserService {
 		} catch {
 			accessToken = null;
 		}
-		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
-		if (NEW_USER.length === 0)
+		const NEW_USER = await this.userRepository.findOne({ where: {accessToken} });
+		if (NEW_USER === null)
 			return { error: "Invalid accessToken - user information does not exists" };
-		const EXISTING = await this.userRepository.find({ where: {userName} });
-		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
+		const EXISTING = await this.userRepository.findOne({ where: {userName} });
+		if (EXISTING !== null && accessToken !== EXISTING.accessToken)
 			return { error: "Invalid username - username already exists or invalid" };
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
 			return { error: "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
-		fs.rename(image.path, "avatar/" + NEW_USER[0].intraName, () => {});
-		image.path = "avatar/" + NEW_USER[0].intraName;
-		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
-		NEW_USER[0].userName = userName;
+		fs.rename(image.path, "avatar/" + NEW_USER.intraName, () => {});
+		image.path = "avatar/" + NEW_USER.intraName;
+		NEW_USER.avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
+		NEW_USER.userName = userName;
 		fs.writeFile(image.path, await sharp(image.path).resize({ width: 500, height: 500}).toBuffer(), () => {});
-		await this.userRepository.save(NEW_USER[0]);
-		NEW_USER[0].accessToken = "hidden";
-		NEW_USER[0].tfaSecret = "hidden";
-		return NEW_USER[0];
+		await this.userRepository.save(NEW_USER);
+		NEW_USER.accessToken = "hidden";
+		NEW_USER.tfaSecret = "hidden";
+		return NEW_USER;
 	}
 }

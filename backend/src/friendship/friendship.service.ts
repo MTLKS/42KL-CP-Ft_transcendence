@@ -25,10 +25,10 @@ export class FriendshipService {
 		if (USER_DATA.error !== undefined)
 			return { error: USER_DATA.error };
 		client.join(intraName);
-		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} });
-		if (FRIENDSHIP.length === 0)
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} });
+		if (FRIENDSHIP === null)
 			return { error: "Friendship does not exist" };
-		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP[0].status });
+		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP.status });
 	}
 
 	// Check if the JSON body is valid
@@ -50,21 +50,21 @@ export class FriendshipService {
 	async getFriendshipByIntraNAme(intraName: string): Promise<any> {
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverIntraName: intraName} });
 		for (let i = 0; i < RECEIVER.length; i++) {
-			const USER = await this.userRepository.find({ where: {intraName: RECEIVER[i].senderIntraName} });
-			if (USER.length === 0)
+			const USER = await this.userRepository.findOne({ where: {intraName: RECEIVER[i].senderIntraName} });
+			if (USER === null)
 				continue;
-			RECEIVER[i]['userName'] = USER[0].userName;
-			RECEIVER[i]['elo'] = USER[0].elo;
-			RECEIVER[i]['avatar'] = USER[0].avatar;
+			RECEIVER[i]['userName'] = USER.userName;
+			RECEIVER[i]['elo'] = USER.elo;
+			RECEIVER[i]['avatar'] = USER.avatar;
 		}
 		const SENDER = await this.friendshipRepository.find({ where: {senderIntraName: intraName} });
 		for (let i = 0; i < SENDER.length; i++) {
-			const USER = await this.userRepository.find({ where: {intraName: SENDER[i].receiverIntraName} });
-			if (USER.length === 0)
+			const USER = await this.userRepository.findOne({ where: {intraName: SENDER[i].receiverIntraName} });
+			if (USER === null)
 				continue;
-			SENDER[i]['userName'] = USER[0].userName;
-			SENDER[i]['elo'] = USER[0].elo;
-			SENDER[i]['avatar'] = USER[0].avatar;
+			SENDER[i]['userName'] = USER.userName;
+			SENDER[i]['elo'] = USER.elo;
+			SENDER[i]['avatar'] = USER.avatar;
 		}
 		return [...RECEIVER, ...SENDER];
 	}
@@ -82,7 +82,7 @@ export class FriendshipService {
 			return ERROR;
 		if (status.toUpperCase() == "ACCEPTED")
 			return { error: "Friendship status (ACCEPTED) is not supported - use PATCH method to edit an existing PENDING friendship to ACCEPTED friendship instead" }
-		if ((await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} })).length || (await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })).length)
+		if ((await this.friendshipRepository.findOne({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} })) === null || (await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })) === null)
 			return { error: "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
 		const NEW_FRIENDSHIP = new Friendship(senderIntraName, receiverIntraName, status.toUpperCase());
 		await this.friendshipRepository.save(NEW_FRIENDSHIP);
@@ -100,26 +100,26 @@ export class FriendshipService {
 		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
-		const RECEIVER = await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} });
+		const RECEIVER = await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} });
 		if (status.toUpperCase() == "ACCEPTED") {
-			if (RECEIVER.length === 0)
+			if (RECEIVER === null)
 				return { error: "Friendship does not exist - use POST method to create" }
-			RECEIVER[0].status = status.toUpperCase();
-			await this.friendshipRepository.save(RECEIVER[0]);
-			return RECEIVER[0];
+			RECEIVER.status = status.toUpperCase();
+			await this.friendshipRepository.save(RECEIVER);
+			return RECEIVER;
 		}
-		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} });
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} });
 		if (status.toUpperCase() == "BLOCKED")
 		{
-			if (FRIENDSHIP.length === 0 && RECEIVER.length === 0)
+			if (FRIENDSHIP === null && RECEIVER === null)
 				return { error: "Friendship does not exist - use POST method to create" }
-			if (FRIENDSHIP.length !== 0) {
-				FRIENDSHIP[0].status = status.toUpperCase();
-				await this.friendshipRepository.save(FRIENDSHIP[0]);
-				return FRIENDSHIP[0];
+			if (FRIENDSHIP === null) {
+				FRIENDSHIP.status = status.toUpperCase();
+				await this.friendshipRepository.save(FRIENDSHIP);
+				return FRIENDSHIP;
 			} else {
 				const NEW_FRIENDSHIP = new Friendship(senderIntraName, receiverIntraName, status.toUpperCase());
-				await this.friendshipRepository.delete(RECEIVER[0]);
+				await this.friendshipRepository.delete(RECEIVER);
 				await this.friendshipRepository.save(NEW_FRIENDSHIP);
 				return NEW_FRIENDSHIP;
 			}
@@ -139,7 +139,7 @@ export class FriendshipService {
 		if (ERROR)
 			return ERROR;
 		const FRIENDSHIP = [...await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} }), ...await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })];
-		if (FRIENDSHIP.length === 0)
+		if (FRIENDSHIP.length !== 1)
 			return { error: "Friendship does not exist - use POST method to create" }
 		if (FRIENDSHIP[0].senderIntraName === senderIntraName || (FRIENDSHIP[0].receiverIntraName === senderIntraName && FRIENDSHIP[0].status.toUpperCase() !== "BLOCKED"))
 			await this.friendshipRepository.delete(FRIENDSHIP[0]);

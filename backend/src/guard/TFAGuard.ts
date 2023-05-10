@@ -21,7 +21,7 @@ export class TFAGuard implements CanActivate {
 		} catch {
 			authCode = REQUEST.handshake.headers.authorization;
 		}
-		const USER_DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
-		return USER_DATA[0].tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
+		const USER_DATA = await this.userRepository.findOne({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
+		return USER_DATA.tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
 	}
 }

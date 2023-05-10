@@ -39,11 +39,11 @@ export class AuthService {
 			return { accessToken: null, newUser: false };
 		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()
 		const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
-		const ENTITY_USER = await this.userRepository.find({ where: {intraId: INTRA_DTO.id} });
-		if (ENTITY_USER.length)
+		const ENTITY_USER = await this.userRepository.findOne({ where: {intraId: INTRA_DTO.id} });
+		if (ENTITY_USER)
 		{
-			ENTITY_USER[0].accessToken = RETURN_DATA.access_token;
-			await this.userRepository.save(ENTITY_USER[0]);
+			ENTITY_USER.accessToken = RETURN_DATA.access_token;
+			await this.userRepository.save(ENTITY_USER);
 		} else {
 			await this.userRepository.save(new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, 400, RETURN_DATA.access_token, INTRA_DTO.imageLarge, null));
 			return { accessToken, newUser: true };

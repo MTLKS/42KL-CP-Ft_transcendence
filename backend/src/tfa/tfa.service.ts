@@ -14,16 +14,16 @@ export class TFAService{
 	async requestNewSecret(accessToken: string) : Promise<any> {
 		try {
 			const USER_DATA = await this.userService.getMyUserData(accessToken);
-			const DATA = await this.userRepository.find({ where: {intraName: USER_DATA.intraName} });
-			if (DATA[0].tfaSecret != null)
+			const DATA = await this.userRepository.findOne({ where: {intraName: USER_DATA.intraName} });
+			if (DATA.tfaSecret != null)
 				return { qr: null, secretKey: null };
-			DATA[0].tfaSecret = authenticator.generateSecret();
+			DATA.tfaSecret = authenticator.generateSecret();
 			const ACCOUNT_NAME = USER_DATA.userName;
 			const SERVICE = "PONGSH"
-			const OTP_PATH = authenticator.keyuri(ACCOUNT_NAME, SERVICE, DATA[0].tfaSecret);
+			const OTP_PATH = authenticator.keyuri(ACCOUNT_NAME, SERVICE, DATA.tfaSecret);
 			const IMAGE_URL = await qrCode.toDataURL(OTP_PATH);
-			await this.userRepository.save(DATA[0]);
-			return { qr : IMAGE_URL, secretKey : DATA[0].tfaSecret };
+			await this.userRepository.save(DATA);
+			return { qr : IMAGE_URL, secretKey : DATA.tfaSecret };
 		} catch {
 			return { qr: null, secretKey: null };
 		}
@@ -42,8 +42,8 @@ export class TFAService{
 	}
 
 	async deleteSecret(accessToken: string) : Promise<any> {
-		const DATA = await this.userRepository.find({ where: {intraName: (await this.userService.getMyUserData(accessToken)).intraName} });
-		DATA[0].tfaSecret = null;
-		return await this.userRepository.save(DATA[0]);
+		const DATA = await this.userRepository.findOne({ where: {intraName: (await this.userService.getMyUserData(accessToken)).intraName} });
+		DATA.tfaSecret = null;
+		return await this.userRepository.save(DATA);
 	}
 }
