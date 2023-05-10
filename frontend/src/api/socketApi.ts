@@ -12,6 +12,7 @@ export type Events =
   | "gameLoop"
   | "playerMove"
   | "gameState"
+  | "sendMessage"
   | "gameResponse"
   | "joinQueue"
   | "leaveQueue";

@@ -53,8 +53,9 @@ function App() {
       checkAuth(code.code).then(async (res) => {
         if (res) {
           localStorage.setItem('Authorization', (res as any).data.accessToken);
-          if ((res as any).data.accessToken)
+          if ((res as any).data.accessToken) {
             document.cookie = `Authorization=${(res as any).data.accessToken};`;
+          }
           if ((res as any).data.newUser) {
             setUserData((await getMyProfile()).data as UserData);
             setNewUser(true);
