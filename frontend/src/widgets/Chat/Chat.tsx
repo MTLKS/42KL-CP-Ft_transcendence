@@ -22,7 +22,7 @@ function Chat() {
   const handleToggleChat = () => setExpanded(!expanded);
 
   return (
-    <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody}}>
+    <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody }}>
       <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'}`}>
         <ChatToggle toggleChat={handleToggleChat} expanded={expanded} />
         <div className='h-full'>

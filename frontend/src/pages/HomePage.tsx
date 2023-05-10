@@ -28,10 +28,11 @@ import { gameTick } from '../main';
 import previewProfileContext from '../contexts/PreviewProfileContext';
 
 const availableCommands = [
-  "login",
   "sudo",
   "display",
   "start",
+  "queue",
+  "dequeue",
   "clear",
   "help",
   "end",
@@ -132,6 +133,12 @@ function HomePage(props: HomePageProps) {
       case "start":
         gameTick.startGame();
         break;
+      case "queue":
+        gameTick.joinQueue(command[1]);
+        break;
+      case "dequeue":
+        gameTick.leaveQueue();
+        break;
       case "end":
         if (startMatch) {
           const canvas = document.getElementById('pixi') as HTMLCanvasElement;
@@ -198,7 +205,7 @@ function HomePage(props: HomePageProps) {
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
           setElements(newList);
-          return ;
+          return;
         }
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
@@ -294,7 +301,7 @@ function HomePage(props: HomePageProps) {
     if (successes.length > 0) {
       for (const successName of successes) {
         newCards.push(
-          <Card key={`${successName}_added`+index} type={CardType.SUCCESS}>
+          <Card key={`${successName}_added` + index} type={CardType.SUCCESS}>
             <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
           </Card>
         )
@@ -410,7 +417,7 @@ function HomePage(props: HomePageProps) {
       addMultipleFriends(command.slice(1));
       newList = elements;
     } else
-      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp"+index} />);
+      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp" + index} />);
     setElements(newList);
     return newList;
   }
