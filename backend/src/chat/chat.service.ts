@@ -17,8 +17,8 @@ export class ChatService {
 		if (USER_DATA.error !== undefined)
 			return;
 		const DM_ROOM = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false} });
-		if (DM_ROOM) {
-			const NEW_ROOM = await this.channelRepository.save(new Channel(USER_DATA.intraName, USER_DATA.intraName, true, null, false));
+		if (DM_ROOM === null) {
+			const NEW_ROOM = await this.channelRepository.save(new Channel(USER_DATA.intraName, USER_DATA.intraName, USER_DATA.userName, true, null, false));
 			await this.memberRepository.save(new Member(NEW_ROOM.channelId, USER_DATA.intraName, true, false, false, new Date().toISOString()));
 		} else {
 			client.join(DM_ROOM.channelId);
@@ -43,11 +43,12 @@ export class ChatService {
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid friendhsip - You are not friends with this user" } );
 		FRIENDSHIP[0].chatted = true;
 		await this.friendshipRepository.save(FRIENDSHIP[0])
-		await this.messageRepository.save(new Message(USER_DATA.intraName, CHANNEL.channelId, false, message, new Date().toISOString()));
-		server.to(CHANNEL.channelId).emit("message", { intraName: USER_DATA.intraName, message: message } );
+		const NEW_MESSAGE = new Message(USER_DATA.intraName, CHANNEL.channelId, false, message, new Date().toISOString());
+		await this.messageRepository.save(NEW_MESSAGE);
+		server.to(CHANNEL.channelId).emit("message", { messageId: NEW_MESSAGE.messageId, intraName: USER_DATA.intraName, message: message } );
 	}
 
-	//  Retrives all messages from a DM
+	// Retrives all messages from a DM
 	async getMyDM(accessToken: string, intraName: string): Promise<any> {
 		if (intraName === undefined)
 			return { error: "Invalid body - body must include intraName(string)" };
@@ -62,12 +63,14 @@ export class ChatService {
 		return await this.messageRepository.find({ where: [{channelId: CHANNEL[0].channelId}, {channelId: CHANNEL[1].channelId}] });
 	}
 
+	// Retrives all DM of the user
 	async getAllDMChannel(accessToken: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		if (USER_DATA.error !== undefined)
 			return USER_DATA;
 		const FRIENDSHIPS = [...await this.friendshipRepository.find({ where: {senderIntraName: USER_DATA.intraName, status: "ACCEPTED"} }), ...await this.friendshipRepository.find({ where: {receiverIntraName: USER_DATA.intraName, status: "ACCEPTED"} })];
-		const FRIENDS = FRIENDSHIPS.filter(friendship => friendship.senderIntraName === 'schuah' || friendship.receiverIntraName === 'schuah').flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== 'schuah');
-		return (await Promise.all(FRIENDS.map(friend => this.channelRepository.find({ where: { ownerIntraName: friend, isRoom: false } }) ))).flat();
+		const FRIENDS = FRIENDSHIPS.filter(friendship => friendship.senderIntraName === USER_DATA.intraName || friendship.receiverIntraName === USER_DATA.intraName).flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== USER_DATA.intraName);
+
+		return (await Promise.all(FRIENDS.map(friend => this.channelRepository.findOne({ where: { ownerIntraName: friend, isRoom: false } }) )));
 	}
 }
