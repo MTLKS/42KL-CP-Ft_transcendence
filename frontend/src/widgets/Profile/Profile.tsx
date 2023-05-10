@@ -26,7 +26,7 @@ function Profile(props: ProfileProps) {
   useEffect(() => {
     pixelatedToSmooth();
     let socketApi: SocketApi;
-    if (!myProfile.intraName) return ;
+    if (!myProfile.intraName) return;
     socketApi = new SocketApi();
     socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
     socketApi.listen("statusRoom", (data: any) => {
@@ -40,11 +40,9 @@ function Profile(props: ProfileProps) {
     }
   }, [myProfile.intraName]);
 
-  return (<div className='w-full bg-highlight flex flex-col items-center box-border'
-    onClick={onProfileClick}
-  >
-    <ProfileHeader expanded={expanded} status={status} />
-    <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} />
+  return (<div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
+    <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} onProfileClick={onProfileClick} />
     <RecentMatches expanded={expanded} />
   </div>);
 
