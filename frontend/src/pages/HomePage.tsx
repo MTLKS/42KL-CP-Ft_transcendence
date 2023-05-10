@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import Pong from './Pong'
 import Card, { CardType } from '../components/Card';
 import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
@@ -27,12 +26,36 @@ import { AppProvider } from '@pixi/react';
 import Game from '../game/Game';
 // import UserContext from '../context/UserContext';
 import Tfa from '../components/tfa';
+<<<<<<< Updated upstream
 import UserForm from './UserForm/UserForm';
 import { PolkaDotContainer } from '../components/Background';
 import MouseCursor from '../components/MouseCursor';
 
 const availableCommands = ["sudo", "start", "clear", "help", "end", "profile", "friend", "ok", "leaderboard", "cowsay", "set", "reset"];
 const emptyWidget = <div></div>;
+=======
+import { gameTick } from '../main';
+import previewProfileContext from '../contexts/PreviewProfileContext';
+import { checkTFA } from '../functions/tfa';
+
+const availableCommands = [
+  "login",
+  "sudo",
+  "display",
+  "start",
+  "clear",
+  "help",
+  "end",
+  "profile",
+  "ok",
+  "leaderboard",
+  "cowsay",
+  "friend",
+  "set",
+  "reset",
+  "tfa"
+];
+>>>>>>> Stashed changes
 
 interface HomePageProps {
   setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
@@ -170,10 +193,7 @@ function HomePage(props: HomePageProps) {
         setIndex(index + 1);
         break;
       case "reset":
-        getMyProfile().then((profile) => {
-          setNewUser(true);
-          setUserData(profile.data as UserData);
-        });
+        handleResetCommand(command);
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -445,6 +465,17 @@ function HomePage(props: HomePageProps) {
     if (recognizable === false)
       newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />);
     setElements(newList);
+  }
+  
+  function handleResetCommand(command: string[]) {
+    checkTFA(command[1]).then((res) => {
+      getMyProfile().then((profile) => {
+        setNewUser(true);
+        if (res.error === undefined && res.boolean === false)
+          return setElements(appendNewCard(<Card key={"tfa" + index} type={CardType.ERROR}>Reset failed: Wrong OTP</Card>));
+        setUserData(profile.data as UserData);
+      });
+    });
   }
 }
 

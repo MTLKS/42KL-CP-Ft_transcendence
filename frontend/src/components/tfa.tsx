@@ -13,7 +13,8 @@ enum TFACommands {
 	unset,
 	exist,
 	success,
-	fail
+	fail,
+	notset
 }
 
 function help() {
@@ -45,14 +46,15 @@ function Tfa(props: TFAProps) {
 	} else if (commands.length === 3 && commands[1] === "unset" && commands[2].length === 6 && commands[2].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
 			setResult(TFACommands.fail)
-			removeTFA(commands[2]).then(() => {
-				setResult(TFACommands.unset)
+			checkTFA(commands[2]).then((res) => {
+				res.error !== undefined ? setResult(TFACommands.notset) : 
+					removeTFA(commands[2]).then(() => { setResult(TFACommands.unset)})
 			})
 		}, [])
 	} else if (commands.length === 2 && commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
-			checkTFA(commands[1]).then((data) => {
-				setResult(data.boolean ? TFACommands.success : TFACommands.fail)
+			checkTFA(commands[1]).then((res) => {
+				setResult(res.error !== undefined ? TFACommands.notset : res.boolean ? TFACommands.success : TFACommands.fail)
 			})
 		}, [])
 	} else {
@@ -65,7 +67,7 @@ function Tfa(props: TFAProps) {
 				<figure>
 					<p className='text-center'>Scan QR code with your Google Authenticator app</p>
 					<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
-					<p className='text-center'> SECRET: {tfa.secretKey}</p>
+					<p className='text-center'> or use secret key: {tfa.secretKey}</p>
 				</figure>
 			</Card>
 		);
@@ -77,6 +79,8 @@ function Tfa(props: TFAProps) {
 		return (<Card type={CardType.SUCCESS}><p>TFA OTP is correct</p></Card>);
 	} else if (result === TFACommands.fail) {
 		return (<Card type={CardType.ERROR}><p>TFA OTP is incorrect</p></Card>);
+	} else if (result === TFACommands.notset) {
+		return (<Card type={CardType.ERROR}><p>TFA is not set</p></Card>);
 	}
 	return help();
 }

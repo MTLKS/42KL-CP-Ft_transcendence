@@ -22,6 +22,7 @@ export class ChatService {
 			await this.memberRepository.save(new Member(NEW_ROOM.channelId, USER_DATA.intraName, true, false, false, new Date().toISOString()));
 		} else {
 			client.join(DM_ROOM[0].channelId);
+			client.emit("message", { intraName: "Server", message: `${USER_DATA.intraName} has joined the room` } );
 		}
 	}
 
@@ -44,17 +45,18 @@ export class ChatService {
 		server.to(CHANNEL[0].channelId).emit("message", message);
 	}
 
-	// async createNewRoom(accessToken: string, roomName: string, isPrivate: boolean, password: string): Promise<any> {
-	// 	const SENDER = await this.userService.getMyUserData(accessToken);
-	// 	for (var value of [roomName, isPrivate, password]) {
-	// 		if (value === undefined)
-	// 			return {"error": "Invalid body - body must include roomName(string), isPrivate(boolean), and password(nullable string)"};
-	// 	}
-	// 	if (roomName.length > 16 || roomName.length < 1)
-	// 		return {"error": "Invalid roomName - roomName is must be 1-16 characters only"};
-		
-	// 	const SAVED_CHANNEL = await this.channelRepository.save(new Channel(roomName, SENDER.intraName, isPrivate, password, true, null));
-	// 	await this.memberRepository.save(new Member(SAVED_CHANNEL.channelId, SENDER.userName, true, false, false, new Date().toISOString()));
-	// 	return SAVED_CHANNEL;
-	// }
+	// Get all DM's between the user and intraName
+	async getMyDM(accessToken: string, intraName: string): Promise<any> {
+		if (intraName === undefined)
+			return { error: "Invalid body - body must include intraName(string)" };
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		if (intraName === USER_DATA.intraName)
+			return { error: "Invalid intraname - you cannot DM yourself" };
+		if (USER_DATA.error !== undefined)
+			return USER_DATA;
+		const CHANNEL = await this.channelRepository.find({ where: [{ownerIntraName: USER_DATA.intraName, isRoom: false}, {ownerIntraName: intraName, isRoom: false}] });
+		if (CHANNEL.length !== 2)
+			return { error: "Invalid intraname - no DM found with defined intraName" };
+		return await this.messageRepository.find({ where: [{channelId: CHANNEL[0].channelId}, {channelId: CHANNEL[1].channelId}] });
+	}
 }

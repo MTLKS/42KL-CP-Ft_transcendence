@@ -32,10 +32,7 @@ export class TFAService{
 	async validateOTP(accessToken: string, otp: string) : Promise<any> {
 		try {
 			const DATA = await this.userService.getMyUserData(accessToken);
-			return { boolean: authenticator.verify({
-				token : otp, 
-				secret : DATA.tfaSecret,
-			}) };
+			return DATA.tfaSecret == null ? { error: "TFA not set" } : { boolean: authenticator.verify({ token : otp, secret : DATA.tfaSecret,}) };
 		} catch {
 			return { boolean: false};
 		}
