@@ -66,10 +66,10 @@ function NewChatRoom(props: NewChatRoomProps) {
 
     // if chatroom already existed, do nothing
     const chatroomExisted = chatrooms?.some(chatroom => chatroom.intraName === state.members[0] && chatroom.type === 'dm');
-    // if (chatroomExisted) {
-    //   setChatBody(<ChatroomList />);
-    //   return;
-    // }
+    if (chatroomExisted) {
+      setChatBody(<ChatroomList />);
+      return;
+    }
 
     const currentDateISOString = new Date().toISOString();
     // currently only consider DM

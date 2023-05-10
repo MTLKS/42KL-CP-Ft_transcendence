@@ -4,7 +4,7 @@ import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
 import { ChatContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
 
-const CHAT_SOCKET_NAMESPACE = "/chat";
+const CHAT_SOCKET_NAMESPACE = "chat";
 
 function Chat() {
 
@@ -13,7 +13,8 @@ function Chat() {
   const chatSocket = useMemo(() => new SocketApi(CHAT_SOCKET_NAMESPACE), []);
 
   useEffect(() => {
-    chatSocket.listen("sendMessage", (data: any) => {
+    chatSocket.connect();
+    chatSocket.listen("message", (data: any) => {
       console.log("received new message: ", data);
     });
   }, []);
