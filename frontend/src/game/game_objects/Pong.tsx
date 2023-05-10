@@ -9,11 +9,6 @@ interface PongProps {
 	size: BoxSize;
 }
 
-let p1: Offset = { x: 0, y: 0 }
-let p2: Offset = { x: 0, y: 0 }
-let p3: Offset = { x: 0, y: 0 }
-// let gameTick: GameTick;
-
 function Pong(props: PongProps) {
 	const { size, position } = props;
 	const app = useApp();

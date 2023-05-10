@@ -58,22 +58,22 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   const cyanElements: JSX.Element[] = [];
   const purpleElements: JSX.Element[] = [];
 
-  useEffect(() => {
+  // useEffect(() => {
 
 
-    particles.forEach((p) => {
-      const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
-      if (colorIndex === 0 && gravity) {
-        whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-      } else if (colorIndex === 1) {
-        cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-      } else if (!gravity) {
-        trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-      } else {
-        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-      }
-    });
-  }, [particles]);
+  particles.forEach((p) => {
+    const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
+    if (colorIndex === 0 && gravity) {
+      whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+    } else if (colorIndex === 1) {
+      cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+    } else if (!gravity) {
+      trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+    } else {
+      purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+    }
+  });
+  // }, [particles]);
 
 
   return (
