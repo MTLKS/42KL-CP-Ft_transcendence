@@ -25,6 +25,7 @@ import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
 import { gameTick } from '../main';
+import previewProfileContext from '../contexts/PreviewProfileContext';
 
 const availableCommands = [
   "login",
@@ -60,7 +61,7 @@ function HomePage(props: HomePageProps) {
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
-  const [expandProfile, setExpandProfile] = useState(false);
+  const [expandProfile, setExpandProfile] = useState(true);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
@@ -91,26 +92,28 @@ function HomePage(props: HomePageProps) {
   }, []);
 
   return (
-    <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
-      <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
-        <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
-          <div className='h-full w-full p-7'>
-            {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-            <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
-              <div className='h-full flex-1'>
-                {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
-              </div>
-              <div className=' bg-highlight h-full w-1' />
-              <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-                {topWidget}
-                {midWidget}
-                {botWidget}
+    <previewProfileContext.Provider value={{ setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
+      <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
+        <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
+          <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
+            <div className='h-full w-full p-7'>
+              {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
+              <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
+                <div className='h-full flex-1'>
+                  {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
+                </div>
+                <div className=' bg-highlight h-full w-1' />
+                <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+                  {topWidget}
+                  {midWidget}
+                  {botWidget}
+                </div>
               </div>
             </div>
-          </div>
-        </SelectedFriendContext.Provider>
-      </FriendsContext.Provider>
-    </UserContext.Provider>
+          </SelectedFriendContext.Provider>
+        </FriendsContext.Provider>
+      </UserContext.Provider>
+    </previewProfileContext.Provider>
   )
 
   function handleCommands(command: string[]) {
@@ -191,7 +194,7 @@ function HomePage(props: HomePageProps) {
       getProfileOfUser(command[1]).then((response) => {
         const newPreviewProfile = response.data as UserData;
         if (newPreviewProfile as any === '') {
-          const newErrorCard = <Card key={index}> <p>no such user</p></Card>;
+          const newErrorCard = <Card key={index}>No user found</Card>;
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
           setElements(newList);
@@ -258,9 +261,6 @@ function HomePage(props: HomePageProps) {
 
   function sendFriendRequestNotification(intraName: string) {
     friendshipSocket.sendMessages("friendshipRoom", { intraName: intraName });
-    friendshipSocket.listen("friendshipRoom", (data: any) => {
-      console.log(data);
-    })
   }
 
   async function addMultipleFriends(friendIntraNames: string[]) {
@@ -280,7 +280,7 @@ function HomePage(props: HomePageProps) {
       }
       // try to add the user
       const result = await addFriend((friendProfile.data as UserData).intraName);
-      // if the response has a "error" field meaning friendship existed, cannot send friend request again
+      // if the response has a error field meaning friendship existed, cannot send friend request again
       if (result.data.error) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
@@ -390,50 +390,28 @@ function HomePage(props: HomePageProps) {
   }
 
   async function handleFriendCommand(command: string[]) {
-
     let newList: JSX.Element[] = [];
-    let recognizable: boolean = false;
-
-    if (command.length === 0) {
-      recognizable = true;
-      newList = appendNewCard(
-        <HelpCard key={"friendhelp"+index} title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} />
-      );
-    }
 
     const updatedFriendlist = await getFriendList();
     setMyFriends(updatedFriendlist.data);
 
     if (command[0] === "list" && command.length === 1) {
       setLeftWidget(<Friendlist userData={userData} onQuit={() => setLeftWidget(null)} />);
-      recognizable = true;
       newList = elements;
-    }
-
-    if (command[0] === "requests" && command.length === 1) {
+    } else if (command[0] === "requests" && command.length === 1) {
       setLeftWidget(<FriendAction user={userData} action={ACTION_TYPE.ACCEPT} onQuit={() => setLeftWidget(null)} />);
-      recognizable = true;
       newList = elements;
-    }
-
-    if (command[0] === "block" || command[0] === "unblock" || command[0] === "unfriend") {
+    } else if (command[0] === "block" || command[0] === "unblock" || command[0] === "unfriend") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={userData} action={command[0]} onQuit={() => setLeftWidget(null)} />);
-      else if (command.length >= 2) {
+      else if (command.length >= 2)
         performActionOnMultipleUsers(command[0], command.slice(1));
-      }
-      recognizable = true;
       newList = elements;
-    }
-
-    if (command[0] === "add" && command.length >= 2) {
+    } else if (command[0] === "add" && command.length >= 2) {
       addMultipleFriends(command.slice(1));
-      recognizable = true;
       newList = elements;
-    }
-
-    if (recognizable === false)
-      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={index} />);
+    } else
+      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp"+index} />);
     setElements(newList);
   }
 }

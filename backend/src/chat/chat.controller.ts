@@ -1,4 +1,4 @@
-import { Controller, Get, Headers } from "@nestjs/common";
+import { Controller, Get, Headers, Param } from "@nestjs/common";
 import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
 import { UseGuards } from "@nestjs/common";
@@ -6,11 +6,17 @@ import { UseGuards } from "@nestjs/common";
 @Controller("chat")
 export class ChatController {
 	constructor (private readonly chatService: ChatService) {}
-
-	@Get('dm')
+	
+	@Get('dm/channel')
 	@UseGuards(AuthGuard)
-	getAllDM(@Headers('Authorization') accessToken: string): any {
-		
+	getAllDMChannel(@Headers('Authorization') accessToken: string): any {
+		return this.chatService.getAllDMChannel(accessToken);
+	}
+
+	@Get('dm/message/:intraName')
+	@UseGuards(AuthGuard)
+	getMyDM(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): any {
+		return this.chatService.getMyDM(accessToken, intraName);
 	}
 
 	// @Post('dm')

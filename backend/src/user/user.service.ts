@@ -16,11 +16,11 @@ export class UserService {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
-			return { "error": "Invalid access token - access token is invalid" };
+			return { error: "Invalid access token - access token is invalid" };
 		}
 		const USER_DATA = await this.userRepository.find({ where: {accessToken} });
 		if (USER_DATA.length === 0)
-			return { "error": "Invalid access token - access token does not exist" };
+			return { error: "Invalid access token - access token does not exist" };
 		USER_DATA[0].accessToken = "hidden";
 		return USER_DATA[0];
 	}
@@ -38,7 +38,7 @@ export class UserService {
 			headers : { 'Authorization': HEADER }
 		});
 		if (RESPONSE.status !== 200)
-			return { "error": (await RESPONSE.json()).error };
+			return { error: (await RESPONSE.json()).error };
 		const USER_DATA = await RESPONSE.json();
 		return new IntraDTO({
 			id: USER_DATA.id,
@@ -77,9 +77,9 @@ export class UserService {
 		});
 		let userData = await response.json();
 		if (userData.error !== undefined)
-			return { "error": userData.error };
+			return { error: userData.error };
 		if (response.status !== 200 || userData.length === 0)
-			return { "error": userData.error };
+			return { error: userData.error };
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
@@ -110,13 +110,13 @@ export class UserService {
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.find({ where: {intraName} });
-		return USER_DATA.length === 0 ? { "error": "Invalid intraName - user does not exist" } : USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
+		return USER_DATA.length === 0 ? { error: "Invalid intraName - user does not exist" } : USER_DATA[0].avatar.startsWith("https://") ? res.redirect(USER_DATA[0].avatar) : res.sendFile(USER_DATA[0].avatar.substring(USER_DATA[0].avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Updates existing user by saving their userName and avatar
 	async updateUserInfo(accessToken: string, userName: string, image: any): Promise<any> {
 		if (image === undefined)
-			return { "error": "Invalid image path - no avatar image given" }
+			return { error: "Invalid image path - no avatar image given" }
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
@@ -124,12 +124,12 @@ export class UserService {
 		}
 		const NEW_USER = await this.userRepository.find({ where: {accessToken} });
 		if (NEW_USER.length === 0)
-			return { "error": "Invalid accessToken - user information does not exists" };
+			return { error: "Invalid accessToken - user information does not exists" };
 		const EXISTING = await this.userRepository.find({ where: {userName} });
 		if (EXISTING.length !== 0 && accessToken !== EXISTING[0].accessToken)
-			return { "error": "Invalid username - username already exists or invalid" };
+			return { error: "Invalid username - username already exists or invalid" };
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
-			return { "error": "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
+			return { error: "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
 		fs.rename(image.path, "avatar/" + NEW_USER[0].intraName, () => {});
 		image.path = "avatar/" + NEW_USER[0].intraName;
 		NEW_USER[0].avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;

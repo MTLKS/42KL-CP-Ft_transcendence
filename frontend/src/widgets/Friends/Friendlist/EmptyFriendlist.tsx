@@ -1,4 +1,3 @@
-import React from 'react'
 import { FaSadCry } from 'react-icons/fa'
 
 function EmptyFriendlist() {
