@@ -9,25 +9,17 @@ interface PaddleProps {
   left: boolean;
   stageSize: BoxSize;
   size: BoxSize;
+  position: Offset;
 }
 
 function Paddle(props: PaddleProps) {
-  const { left, stageSize, size } = props;
+  const { left, stageSize, size, position } = props;
   const [rot, setRot] = React.useState(0);
-  const [position, setPosition] = React.useState<Offset>({ x: 0, y: 0 });
   const gameTick = useContext(GameDataCtx);
   useTick((delta) => {
     setRot(rot + 5);
   }, false);
 
-  useTick((delta) => {
-    if (left) {
-      setPosition(gameTick.leftPaddlePosition);
-    }
-    else {
-      setPosition(gameTick.rightPaddlePosition);
-    }
-  });
   const draw = useCallback((g: any) => {
     const lightAngle = (position.y - stageSize.h / 2) / 4
     const shadowDirection = left ? -100 : 100;

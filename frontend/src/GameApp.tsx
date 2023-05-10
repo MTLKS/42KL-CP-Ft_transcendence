@@ -21,10 +21,13 @@ function GameApp(props: GameAppProps) {
   const { pixiApp, gameTick } = props;
   useEffect(() => {
     gameTick.setSetScale = setScale;
-    pixiApp.stage.interactive = true;
+    pixiApp.stage.eventMode = "static";
     pixiApp.stage.hitArea = new PIXI.Rectangle(0, 0, 1600, 900);
     pixiApp.stage.on('mousemove', onmousemove);
-    return () => gameTick.endGame();
+    return () => {
+      gameTick.endGame();
+      pixiApp.stage.off('mousemove', onmousemove);
+    }
   }, []);
   return (
     <AppProvider value={pixiApp}>

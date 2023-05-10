@@ -6,11 +6,6 @@ import TimeZone, { TimeZoneType } from './TimeZone';
 
 function Entities() {
   const gameData = useContext(GameDataCtx);
-  const [entities, setEntities] = useState<GameEntity[]>([]);
-
-  useEffect(() => {
-    gameData.setSetEntities = setEntities;
-  }, []);
 
   const entityElements = useMemo(() => {
     return gameData.gameEntities.map((entity, index) => {

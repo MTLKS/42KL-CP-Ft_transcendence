@@ -21,7 +21,6 @@ export class GameData {
   gameEntities: GameEntity[] = [];
 
   setScale?: (scale: number) => void;
-  setEntities?: (entities: GameEntity[]) => void;
   setShouldRender?: (shouldRender: boolean) => void;
   private sendPlayerMove?: (y: number, gameRoom: string) => void;
 
@@ -73,7 +72,6 @@ export class GameData {
       new GameBlackhole({ x: 1100, y: 0, w: 100, h: 100 }, 2)
     );
     this.joinQueue("standard");
-    this.setEntities?.(this.gameEntities);
   }
 
   endGame() {
@@ -84,6 +82,7 @@ export class GameData {
     this.socketApi.removeListener("gameLoop");
     this.socketApi.removeListener("gameState");
     this.socketApi.removeListener("gameResponse");
+    this.leaveQueue();
   }
 
   set setSetScale(setScale: (scale: number) => void) {
@@ -92,10 +91,6 @@ export class GameData {
 
   set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
     this.setShouldRender = setShouldRender;
-  }
-
-  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
-    this.setEntities = setEntities;
   }
 
   listenToGameState = (state: GameStateDTO) => {

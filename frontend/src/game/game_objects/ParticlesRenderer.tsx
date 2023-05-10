@@ -1,17 +1,20 @@
 import * as PIXI from 'pixi.js';
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import GameParticle from '../../model/GameParticle';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
 import { GameBlackhole } from '../../model/GameEntities';
 import Worker from '../../workers/gameGraphic.worker?worker'
 
-const gameGraphicWorker = new Worker();
+// const gameGraphicWorker = new Worker();
 
-function ParticlesRenderer() {
-  const [particles, setParticles] = useState<GameParticle[]>([]);
+interface ParticlesRendererProps {
+  particles: GameParticle[];
+}
+function ParticlesRenderer(props: ParticlesRendererProps) {
+  // const [particles, setParticles] = useState<GameParticle[]>([]);
+  const { particles } = props;
   const app = useApp();
-  const gameData = useContext(GameDataCtx);
 
   const textures = useMemo(() => {
     const box = new PIXI.Graphics();
@@ -33,40 +36,45 @@ function ParticlesRenderer() {
     return [white, cyan, texture3];
   }, []);
 
-  useTick((delta) => {
-    gameGraphicWorker.postMessage({ type: 'pongPosition', value: gameData.pongPosition });
-    gameGraphicWorker.postMessage({ type: 'pongSpeed', value: gameData.pongSpeed });
-    gameGraphicWorker.postMessage({ type: 'gameEntities', value: gameData.gameEntities });
-  }, true);
+  // useTick((delta) => {
+  //   gameGraphicWorker.postMessage({ type: 'pongPosition', value: gameData.pongPosition });
+  //   gameGraphicWorker.postMessage({ type: 'pongSpeed', value: gameData.pongSpeed });
+  //   gameGraphicWorker.postMessage({ type: 'gameEntities', value: gameData.gameEntities });
+  // }, true);
 
-  useEffect(() => {
-    gameGraphicWorker.onmessage = (e) => {
-      const { type, value } = e.data;
-      if (type === 'gameParticles') {
-        setParticles(value);
-      }
-    }
-    gameGraphicWorker.postMessage({ type: 'start' });
-    return () => gameGraphicWorker.postMessage({ type: 'stop' });
-  }, []);
+  // useEffect(() => {
+  //   gameGraphicWorker.onmessage = (e) => {
+  //     const { type, value } = e.data;
+  //     if (type === 'gameParticles') {
+  //       setParticles(value);
+  //     }
+  //   }
+  //   gameGraphicWorker.postMessage({ type: 'start' });
+  //   return () => gameGraphicWorker.postMessage({ type: 'stop' });
+  // }, []);
 
   const trailElements: JSX.Element[] = [];
   const whiteElements: JSX.Element[] = [];
   const cyanElements: JSX.Element[] = [];
   const purpleElements: JSX.Element[] = [];
 
-  particles.forEach((p) => {
-    const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
-    if (colorIndex === 0 && gravity) {
-      whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    } else if (colorIndex === 1) {
-      cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    } else if (!gravity) {
-      trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    } else {
-      purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    }
-  });
+  useEffect(() => {
+
+
+    particles.forEach((p) => {
+      const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
+      if (colorIndex === 0 && gravity) {
+        whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      } else if (colorIndex === 1) {
+        cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      } else if (!gravity) {
+        trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      } else {
+        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      }
+    });
+  }, [particles]);
+
 
   return (
     <>
