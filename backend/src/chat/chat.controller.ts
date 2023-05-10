@@ -6,8 +6,14 @@ import { UseGuards } from "@nestjs/common";
 @Controller("chat")
 export class ChatController {
 	constructor (private readonly chatService: ChatService) {}
+	
+	@Get('dm/channel')
+	@UseGuards(AuthGuard)
+	getAllDMChannel(@Headers('Authorization') accessToken: string): any {
+		return this.chatService.getAllDMChannel(accessToken);
+	}
 
-	@Get('dm/:intraName')
+	@Get('dm/message/:intraName')
 	@UseGuards(AuthGuard)
 	getMyDM(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): any {
 		return this.chatService.getMyDM(accessToken, intraName);
