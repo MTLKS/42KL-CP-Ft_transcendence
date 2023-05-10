@@ -27,3 +27,9 @@ interface ChatRoomMessageData {
   message: string;
   timestamp: Date;
 }
+
+interface TemporaryChatRoomData {
+  intraName: string;
+  createdAt: string;
+  type: 'channel' | 'dm';
+}

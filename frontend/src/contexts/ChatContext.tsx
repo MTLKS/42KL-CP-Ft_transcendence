@@ -20,3 +20,23 @@ interface NewChatContextType {
 export const NewChatContext = createContext<NewChatContextType>({
   members: [],
 });
+
+interface ChatroomsContextType {
+  chatrooms: TemporaryChatRoomData[],
+}
+
+export const ChatroomsContext = createContext<ChatroomsContextType>({
+  chatrooms: [],
+});
+
+interface ChatroomContentContextType {
+  chatroomContent: TemporaryChatRoomData,
+}
+
+export const ChatroomContentContext = createContext<ChatroomContentContextType>({
+  chatroomContent: {
+    intraName: "",
+    type: "dm",
+    createdAt: new Date().toISOString(),
+  },
+});

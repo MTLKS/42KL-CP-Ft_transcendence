@@ -23,11 +23,9 @@ function Chat() {
 
   return (
     <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody}}>
-      <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'}`}>
+      <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
         <ChatToggle toggleChat={handleToggleChat} expanded={expanded} />
-        <div className='h-full'>
-          {chatroomBody}
-        </div>
+        {expanded && chatroomBody}
       </div>
     </ChatContext.Provider>
   )

@@ -1,17 +1,22 @@
 import React from 'react'
-import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChatroomHeader from './ChatroomHeader'
-import ChatroomMessage from './ChatroomMessage'
-import ChatUnreadSeparator from './ChatUnreadSeparator'
+import ChatroomTextField from './ChatroomTextField'
 
-function ChatroomContent() {
+interface ChatroomContentProps {
+  chatroomData: TemporaryChatRoomData;
+}
+
+function ChatroomContent(props: ChatroomContentProps) {
+
+  const { chatroomData } = props;
+
   return (
-    <div className='w-full h-full flex flex-col'>
-      <ChatroomHeader />
-      <div className='flex flex-col overflow-scroll h-full w-full px-5 gap-y-4 scrollbar-hide'>
-        <ChatroomMessage />
-        {/** ChatroomMessages */}
+    <div className='w-full h-0 flex-1 flex flex-col box-border'>
+      <ChatroomHeader chatroomData={chatroomData} />
+      <div className='h-full overflow-scroll scrollbar-hide flex flex-col gap-y-4 px-5 pb-4'>
+        { /** Chat messages here */}
       </div>
+      <ChatroomTextField chatroomData={chatroomData} />
     </div>
   )
 }
