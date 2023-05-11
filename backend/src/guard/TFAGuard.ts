@@ -2,7 +2,7 @@ import { CanActivate, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ExecutionContext } from "@nestjs/common";
 import { TFAService } from "src/tfa/tfa.service";
-import { User } from "src/entity/user.entity";
+import { User } from "src/entity/users.entity";
 import { AuthGuard } from "./AuthGuard";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
