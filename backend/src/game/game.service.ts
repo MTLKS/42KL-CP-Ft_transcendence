@@ -161,7 +161,7 @@ export class GameService {
 		player2.socket.join(ROOM.roomID);
 		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, ROOM.roomID)));
 		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, ROOM.roomID)));
-		server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
+		// server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
 		this.gameRooms.set(ROOM.roomID, ROOM);
 		await ROOM.run(server);
 		return (ROOM.roomID);
