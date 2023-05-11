@@ -5,7 +5,7 @@ import { GameResponse } from "../model/GameResponseDTO";
 import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
-import { debounce } from "lodash";
+import { clamp, debounce } from "lodash";
 import GameEntity, { GameBlackhole } from "../model/GameEntities";
 
 export class GameData {
@@ -16,13 +16,17 @@ export class GameData {
   rightPaddlePosition: Offset = { x: 0, y: 0 };
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
+  gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
   gameEntities: GameEntity[] = [];
 
   setScale?: (scale: number) => void;
   setShouldRender?: (shouldRender: boolean) => void;
+  setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   private sendPlayerMove?: (y: number, gameRoom: string) => void;
+
+  resize?: () => void;
 
   constructor() {
     this.socketApi = new SocketApi("game");
@@ -58,7 +62,7 @@ export class GameData {
     }
     console.log("start game");
     this.gameStarted = true;
-    this.setShouldRender?.(true);
+    if (this.setShouldRender) this.setShouldRender?.(true);
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
@@ -71,7 +75,46 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 1100, y: 0, w: 100, h: 100 }, 2)
     );
-    this.joinQueue("standard");
+  }
+
+  displayGame() {
+    if (this.gameDisplayed) {
+      console.error("game already displayed");
+      return;
+    }
+    const canvas = document.getElementById("pixi") as HTMLCanvasElement;
+    canvas.style.display = "block";
+    this.resize = () => {
+      const aspectRatio = 16 / 9;
+      const clampedWidth = clamp(window.innerWidth, 0, 1600);
+      const clampedHeight = clamp(window.innerHeight, 0, 900);
+      const newWidth = Math.min(clampedWidth, clampedHeight * aspectRatio);
+      const newHeight = Math.min(clampedHeight, clampedWidth / aspectRatio);
+      const newTop = (window.innerHeight - newHeight) / 2;
+      const newLeft = (window.innerWidth - newWidth) / 2;
+      document.documentElement.style.setProperty("--canvas-top", `${newTop}px`);
+      document.documentElement.style.setProperty(
+        "--canvas-left",
+        `${newLeft}px`
+      );
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      canvas.style.width = newWidth + "px";
+      canvas.style.height = newHeight + "px";
+    };
+    window.addEventListener("resize", this.resize);
+    this.resize();
+    this.gameDisplayed = true;
+  }
+
+  stopDisplayGame() {
+    if (!this.gameDisplayed) {
+      console.error("game already stopped displaying");
+      return;
+    }
+    const canvas = document.getElementById("pixi") as HTMLCanvasElement;
+    canvas.style.display = "none";
+    window.removeEventListener("resize", this.resize!);
   }
 
   endGame() {
@@ -83,6 +126,8 @@ export class GameData {
     this.socketApi.removeListener("gameState");
     this.socketApi.removeListener("gameResponse");
     this.leaveQueue();
+    this.gameEntities = [];
+    if (this.setShouldDisplayGame) this.setShouldDisplayGame?.(false);
   }
 
   set setSetScale(setScale: (scale: number) => void) {
@@ -91,6 +136,12 @@ export class GameData {
 
   set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
     this.setShouldRender = setShouldRender;
+  }
+
+  set setSetShouldDisplayGame(
+    setShouldDisplayGame: (startMatch: boolean) => void
+  ) {
+    this.setShouldDisplayGame = setShouldDisplayGame;
   }
 
   listenToGameState = (state: GameStateDTO) => {

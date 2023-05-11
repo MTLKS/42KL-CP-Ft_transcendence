@@ -20,7 +20,7 @@ function Paddle(props: PaddleProps) {
     setRot(rot + 5);
   }, false);
 
-  const draw = useCallback((g: any) => {
+  const draw = useCallback((g: PIXI.Graphics) => {
     const lightAngle = (position.y - stageSize.h / 2) / 4
     const shadowDirection = left ? -100 : 100;
     const shadowStart = left ? 0 : size.w;

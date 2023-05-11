@@ -95,7 +95,7 @@ class GameParticle {
     gravity,
   }: GameParticleData) {
     this.id =
-      id ?? Math.random().toString(36).slice(2) + Date.now().toString(36);
+      id ?? `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
     this.x = x ?? 0;
     this.y = y ?? 0;
     this.vx = vx ?? 0;

@@ -24,7 +24,7 @@ import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
-import { gameTick } from '../main';
+import { gameData } from '../main';
 import previewProfileContext from '../contexts/PreviewProfileContext';
 
 const availableCommands = [
@@ -57,7 +57,7 @@ function HomePage(props: HomePageProps) {
   const [currentPreviewProfile, setCurrentPreviewProfile] = useState<UserData>(userData);
   const [elements, setElements] = useState<JSX.Element[]>([])
   const [index, setIndex] = useState(0);
-  const [startMatch, setStartMatch] = useState(false);
+  const [shouldDiaplyGame, setShouldDiaplayGame] = useState(false);
   const [topWidget, setTopWidget] = useState(<Profile />);
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
@@ -85,6 +85,7 @@ function HomePage(props: HomePageProps) {
 
   useEffect(() => {
     initFriendshipSocket();
+    gameData.setSetShouldDisplayGame = setShouldDiaplayGame;
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
@@ -97,20 +98,22 @@ function HomePage(props: HomePageProps) {
       <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
         <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
-            <div className='h-full w-full p-7'>
-              {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-              <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
-                <div className='h-full flex-1'>
-                  {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
-                </div>
-                <div className=' bg-highlight h-full w-1' />
-                <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-                  {topWidget}
-                  {midWidget}
-                  {botWidget}
+            {shouldDiaplyGame ? <></> :
+              <div className='h-full w-full p-7'>
+                {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
+                <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
+                  <div className='h-full flex-1'>
+                    {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+                  </div>
+                  <div className=' bg-highlight h-full w-1' />
+                  <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+                    {topWidget}
+                    {midWidget}
+                    {botWidget}
+                  </div>
                 </div>
               </div>
-            </div>
+            }
           </SelectedFriendContext.Provider>
         </FriendsContext.Provider>
       </UserContext.Provider>
@@ -127,24 +130,20 @@ function HomePage(props: HomePageProps) {
         newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
       case "display":
-        if (!startMatch)
-          setStartMatch(true);
+        gameData.displayGame();
         break;
       case "start":
-        gameTick.startGame();
+        gameData.startGame();
         break;
       case "queue":
-        gameTick.joinQueue(command[1]);
+        gameData.joinQueue(command[1]);
         break;
       case "dequeue":
-        gameTick.leaveQueue();
+        gameData.leaveQueue();
         break;
       case "end":
-        if (startMatch) {
-          const canvas = document.getElementById('pixi') as HTMLCanvasElement;
-          canvas.style.display = "none";
-          setStartMatch(false);
-        }
+        gameData.stopDisplayGame();
+        gameData.endGame();
         break;
       case "profile":
         handleProfileCommand(command);

@@ -53,41 +53,42 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   //   return () => gameGraphicWorker.postMessage({ type: 'stop' });
   // }, []);
 
-  const trailElements: JSX.Element[] = [];
-  const whiteElements: JSX.Element[] = [];
-  const cyanElements: JSX.Element[] = [];
-  const purpleElements: JSX.Element[] = [];
 
-  // useEffect(() => {
+  const { trailElements, whiteElements, cyanElements, purpleElements } = useMemo(() => {
 
+    const trailElements: JSX.Element[] = [];
+    const whiteElements: JSX.Element[] = [];
+    const cyanElements: JSX.Element[] = [];
+    const purpleElements: JSX.Element[] = [];
 
-  particles.forEach((p) => {
-    const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
-    if (colorIndex === 0 && gravity) {
-      whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    } else if (colorIndex === 1) {
-      cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    } else if (!gravity) {
-      trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    } else {
-      purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
-    }
-  });
-  // }, [particles]);
+    particles.forEach((p) => {
+      const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
+      if (colorIndex === 0 && gravity) {
+        whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      } else if (colorIndex === 1) {
+        cyanElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      } else if (!gravity) {
+        trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      } else {
+        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+      }
+    });
+    return { trailElements, whiteElements, cyanElements, purpleElements };
+  }, [particles]);
 
 
   return (
     <>
-      <ParticleContainer properties={{ position: true, scale: true }}>
+      <ParticleContainer key={"trailParticles"} properties={{ position: true, scale: true }}>
         {trailElements}
       </ParticleContainer>
-      <ParticleContainer properties={{ position: true }}>
+      <ParticleContainer key={"cyanParticles"} properties={{ position: true }}>
         {cyanElements}
       </ParticleContainer>
-      <ParticleContainer properties={{ position: true }}>
+      <ParticleContainer key={"whiteParticles"} properties={{ position: true }}>
         {whiteElements}
       </ParticleContainer>
-      <ParticleContainer properties={{ position: true }}>
+      <ParticleContainer key={"purpleParticles"} properties={{ position: true }}>
         {purpleElements}
       </ParticleContainer>
     </>
