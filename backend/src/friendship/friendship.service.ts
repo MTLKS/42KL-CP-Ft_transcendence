@@ -1,7 +1,7 @@
 import { Friendship } from 'src/entity/friendship.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entity/user.entity';
+import { User } from 'src/entity/users.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
@@ -71,36 +71,30 @@ export class FriendshipService {
 
 	// Creates a new friendship
 	async newFriendship(accessToken: string, receiverIntraName: string, status: string): Promise<any> {
-		let senderIntraName: string;
-		try {
-			senderIntraName = (await this.userService.getMyUserData(accessToken)).intraName;
-		} catch {
-			senderIntraName = null;
-		}
-		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, status);
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		if (USER_DATA.error !== undefined)
+			return { error: USER_DATA.error };
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
 		if (status.toUpperCase() == "ACCEPTED")
 			return { error: "Friendship status (ACCEPTED) is not supported - use PATCH method to edit an existing PENDING friendship to ACCEPTED friendship instead" }
-		if ((await this.friendshipRepository.findOne({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} })) === null || (await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })) === null)
+		if ((await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} })) !== null || (await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName} })) !== null)
 			return { error: "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
-		const NEW_FRIENDSHIP = new Friendship(senderIntraName, receiverIntraName, status.toUpperCase());
+		const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase(), false);
 		await this.friendshipRepository.save(NEW_FRIENDSHIP);
 		return NEW_FRIENDSHIP;
 	}
 
 	// Updates a friendship
 	async updateFriendship(accessToken: string, receiverIntraName: string, status: string): Promise<any> {
-		try {
-			const USER = await this.userService.getMyUserData(accessToken);
-			var senderIntraName = USER.intraName;
-		} catch {
-			var senderIntraName = undefined;
-		}
-		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, status);
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		if (USER_DATA.error !== undefined)
+			return { error: USER_DATA.error };
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
-		const RECEIVER = await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} });
+		const RECEIVER = await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName} });
 		if (status.toUpperCase() == "ACCEPTED") {
 			if (RECEIVER === null)
 				return { error: "Friendship does not exist - use POST method to create" }
@@ -108,7 +102,7 @@ export class FriendshipService {
 			await this.friendshipRepository.save(RECEIVER);
 			return RECEIVER;
 		}
-		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} });
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} });
 		if (status.toUpperCase() == "BLOCKED")
 		{
 			if (FRIENDSHIP === null && RECEIVER === null)
@@ -118,7 +112,7 @@ export class FriendshipService {
 				await this.friendshipRepository.save(FRIENDSHIP);
 				return FRIENDSHIP;
 			} else {
-				const NEW_FRIENDSHIP = new Friendship(senderIntraName, receiverIntraName, status.toUpperCase());
+				const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase(), FRIENDSHIP.chatted);
 				await this.friendshipRepository.delete(RECEIVER);
 				await this.friendshipRepository.save(NEW_FRIENDSHIP);
 				return NEW_FRIENDSHIP;
@@ -129,20 +123,17 @@ export class FriendshipService {
 
 	// Deletes a friendship
 	async	deleteFriendship(accessToken: string, receiverIntraName: string): Promise<any> {
-		try {
-			const USER = await this.userService.getMyUserData(accessToken);
-			var senderIntraName = USER.intraName;
-		} catch {
-			var senderIntraName = null;
-		}
-		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, "ACCEPTED");
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		if (USER_DATA.error !== undefined)
+			return { error: USER_DATA.error };
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, "ACCEPTED");
 		if (ERROR)
 			return ERROR;
-		const FRIENDSHIP = [...await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} }), ...await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })];
-		if (FRIENDSHIP.length !== 1)
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName}, {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName}] });
+		if (FRIENDSHIP === null)
 			return { error: "Friendship does not exist - use POST method to create" }
-		if (FRIENDSHIP[0].senderIntraName === senderIntraName || (FRIENDSHIP[0].receiverIntraName === senderIntraName && FRIENDSHIP[0].status.toUpperCase() !== "BLOCKED"))
-			await this.friendshipRepository.delete(FRIENDSHIP[0]);
-		return FRIENDSHIP[0];
+		if (FRIENDSHIP.senderIntraName === USER_DATA.intraName || (FRIENDSHIP.receiverIntraName === USER_DATA.intraName && FRIENDSHIP.status.toUpperCase() !== "BLOCKED"))
+			await this.friendshipRepository.delete(FRIENDSHIP);
+		return FRIENDSHIP;
 	}
 }

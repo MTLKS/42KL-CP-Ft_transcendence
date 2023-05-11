@@ -1,5 +1,5 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "../entity/user.entity";
+import { User } from "../entity/users.entity";
 import { Injectable } from "@nestjs/common";
 import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
@@ -22,6 +22,7 @@ export class UserService {
 		if (USER_DATA === null)
 			return { error: "Invalid access token - access token does not exist" };
 		USER_DATA.accessToken = "hidden";
+		USER_DATA.tfaSecret = "hidden";
 		return USER_DATA;
 	}
 	
@@ -139,5 +140,26 @@ export class UserService {
 		NEW_USER.accessToken = "hidden";
 		NEW_USER.tfaSecret = "hidden";
 		return NEW_USER;
+	}
+
+	// Hides sensitive data
+	hideData(body: any): any {
+		const hideUser = (user: any) => ({
+			...user,
+			accessToken: "hidden",
+			tfaSecret: "hidden",
+		});
+	
+		if (Array.isArray(body)) {
+			return body.map((item) => ({
+				...item,
+				owner: hideUser(item.owner),
+			}));
+		} else {
+			return {
+				...body,
+				user: hideUser(body.user),
+			};
+		}
 	}
 }
