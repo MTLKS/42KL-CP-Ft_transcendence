@@ -12,6 +12,7 @@ export class TFAService{
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
 	async requestNewSecret(accessToken: string) : Promise<any> {
+		console.log("NEW!");
 		try {
 			const USER_DATA = await this.userService.getMyUserData(accessToken);
 			const DATA = await this.userRepository.findOne({ where: {intraName: USER_DATA.intraName} });
@@ -31,10 +32,11 @@ export class TFAService{
 
 	async validateOTP(accessToken: string, otp: string) : Promise<any> {
 		try {
-			const DATA = await this.userService.getMyUserData(accessToken);
+			let userData = await this.userService.getMyUserData(accessToken);
+			userData = await this.userRepository.findOne({ where: {intraName: userData.intraName} });
 			return { boolean: authenticator.verify({
 				token : otp, 
-				secret : DATA.tfaSecret,
+				secret : userData.tfaSecret,
 			}) };
 		} catch {
 			return { boolean: false};
