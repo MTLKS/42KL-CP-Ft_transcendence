@@ -11,11 +11,11 @@ function ChannelInfo() {
       <div className='flex flex-col gap-y-3 w-full'>
         <div className='flex flex-col gap-y-1'>
           <p className='text-highlight/50 text-sm'>Channel Name</p>
-          <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none w-full' />
+          <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none w-full  cursor-text' />
         </div>
         <div className='flex flex-col gap-y-1'>
           <p className='text-highlight/50 text-sm'>Password</p>
-          <input type="password" autoComplete='disabled' autoCorrect='disabled' className='rounded border-2 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none' />
+          <input type="password" autoComplete='disabled' autoCorrect='disabled' className='rounded border-2 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' />
         </div>
       </div>
     </div>
