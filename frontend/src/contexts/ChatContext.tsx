@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import SocketApi from "../api/socketApi";
+import { ChatroomData, ChatroomMessageData, MemberData } from "../model/ChatRoomData";
 
 interface ChatContextType {
   chatSocket: SocketApi,
@@ -22,7 +23,7 @@ export const NewChatContext = createContext<NewChatContextType>({
 });
 
 interface ChatroomsContextType {
-  chatrooms: TemporaryChatRoomData[],
+  chatrooms: ChatroomData[],
 }
 
 export const ChatroomsContext = createContext<ChatroomsContextType>({
@@ -30,13 +31,34 @@ export const ChatroomsContext = createContext<ChatroomsContextType>({
 });
 
 interface ChatroomContentContextType {
-  chatroomContent: TemporaryChatRoomData,
+  chatroomContent: ChatroomData,
 }
 
 export const ChatroomContentContext = createContext<ChatroomContentContextType>({
   chatroomContent: {
-    intraName: "",
-    type: "dm",
-    createdAt: new Date().toISOString(),
+    channelId: 0,
+    channelName: "",
+    isPrivate: false,
+    isRoom: false,
+    password: null,
+    owner: null,
   },
+});
+
+interface ChatroomMessagesContextType {
+  messages: ChatroomMessageData[],
+  setMessages: (newMessages: ChatroomMessageData[]) => void,
+}
+
+export const ChatroomMessagesContext = createContext<ChatroomMessagesContextType>({
+  messages: [],
+  setMessages: (newMessages: ChatroomMessageData[]) => {},
+})
+
+interface ChatMemberContextType {
+  member: MemberData | null;
+}
+
+export const ChatMemberContext = createContext<ChatMemberContextType>({
+  member: null,
 });

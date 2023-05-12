@@ -1,22 +1,23 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FaPaperPlane, FaGamepad, FaPlusCircle } from 'react-icons/fa'
-import { ChatContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
+import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
+import UserContext from '../../../../contexts/UserContext';
 
 interface ChatroomTextFieldProps {
-  chatroomData: TemporaryChatRoomData;
+  chatroomData: ChatroomData;
 }
 
 function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const { chatroomData } = props;
   const { chatSocket } = useContext(ChatContext);
+  const { messages, setMessages } = useContext(ChatroomMessagesContext);
+  const { myProfile } = useContext(UserContext);
   const [previousRows, setPreviousRows] = useState(1);
   const [rows, setRows] = useState(1);
   const [message, setMessage] = useState('');
 
-  // when user types in the textfield, if the current line exceeds the textfield's width, add a new line
-  // if the user delete one line, remove the line
-  // max rows is 3
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { scrollHeight, clientHeight, value } = e.target;
 
@@ -39,13 +40,26 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       chatSocket.sendMessages("message", {
-        intraName: chatroomData.intraName,
+        intraName: chatroomData.owner!.intraName,
         message: message,
       });
+
+      // append new message to the top of the list (index 0)
+      const newMessage: ChatroomMessageData = {
+        channel: false, // considering DM only for now
+        channelId: chatroomData.channelId,
+        message: message,
+        messageId: 0,
+        timeStamp: new Date().toISOString(),
+        user: myProfile,
+      };
+      const newMessages: ChatroomMessageData[] = [newMessage, ...messages];
+      setMessages(newMessages);
       setMessage('');
       setRows(1);
     }
   }
+
 
   return (
     <div className='w-full flex flex-row bg-dimshadow/0 items-end'>

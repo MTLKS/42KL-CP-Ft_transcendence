@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import ChatToggle from './ChatWidgets/ChatToggle'
 import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
-import { ChatContext } from '../../contexts/ChatContext';
+import { ChatContext, ChatMemberContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
+import { MemberData } from '../../model/ChatRoomData';
+import { getMemberData } from '../../functions/chatAPIs';
 
 const CHAT_SOCKET_NAMESPACE = "chat";
 
@@ -13,10 +15,12 @@ function Chat() {
   const chatSocket = useMemo(() => new SocketApi(CHAT_SOCKET_NAMESPACE), []);
 
   useEffect(() => {
+    // for receive new message
     chatSocket.connect();
     chatSocket.listen("message", (data: any) => {
       console.log("received new message: ", data);
     });
+
   }, []);
 
   // toggle chat

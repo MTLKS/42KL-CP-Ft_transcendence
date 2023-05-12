@@ -5,9 +5,10 @@ import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChatRoom from '../CreateChat/NewChatRoom';
-import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
+import { ChatContext } from '../../../../contexts/ChatContext';
 import UserContext from '../../../../contexts/UserContext';
-import Chat from '../../Chat';
+import { getChatroomList } from '../../../../functions/chatAPIs';
+import { ChatroomData } from '../../../../model/ChatRoomData';
 
 /**
  * @param prefix IntraId + '_tcr_'
@@ -22,34 +23,39 @@ function getTemporaryChatrooms(prefix: string): string[] {
 }
 
 function ChatroomList() {
-  
+
   const { myProfile } = useContext(UserContext);
   const { setChatBody } = useContext(ChatContext);
-  const [chatrooms, setChatrooms] = useState<TemporaryChatRoomData[]>([]);
+  const [chatrooms, setChatrooms] = useState<ChatroomData[]>([]);
+
+  // useEffect(() => {
+  //   const chatrooms: ChatroomData[] = [];
+  //   const chatroomsFromDb = getChatroomList().then(res => console.log(res.data));
+  //   // The process here should be:
+  //   // 1. Get all chatrooms from the database
+  //   // 2. Get all temporary chatrooms from the local storage
+  //   // 3. Merge them together
+  //   // 4. Sort them by the last message sent, if last message sent is not present, sort by the created date
+  //   // 5. Set chatrooms state
+
+  //   // Get temporary chatrooms (created by no message was sent yet). Should be deleted after the first message is sent.
+  //   const temporaryChatrooms = getTemporaryChatrooms(`${myProfile.intraId.toString()}_tcr_`);
+  //   temporaryChatrooms.forEach(chatroom => chatrooms.push(JSON.parse(chatroom)));
+  //   chatrooms.sort((a, b) => {
+  //     const createdDateA = new Date(a.lastRead);
+  //     const createdDateB = new Date(b.lastRead);
+  //     return createdDateB < createdDateA ? -1 : 1;
+  //   })
+  //   setChatrooms(chatrooms);
+  // }, []);
 
   useEffect(() => {
-    const chatrooms: TemporaryChatRoomData[] = [];
-    // The process here should be:
-    // 1. Get all chatrooms from the database
-    // 2. Get all temporary chatrooms from the local storage
-    // 3. Merge them together
-    // 4. Sort them by the last message sent, if last message sent is not present, sort by the created date
-    // 5. Set chatrooms state
-
-    // Get temporary chatrooms (created by no message was sent yet). Should be deleted after the first message is sent.
-    const temporaryChatrooms = getTemporaryChatrooms(`${myProfile.intraId.toString()}_tcr_`);
-    temporaryChatrooms.forEach(chatroom => chatrooms.push(JSON.parse(chatroom)));
-    chatrooms.sort((a, b) => {
-      const createdDateA = new Date(a.createdAt);
-      const createdDateB = new Date(b.createdAt);
-      return createdDateB < createdDateA ? -1 : 1;
-    })
-    setChatrooms(chatrooms);
+    getAllChatrooms();
   }, []);
 
   return (
     <div className='flex flex-col border-box h-0 flex-1 relative'>
-      { chatrooms.length > 0
+      {chatrooms.length > 0
         ? <div className='h-full w-full overflow-y-scroll scrollbar-hide'>{displayChatrooms()}</div>
         : <ChatEmptyState />
       }
@@ -64,8 +70,31 @@ function ChatroomList() {
     </div>
   )
 
+  // this includes the chatrooms from the database and the temporary chatrooms that are temporary stored in the local storage
+  async function getAllChatrooms() {
+
+    const chatrooms: ChatroomData[] = [];
+
+    const chatroomsFromDb = await getChatroomList();
+    if (chatroomsFromDb.data.length > 0) {
+      chatrooms.push(...chatroomsFromDb.data);
+    }
+
+    const temporaryChatrooms = getTemporaryChatrooms(`${myProfile.intraId.toString()}_tcr_`);
+    temporaryChatrooms.forEach(chatroom => {
+      const tempChatroomData = JSON.parse(chatroom);
+      if (chatrooms.length > 0 && chatrooms.some(chatroom => chatroom.channelName === tempChatroomData.channelName && !chatroom.isRoom)) {
+        localStorage.removeItem(`${myProfile.intraId.toString()}_tcr_${tempChatroomData.channelName}`);
+        return ;
+      } else {
+        chatrooms.push(tempChatroomData);
+      }
+    });
+    setChatrooms(chatrooms);
+  }
+
   function displayChatrooms() {
-    return chatrooms.map(chatroom => <Chatroom key={chatroom.intraName+chatroom.createdAt} chatroomData={chatroom} />);
+    return chatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} />);
   }
 }
 

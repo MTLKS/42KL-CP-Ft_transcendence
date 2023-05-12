@@ -9,9 +9,12 @@ import ChatroomList from '../Chatroom/ChatroomList'
 import newChatRoomReducer, { newChatRoomInitialState } from './newChatRoomReducer'
 import NewChatInfo from './NewChatInfo'
 import UserContext from '../../../../contexts/UserContext'
+import { ChatroomData } from '../../../../model/ChatRoomData'
+import { getProfileOfUser } from '../../../../functions/profile'
+import { UserData } from '../../../../model/UserData'
 
 interface NewChatRoomProps {
-  chatrooms?: TemporaryChatRoomData[],
+  chatrooms?: ChatroomData[],
   type: 'dm' | 'channel'
 }
 
@@ -59,26 +62,31 @@ function NewChatRoom(props: NewChatRoomProps) {
     }
   }
 
-  function handleCreateChatroom() {
+  async function handleCreateChatroom() {
 
     // if no friend is selected, do nothing
     if (state.members.length === 0) return;
 
     // if chatroom already existed, do nothing
-    const chatroomExisted = chatrooms?.some(chatroom => chatroom.intraName === state.members[0] && chatroom.type === 'dm');
+    const chatroomExisted = chatrooms?.some(chatroom => chatroom.channelName === state.members[0] && chatroom.isRoom === false);
     if (chatroomExisted) {
+      // TODO: set chatroom as active or just show an error message
       setChatBody(<ChatroomList />);
       return;
     }
 
-    const currentDateISOString = new Date().toISOString();
+    const owner = state.isChannel ? myProfile : (await getProfileOfUser(state.members[0])).data as UserData;
+
     // currently only consider DM
-    const tempChatRoom: TemporaryChatRoomData = {
-      intraName: state.members[0], // only one member
-      createdAt: currentDateISOString,
-      type: type,
+    const tempChatRoom: ChatroomData = {
+      channelId: 0,
+      channelName: state.members[0],
+      isPrivate: true,
+      isRoom: false,
+      owner: owner,
+      password: null,
     }
-    localStorage.setItem(`${myProfile.intraId.toString()}_tcr_${currentDateISOString}`, JSON.stringify(tempChatRoom));
+    localStorage.setItem(`${myProfile.intraId.toString()}_tcr_${state.members[0]}`, JSON.stringify(tempChatRoom));
     setChatBody(<ChatroomList />);
   }
 }

@@ -6,14 +6,14 @@ import ChatroomList from './ChatroomList';
 import { FaUser } from 'react-icons/fa';
 
 interface ChatroomHeaderProps {
-  chatroomData: TemporaryChatRoomData;
+  chatroomData: ChatroomData;
 }
 
-function ChatroomIcon(props: { type: string }) {
+function ChatroomIcon(props: { isRoom: boolean }) {
   
-  const { type } = props;
+  const { isRoom } = props;
 
-  if (type === "dm") return (<FaUser className='text-base' />);
+  if (!isRoom) return (<FaUser className='text-base' />);
 
   return (<></>);
 }
@@ -28,8 +28,8 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
       <ChatNavbar backAction={() => setChatBody(<ChatroomList />)}>
         <div className='w-3/5 py-2 px-4 text-dimshadow bg-highlight cursor-pointer mx-auto z-20' onClick={() => console.log(`see chat info`)}>
           <div className='flex flex-row items-center gap-3 w-fit mx-auto max-w-[90%]'>
-            <p className='font-extrabold text-xl w-fit max-w-[90%] truncate'>{chatroomData.intraName}</p>
-            <ChatroomIcon type={chatroomData.type} />
+            <p className='font-extrabold text-xl w-fit max-w-[90%] truncate'>{chatroomData.channelName}</p>
+            <ChatroomIcon isRoom={chatroomData.isRoom} />
           </div>
         </div>
       </ChatNavbar>
