@@ -1,33 +1,35 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from './users.entity';
 
 @Entity( { name: 'member' } )
 export class Member {
-	constructor(channelId: number, intraName: string, admin: boolean, banned: boolean, muted: boolean, lastRead: string) {
+	constructor(user: User, channelId: number, isAdmin: boolean, isBanned: boolean, isMuted: boolean, lastRead: string) {
+		this.user = user;
 		this.channelId = channelId;
-		this.intraName = intraName;
-		this.admin = admin;
-		this.banned = banned;
-		this.muted = muted;
+		this.isAdmin = isAdmin;
+		this.isBanned = isBanned;
+		this.isMuted = isMuted;
 		this.lastRead = lastRead;
 	}
 	
 	@PrimaryGeneratedColumn()
 	memberId: number;
+	
+	@ManyToOne(() => User, user => user)
+	user: User;
 
+	// Change this to a ManyToOne channel relationship
 	@Column()
 	channelId: number;
-	
-	@Column()
-	intraName: string;
 
 	@Column()
-	admin: boolean;
+	isAdmin: boolean;
 
 	@Column()
-	banned: boolean;
+	isBanned: boolean;
 
 	@Column()
-	muted: boolean;
+	isMuted: boolean;
 
 	@Column()
 	lastRead: string;

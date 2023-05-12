@@ -1,11 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from './users.entity';
 
 @Entity( { name: 'channel' } )
 export class Channel {
-	constructor(channelName: string, ownerIntraName: string, ownerUserName: string, isPrivate: boolean, password: string, isRoom: boolean) {
+	constructor(owner: User, channelName: string, isPrivate: boolean, password: string, isRoom: boolean) {
+		this.owner = owner;
 		this.channelName = channelName;
-		this.ownerIntraName = ownerIntraName;
-		this.ownerUserName = ownerUserName;
 		this.isPrivate = isPrivate;
 		this.password = password;
 		this.isRoom = isRoom;
@@ -14,14 +14,11 @@ export class Channel {
 	@PrimaryGeneratedColumn()
 	channelId: number;
 	
+	@ManyToOne(() => User, user => user)
+	owner: User;
+
 	@Column()
 	channelName: string;
-
-	@Column()
-	ownerIntraName: string;
-
-	@Column()
-	ownerUserName: string;
 	
 	@Column()
 	isPrivate: boolean;
