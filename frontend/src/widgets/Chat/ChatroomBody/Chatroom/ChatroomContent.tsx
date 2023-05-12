@@ -5,8 +5,11 @@ import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '.
 import { getChatroomMessages, getMemberData } from '../../../../functions/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
-import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatMessagesComponentContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
 import { UserData } from '../../../../model/UserData';
+import { playNewMessageSound } from '../../../../functions/audio';
+import ChatUnreadSeparator from './ChatUnreadSeparator';
+import { set } from 'lodash';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
@@ -23,61 +26,105 @@ function ChatroomContent(props: ChatroomContentProps) {
   const { chatroomData } = props;
   const { chatSocket } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
-  const [unreadMessages, setUnreadMessages] = useState<ChatroomMessageData[]>([]);
-  const [readMessages, setReadMessages] = useState<ChatroomMessageData[]>([]);
   const [allMessages, setAllMessages] = useState<ChatroomMessageData[]>([]);
   const [isMessagesSet, setIsMessagesSet] = useState<boolean>(false);
-  const [chatMember, setChatMember] = useState<MemberData>();
+  const [chatMemberLastRead, setChatMemberLastRead] = useState<string>();
+  const scrollToHereRef = useRef<HTMLDivElement>(null);
+  const [separatorAtIndex, setSeparatorAtIndex] = useState<number>(-1);
+  const [messagesComponent, setMessagesComponent] = useState<JSX.Element[]>([]);
+  const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log(chatroomData.channelId);
-    getChatroomMessages(chatroomData.channelId).then((res) => {
-      const allMsgs = res.data as ChatroomMessageData[];
-      console.log(allMsgs);
-      const sortedMsgs = allMsgs.sort((b, a) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime());
-      // const unreadMsgs = sortedMsgs.filter((message) => !message.read && message.user.intraName !== myProfile.intraName);
-      setAllMessages(sortedMsgs);
-      setIsMessagesSet(true);
-      // send the last message to the server so that it can be marked as read
-      // unreadMsgs.forEach((message) => notifyServerOfUnreadMessage({ messageId: message.messageId, channelId: message.channelId }));
-    });
-
-    // getMemberData(chatroomData.channelId).then((res) => {
-    //   const memberData = res.data as MemberData;
-    //   console.log(memberData);
-    //   setChatMember(memberData);
-    // });
-    // receive new Message and append
-    chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
-      console.log("received new message: ", newMessage);
-      setAllMessages((messages) => appendNewMessage(newMessage, messages));
-    });
+    // fetch message history
+    fetchMessageHistory();
+    // get chatroom member data
+    getChatroomMemberData();
+    // listen for incoming messages
+    return listenForIncomingMessages();
   }, []);
 
-  if (!isMessagesSet) return null;
+  useEffect(() => {
+    if (!chatMemberLastRead) return;
+    setMessagesComponent(displayMessages());
+  }, [allMessages, chatMemberLastRead]);
 
-  // console.log(chatMember);
+  if (!chatMemberLastRead || !isMessagesSet) return <></>;
 
   return (
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
         <ChatroomHeader chatroomData={chatroomData} />
-        <div className='h-full overflow-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4'>
-          { displayMessages() }
+        <div className='h-full overflow-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth'>
+          { messagesComponent }
         </div>
-        <ChatroomTextField chatroomData={chatroomData} />
+        <ChatMessagesComponentContext.Provider value={{ separatorAtIndex, setSeparatorAtIndex, messagesComponent, setMessagesComponent, setIsFirstLoad }}>
+          <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} />
+        </ChatMessagesComponentContext.Provider>
       </div>
     </ChatroomMessagesContext.Provider>
   )
 
+  async function fetchMessageHistory() {
+    const allMsgs: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId)).data;
+    const sortedMsgs = allMsgs.sort((b, a) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime());
+    setAllMessages(sortedMsgs);
+    setIsMessagesSet(true);
+  }
+
+  async function getChatroomMemberData() {
+    const memberData = (await getMemberData(chatroomData.channelId)).data as MemberData;
+    setChatMemberLastRead(memberData.lastRead);
+  }
+
+  function pingServerToUpdateLastRead() {
+    chatSocket.sendMessages("read", { channelId: chatroomData.channelId });
+    chatSocket.listen("read", (data: MemberData) => {
+      setChatMemberLastRead(data.lastRead);
+    });
+    chatSocket.removeListener("read");
+  }
+
+  function listenForIncomingMessages() {
+    chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
+      setAllMessages((messages) => appendNewMessage(newMessage, messages));
+      pingServerToUpdateLastRead(); // might cause issue
+      playNewMessageSound();
+    });
+    return () => {
+      chatSocket.removeListener("message");
+    }
+  }
+
   function displayMessages() {
-    return allMessages.map((message) => <ChatroomMessage key={message.timeStamp} messageData={message} isMyMessage={myProfile.intraName === message.user.intraName} />);
-  }
 
-  function notifyServerOfUnreadMessage(unreadMessage: { messageId: number, channelId: number }) {
-    chatSocket.sendMessages("read", unreadMessage);
-  }
+    if (!chatMemberLastRead) return;
 
+    const lastReadTime = new Date(chatMemberLastRead!);
+    const oldMessages = allMessages.filter((message) => new Date(message.timeStamp) < lastReadTime);
+    const newMessages = allMessages.filter((message) => new Date(message.timeStamp) >= lastReadTime);
+    let messagesToDisplay: any[] = [];
+
+    if (newMessages.length > 0 && isFirstLoad) {
+      messagesToDisplay = [...newMessages, {type: "separator"}, ...oldMessages];
+    } else if (newMessages.length > 0 && !isFirstLoad) {
+      messagesToDisplay = [...newMessages, ...oldMessages];
+    } else {
+      messagesToDisplay = [...oldMessages];
+    }
+
+    let messagesComponent: JSX.Element[] = [];
+    messagesToDisplay.map((message, index) => {
+      if (message.type === "separator") {
+        setSeparatorAtIndex(index);
+        messagesComponent.push(<div ref={scrollToHereRef} key={"separator_div" + new Date().toDateString()}><ChatUnreadSeparator key={"separator" + new Date().toISOString()}/></div>);
+      } else {
+        const messageData = message as ChatroomMessageData;
+        messagesComponent.push(<ChatroomMessage key={messageData.messageId + new Date().toDateString()} messageData={messageData} isMyMessage={myProfile.intraName === messageData.user.intraName} />);
+      }
+    });
+    pingServerToUpdateLastRead();
+    return messagesComponent;
+  }
 }
 
 export default ChatroomContent

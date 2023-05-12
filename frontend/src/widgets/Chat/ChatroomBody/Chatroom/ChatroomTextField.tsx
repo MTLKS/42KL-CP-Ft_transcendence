@@ -1,16 +1,20 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FaPaperPlane, FaGamepad, FaPlusCircle } from 'react-icons/fa'
-import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
-import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
+import { ChatContext, ChatMessagesComponentContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
+import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '../../../../model/ChatRoomData';
 import UserContext from '../../../../contexts/UserContext';
+import ChatroomMessage from './ChatroomMessage';
+import { set } from 'lodash';
 
 interface ChatroomTextFieldProps {
   chatroomData: ChatroomData;
+  pingServer: () => void;
 }
 
 function ChatroomTextField(props: ChatroomTextFieldProps) {
 
-  const { chatroomData } = props;
+  const { chatroomData, pingServer } = props;
+  const { separatorAtIndex, setSeparatorAtIndex, messagesComponent, setMessagesComponent, setIsFirstLoad } = useContext(ChatMessagesComponentContext);
   const { chatSocket } = useContext(ChatContext);
   const { messages, setMessages } = useContext(ChatroomMessagesContext);
   const { myProfile } = useContext(UserContext);
@@ -36,6 +40,14 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     setMessage(value);
   }
 
+  const popoffSeparator = () => {
+    console.log("before: ", messagesComponent);
+    if (separatorAtIndex === -1) return messagesComponent;
+    const newMessagesComponent = messagesComponent.filter((_, index) => index !== separatorAtIndex);
+    console.log("after: ", newMessagesComponent);
+    return (newMessagesComponent);
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -43,23 +55,33 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
         intraName: chatroomData.owner!.intraName,
         message: message,
       });
-
+      // pingServer();
       // append new message to the top of the list (index 0)
       const newMessage: ChatroomMessageData = {
         channel: false, // considering DM only for now
         channelId: chatroomData.channelId,
         message: message,
-        messageId: 0,
+        messageId: new Date().getTime(),
         timeStamp: new Date().toISOString(),
         user: myProfile,
       };
-      const newMessages: ChatroomMessageData[] = [newMessage, ...messages];
+      const newMessagesComponent = [
+        <ChatroomMessage key={"tempMessage" + newMessage.timeStamp} messageData={newMessage} isMyMessage={myProfile.intraName === newMessage.user.intraName} />,
+        ...popoffSeparator(),
+      ]
+      const newMessages = [
+        newMessage,
+        ...messages,
+      ];
+      setMessagesComponent(newMessagesComponent);
       setMessages(newMessages);
       setMessage('');
+      setSeparatorAtIndex(-1);
       setRows(1);
+      setIsFirstLoad(false);
+      pingServer();
     }
   }
-
 
   return (
     <div className='w-full flex flex-row bg-dimshadow/0 items-end'>
@@ -80,7 +102,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
       </div>
       <div className='w-[20%] h-[60px] px-4 bg-dimshadow'>
         <button className='bg-highlight w-full h-[60px] rounded-t-md px-3'>
-          <span className='w-fit h-fit relative animate-pulse'>
+          <span className='w-fit h-fit relative'>
             <FaGamepad className='w-fit h-full text-[53px] mx-auto text-dimshadow'/>
             <span className='rounded-full bg-highlight aspect-square absolute bottom-3 right-1 h-5 z-20 flex flex-row justify-evenly'>
               <FaPlusCircle className='h-full w-fullaspect-square text-accGreen rounded-full'/>

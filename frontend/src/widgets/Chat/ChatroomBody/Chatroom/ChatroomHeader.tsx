@@ -4,6 +4,7 @@ import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import { ChatContext, ChatroomContentContext } from '../../../../contexts/ChatContext';
 import ChatroomList from './ChatroomList';
 import { FaUser } from 'react-icons/fa';
+import { ChatroomData } from '../../../../model/ChatRoomData';
 
 interface ChatroomHeaderProps {
   chatroomData: ChatroomData;

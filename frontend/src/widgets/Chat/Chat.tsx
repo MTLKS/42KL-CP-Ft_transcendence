@@ -21,6 +21,9 @@ function Chat() {
       console.log("received new message: ", data);
     });
 
+    return () => {
+      chatSocket.removeListener("message");
+    }
   }, []);
 
   // toggle chat

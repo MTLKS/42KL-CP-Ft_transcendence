@@ -62,3 +62,19 @@ interface ChatMemberContextType {
 export const ChatMemberContext = createContext<ChatMemberContextType>({
   member: null,
 });
+
+interface ChatMessagesComponentContextType {
+  separatorAtIndex: number;
+  setSeparatorAtIndex: (index: number) => void;
+  messagesComponent: JSX.Element[];
+  setMessagesComponent: (newMessagesComponent: JSX.Element[]) => void;
+  setIsFirstLoad: (isFirstLoad: boolean) => void;
+}
+
+export const ChatMessagesComponentContext = createContext<ChatMessagesComponentContextType>({
+  separatorAtIndex: -1,
+  setSeparatorAtIndex: (index: number) => {},
+  messagesComponent: [],
+  setMessagesComponent: (newMessagesComponent: JSX.Element[]) => {},
+  setIsFirstLoad: (isFirstLoad: boolean) => {},
+});

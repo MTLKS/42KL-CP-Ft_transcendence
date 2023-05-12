@@ -29,7 +29,7 @@ function Chatroom(props: ChatroomProps) {
       </div>
       <div className='border-box flex flex-row justify-between w-full items-center p-5 border-b-2 border-highlight/50'>
         <p className='text-highlight font-extrabold text-base truncate group-hover:underline'>{chatroomData.owner!.userName} ({chatroomData.owner!.intraName})</p>
-        {/* <ChatMsgIndicator total={1} /> */}
+        <ChatMsgIndicator />
       </div>
     </div>
   )

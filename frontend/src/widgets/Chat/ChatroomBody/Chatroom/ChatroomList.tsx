@@ -28,27 +28,6 @@ function ChatroomList() {
   const { setChatBody } = useContext(ChatContext);
   const [chatrooms, setChatrooms] = useState<ChatroomData[]>([]);
 
-  // useEffect(() => {
-  //   const chatrooms: ChatroomData[] = [];
-  //   const chatroomsFromDb = getChatroomList().then(res => console.log(res.data));
-  //   // The process here should be:
-  //   // 1. Get all chatrooms from the database
-  //   // 2. Get all temporary chatrooms from the local storage
-  //   // 3. Merge them together
-  //   // 4. Sort them by the last message sent, if last message sent is not present, sort by the created date
-  //   // 5. Set chatrooms state
-
-  //   // Get temporary chatrooms (created by no message was sent yet). Should be deleted after the first message is sent.
-  //   const temporaryChatrooms = getTemporaryChatrooms(`${myProfile.intraId.toString()}_tcr_`);
-  //   temporaryChatrooms.forEach(chatroom => chatrooms.push(JSON.parse(chatroom)));
-  //   chatrooms.sort((a, b) => {
-  //     const createdDateA = new Date(a.lastRead);
-  //     const createdDateB = new Date(b.lastRead);
-  //     return createdDateB < createdDateA ? -1 : 1;
-  //   })
-  //   setChatrooms(chatrooms);
-  // }, []);
-
   useEffect(() => {
     getAllChatrooms();
   }, []);
