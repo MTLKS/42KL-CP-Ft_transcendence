@@ -56,13 +56,13 @@ export class UserService {
 	// Use intraName to get user info
 	async getUserDataByIntraName(accessToken: string, intraName: string): Promise<any> {
 		if (intraName === undefined)
-			return;
+			return { error: "Invalid body - body must include intraName(string)" };
 		const USER_DATA = await this.getMyUserData(accessToken);
 		if (USER_DATA.error !== undefined)
 			return USER_DATA;
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
-			return FRIEND_DATA;
+			return { error: "Invalid intraName - intraName does not exist" };
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: FRIEND_DATA.intraName}, {senderIntraName: FRIEND_DATA.intraName, receiverIntraName: USER_DATA.intraName}] });
 		if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 			return { error: "Invalid friendship - You are blocked by this user" };
