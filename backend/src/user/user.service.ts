@@ -1,3 +1,4 @@
+import { Friendship } from "src/entity/friendship.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entity/users.entity";
 import { Injectable } from "@nestjs/common";
@@ -9,7 +10,7 @@ import * as fs from 'fs';
 
 @Injectable()
 export class UserService {
-	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
+	constructor(@InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>) {}
 
 	// Use access token to get user info
 	async getMyUserData(accessToken: string) : Promise<any> {
@@ -53,15 +54,21 @@ export class UserService {
 	}
 
 	// Use intraName to get user info
-	async getUserDataByIntraName(intraName: string): Promise<any> {
+	async getUserDataByIntraName(accessToken: string, intraName: string): Promise<any> {
 		if (intraName === undefined)
 			return;
-		const USER_DATA = await this.userRepository.findOne({ where: {intraName} });
-		if (USER_DATA === null)
+		const USER_DATA = await this.getMyUserData(accessToken);
+		if (USER_DATA.error !== undefined)
 			return USER_DATA;
-		USER_DATA.accessToken = "hidden";
-		USER_DATA.tfaSecret = "hidden";
-		return USER_DATA;
+		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
+		if (FRIEND_DATA === null)
+			return FRIEND_DATA;
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: FRIEND_DATA.intraName}, {senderIntraName: FRIEND_DATA.intraName, receiverIntraName: USER_DATA.intraName}] });
+		if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
+			return { error: "Invalid friendship - You are blocked by this user" };
+		FRIEND_DATA.accessToken = "hidden";
+		FRIEND_DATA.tfaSecret = "hidden";
+		return FRIEND_DATA;
 	}
 
 	// Use intraName to get intra user info
