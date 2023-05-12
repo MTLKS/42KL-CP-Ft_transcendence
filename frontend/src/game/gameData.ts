@@ -1,12 +1,13 @@
-import { Application, ICanvas } from "pixi.js";
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../model/GameDTO";
 import { GameResponse } from "../model/GameResponseDTO";
 import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
-import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 import { clamp, debounce } from "lodash";
 import GameEntity, { GameBlackhole } from "../model/GameEntities";
+import sleep from "../functions/sleep";
+import * as particles from "@pixi/particle-emitter";
+import GameParticle from "../model/GameParticle";
 
 export class GameData {
   socketApi: SocketApi;
@@ -21,12 +22,22 @@ export class GameData {
   gameRoom: string = "";
   gameEntities: GameEntity[] = [];
 
+  globalSpeedFactor: number = 1;
+  globalScaleFactor: number = 1;
+  globalGravityX: number = 0;
+  globalGravityY: number = 0;
+
+  inFocus: boolean = true;
+
   setScale?: (scale: number) => void;
+  setUsingTicker?: (usingTicker: boolean) => void;
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   private sendPlayerMove?: (y: number, gameRoom: string) => void;
 
   resize?: () => void;
+  focus?: () => void;
+  blur?: () => void;
 
   constructor() {
     this.socketApi = new SocketApi("game");
@@ -66,15 +77,6 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
-    this.gameEntities.push(
-      new GameBlackhole({ x: 300, y: 450, w: 100, h: 100 }, 2)
-    );
-    this.gameEntities.push(
-      new GameBlackhole({ x: 250, y: 200, w: 100, h: 100 }, 2)
-    );
-    this.gameEntities.push(
-      new GameBlackhole({ x: 1100, y: 0, w: 100, h: 100 }, 2)
-    );
   }
 
   displayGame() {
@@ -101,10 +103,36 @@ export class GameData {
       canvas.height = newHeight;
       canvas.style.width = newWidth + "px";
       canvas.style.height = newHeight + "px";
+      if (this.setScale) this.setScale(newWidth / 1600);
+    };
+    this.focus = async () => {
+      this.inFocus = true;
+      this.setUsingTicker?.(true);
+      for (let i = 0; i < 20; i++) {
+        if (!this.inFocus) return;
+        this.globalSpeedFactor += 0.05;
+        this.globalScaleFactor += 0.02;
+        await sleep(50);
+      }
+      this.globalSpeedFactor = 1;
+      this.globalScaleFactor = 1;
+    };
+    this.blur = async () => {
+      this.inFocus = false;
+      for (let i = 0; i < 20; i++) {
+        if (this.inFocus) return;
+        this.globalSpeedFactor -= 0.05;
+        this.globalScaleFactor -= 0.02;
+        await sleep(50);
+      }
+      this.setUsingTicker?.(false);
     };
     window.addEventListener("resize", this.resize);
+    window.addEventListener("focus", this.focus);
+    window.addEventListener("blur", this.blur);
     this.resize();
     this.gameDisplayed = true;
+    if (this.setShouldDisplayGame) this.setShouldDisplayGame?.(true);
   }
 
   stopDisplayGame() {
@@ -115,6 +143,8 @@ export class GameData {
     const canvas = document.getElementById("pixi") as HTMLCanvasElement;
     canvas.style.display = "none";
     window.removeEventListener("resize", this.resize!);
+    window.removeEventListener("focus", this.focus!);
+    window.removeEventListener("blur", this.blur!);
   }
 
   endGame() {
@@ -142,6 +172,10 @@ export class GameData {
     setShouldDisplayGame: (startMatch: boolean) => void
   ) {
     this.setShouldDisplayGame = setShouldDisplayGame;
+  }
+
+  set setSetUsingTicker(setUsingTicker: (usingTicker: boolean) => void) {
+    this.setUsingTicker = setUsingTicker;
   }
 
   listenToGameState = (state: GameStateDTO) => {
@@ -195,5 +229,14 @@ export class GameData {
     this._pongPosition.x += this.pongSpeed.x;
     this._pongPosition.y += this.pongSpeed.y;
     requestAnimationFrame(this.useLocalTick);
+  }
+
+  applGlobalEffectToParticle(particle: GameParticle) {
+    particle.vx *= this.globalSpeedFactor;
+    particle.vy *= this.globalSpeedFactor;
+    particle.ax *= this.globalSpeedFactor;
+    particle.ay *= this.globalSpeedFactor;
+    particle.w *= this.globalScaleFactor;
+    particle.h *= this.globalScaleFactor;
   }
 }

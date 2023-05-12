@@ -29,28 +29,28 @@ function Paddle(props: PaddleProps) {
     g.drawRect(0, 0, size.w, size.h);
     g.endFill();
 
-    g.beginFill(0xFEF8E2, 0.08);
-    g.moveTo(shadowStart, 0);
-    g.lineTo(shadowStart, size.h);
-    g.lineTo(shadowDirection, size.h + lightAngle);
-    g.lineTo(shadowDirection, lightAngle);
-    g.endFill();
+    // g.beginFill(0xFEF8E2, 0.08);
+    // g.moveTo(shadowStart, 0);
+    // g.lineTo(shadowStart, size.h);
+    // g.lineTo(shadowDirection, size.h + lightAngle);
+    // g.lineTo(shadowDirection, lightAngle);
+    // g.endFill();
 
-    g.beginFill(0xFEF8E2, 0.08);
-    if (lightAngle < 0) {
-      g.moveTo(0, 0);
-      g.lineTo(size.w, 0);
-      g.lineTo(shadowDirection + size.w - shadowStart, lightAngle);
-      g.lineTo(shadowDirection - shadowStart, lightAngle);
-    }
-    else {
-      g.moveTo(0, size.h);
-      g.lineTo(size.w, size.h);
-      g.lineTo(shadowDirection + size.w - shadowStart, size.h + lightAngle);
-      g.lineTo(shadowDirection - shadowStart, size.h + lightAngle);
-    }
-    g.endFill();
-  }, [position.y]);
+    // g.beginFill(0xFEF8E2, 0.08);
+    // if (lightAngle < 0) {
+    //   g.moveTo(0, 0);
+    //   g.lineTo(size.w, 0);
+    //   g.lineTo(shadowDirection + size.w - shadowStart, lightAngle);
+    //   g.lineTo(shadowDirection - shadowStart, lightAngle);
+    // }
+    // else {
+    //   g.moveTo(0, size.h);
+    //   g.lineTo(size.w, size.h);
+    //   g.lineTo(shadowDirection + size.w - shadowStart, size.h + lightAngle);
+    //   g.lineTo(shadowDirection - shadowStart, size.h + lightAngle);
+    // }
+    // g.endFill();
+  }, []);
   return (
     <Container x={position.x + size.w / 2} y={position.y} pivot={new PIXI.Point(size.w / 2, size.h / 2)} rotation={Math.sin(rot) * 0.05}>
       <Graphics draw={draw} />

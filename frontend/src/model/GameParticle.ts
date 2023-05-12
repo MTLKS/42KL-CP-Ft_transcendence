@@ -11,6 +11,7 @@
  * @param {number} jy jerk y
  * @param {number} w width
  * @param {number} h height
+ * @param {number} rotRad rotation in radians
  * @param {number} opacity
  * @param {number} opacityDecay
  * @param {number} speedDecayFactor
@@ -30,6 +31,7 @@ interface GameParticleData {
   jy?: number;
   w?: number;
   h?: number;
+  rotRad?: number;
   opacity?: number;
   opacityDecay?: number;
   sizeDecay?: number;
@@ -50,6 +52,7 @@ interface GameParticleData {
  * @param {number} jy jerk y
  * @param {number} w width
  * @param {number} h height
+ * @param {number} rotRad rotation in radians
  * @param {number} opacity
  * @param {number} opacityDecay
  * @param {number} speedDecayFactor
@@ -68,6 +71,7 @@ class GameParticle {
   public jy: number;
   public w: number;
   public h: number;
+  public rotRad: number;
   public opacity: number;
   public opacityDecay: number;
   public speedDecayFactor: number;
@@ -87,6 +91,7 @@ class GameParticle {
     jy,
     w,
     h,
+    rotRad,
     opacity,
     opacityDecay,
     speedDecayFactor,
@@ -106,6 +111,7 @@ class GameParticle {
     this.jy = jy ?? 0;
     this.w = w ?? 0;
     this.h = h ?? 0;
+    this.rotRad = rotRad ?? 0;
     this.opacity = opacity ?? 0;
     this.opacityDecay = opacityDecay ?? 0;
     this.speedDecayFactor = speedDecayFactor ?? 1;

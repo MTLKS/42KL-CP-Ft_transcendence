@@ -17,15 +17,17 @@ import * as particles from '@pixi/particle-emitter';
 interface GameProps {
   scale: number;
   shouldRender: boolean;
+  usingTicker?: boolean;
 }
 const boxSize: BoxSize = { w: 1600, h: 900 };
 
 function Game(props: GameProps) {
-  const { scale, shouldRender } = props;
+  const { scale, shouldRender, usingTicker } = props;
   const gameData = useContext(GameDataCtx);
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
   const [particles, setParticles] = useState<GameParticle[]>([]);
+  const [lightningParticles, setLightningParticles] = useState<GameParticle[][]>([]);
   const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rings, setRings] = useState<Ring[]>([]);
@@ -62,6 +64,7 @@ function Game(props: GameProps) {
         if (entity.type == "blackhole")
           particle.setGravityAccel(entity.x, entity.y, 2);
       });
+      gameData.applGlobalEffectToParticle(particle);
       particle.update();
     });
     newParticles.push(
@@ -77,6 +80,7 @@ function Game(props: GameProps) {
       })
     );
     for (let i = 0; i < 2; i++) {
+      const size = 2 + 3 * Math.random();
       newParticles.push(
         new GameParticle({
           x: newPosition.x + 5 - 10 / 2,
@@ -85,13 +89,14 @@ function Game(props: GameProps) {
           opacityDecay: 0.02,
           vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
           vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
-          w: 5,
-          h: 5,
+          w: size,
+          h: size,
           speedDecayFactor: 0.95,
         })
       );
     }
     for (let i = 0; i < 2; i++) {
+      const size = 6 + 4 * Math.random();
       newParticles.push(
         new GameParticle({
           x: newPosition.x + 5 - 10 / 2,
@@ -100,8 +105,8 @@ function Game(props: GameProps) {
           opacityDecay: 0.02,
           vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
           vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
-          w: 10,
-          h: 10,
+          w: size,
+          h: size,
           speedDecayFactor: 0.95,
           colorIndex: 1,
         })
@@ -110,14 +115,15 @@ function Game(props: GameProps) {
 
     gameData.gameEntities.forEach((entity) => {
       if (entity.type !== "blackhole") return;
-      var x =
+      const x =
         entity.x +
         (Math.random() > 0.2 ? 1 : -1) * 30 +
         30 * (Math.random() - 0.5);
-      var y =
+      const y =
         entity.y +
         (Math.random() > 0.5 ? 1 : -1) * 30 +
         30 * (Math.random() - 0.5);
+      const size = 2 + 8 * Math.random();
       newParticles.push(
         new GameParticle({
           x: x,
@@ -126,8 +132,8 @@ function Game(props: GameProps) {
           vx: (entity.x - x) / 10 + 7,
           vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1),
           opacityDecay: 0.005,
-          w: 7,
-          h: 7,
+          w: size,
+          h: size,
           colorIndex: 2,
         })
       );
@@ -149,7 +155,42 @@ function Game(props: GameProps) {
       })
     );
 
+    const newLightningParticles: GameParticle[][] = [];
+    lightningParticles.forEach((oldlightning) => {
+      const lightning: GameParticle[] = [...oldlightning];
+      if (lightning.length > 10) lightning.shift();
+      lightning.forEach((particle) => {
+        particle.update();
+      });
+      if (lightning.length == 0)
+        lightning.push(
+          new GameParticle({
+            x: 400,
+            y: 400,
+            opacity: 1,
+            w: 10,
+            h: 35,
+            colorIndex: 3,
+            rotRad: Math.PI * 2 * Math.random(),
+          })
+        );
+      else {
+        const lastParticle = lightning[lightning.length - 1];
+        lightning.push(
+          new GameParticle({
+            x: lastParticle.x - (lastParticle.h - 3) * Math.sin(lastParticle.rotRad),
+            y: lastParticle.y + (lastParticle.h - 3) * Math.cos(lastParticle.rotRad),
+            opacity: 1,
+            w: 5 + 10 * Math.random(),
+            h: 20 + 30 * Math.random(),
+            colorIndex: 3,
+            rotRad: lastParticle.rotRad - Math.PI / 10,
+          }));
+      }
+      newLightningParticles.push(lightning);
+    });
     setParticles(newParticles);
+    setLightningParticles(newLightningParticles);
     setPosition(newPosition);
     setLeftPaddlePosition(gameData.leftPaddlePosition);
     setRightPaddlePosition(gameData.rightPaddlePosition);
@@ -168,7 +209,7 @@ function Game(props: GameProps) {
       return newRings;
     });
     app.destroy(false, { children: true, texture: true, baseTexture: true });
-  }, true);
+  }, usingTicker ?? true);
 
   if (!shouldRender) return <></>;
   return (
@@ -179,7 +220,7 @@ function Game(props: GameProps) {
       <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} />
       <RippleEffect rings={rings} />
       <Pong position={position} size={{ w: 10, h: 10 }} />
-      <ParticlesRenderer particles={particles} />
+      <ParticlesRenderer particles={particles} lightningParticles={lightningParticles} />
       <Entities />
       <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} />
       <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />

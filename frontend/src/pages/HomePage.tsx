@@ -98,7 +98,7 @@ function HomePage(props: HomePageProps) {
       <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
         <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
-            {shouldDiaplyGame ? <></> :
+            {shouldDiaplyGame ? <MatrixRain></MatrixRain> :
               <div className='h-full w-full p-7'>
                 {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
                 <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>

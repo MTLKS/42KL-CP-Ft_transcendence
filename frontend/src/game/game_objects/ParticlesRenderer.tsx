@@ -10,14 +10,16 @@ import Worker from '../../workers/gameGraphic.worker?worker'
 
 interface ParticlesRendererProps {
   particles: GameParticle[];
+  lightningParticles: GameParticle[][];
 }
 function ParticlesRenderer(props: ParticlesRendererProps) {
   // const [particles, setParticles] = useState<GameParticle[]>([]);
-  const { particles } = props;
+  const { particles, lightningParticles } = props;
   const app = useApp();
 
   const textures = useMemo(() => {
     const box = new PIXI.Graphics();
+    const container = new PIXI.Container();
     box.beginFill(0xFEF8E2, 0.8);
     box.drawRect(0, 0, 2, 2);
     box.endFill();
@@ -31,9 +33,32 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     box.beginFill(0xC5A1FF, 0.6);
     box.drawRect(0, 0, 2, 2);
     box.endFill();
-    const texture3 = app.renderer.generateTexture(box);
-
-    return [white, cyan, texture3];
+    const purple = app.renderer.generateTexture(box);
+    box.clear();
+    box.beginFill(0xffffff, 0);
+    box.drawRect(-5, 0, 10, 30);
+    box.endFill();
+    box.lineStyle(2, 0x5F928F);
+    box.moveTo(-1, 0);
+    box.lineTo(2, 10);
+    box.lineTo(-4, 15);
+    box.lineTo(1, 23);
+    box.lineTo(-1, 30);
+    box.lineStyle(2, 0x5F928F);
+    box.moveTo(1, 0);
+    box.lineTo(4, 10);
+    box.lineTo(-2, 15);
+    box.lineTo(3, 23);
+    box.lineTo(1, 30);
+    box.lineStyle(2, 0xffffff, 0.7);
+    box.moveTo(0, 0);
+    box.lineTo(3, 10);
+    box.lineTo(-3, 15);
+    box.lineTo(2, 23);
+    box.lineTo(0, 30);
+    const lightning = app.renderer.generateTexture(box);
+    box.destroy();
+    return [white, cyan, purple, lightning];
   }, []);
 
   // useTick((delta) => {
@@ -54,12 +79,13 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   // }, []);
 
 
-  const { trailElements, whiteElements, cyanElements, purpleElements } = useMemo(() => {
+  const { trailElements, whiteElements, cyanElements, purpleElements, lightningElements } = useMemo(() => {
 
     const trailElements: JSX.Element[] = [];
     const whiteElements: JSX.Element[] = [];
     const cyanElements: JSX.Element[] = [];
     const purpleElements: JSX.Element[] = [];
+    const lightningElements: JSX.Element[] = [];
 
     particles.forEach((p) => {
       const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
@@ -70,26 +96,35 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       } else if (!gravity) {
         trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
       } else {
-        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={1} texture={textures[colorIndex]} />);
       }
     });
-    return { trailElements, whiteElements, cyanElements, purpleElements };
+    lightningParticles.forEach((lightning) => {
+      lightning.forEach((p) => {
+        const { id, x, y, w, h, colorIndex, rotRad } = p;
+        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={1} texture={textures[colorIndex]} />);
+      });
+    });
+    return { trailElements, whiteElements, cyanElements, purpleElements, lightningElements };
   }, [particles]);
 
 
   return (
     <>
-      <ParticleContainer key={"trailParticles"} properties={{ position: true, scale: true }}>
+      <ParticleContainer key={"trailParticles"} properties={{ position: true, scale: true, alpha: true }}>
         {trailElements}
       </ParticleContainer>
-      <ParticleContainer key={"cyanParticles"} properties={{ position: true }}>
+      <ParticleContainer key={"cyanParticles"} properties={{ position: true, alpha: true }}>
         {cyanElements}
       </ParticleContainer>
-      <ParticleContainer key={"whiteParticles"} properties={{ position: true }}>
+      <ParticleContainer key={"whiteParticles"} properties={{ position: true, alpha: true }}>
         {whiteElements}
       </ParticleContainer>
-      <ParticleContainer key={"purpleParticles"} properties={{ position: true }}>
+      <ParticleContainer key={"purpleParticles"} properties={{ position: true, alpha: true }}>
         {purpleElements}
+      </ParticleContainer>
+      <ParticleContainer key={"lightningParticles"} properties={{ position: true, scale: true, alpha: true, rotation: true }}>
+        {lightningElements}
       </ParticleContainer>
     </>
   )
