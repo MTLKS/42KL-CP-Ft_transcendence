@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import GameParticle from '../../model/GameParticle';
-import { useContext, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
 import { GameBlackhole } from '../../model/GameEntities';
 import Worker from '../../workers/gameGraphic.worker?worker'
@@ -19,7 +19,6 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
 
   const textures = useMemo(() => {
     const box = new PIXI.Graphics();
-    const container = new PIXI.Container();
     box.beginFill(0xFEF8E2, 0.8);
     box.drawRect(0, 0, 2, 2);
     box.endFill();
@@ -78,14 +77,22 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   //   return () => gameGraphicWorker.postMessage({ type: 'stop' });
   // }, []);
 
-
-  const { trailElements, whiteElements, cyanElements, purpleElements, lightningElements } = useMemo(() => {
-
-    const trailElements: JSX.Element[] = [];
-    const whiteElements: JSX.Element[] = [];
-    const cyanElements: JSX.Element[] = [];
-    const purpleElements: JSX.Element[] = [];
-    const lightningElements: JSX.Element[] = [];
+  const trailElementsRef = useRef<JSX.Element[]>([]);
+  const whiteElementsRef = useRef<JSX.Element[]>([]);
+  const cyanElementsRef = useRef<JSX.Element[]>([]);
+  const purpleElementsRef = useRef<JSX.Element[]>([]);
+  const lightningElementsRef = useRef<JSX.Element[]>([]);
+  useEffect(() => {
+    const trailElements: JSX.Element[] = trailElementsRef.current;
+    const whiteElements: JSX.Element[] = whiteElementsRef.current;
+    const cyanElements: JSX.Element[] = cyanElementsRef.current;
+    const purpleElements: JSX.Element[] = purpleElementsRef.current;
+    const lightningElements: JSX.Element[] = lightningElementsRef.current;
+    trailElements.length = 0;
+    whiteElements.length = 0;
+    cyanElements.length = 0;
+    purpleElements.length = 0;
+    lightningElements.length = 0;
 
     particles.forEach((p) => {
       const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
@@ -105,26 +112,27 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={1} texture={textures[colorIndex]} />);
       });
     });
-    return { trailElements, whiteElements, cyanElements, purpleElements, lightningElements };
-  }, [particles]);
+  }, [particles, lightningParticles]);
+
+
 
 
   return (
     <>
       <ParticleContainer key={"trailParticles"} properties={{ position: true, scale: true, alpha: true }}>
-        {trailElements}
+        {trailElementsRef.current}
       </ParticleContainer>
       <ParticleContainer key={"cyanParticles"} properties={{ position: true, alpha: true }}>
-        {cyanElements}
+        {cyanElementsRef.current}
       </ParticleContainer>
       <ParticleContainer key={"whiteParticles"} properties={{ position: true, alpha: true }}>
-        {whiteElements}
+        {whiteElementsRef.current}
       </ParticleContainer>
       <ParticleContainer key={"purpleParticles"} properties={{ position: true, alpha: true }}>
-        {purpleElements}
+        {purpleElementsRef.current}
       </ParticleContainer>
       <ParticleContainer key={"lightningParticles"} properties={{ position: true, scale: true, alpha: true, rotation: true }}>
-        {lightningElements}
+        {lightningElementsRef.current}
       </ParticleContainer>
     </>
   )

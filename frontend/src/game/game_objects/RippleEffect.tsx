@@ -43,11 +43,18 @@ const displacementFilter: PIXI.DisplacementFilter = new PIXI.DisplacementFilter(
 
 function RippleEffect(props: RippleEffectProps) {
   const { rings } = props;
+  const ringComponentRef = React.useRef<JSX.Element[]>([]);
+  useEffect(() => {
+    const ringComponent = ringComponentRef.current;
+    ringComponent.length = 0;
+    rings.forEach((item, i) => {
+      ringComponent.push(<Ring key={i} position={item.position} r={item.r} opacity={item.opacity} />)
+    });
+  }, [rings]);
 
-  const ringComponent = rings.map((item, i) => <Ring key={i} position={item.position} r={item.r} opacity={item.opacity} />);
   return (
     <Container filters={[blurFilter, displacementFilter]}>
-      {ringComponent}
+      {ringComponentRef.current}
     </Container>
   )
 }

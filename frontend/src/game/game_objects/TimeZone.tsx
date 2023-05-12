@@ -40,7 +40,7 @@ function TimeZone(props: TimeZoneProps) {
     box.endFill();
 
     return app.renderer.generateTexture(box);
-  }, [size, type]);
+  }, [size.w, size.h, type]);
 
   const iconTexture = useMemo(() => {
 

@@ -27,8 +27,9 @@ function GameText(props: GameTextProps) {
     box.endFill();
 
     box.mask = textGraphic;
-
-    return app.renderer.generateTexture(box);
+    const texture = app.renderer.generateTexture(box);
+    box.destroy();
+    return texture;
   }, [text, fontSize, color, opacity]);
   return (
     <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture} />

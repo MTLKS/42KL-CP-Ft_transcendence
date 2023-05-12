@@ -69,7 +69,9 @@ function DashLine(props: DashLineProps) {
     g.lineStyle(thinkness ?? 2, color ?? 0xffffff, opacity ?? 1);
     g.moveTo(start.x, start.y);
     g.drawDashLine(end.x, end.y, dash, gap);
-    return app.renderer.generateTexture(g);
+    const texture = app.renderer.generateTexture(g);
+    g.destroy();
+    return texture;
   }, []);
   return (
     <Sprite

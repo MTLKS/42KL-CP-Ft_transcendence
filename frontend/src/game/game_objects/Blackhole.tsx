@@ -51,7 +51,9 @@ function Blackhole(props: BlackholeProps) {
     box.beginFill(0x050505, 0.5);
     box.drawCircle(0, 0, 13);
     box.endFill();
-    return app.renderer.generateTexture(box);
+    const texture = app.renderer.generateTexture(box);
+    box.destroy();
+    return texture;
   }, []);
   return (
     <Sprite anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} />

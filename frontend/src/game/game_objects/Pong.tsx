@@ -18,8 +18,10 @@ function Pong(props: PongProps) {
 		g.beginFill(0xFEF8E2);
 		g.drawRect(0, 0, size.w, size.h);
 		g.endFill();
-		return app.renderer.generateTexture(g);
-	}, [size]);
+		const texture = app.renderer.generateTexture(g);
+		g.destroy();
+		return texture;
+	}, [size.w, size.h]);
 
 	return (
 		<Sprite x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
