@@ -78,7 +78,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       <div className=' relative
       text-highlight text-2xl tracking-tighter whitespace-pre
       mx-auto flex
-      px-1 rounded-md h-15 pt-3 pb-3'
+      px-1 rounded-md h-15 pt-3 pb-3 cursor-text'
         style={{
           borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s",
           textAlign: center ? "center" : "left", borderWidth: center ? "4px" : 0,
