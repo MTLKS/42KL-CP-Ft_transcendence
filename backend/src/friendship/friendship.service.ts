@@ -1,13 +1,15 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Member } from 'src/entity/member.entity';
 import { User } from 'src/entity/users.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class FriendshipService {
-	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
+	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Channel) private channelRepository: Repository<Channel>, private userService: UserService) {}
 
 	// User connect to friendship socket
 	async userConnect(client: any, server: any): Promise<any> {
@@ -99,8 +101,16 @@ export class FriendshipService {
 			if (RECEIVER === null)
 				return { error: "Friendship does not exist - use POST method to create" }
 			RECEIVER.status = status.toUpperCase();
-			await this.friendshipRepository.save(RECEIVER);
-			return RECEIVER;
+			const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName}} });
+			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: USER_DATA.intraName}, channelId: MY_CHANNEL.channelId}})
+			const FRIEND_DATA = await this.userService.getUserDataByIntraName(receiverIntraName);
+			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: receiverIntraName}} });
+			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: FRIEND_DATA.intraName}, channelId: FRIEND_CHANNEL.channelId}})
+			if (MY_MEMBER === null)
+				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL.channelId, true, false, false, new Date().toISOString()));
+			if (FRIEND_MEMBER === null)
+				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL.channelId, true, false, false, new Date().toISOString()));
+			return await this.friendshipRepository.save(RECEIVER);
 		}
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} });
 		if (status.toUpperCase() == "BLOCKED")
@@ -134,6 +144,20 @@ export class FriendshipService {
 			return { error: "Friendship does not exist - use POST method to create" }
 		if (FRIENDSHIP.senderIntraName === USER_DATA.intraName || (FRIENDSHIP.receiverIntraName === USER_DATA.intraName && FRIENDSHIP.status.toUpperCase() !== "BLOCKED"))
 			await this.friendshipRepository.delete(FRIENDSHIP);
+		return FRIENDSHIP;
+	}
+
+	// Returns current friendship with a user
+	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<any> {
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		if (USER_DATA.error !== undefined)
+			return { error: USER_DATA.error };
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, "ACCEPTED");
+		if (ERROR)
+			return ERROR;
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName}, {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName}] });
+		if (FRIENDSHIP === null)
+			return { error: "Friendship does not exist - use POST method to create" }
 		return FRIENDSHIP;
 	}
 }
