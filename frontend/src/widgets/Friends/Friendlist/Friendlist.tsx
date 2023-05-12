@@ -7,8 +7,10 @@ import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
 import { FriendsContext } from '../../../contexts/FriendContext';
+import UserContext from '../../../contexts/UserContext';
 
 interface FriendlistProps {
+  friends: FriendData[]; // need to be changed to compulsory
   userData: UserData;
   onQuit: () => void;
 }
@@ -16,8 +18,7 @@ interface FriendlistProps {
 function Friendlist(props: FriendlistProps) {
 
   // Props
-  const { userData, onQuit } = props;
-  const { friends } = useContext(FriendsContext);
+  const { friends, userData, onQuit } = props;
 
   // Use Hooks
   const [inputValue, setInputValue] = useState("");
@@ -28,6 +29,7 @@ function Friendlist(props: FriendlistProps) {
   const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
+  const { myProfile } = useContext(UserContext);
 
   // Filtered Raw data
   const acceptedFriends = filterFriends(friends, FriendTags.accepted);
@@ -72,7 +74,7 @@ function Friendlist(props: FriendlistProps) {
       <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
         {
           friends.length === 0
-            ? <EmptyFriendlist />
+            ? <EmptyFriendlist userData={userData}/>
             : lines.slice(startingIndex, endingIndex)
         }
       </div>
@@ -121,7 +123,7 @@ function Friendlist(props: FriendlistProps) {
     let targetCategory: FriendData[] = [];
     let components: JSX.Element[] = [];
 
-    if (sortedFriends.length === 0) return [<EmptyFriendlist />];
+    if (sortedFriends.length === 0) return [<EmptyFriendlist userData={userData} />];
 
     components.push(
       <FriendlistEmptyLine key="el0" />,

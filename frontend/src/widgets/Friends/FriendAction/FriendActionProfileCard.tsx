@@ -1,4 +1,4 @@
-import previewProfileContext from "../../../contexts/PreviewProfileContext";
+import PreviewProfileContext from "../../../contexts/PreviewProfileContext";
 import { getProfileOfUser } from "../../../functions/profile";
 import { FriendData } from "../../../model/FriendData";
 import { UserData } from "../../../model/UserData";
@@ -7,8 +7,8 @@ import { useContext } from "react";
 
 function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
   const { isCurrentIndex, friend, friendIntraName } = props;
-  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(previewProfileContext);
-  
+  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
+
   return (
     <div
       className={`flex flex-row ${isCurrentIndex ? 'group cursor-pointer' : ''} group-hover:bg-highlight items-center h-12 w-fit select-none`}

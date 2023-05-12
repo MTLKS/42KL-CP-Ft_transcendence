@@ -6,9 +6,9 @@ interface ProfileContextProps {
 	setTopWidgetFunction: (func: any) => void;
 }
 
-const previewProfileContext = createContext<ProfileContextProps>({
-	setPreviewProfileFunction: (func) => {},
-	setTopWidgetFunction: (func) => {},
+const PreviewProfileContext = createContext<ProfileContextProps>({
+	setPreviewProfileFunction: (func) => { },
+	setTopWidgetFunction: (func) => { },
 });
 
-export default previewProfileContext;
+export default PreviewProfileContext;

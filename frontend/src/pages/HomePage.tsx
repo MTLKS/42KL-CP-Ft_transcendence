@@ -8,7 +8,7 @@ import Chat from '../widgets/Chat/Chat';
 import { UserData } from '../model/UserData';
 import { getMyProfile, getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
-import { getFriendList } from '../functions/friendlist';
+import { friendListOf, getFriendList } from '../functions/friendlist';
 import { FriendData } from '../model/FriendData';
 import Friendlist from '../widgets/Friends/Friendlist/Friendlist';
 import FriendRequestPopup from '../widgets/Friends/FriendRequest/FriendRequestPopup';
@@ -25,7 +25,7 @@ import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
 import { gameTick } from '../main';
-import previewProfileContext from '../contexts/PreviewProfileContext';
+import PreviewProfileContext from '../contexts/PreviewProfileContext';
 
 const availableCommands = [
   "login",
@@ -92,8 +92,8 @@ function HomePage(props: HomePageProps) {
   }, []);
 
   return (
-    <previewProfileContext.Provider value={{ setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
-      <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
+    <PreviewProfileContext.Provider value={{ setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
+      <UserContext.Provider value={{ myProfile: userData, setMyProfile: setCurrentPreviewProfile }}>
         <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             <div className='h-full w-full p-7'>
@@ -113,7 +113,7 @@ function HomePage(props: HomePageProps) {
           </SelectedFriendContext.Provider>
         </FriendsContext.Provider>
       </UserContext.Provider>
-    </previewProfileContext.Provider>
+    </PreviewProfileContext.Provider>
   )
 
   function handleCommands(command: string[]) {
@@ -295,7 +295,7 @@ function HomePage(props: HomePageProps) {
     if (successes.length > 0) {
       for (const successName of successes) {
         newCards.push(
-          <Card key={`${successName}_added`+index} type={CardType.SUCCESS}>
+          <Card key={`${successName}_added` + index} type={CardType.SUCCESS}>
             <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
           </Card>
         )
@@ -313,6 +313,7 @@ function HomePage(props: HomePageProps) {
       id: user.intraId,
       senderIntraName: userData.intraName,
       receiverIntraName: user.intraName,
+      chatted: false,
       elo: 0,
       status: "STRANGER",
       userName: user.userName,
@@ -395,8 +396,14 @@ function HomePage(props: HomePageProps) {
     const updatedFriendlist = await getFriendList();
     setMyFriends(updatedFriendlist.data);
 
-    if (command[0] === "list" && command.length === 1) {
-      setLeftWidget(<Friendlist userData={userData} onQuit={() => setLeftWidget(null)} />);
+    if (command[0] === "list") {
+      if (command.length === 1)
+        setLeftWidget(<Friendlist userData={userData} friends={myFriends} onQuit={() => setLeftWidget(null)} />);
+      else if (command.length == 2) {
+        const friendProfile = await getProfileOfUser(command[1]);
+        const friendlistOfFriend = (await friendListOf(command[1])).data.filter((friend: FriendData) => friend.status === "ACCEPTED");
+        setLeftWidget(<Friendlist userData={friendProfile.data as UserData} friends={friendlistOfFriend as FriendData[]} onQuit={() => setLeftWidget(null)} />);
+      }
       newList = elements;
     } else if (command[0] === "requests" && command.length === 1) {
       setLeftWidget(<FriendAction user={userData} action={ACTION_TYPE.ACCEPT} onQuit={() => setLeftWidget(null)} />);
@@ -411,7 +418,7 @@ function HomePage(props: HomePageProps) {
       addMultipleFriends(command.slice(1));
       newList = elements;
     } else
-      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp"+index} />);
+      newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp" + index} />);
     setElements(newList);
   }
 }
