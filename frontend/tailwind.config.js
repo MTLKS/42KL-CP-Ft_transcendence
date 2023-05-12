@@ -26,6 +26,7 @@ export default {
       cursor: {
         default: "url(./assets/cursor/smiley.svg), default",
         pointer: "url(./assets/cursor/pointy.svg), pointer",
+        text: "url(./assets/cursor/texty.svg), text",
       },
     },
   },
