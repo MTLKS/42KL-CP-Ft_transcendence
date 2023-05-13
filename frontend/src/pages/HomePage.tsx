@@ -48,13 +48,13 @@ const availableCommands = [
 ];
 
 interface HomePageProps {
-  setNewUser: React.Dispatch<React.SetStateAction<boolean>>;
   setUserData: React.Dispatch<React.SetStateAction<any>>;
+  setUpdateUser: React.Dispatch<React.SetStateAction<boolean>>;
   userData: UserData;
 }
 
 function HomePage(props: HomePageProps) {
-  const { setNewUser, setUserData, userData } = props;
+  const { setUserData, setUpdateUser, userData } = props;
   const [currentPreviewProfile, setCurrentPreviewProfile] = useState<UserData>(userData);
   const [elements, setElements] = useState<JSX.Element[]>([])
   const [index, setIndex] = useState(0);
@@ -172,10 +172,8 @@ function HomePage(props: HomePageProps) {
         setIndex(index + 1);
         break;
       case "reset":
-        getMyProfile().then((profile) => {
-          setNewUser(true);
-          setUserData(profile.data as UserData);
-        });
+        setUpdateUser(true);
+        setUserData(userData);
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
