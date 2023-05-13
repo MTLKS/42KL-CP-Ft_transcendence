@@ -1,6 +1,7 @@
 const primaryCommands = new Map<string, string>();
 primaryCommands.set("friend", "Manages your friendship.");
 primaryCommands.set("leaderboard", "Displays the game leaderboard.");
+primaryCommands.set("profile", "View my profile.");
 primaryCommands.set("profile <intraName> ", "Displays profile.");
 primaryCommands.set("tfa", "Sets and unsets Google 2-Factor-Authentication.");
 primaryCommands.set("reset", "Resets your profile (Requires TFA if enabled).");

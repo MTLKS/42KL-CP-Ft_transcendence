@@ -26,6 +26,7 @@ import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
 import { gameTick } from '../main';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
+import { set } from 'lodash';
 
 const availableCommands = [
   "sudo",
@@ -62,7 +63,7 @@ function HomePage(props: HomePageProps) {
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
-  const [expandProfile, setExpandProfile] = useState(true);
+  const [expandProfile, setExpandProfile] = useState(false);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
@@ -161,7 +162,7 @@ function HomePage(props: HomePageProps) {
         setIndex(newList.length - 1);
         break;
       case "help":
-        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />)
+        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />);
         break;
       case "ok":
         newList = appendNewCard(<Card key={"ok" + index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
@@ -195,30 +196,72 @@ function HomePage(props: HomePageProps) {
     </Card>;
   }
 
+  function viewMyProfile() {
+    const newProfileCard = <Profile expanded={!expandProfile} />;
+
+    setTopWidget(newProfileCard);
+    setCurrentPreviewProfile(userData);
+    setTimeout(() => {
+      setExpandProfile(!expandProfile);
+    }, 500);
+    return ;
+  }
+
   function handleProfileCommand(command: string[]) {
+
     let newList: JSX.Element[] = [];
+    const errors: errorType[] = [];
+
+    // handle profile
+    if (command.length === 1) {
+      viewMyProfile();
+      return ;
+    }
+
+    // handle profile <name>
     if (command.length === 2) {
-      getProfileOfUser(command[1]).then((response) => {
+
+      const wantToView: string = command[1];
+
+      if (wantToView === userData.intraName) {
+        viewMyProfile();
+        return ;
+      }
+
+      // should not able to view someone's profile if that person blocked you. treat as user not found
+      if (myFriends.find((friend) => friend.senderIntraName === wantToView || friend.receiverIntraName === wantToView)?.status.toLowerCase() === "blocked") {
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView});
+        newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
+        setElements(appendNewCard(newList));
+        return ;
+      }
+
+      getProfileOfUser(wantToView).then((response) => {
         const newPreviewProfile = response.data as UserData;
         if (newPreviewProfile as any === '') {
-          const newErrorCard = <Card key={index}>No user found</Card>;
-          newList = [newErrorCard].concat(elements);
-          setIndex(index + 1);
-          setElements(newList);
+          errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView});
+          newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
+          setElements(appendNewCard(newList));
           return;
         }
         newList = elements;
-        const newProfileCard = <Profile expanded={expandProfile} />;
+        const newProfileCard = <Profile expanded={true} />;
         setTopWidget(newProfileCard);
         setCurrentPreviewProfile(newPreviewProfile);
         setTimeout(() => {
-          setExpandProfile(true);
+          if (expandProfile)
+            setExpandProfile(!expandProfile);
+          else
+            setExpandProfile(false);
         }, 500);
       });
-    } else {
-      const newProfileCard = <Profile />
-      setCurrentPreviewProfile(userData!);
-      setTopWidget(newProfileCard);
+    }
+
+    // handle unknown profile command, push a help card
+    if (command.length > 2) {
+      newList = appendNewCard(<HelpCard key={"help" + index} title="profile" option='commands' usage='<command>' commandOptions={allCommands} />);
+      setElements(newList);
+      return ;
     }
   }
 
