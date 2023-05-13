@@ -1,7 +1,7 @@
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../model/GameDTO";
 import { GameResponseDTO } from "../model/GameResponseDTO";
-import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
+import { GameStateDTO, GameStartDTO, GameEndDTO, GamePauseDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { clamp, debounce } from "lodash";
 import GameEntity, { GameBlackhole } from "../model/GameEntities";
@@ -15,6 +15,8 @@ export class GameData {
   private _pongSpeed: Offset = { x: 12, y: 8 };
   leftPaddlePosition: Offset = { x: 0, y: 0 };
   rightPaddlePosition: Offset = { x: 0, y: 0 };
+  player1Score: number = 0;
+  player2Score: number = 0;
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
   gameDisplayed: boolean = false;
@@ -155,6 +157,7 @@ export class GameData {
     window.removeEventListener("resize", this.resize!);
     window.removeEventListener("focus", this.focus!);
     window.removeEventListener("blur", this.blur!);
+    this.gameDisplayed = false;
   }
 
   endGame() {
@@ -162,10 +165,10 @@ export class GameData {
     if (!this.gameStarted) return;
     this.gameStarted = false;
     this.setShouldRender?.(false);
-    this.socketApi.removeListener("gameLoop");
-    this.socketApi.removeListener("gameState");
-    this.socketApi.removeListener("gameResponse");
-    this.leaveQueue();
+    // this.socketApi.removeListener("gameLoop");
+    // this.socketApi.removeListener("gameState");
+    // this.socketApi.removeListener("gameResponse");
+    // this.leaveQueue();
     this.gameEntities = [];
     if (this.setShouldDisplayGame) this.setShouldDisplayGame?.(false);
   }
@@ -189,9 +192,19 @@ export class GameData {
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    if (state.type === "GameStart") {
-      this.isLeft = (<GameStartDTO>state.data).isLeft;
-      this.gameRoom = (<GameStartDTO>state.data).gameRoom;
+    console.log(state);
+    switch (state.type) {
+      case "GameStart":
+        this.isLeft = (<GameStartDTO>state.data).isLeft;
+        this.gameRoom = (<GameStartDTO>state.data).gameRoom;
+        this.startGame();
+        this.displayGame();
+        break;
+      case "GameEnd":
+        this.endGame();
+        this.stopDisplayGame();
+      default:
+        break;
     }
   };
 
@@ -204,6 +217,8 @@ export class GameData {
       this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
     }
     this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
+    this.player1Score = data.player1Score;
+    this.player2Score = data.player2Score;
   };
 
   listenToGameResponse = (data: GameResponseDTO) => {

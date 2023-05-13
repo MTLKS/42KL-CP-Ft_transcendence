@@ -31,6 +31,8 @@ function Game(props: GameProps) {
   const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rings, setRings] = useState<Ring[]>([]);
+  const [player1Score, setPlayer1Score] = useState(0);
+  const [player2Score, setPlayer2Score] = useState(0);
   const app = useApp();
   const addRing = useCallback(async () => {
     const newRings: Ring[] = [...rings];
@@ -194,6 +196,8 @@ function Game(props: GameProps) {
     setPosition(newPosition);
     setLeftPaddlePosition(gameData.leftPaddlePosition);
     setRightPaddlePosition(gameData.rightPaddlePosition);
+    setPlayer1Score(gameData.player1Score);
+    setPlayer2Score(gameData.player2Score);
     if (newPosition.x <= 0 || newPosition.y <= 0) addRing();
     if (newPosition.x >= 1600 - 10 || newPosition.y >= 900 - 10) addRing();
     if (rings.length === 0) return;
@@ -208,15 +212,15 @@ function Game(props: GameProps) {
       });
       return newRings;
     });
-    app.destroy(false, { children: true, texture: true, baseTexture: true });
+    // app.destroy(false, { children: true, texture: true, baseTexture: true });
   }, usingTicker ?? true);
 
   if (!shouldRender) return <></>;
   return (
     <Container width={1600} height={900} scale={scale}>
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
-      <GameText text='7' anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      <GameText text='5' anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+      <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+      <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} />
       <RippleEffect rings={rings} />
       <Pong position={position} size={{ w: 10, h: 10 }} />

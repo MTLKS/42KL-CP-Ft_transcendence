@@ -23,7 +23,11 @@ export class GameEndDTO {
 }
 
 export class GamePauseDTO {
-	abandonDate: Date;
+	abandonDate: number;
+
+	constructor(abandonDate: number) {
+		this.abandonDate = abandonDate;
+	}
 }
 
 export class GameStateDTO {

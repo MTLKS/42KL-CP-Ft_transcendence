@@ -14,7 +14,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	}
 
 	handleDisconnect(@ConnectedSocket() client: Socket) {
-		this.gameService.handleDisconnect(client);
+		this.gameService.handleDisconnect(this.server, client);
 	}
 
 	@SubscribeMessage('joinQueue')

@@ -5,4 +5,6 @@ export interface GameDTO {
 	ballVelY: number;
   leftPaddlePosY: number;
   rightPaddlePosY: number;
+	player1Score: number;
+	player2Score: number;
 }
