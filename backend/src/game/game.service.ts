@@ -6,6 +6,7 @@ import { Socket, Server } from "socket.io";
 import { Player } from "./entity/player";
 import { GameResponseDTO } from "src/dto/gameResponse.dto";
 import { GameStateDTO, GameStartDTO, GameEndDTO, GamePauseDTO } from "src/dto/gameState.dto";
+import { MatchService } from "src/match/match.service";
 
 //TODO : "gameState" event-> game start, game end, field effect
 
@@ -13,7 +14,7 @@ const LOBBY_LOGGING = false;
 
 @Injectable()
 export class GameService {
-	constructor(private readonly userService: UserService) { }
+	constructor(private readonly userService: UserService, private readonly matchService: MatchService) { }
 	
 	//Lobby variables
 	private queues = {
@@ -72,7 +73,7 @@ export class GameService {
 		// If player is ingame, pause game 
 		this.gameRooms.forEach((gameRoom) => {
 			if (gameRoom._players.includes(USER_DATA.intraName)) {
-				gameRoom.togglePause(server);
+				gameRoom.togglePause(server, USER_DATA.intraName);
 			}
 		})
 
@@ -159,7 +160,7 @@ export class GameService {
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
 		const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
-		const ROOM = new GameRoom(player1, player2, gameType, ROOM_SETTING);
+		const ROOM = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
 		player1.socket.join(ROOM.roomID);
 		player2.socket.join(ROOM.roomID);
 		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, ROOM.roomID)));

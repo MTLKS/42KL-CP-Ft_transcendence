@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
 import { GameStartDTO, GameEndDTO, GamePauseDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
+import { MatchService } from "src/match/match.service";
 
 class CollisionResult{
 	collided: boolean;
@@ -40,10 +41,12 @@ export class GameRoom{
 	gameReset: boolean;
 	gamePaused: boolean;
 	gamePauseDate: number | null;
+	gamePausePlayer: string | null;
 	_players: Array<string>;
 	roomSettings: GameSetting;
+	matchService: MatchService;
 
-	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting){
+	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService){
 		this.roomID = player1.intraName + player2.intraName;
 		this.gameType = gameType;
 		this.player1 = player1;
@@ -65,6 +68,8 @@ export class GameRoom{
 		this.gameReset = false;
 		this.gamePaused = false;
 
+		this.matchService = matchService;
+
 		//Check for game mode
 		this.roomSettings = setting;
 	}
@@ -83,7 +88,7 @@ export class GameRoom{
 
 				else if (this.gamePaused == true){
 					if (Date.now() - this.gamePauseDate > 5000) {
-						this.endGame(server);
+						this.endGame(server, this.player1.intraName === this.gamePausePlayer ? this.player2.intraName : this.player1.intraName, "abandon");
 					}
 				}
 
@@ -91,8 +96,8 @@ export class GameRoom{
 					this.gameUpdate();
 				}
 
-				if (this.player1Score == this.roomSettings.scoreToWin || this.player2Score == this.roomSettings.scoreToWin){
-					this.endGame(server);
+				if (this.player1Score === this.roomSettings.scoreToWin || this.player2Score === this.roomSettings.scoreToWin){
+					this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score");
 				}
 
 				server.to(this.roomID).emit('gameLoop',
@@ -231,22 +236,33 @@ export class GameRoom{
 		player.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(opponentIntraName,  this.gameType, player === this.player1, this.roomID)));
 		this.gamePaused = false;
 		this.gamePauseDate = null;
+		this.gamePausePlayer = null;
 		console.log(`${player.intraName} reconnected to ${this.roomID}`);
 	}
 
 	// TODO: wait for reconnect, abandon game after x seconds
-	togglePause(server: Server) {
+	togglePause(server: Server, pausePlayer: string) {
+		if (this.gamePaused)
+			this.endGameNoMatch();
 		this.gamePaused = true;
 		this.gamePauseDate = Date.now();
+		this.gamePausePlayer = pausePlayer;
 		server.to(this.roomID).emit('gameState', new GameStateDTO("GamePause", new GamePauseDTO(this.gamePauseDate)))
 		console.log(`game ${this.roomID} paused due to player disconnect`);
 	}
 
-	endGame(server: Server) {
+	endGame(server: Server, winner: string, wonBy: string) {
 		clearInterval(this.interval);
 		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
 		console.log(`game ${this.roomID} ended`);
 		this.gameEnded = true;
+		this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
+	}
+
+	endGameNoMatch() {
+		clearInterval(this.interval);
+		this.gameEnded = true;
+		console.log(`game ${this.roomID} ended due to both players disconnect`);
 	}
 
 	/**

@@ -14,7 +14,7 @@ export class GameStartDTO {
 
 export class GameEndDTO {
 	winner: string;
-	wonBy: "normal" | "abandon";
+	wonBy: "score" | "abandon";
 	finalScore: Array<number>;
 
 	constructor(player1Score: number, player2Score: number){
