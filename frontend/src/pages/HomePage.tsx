@@ -68,7 +68,7 @@ function HomePage(props: HomePageProps) {
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
-    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== currentPreviewProfile.intraName),
+    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== userData.intraName),
     [myFriends]
   );
 
@@ -93,7 +93,7 @@ function HomePage(props: HomePageProps) {
   }, []);
 
   return (
-    <PreviewProfileContext.Provider value={{ setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
+    <PreviewProfileContext.Provider value={{ currentPreviewProfile: currentPreviewProfile, setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
       <UserContext.Provider value={{ myProfile: userData, setMyProfile: setCurrentPreviewProfile }}>
         <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
@@ -147,11 +147,11 @@ function HomePage(props: HomePageProps) {
         }
         break;
       case "profile":
-        newList = handleProfileCommand(command);
-        break;
+        handleProfileCommand(command);
+        return;
       case "friend":
         handleFriendCommand(command.slice(1));
-        break;
+        return;
       case "leaderboard":
         newList = elements;
         setMidWidget(<Leaderboard />);
@@ -195,7 +195,7 @@ function HomePage(props: HomePageProps) {
     </Card>;
   }
 
-  function handleProfileCommand(command: string[]): JSX.Element[] {
+  function handleProfileCommand(command: string[]) {
     let newList: JSX.Element[] = [];
     if (command.length === 2) {
       getProfileOfUser(command[1]).then((response) => {
@@ -220,7 +220,6 @@ function HomePage(props: HomePageProps) {
       setCurrentPreviewProfile(userData!);
       setTopWidget(newProfileCard);
     }
-    return newList;
   }
 
   interface errorType {
@@ -236,6 +235,11 @@ function HomePage(props: HomePageProps) {
       for (const errAttempt of errors) {
         let errIndex: number = 0;
         switch (errAttempt.error) {
+          case friendErrors.CANNOT_PERFORM_ON_SELF:
+            newErrorCards.push(<Card key={"CANNOT_ADD_SELF" + errIndex + index}>
+              <p>Looks like you're trying to {action} yourself. You can't do that.</p>
+            </Card>)
+            break;
           case friendErrors.USER_NOT_FOUND:
             newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
               <p>Looks like you're trying to {action} a ghost. User not found: <span className='bg-accRed font-extrabold text-sm text-highlight'>{errAttempt.data as string}</span></p>
@@ -259,6 +263,7 @@ function HomePage(props: HomePageProps) {
             newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
               <p>Unable to {action} <span className="bg-accRed font-extrabold">{errAttempt.data as string}</span>. You two are not friends.</p>
             </Card>)
+            break;
         }
         errIndex++;
       }
@@ -276,18 +281,20 @@ function HomePage(props: HomePageProps) {
     const successes: string[] = [];
     let newCards: JSX.Element[] = [];
 
+    if (friendIntraNames.includes(userData.intraName)) {
+      errors.push({ error: friendErrors.CANNOT_PERFORM_ON_SELF, data: '' });
+      friendIntraNames = friendIntraNames.filter((name) => name !== userData.intraName);
+    }
+
     // iterate through the names and attempt get their user data to add as friend
     for (const friendName of friendIntraNames) {
-      // try get the user data
       const friendProfile = await getProfileOfUser(friendName);
-      // if data is "", meaning user not found
       if (!friendProfile.data) {
         errors.push({ error: friendErrors.USER_NOT_FOUND, data: friendName as string });
         continue;
       }
-      // try to add the user
+
       const result = await addFriend((friendProfile.data as UserData).intraName);
-      // if the response has a error field meaning friendship existed, cannot send friend request again
       if (result.data.error) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
@@ -297,8 +304,8 @@ function HomePage(props: HomePageProps) {
         successes.push(friendName);
       }
     }
+
     newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.ADD));
-    // create card for each success friend request sent
     if (successes.length > 0) {
       for (const successName of successes) {
         newCards.push(
@@ -308,7 +315,7 @@ function HomePage(props: HomePageProps) {
         )
         sendFriendRequestNotification(successName);
       }
-      // update friend list if there's a successful attempt
+
       const updatedFriendList = await getFriendList();
       setMyFriends(updatedFriendList.data);
     }
@@ -354,6 +361,11 @@ function HomePage(props: HomePageProps) {
     const errors: errorType[] = [];
     let newCards: JSX.Element[] = [];
 
+    if (userIntraNames.includes(userData.intraName)) {
+      errors.push({ error: friendErrors.CANNOT_PERFORM_ON_SELF, data: '' });
+      userIntraNames = userIntraNames.filter((name) => name !== userData.intraName);
+    }
+
     // get all user data
     const userProfiles = await Promise.all(
       userIntraNames.map(intraName => getProfileOfUser(intraName))
@@ -397,6 +409,8 @@ function HomePage(props: HomePageProps) {
       setLeftWidget(<FriendAction user={userData} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
 
+  // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
+  // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
   async function handleFriendCommand(command: string[]) {
     let newList: JSX.Element[] = [];
 
@@ -418,12 +432,14 @@ function HomePage(props: HomePageProps) {
     } else if (command[0] === "block" || command[0] === "unblock" || command[0] === "unfriend") {
       if (command.length === 1)
         setLeftWidget(<FriendAction user={userData} action={command[0]} onQuit={() => setLeftWidget(null)} />);
-      else if (command.length >= 2)
+      else if (command.length >= 2) {
         performActionOnMultipleUsers(command[0], command.slice(1));
+        return ;
+      }
       newList = elements;
     } else if (command[0] === "add" && command.length >= 2) {
       addMultipleFriends(command.slice(1));
-      newList = elements;
+      return ;
     } else
       newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp" + index} />);
     setElements(newList);
