@@ -25,9 +25,6 @@ const pixiApp = new Application({
   view: document.getElementById('pixi') as HTMLCanvasElement,
   antialias: true,
 });
-window.addEventListener('mousemove', (e) => {
-  gameTick.updatePlayerPosition(e.clientY);
-});
 
 const pixiRoot = createRoot(pixiApp.stage);
 pixiRoot.render(<GameApp pixiApp={pixiApp} gameTick={gameTick} />);

@@ -1,7 +1,8 @@
 export interface GameStartDTO {
 	opponentIntraName: string,
 	gameType: string,
-	isLeft: boolean
+	isLeft: boolean,
+	gameRoom: string,
 }
 
 export interface GameEndDTO {

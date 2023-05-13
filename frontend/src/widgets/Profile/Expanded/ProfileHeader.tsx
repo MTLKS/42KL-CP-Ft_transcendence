@@ -7,11 +7,12 @@ import UserContext from '../../../contexts/UserContext';
 interface ProfileHeaderProps {
   expanded: boolean;
   status: string;
+  onProfileClick: () => void;
 }
 
 function ProfileHeader(props: ProfileHeaderProps) {
   const { myProfile } = useContext(UserContext);
-  const { expanded, status } = props;
+  const { expanded, status, onProfileClick } = props;
   const { userName, intraName } = myProfile;
   const maxHeight = 80;
   const [height, setHeight] = useState(0);
@@ -24,8 +25,9 @@ function ProfileHeader(props: ProfileHeaderProps) {
   }, [expanded]);
 
   return (
-    <div className='flex flex-row justify-between overflow-hidden w-full box-border transition-all duration-500 ease-in-out bg-dimshadow'
+    <div className='flex flex-row justify-between overflow-hidden w-full box-border transition-all duration-500 ease-in-out bg-dimshadow  cursor-pointer'
       style={{ height: height }}
+      onClick={onProfileClick}
     >
       <div className='flex flex-col flex-1 justify-center bg-dimshadow px-5'>
         <div className=' text-2xl text-highlight font-extrabold'>{userName} <a href={`https://profile.intra.42.fr/users/${intraName}`} className='hover:underline cursor-pointer' target='_blank'>({intraName})</a></div>

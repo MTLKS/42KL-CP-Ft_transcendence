@@ -20,7 +20,7 @@ function UserFormName(props: UserFormNameProps) {
         (Alphanumeric, '-', and '_' only)
       </p>
       <input
-        className={`bg-dimshadow border-highlight border-2 lg:border-4 rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl p-2 lg:p-3 w-full focus:[outline:none] focus:animate-pulse-short`}
+        className={`bg-dimshadow border-highlight border-2 lg:border-4 rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl p-2 lg:p-3 w-full focus:[outline:none] focus:animate-pulse-short cursor-text`}
         type="text"
         name="name"
         value={userName}

@@ -6,6 +6,7 @@ import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { ReactPixiRoot, createRoot, AppProvider } from "@pixi/react";
 import { debounce } from "lodash";
+import GameEntity, { GameBlackhole } from "../model/GameEntities";
 
 export class GameData {
   socketApi: SocketApi;
@@ -16,18 +17,22 @@ export class GameData {
   usingLocalTick: boolean = false;
   isLeft: boolean = true;
   gameStarted: boolean = false;
+  gameRoom: string = "";
+  gameEntities: GameEntity[] = [];
 
   setScale?: (scale: number) => void;
+  setEntities?: (entities: GameEntity[]) => void;
   setShouldRender?: (shouldRender: boolean) => void;
-  private sendPlayerMove?: (y: number) => void;
+  private sendPlayerMove?: (y: number, gameRoom: string) => void;
 
   constructor() {
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
-    this.sendPlayerMove = debounce((y: number) => {
-      this.socketApi.sendMessages("playerMove", { y: y });
+    this.sendPlayerMove = debounce((y: number, gameRoom: string) => {
+      // console.log("sending player move");
+      this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
     }, 1);
   }
 
@@ -39,6 +44,14 @@ export class GameData {
     return { ...this._pongSpeed } as Readonly<Offset>;
   }
 
+  joinQueue(queueType: string) {
+    this.socketApi.sendMessages("joinQueue", { queue: queueType });
+  }
+
+  leaveQueue() {
+    this.socketApi.sendMessages("leaveQueue", {});
+  }
+
   startGame() {
     if (this.gameStarted) {
       console.error("game already started");
@@ -47,7 +60,20 @@ export class GameData {
     console.log("start game");
     this.gameStarted = true;
     this.setShouldRender?.(true);
-    this.socketApi.sendMessages("joinQueue", { queue: "standard" });
+    this.gameEntities.push(
+      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
+    );
+    this.gameEntities.push(
+      new GameBlackhole({ x: 300, y: 450, w: 100, h: 100 }, 2)
+    );
+    this.gameEntities.push(
+      new GameBlackhole({ x: 250, y: 200, w: 100, h: 100 }, 2)
+    );
+    this.gameEntities.push(
+      new GameBlackhole({ x: 1100, y: 0, w: 100, h: 100 }, 2)
+    );
+    this.joinQueue("standard");
+    this.setEntities?.(this.gameEntities);
   }
 
   endGame() {
@@ -68,11 +94,14 @@ export class GameData {
     this.setShouldRender = setShouldRender;
   }
 
-  listenToGameState = (state: GameStateDTO) => {
-    console.log(state);
+  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
+    this.setEntities = setEntities;
+  }
 
+  listenToGameState = (state: GameStateDTO) => {
     if (state.type === "GameStart") {
       this.isLeft = (<GameStartDTO>state.data).isLeft;
+      this.gameRoom = (<GameStartDTO>state.data).gameRoom;
     }
   };
 
@@ -97,7 +126,7 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
-    this.sendPlayerMove?.(y);
+    this.sendPlayerMove?.(y, this.gameRoom);
   }
 
   useLocalTick() {

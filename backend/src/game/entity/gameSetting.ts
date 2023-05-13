@@ -1,3 +1,9 @@
+export enum GameMode{
+	STANDARD,
+	POWER,
+	sudden
+}
+
 export class GameSetting{
 	canvasWidth: number;
 	canvasHeight: number;
@@ -6,19 +12,26 @@ export class GameSetting{
 
 	ballSize: number;
 	paddleWidth: number;
-	paddleHeight: number;
+	leftPaddleHeight: number;
+	rightPaddleHeight: number;
 	paddleOffsetX: number;
 	paddleOffsetY: number;
 
-	constructor(){
+	scoreToWin: number;
+	gameMode: GameMode;
+
+	constructor(leftPaddleHeight: number, rightPaddleHeight: number, gameMode: GameMode){
 		this.canvasWidth = 1600;
 		this.canvasHeight = 900;
 		this.ballSpeedX = 5;
 		this.ballSpeedY = 1;
 		this.ballSize = 10;
 		this.paddleWidth = 15;
-		this.paddleHeight = 100;
+		this.leftPaddleHeight = leftPaddleHeight;
+		this.rightPaddleHeight = rightPaddleHeight;
 		this.paddleOffsetX = 30;
 		this.paddleOffsetY = 50;
+		this.scoreToWin = 10;
+		this.gameMode = gameMode;
 	}
 }

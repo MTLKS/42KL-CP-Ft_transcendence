@@ -28,10 +28,11 @@ import { gameTick } from '../main';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
 
 const availableCommands = [
-  "login",
   "sudo",
   "display",
   "start",
+  "queue",
+  "dequeue",
   "clear",
   "help",
   "end",
@@ -132,6 +133,12 @@ function HomePage(props: HomePageProps) {
       case "start":
         gameTick.startGame();
         break;
+      case "queue":
+        gameTick.joinQueue(command[1]);
+        break;
+      case "dequeue":
+        gameTick.leaveQueue();
+        break;
       case "end":
         if (startMatch) {
           const canvas = document.getElementById('pixi') as HTMLCanvasElement;
@@ -198,7 +205,7 @@ function HomePage(props: HomePageProps) {
           newList = [newErrorCard].concat(elements);
           setIndex(index + 1);
           setElements(newList);
-          return newList;
+          return;
         }
         newList = elements;
         const newProfileCard = <Profile expanded={expandProfile} />;
