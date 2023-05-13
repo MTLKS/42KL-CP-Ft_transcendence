@@ -1,6 +1,6 @@
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../model/GameDTO";
-import { GameResponse } from "../model/GameResponseDTO";
+import { GameResponseDTO } from "../model/GameResponseDTO";
 import { GameStateDTO, GameStartDTO } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { clamp, debounce } from "lodash";
@@ -58,12 +58,22 @@ export class GameData {
     return { ...this._pongSpeed } as Readonly<Offset>;
   }
 
-  joinQueue(queueType: string) {
+  async joinQueue(queueType: string): Promise<GameResponseDTO> {
     this.socketApi.sendMessages("joinQueue", { queue: queueType });
+    return new Promise(resolve => {
+      this.socketApi.socket.on("gameResponse", event => {
+        resolve(event);
+      })
+    });
   }
 
-  leaveQueue() {
-    this.socketApi.sendMessages("leaveQueue", {});
+  async leaveQueue(): Promise<GameResponseDTO> {
+    this.socketApi.sendMessages("leaveQueue", { });
+    return new Promise(resolve => {
+      this.socketApi.socket.on("gameResponse", event => {
+        resolve(event);
+      })
+    });
   }
 
   startGame() {
@@ -196,7 +206,7 @@ export class GameData {
     this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
   };
 
-  listenToGameResponse = (data: GameResponse) => {
+  listenToGameResponse = (data: GameResponseDTO) => {
     // console.log(data);
   };
 

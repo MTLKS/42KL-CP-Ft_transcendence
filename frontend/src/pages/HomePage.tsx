@@ -26,6 +26,7 @@ import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
 import { gameData } from '../main';
 import previewProfileContext from '../contexts/PreviewProfileContext';
+import { GameResponseDTO } from '../model/GameResponseDTO';
 
 const availableCommands = [
   "sudo",
@@ -136,11 +137,11 @@ function HomePage(props: HomePageProps) {
         gameData.startGame();
         break;
       case "queue":
-        gameData.joinQueue(command[1]);
-        break;
+        handleQueueCommand(command[1], newList);
+        return;
       case "dequeue":
-        gameData.leaveQueue();
-        break;
+        handleDequeueCommand(newList);
+        return;
       case "end":
         gameData.stopDisplayGame();
         gameData.endGame();
@@ -419,6 +420,22 @@ function HomePage(props: HomePageProps) {
       newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp" + index} />);
     setElements(newList);
     return newList;
+  }
+
+  async function handleQueueCommand(argument: string, newList: JSX.Element[]) {
+    let response: GameResponseDTO = await gameData.joinQueue(argument);
+    if (response.type === "success")
+      newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+    else
+      newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+    setElements(newList);
+  }
+
+  async function handleDequeueCommand(newList: JSX.Element[]) {
+    let response: GameResponseDTO = await gameData.leaveQueue();
+    if (response.type === "success")
+      newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+    setElements(newList);
   }
 }
 
