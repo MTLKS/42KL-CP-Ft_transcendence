@@ -17,16 +17,16 @@ import { ChatService } from './chat/chat.service';
 import { Message } from './entity/message.entity';
 import { Channel } from './entity/channel.entity';
 import { ChatGateway } from './chat/chat.gateway';
+import { GameGateway } from './game/game.gateway';
+import { GameService } from './game/game.service';
 import { AppController } from './app.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Status } from './entity/status.entity';
 import { Member } from './entity/member.entity';
 import { TFAService } from './tfa/tfa.service';
-import { User } from './entity/user.entity';
+import { User } from './entity/users.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
-import { GameGateway } from './game/game.gateway';
-import { GameService } from './game/game.service';
 
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message]), MulterModule.register(MULTER_CONFIG)],
