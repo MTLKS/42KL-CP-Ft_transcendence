@@ -30,9 +30,9 @@ export class AuthGuard implements CanActivate {
 		try {
 			const ACCESS_TOKEN = CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 			console.log(BLUE + "Access token:", ACCESS_TOKEN + RESET);
-			const USER = await this.userRepository.findOne({ where: { accessToken: ACCESS_TOKEN } })
-			console.log(USER !== null ? GREEN + USER.intraName + " has connected to " + path + RESET : RED + "Authorization is invalid" + RESET);
-			return USER !== null;
+			const USER_DATA = await this.userRepository.findOne({ where: { accessToken: ACCESS_TOKEN } })
+			console.log(USER_DATA !== null ? GREEN + USER_DATA.intraName + " has connected to " + path + RESET : RED + "Authorization is invalid" + RESET);
+			return USER_DATA !== null;
 		} catch {
 			console.log(RED + "Authorization is invalid" + RESET);
 			return false;

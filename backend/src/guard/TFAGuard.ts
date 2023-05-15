@@ -7,6 +7,10 @@ import { AuthGuard } from "./AuthGuard";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const RESET = "\x1b[0m";
+
 @Injectable()
 export class TFAGuard implements CanActivate {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private tfaService: TFAService) {}
@@ -22,6 +26,8 @@ export class TFAGuard implements CanActivate {
 			authCode = REQUEST.handshake.headers.authorization;
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
-		return USER_DATA.tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
+		const RET = USER_DATA.tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
+		console.log(RET === true ? GREEN + "Authorization is valid: correct TFA " + RESET : RED + "Authorization is invalid: incorrect TFA" + RESET);
+		return RET;
 	}
 }
