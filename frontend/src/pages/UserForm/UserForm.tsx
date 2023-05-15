@@ -31,7 +31,8 @@ enum ErrorCode {
   NAMEINVALID,
   NAMETAKEN,
   EMPTYNAME,
-  EMPTYANS
+  EMPTYANS,
+  TFANOTVERIFIED
 }
 
 const getError = (code: ErrorCode) => {
@@ -51,6 +52,8 @@ const getError = (code: ErrorCode) => {
       return ("Epic name taken, please choose another one.");
     case ErrorCode.NAMEINVALID:
       return ("Names like Elon Musk's son not allowed");
+    case ErrorCode.TFANOTVERIFIED:
+      return ("2FA not verified yet. 2 bad 2 furious!");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -63,8 +66,11 @@ interface UserFormProps {
 }
 
 function UserForm(props: UserFormProps) {
+
+  // Props
   const { userData, isUpdatingUser, setIsUpdatingUser } = props;
 
+  // Hooks
   const [avatar, setAvatar] = useState('');
   const [userName, setFinalName] = useState(userData.intraName);
   const [fileExtension, setFileExtension] = useState<string>('jpeg');
@@ -72,9 +78,13 @@ function UserForm(props: UserFormProps) {
   const awesomeSynonym = useMemo(() => getAwesomeSynonym(), []);
   const iceBreakingQuestion = useMemo(() => getRandomIceBreakingQuestion(), []);
   const [popups, setPopups] = useState<JSX.Element[]>([]);
+  const [isVerifyingTFA, setIsVerifyingTFA] = useState(false);
+  const [isTFAEnabled, setIsTFAEnabled] = useState(userData.tfaSecret === "ENABLED");
+  const [TFAVerified, setTFAVerified] = useState(false);
 
   // convert the image from intra to data:base64
   useEffect(() => {
+    console.log(userData);
     toDataUrl(userData.avatar)
       .then((res) => setAvatar(res))
   }, []);
@@ -98,10 +108,13 @@ function UserForm(props: UserFormProps) {
           <p className='uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold'>user info</p>
           <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} />
           <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} />
-          <UserFormTfa />
-          <div className='font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out' onClick={handleSubmit}>
+          {isVerifyingTFA && <UserFormTfa tfaVerified={TFAVerified} setTFAVerified={setTFAVerified}/>}
+          <button
+            className={`font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out focus:outline-dimshadow ${isVerifyingTFA && !TFAVerified && 'focus:bg-highlight'}`}
+            onClick={handleSubmit}
+          >
             Submit
-          </div>
+          </button>
         </div>
       </div>
     </div>
@@ -137,6 +150,17 @@ function UserForm(props: UserFormProps) {
     let formData = new FormData();
     let avatarFile;
 
+    if (TFAVerified === false && isTFAEnabled === true) {
+      if (isVerifyingTFA === false) {
+        setIsVerifyingTFA(true);
+        return ;
+      }
+
+      if (isVerifyingTFA) {
+        errors.push(ErrorCode.TFANOTVERIFIED);
+      }
+    }
+
     sessionStorage.removeItem(`image-${userData.avatar}`)
     if (errors.length === 0) {
       Api.updateToken(
@@ -149,14 +173,17 @@ function UserForm(props: UserFormProps) {
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
+      console.log(formData);
       try {
         await Api.patch("/user", formData).then((res) => {
           let retVal = res.data as IAPIResponse;
+          console.log(retVal);
           if (retVal.error === "Invalid username - username already exists or invalid") {
             throw new Error(ErrorCode.NAMETAKEN.toString());
           }
         });
       } catch (Error: any) {
+        console.log(Error);
         return setPopups([parseInt(Error.toString().slice(7))].map((error) => <ErrorPopup key={error} text={getError(error)} />))
       }
       setPopups([]);

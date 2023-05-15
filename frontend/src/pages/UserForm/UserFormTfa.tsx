@@ -1,10 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { checkTFA } from '../../functions/tfa';
+import { set } from 'lodash';
 
-function UserFormTfa() {
+interface UserFormTfaProps {
+  tfaVerified: boolean;
+  setTFAVerified: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
+function UserFormTFAStatus(props: {tfaVerified: boolean}) {
+
+  // Props
+  const { tfaVerified } = props;
+
+  if (tfaVerified) {
+    return (<p className='bg-accGreen text-highlight px-3 py-1'>SUCCESS!</p>)
+  }
+  return (<p className='bg-accRed text-highlight px-3 py-1'>FAILED!</p>);
+}
+
+function UserFormTfa(props: UserFormTfaProps) {
+
+  // Props
+  const { tfaVerified, setTFAVerified } = props;
+
+  // Hooks
   const [tfaCode, setTfaCode] = useState<string>('');
   const tfaCodeInputRef = useRef<HTMLInputElement>(null);
   const [currentDigit, setCurrentDigit] = useState<number>(0);
+  const [hasResult, setHasResult] = useState<boolean>(false);
 
   useEffect(() => {
     tfaCodeInputRef.current?.focus();
@@ -16,10 +39,14 @@ function UserFormTfa() {
       return ;
     }
     setCurrentDigit(tfaCode.length - 1);
+
+    if (tfaCode.length === 6) {
+      verifyTfaCode();
+    }
   }, [tfaCode]);
 
   return (
-    <div className=''>
+    <div className='animate-pulse-short'>
       <div className='flex flex-col gap-y-2 cursor-pointer' onClick={() => tfaCodeInputRef.current?.focus()}>
         <p className='w-full'>2FA Verification</p>
         <p className='text-sm text-highlight/80 font-normal'>Hold on! We need to verify your 2FA code before we proceed.</p>
@@ -27,7 +54,7 @@ function UserFormTfa() {
           <div className='flex flex-row gap-x-1 w-fit text-2xl'>
             {showTypedCode()}
           </div>
-          <p className='bg-accRed text-highlight px-3 py-1'>FAILED!</p>
+          {hasResult && <UserFormTFAStatus tfaVerified={tfaVerified}/>}
         </div>
       </div>
       <input
@@ -37,6 +64,7 @@ function UserFormTfa() {
         className='h-0 w-0'
         type="text"
         ref={tfaCodeInputRef}
+        disabled={tfaVerified}
       />
     </div>
   )
@@ -72,12 +100,21 @@ function UserFormTfa() {
 
   function handleOnchange(e: React.ChangeEvent<HTMLInputElement>) {
     
+    if (hasResult) setHasResult(false);
+
     if (tfaCode.length >= 6) return ;
 
     // check if the value only contains numbers
     if (e.target.value.match(/^[0-9]*$/)) {
       setTfaCode(e.target.value);
     }
+  }
+
+  async function verifyTfaCode() {
+    const result = await checkTFA(tfaCode);
+    setTFAVerified(result.boolean);
+    if (!result.boolean) setTfaCode('');
+    if (!hasResult) setHasResult(true);
   }
 }
 
