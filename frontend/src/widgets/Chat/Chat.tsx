@@ -22,10 +22,6 @@ function Chat() {
       unreadChatrooms.push(data.channelId);
       setHasNewMessage(true);
     });
-
-    return () => {
-      chatSocket.removeListener("message");
-    }
   }, []);
 
   useEffect(() => {
