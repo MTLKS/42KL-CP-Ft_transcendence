@@ -71,7 +71,6 @@ export class ChatService {
 			return server.to(MY_CHANNEL.channelId).emit("read", { error: "Invalid channelId - you are not friends with this user" } );
 		const MY_MEMBER = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channelId: FRIEND_CHANNEL.channelId}, relations: ['user'] });
 		MY_MEMBER.lastRead = new Date().toISOString();
-		console.log(MY_MEMBER.lastRead);
 		await this.memberRepository.save(MY_MEMBER);
 		server.to(MY_CHANNEL.channelId).emit("read", MY_MEMBER );
 	}
