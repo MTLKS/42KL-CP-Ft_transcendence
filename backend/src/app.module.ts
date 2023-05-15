@@ -27,10 +27,13 @@ import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/users.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
+import { MatchService } from './match/match.service';
+import { MatchController } from './match/match.controller';
+import { Match } from './entity/match.entity';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message]), MulterModule.register(MULTER_CONFIG)],
-  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController],
-  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService],
+  imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message, Match]), MulterModule.register(MULTER_CONFIG)],
+  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController, MatchController],
+  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService, MatchService],
 })
 export class AppModule {}

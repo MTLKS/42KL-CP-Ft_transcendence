@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { GameRoom } from "./entity/gameRoom";
+import { PowerGameRoom } from "./entity/powerGameRoom";
 import { GameSetting, GameMode } from "./entity/gameSetting";
 import { Socket, Server } from "socket.io";
 import { Player } from "./entity/player";
 import { GameResponseDTO } from "src/dto/gameResponse.dto";
 import { GameStateDTO, GameStartDTO, GameEndDTO, GamePauseDTO } from "src/dto/gameState.dto";
+import { MatchService } from "src/match/match.service";
 
 //TODO : "gameState" event-> game start, game end, field effect
 
@@ -13,9 +15,7 @@ const LOBBY_LOGGING = false;
 
 @Injectable()
 export class GameService {
-	constructor(
-		private readonly userService: UserService, )
-		{}
+	constructor(private readonly userService: UserService, private readonly matchService: MatchService) { }
 	
 	//Lobby variables
 	private queues = {
@@ -23,7 +23,6 @@ export class GameService {
 		"power": [],
 		"sudden": []
 	};
-	private ingame = [];
 	private connected = [];
 
 	private gameRooms = new Map<string, GameRoom>();
@@ -47,6 +46,9 @@ export class GameService {
 		let player = new Player(USER_DATA.intraName, client);
 		this.connected.push(player);
 
+		// Clear any ended game rooms
+		this.clearGameRooms();
+
 		// If player is ingame, reconnect player to game
 		this.gameRooms.forEach((gameRoom) => {
 			if (gameRoom._players.includes(USER_DATA.intraName)) {
@@ -55,7 +57,7 @@ export class GameService {
 		})
 	}
 
-	async handleDisconnect(client: Socket) {
+	async handleDisconnect(server: Server, client: Socket) {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
 			return;
@@ -72,7 +74,7 @@ export class GameService {
 		// If player is ingame, pause game 
 		this.gameRooms.forEach((gameRoom) => {
 			if (gameRoom._players.includes(USER_DATA.intraName)) {
-				gameRoom.togglePause();
+				gameRoom.togglePause(server, USER_DATA.intraName);
 			}
 		})
 
@@ -93,13 +95,18 @@ export class GameService {
 			return;
 		}
 
+		// Clear any ended game rooms
+		this.clearGameRooms();
+
 		// Check if player is already in a game
-		if (this.ingame.find(e => e.intraName === USER_DATA.intraName)) {
-			if (LOBBY_LOGGING)
+		this.gameRooms.forEach((gameRoom) => {
+			if (gameRoom._players.includes(USER_DATA.intraName)) {
+				if (LOBBY_LOGGING)
 				console.log(`${USER_DATA.intraName} is already in a game.`);
 			client.emit('gameResponse', new GameResponseDTO('error', 'already in game'));
 			return;
-		}
+			}
+		})
 
 		// Check if player if already in a queue
 		const IN_QUEUE = Object.keys(this.queues).find(queueType => {
@@ -123,9 +130,7 @@ export class GameService {
 		// TODO: right now it is FIFO, may want to change to be based on ELO.
 		if (this.queues[clientQueue].length >= 2) {
 			var player1 = this.queues[clientQueue].pop();
-			this.ingame.push(player1);
 			var player2 = this.queues[clientQueue].pop();
-			this.ingame.push(player2);
 
 			// this.startGame(player1, player2, server);
 			if (LOBBY_LOGGING)
@@ -134,9 +139,9 @@ export class GameService {
 		}
 
 		//TESTING
-		var player1 = this.queues[clientQueue].pop();
-		this.ingame.push(player1);
-		this.joinGame(player1, player1, clientQueue, server);
+		// var player1 = this.queues[clientQueue].pop();
+		// this.ingame.push(player1);
+		// this.joinGame(player1, player1, clientQueue, server);
 	}
 
 	async leaveQueue(client: Socket) {
@@ -155,16 +160,22 @@ export class GameService {
 	}
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
-		const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
-		const ROOM = new GameRoom(player1, player2, gameType, ROOM_SETTING);
-		player1.socket.join(ROOM.roomID);
-		player2.socket.join(ROOM.roomID);
-		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, ROOM.roomID)));
-		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, ROOM.roomID)));
-		server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
-		this.gameRooms.set(ROOM.roomID, ROOM);
-		await ROOM.run(server);
-		return (ROOM.roomID);
+		let room;
+		if (gameType === "standard"){
+			const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
+			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
+		}
+		else if (gameType === "power"){
+			const ROOM_SETTING = new GameSetting(100,100,GameMode.POWER);
+			room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
+		}
+		player1.socket.join(room.roomID);
+		player2.socket.join(room.roomID);
+		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, room.roomID)));
+		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, room.roomID)));
+		this.gameRooms.set(room.roomID, room);
+		await room.run(server);
+		return (room.roomID);
 	}
 
 	async startGame(roomID: string, server: Server){
@@ -182,5 +193,15 @@ export class GameService {
 		if (ROOM === undefined)
 			return;
 		ROOM.updatePlayerPos(client.id, value);
+	}
+
+	clearGameRooms() {
+		this.gameRooms.forEach((gameRoom, key) => {
+			if (gameRoom.gameEnded) {
+				this.gameRooms.delete(key);
+				if (LOBBY_LOGGING)
+					console.log(`game room ${key} has been deleted.`);
+			}
+		})
 	}
 }

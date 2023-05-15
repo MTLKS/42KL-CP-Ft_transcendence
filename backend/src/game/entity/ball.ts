@@ -35,4 +35,30 @@ export class Ball extends DynamicRect{
 		}
 		return 0;
 	}
+
+	impulsCollisionResponse(object: DynamicRect, normalX, normalY) {
+		let relVelocityX = object.velX - this.velX;
+		let relVelocityY = object.velY - this.velY;
+		let velAlongNormal = relVelocityX * normalX + relVelocityY * normalY;
+		
+		if (velAlongNormal > 0) {
+		  return;
+		}
+		
+		let e = 1;
+		let j = -(1 + e) * velAlongNormal;
+		let invMass = 1 / this.mass;
+		let otherInvMass = 1/object.mass;
+		j /= invMass + otherInvMass;
+		
+		let impulseX = j * normalX;
+		let impulseY = j * normalY;
+		this.velX -= impulseX * invMass;
+		this.velY -= impulseY * invMass;
+		object.velX += impulseX * otherInvMass;
+		object.velY += impulseY * otherInvMass;
+	}
+
+
+
 }

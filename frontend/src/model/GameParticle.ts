@@ -11,6 +11,7 @@
  * @param {number} jy jerk y
  * @param {number} w width
  * @param {number} h height
+ * @param {number} rotRad rotation in radians
  * @param {number} opacity
  * @param {number} opacityDecay
  * @param {number} speedDecayFactor
@@ -30,6 +31,7 @@ interface GameParticleData {
   jy?: number;
   w?: number;
   h?: number;
+  rotRad?: number;
   opacity?: number;
   opacityDecay?: number;
   sizeDecay?: number;
@@ -50,6 +52,7 @@ interface GameParticleData {
  * @param {number} jy jerk y
  * @param {number} w width
  * @param {number} h height
+ * @param {number} rotRad rotation in radians
  * @param {number} opacity
  * @param {number} opacityDecay
  * @param {number} speedDecayFactor
@@ -68,6 +71,7 @@ class GameParticle {
   public jy: number;
   public w: number;
   public h: number;
+  public rotRad: number;
   public opacity: number;
   public opacityDecay: number;
   public speedDecayFactor: number;
@@ -87,6 +91,7 @@ class GameParticle {
     jy,
     w,
     h,
+    rotRad,
     opacity,
     opacityDecay,
     speedDecayFactor,
@@ -95,7 +100,7 @@ class GameParticle {
     gravity,
   }: GameParticleData) {
     this.id =
-      id ?? Math.random().toString(36).slice(2) + Date.now().toString(36);
+      id ?? `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
     this.x = x ?? 0;
     this.y = y ?? 0;
     this.vx = vx ?? 0;
@@ -106,6 +111,7 @@ class GameParticle {
     this.jy = jy ?? 0;
     this.w = w ?? 0;
     this.h = h ?? 0;
+    this.rotRad = rotRad ?? 0;
     this.opacity = opacity ?? 0;
     this.opacityDecay = opacityDecay ?? 0;
     this.speedDecayFactor = speedDecayFactor ?? 1;
@@ -131,18 +137,22 @@ class GameParticle {
     };
   }
 
-  public update() {
+  public update(
+    timeFactor: number = 1,
+    globalGravityX: number = 0,
+    globalGravityY: number = 0
+  ) {
     if (this.opacity <= 0) return;
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vx += this.ax;
-    this.vy += this.ay;
-    this.ax += this.jx;
-    this.ay += this.jy;
-    this.opacity -= this.opacityDecay;
+    this.x += this.vx * timeFactor;
+    this.y += this.vy * timeFactor;
+    this.vx += (this.ax + globalGravityX) * timeFactor;
+    this.vy += (this.ay + globalGravityY) * timeFactor;
+    this.ax += this.jx * timeFactor;
+    this.ay += this.jy * timeFactor;
+    this.opacity -= this.opacityDecay * timeFactor;
     if (this.sizeDecay != 0) {
-      this.w -= this.sizeDecay;
-      this.h -= this.sizeDecay;
+      this.w -= this.sizeDecay * timeFactor;
+      this.h -= this.sizeDecay * timeFactor;
     }
     if (this.speedDecayFactor != 0) {
       this.vx *= this.speedDecayFactor;
@@ -171,11 +181,6 @@ class GameParticle {
    * should not be used with setGravityJolt
    */
   public setGravityAccel(x: number, y: number, magnitude: number) {
-    if (!this.gravity) return;
-    const distance = Math.sqrt(
-      Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2)
-    );
-    if (distance < 1 || distance > 300) return;
     this.ax = (x - this.x) * magnitude * 0.005;
     this.ay = (y - this.y) * magnitude * 0.005;
   }

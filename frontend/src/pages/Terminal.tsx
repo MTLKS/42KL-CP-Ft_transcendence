@@ -13,11 +13,10 @@ interface TerminalProps {
   availableCommands: string[];
   handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
-  startMatch: boolean;
 }
 
 function Terminal(pros: TerminalProps) {
-  const { availableCommands, handleCommands, elements, startMatch } = pros;
+  const { availableCommands, handleCommands, elements } = pros;
 
   const promptFieldRef = useRef<any>(null);
 
@@ -39,8 +38,6 @@ function Terminal(pros: TerminalProps) {
         center={false} ref={promptFieldRef}
         enableHistory showtip
       />
-      {/* {startMatch ? <GameStage /> : null} */}
-      {startMatch ? <GameWindow /> : null}
       <Clock />
     </div>
   )
