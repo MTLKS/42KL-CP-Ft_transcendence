@@ -23,7 +23,7 @@ export class UserService {
 		if (USER_DATA === null)
 			return { error: "Invalid access token - access token does not exist" };
 		USER_DATA.accessToken = "hidden";
-		USER_DATA.tfaSecret = USER_DATA === null ? "DISABLED" : "ENABLED";
+		USER_DATA.tfaSecret = USER_DATA.tfaSecret === null ? "DISABLED" : "ENABLED";
 		return USER_DATA;
 	}
 	
