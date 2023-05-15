@@ -82,7 +82,7 @@ export class ChatService {
 		if (USER_DATA.error !== undefined)
 			return;
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName }, channelId: channelId}, relations: ['user'] });
-		return MEMBER_DATA === null ? { error: "Invalid channelId - member is not found in that channelId" } : MEMBER_DATA;
+		return MEMBER_DATA === null ? { error: "Invalid channelId - member is not found in that channelId" } : this.userService.hideData(MEMBER_DATA);
 	} 
 
 	// Retrives all DM of the user
@@ -121,7 +121,7 @@ export class ChatService {
 			return { error: "Invalid channelId - channel is not found" };
 		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
 			return { error: "Invalid channelId - you are not friends with this user" };
-		return await this.messageRepository.find({ where: [{channelId: MY_CHANNEL.channelId, user: {intraName: FRIEND_CHANNEL.owner.intraName}}, {channelId: channelId, user: {intraName: USER_DATA.intraName}}], relations: ['user'] });
+		const MESSAGES = await this.messageRepository.find({ where: [{channelId: MY_CHANNEL.channelId, user: {intraName: FRIEND_CHANNEL.owner.intraName}}, {channelId: channelId, user: {intraName: USER_DATA.intraName}}], relations: ['user'] });
+		return this.userService.hideData(MESSAGES);
 	}
-
 }
