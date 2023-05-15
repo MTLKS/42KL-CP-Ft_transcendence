@@ -11,7 +11,7 @@ import { GameDataCtx } from '../GameApp';
 import ParticlesRenderer from './game_objects/ParticlesRenderer';
 import Entities from './game_objects/Entities';
 import GameEntity, { GameBlackhole, GameBlock, GameTimeZone } from '../model/GameEntities';
-import GameParticle from '../model/GameParticle';
+import GameParticle, { GameLightningParticle } from '../model/GameParticle';
 import sleep from '../functions/sleep';
 import * as particles from '@pixi/particle-emitter';
 
@@ -28,7 +28,26 @@ function Game(props: GameProps) {
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
   const [particles, setParticles] = useState<GameParticle[]>([]);
-  const [lightningParticles, setLightningParticles] = useState<GameParticle[][]>([]);
+  const [lightningParticles, setLightningParticles] = useState<GameLightningParticle[]>([
+    new GameLightningParticle({
+      centerX: 400,
+      centerY: 400,
+      paddingX: 15,
+      paddingY: 70,
+    }),
+    new GameLightningParticle({
+      centerX: 400,
+      centerY: 400,
+      paddingX: 15,
+      paddingY: 70,
+    }),
+    new GameLightningParticle({
+      centerX: 400,
+      centerY: 400,
+      paddingX: 15,
+      paddingY: 70,
+    }),
+  ]);
   const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rings, setRings] = useState<Ring[]>([]);
@@ -60,16 +79,18 @@ function Game(props: GameProps) {
     const newPongSpeed = gameData.pongSpeed;
     const newParticles: GameParticle[] = [...particles];
     newParticles.forEach((particle) => {
-      if (particle.opacity <= 0) {
+      if (particle.opacity <= 0.01) {
         newParticles.splice(newParticles.indexOf(particle), 1);
       }
       let finalTimeFactor = 1;
       gameData.gameEntities.forEach((entity) => {
         if (entity instanceof GameBlackhole) {
+          if (!particle.gravity) return;
           const distance = Math.sqrt(
             Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
           );
           if (distance < 1 || distance > 300) return;
+          if (distance < 10) particle.opacity = 0;
           particle.setGravityAccel(entity.x, entity.y, entity.magnitude);
         }
         if (entity instanceof GameTimeZone) {
@@ -137,7 +158,7 @@ function Game(props: GameProps) {
         30 * (Math.random() - 0.5);
       const y =
         entity.y +
-        (Math.random() > 0.5 ? 1 : -1) * 30 +
+        (Math.random() > 0.5 ? -1 : -1) * 30 +
         30 * (Math.random() - 0.5);
       const size = 2 + 8 * Math.random();
       newParticles.push(
@@ -145,8 +166,8 @@ function Game(props: GameProps) {
           x: x,
           y: y,
           opacity: 1,
-          vx: (entity.x - x) / 10 + 7,
-          vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1),
+          vx: (entity.x - x) / 10 + 7 + 2,
+          vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1) + 5,
           opacityDecay: 0.005,
           w: size,
           h: size,
@@ -171,39 +192,11 @@ function Game(props: GameProps) {
       })
     );
 
-    const newLightningParticles: GameParticle[][] = [];
-    lightningParticles.forEach((oldlightning) => {
-      const lightning: GameParticle[] = [...oldlightning];
-      if (lightning.length > 10) lightning.shift();
-      lightning.forEach((particle) => {
-        particle.update();
-      });
-      if (lightning.length == 0)
-        lightning.push(
-          new GameParticle({
-            x: 400,
-            y: 400,
-            opacity: 1,
-            w: 10,
-            h: 35,
-            colorIndex: 3,
-            rotRad: Math.PI * 2 * Math.random(),
-          })
-        );
-      else {
-        const lastParticle = lightning[lightning.length - 1];
-        lightning.push(
-          new GameParticle({
-            x: lastParticle.x - (lastParticle.h - 3) * Math.sin(lastParticle.rotRad),
-            y: lastParticle.y + (lastParticle.h - 3) * Math.cos(lastParticle.rotRad),
-            opacity: 1,
-            w: 5 + 10 * Math.random(),
-            h: 20 + 30 * Math.random(),
-            colorIndex: 3,
-            rotRad: lastParticle.rotRad - Math.PI / 10,
-          }));
-      }
-      newLightningParticles.push(lightning);
+    const newLightningParticles: GameLightningParticle[] = [
+      ...lightningParticles,
+    ];
+    newLightningParticles.forEach((lightning) => {
+      lightning.update();
     });
     setParticles(newParticles);
     setLightningParticles(newLightningParticles);
@@ -238,8 +231,8 @@ function Game(props: GameProps) {
       <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} />
       <RippleEffect rings={rings} />
       <Pong position={position} size={{ w: 10, h: 10 }} />
-      <ParticlesRenderer particles={particles} lightningParticles={lightningParticles} />
       <Entities />
+      <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} />
       <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} />
       <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />
     </Container>
