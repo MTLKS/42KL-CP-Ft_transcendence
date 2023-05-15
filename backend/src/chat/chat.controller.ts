@@ -21,7 +21,7 @@ export class ChatController {
 
 	@Get('dm/message/:channelID')
 	@UseGuards(AuthGuard)
-	getMyDM(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
-		return this.chatService.getMyDM(accessToken, channelId);
+	getMyDMMessages(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
+		return this.chatService.getMyDMMessages(accessToken, channelId);
 	}
 }
