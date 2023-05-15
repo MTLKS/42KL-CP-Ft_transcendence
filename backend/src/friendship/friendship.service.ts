@@ -130,7 +130,7 @@ export class FriendshipService {
 				return FRIENDSHIP;
 			} else {
 				const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase());
-				await this.friendshipRepository.delete(RECEIVER);
+				await this.friendshipRepository.delete(FRIENDSHIP);
 				await this.friendshipRepository.save(NEW_FRIENDSHIP);
 				return NEW_FRIENDSHIP;
 			}
