@@ -20,7 +20,7 @@ export class AuthGuard implements CanActivate {
 		let authCode: string, path: string;
 		try {
 			authCode = REQUEST.header('Authorization');
-			path = "API: " + REQUEST.route.path;
+			path = "API: " + REQUEST.route.stack[0].method.toUpperCase() + " " + REQUEST.route.path;
 		} catch {
 			authCode = REQUEST.handshake.headers.authorization;
 			path = "Socket: " + REQUEST.nsp.name;
