@@ -8,7 +8,6 @@ export class Status {
     this.status = status;
   }
 
-  // Change this to a ManyToOne user relationship
   @PrimaryColumn()
   intraName: string;
   

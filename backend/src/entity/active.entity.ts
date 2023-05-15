@@ -11,7 +11,6 @@ export class Active {
 	@PrimaryColumn()
 	socketId: string;
 
-	// Change this to a ManyToOne user relationship
 	@Column()
 	intraName: string;
 
