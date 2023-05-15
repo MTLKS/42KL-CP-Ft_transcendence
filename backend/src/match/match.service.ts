@@ -46,8 +46,6 @@ export class MatchService {
 		});
 	
 		const MATCH_DATA = await this.getMatchesByIntraName(intraName, 100, 0);
-		console.log(MATCH_DATA);
-
 		const wins: string [] = [];
 		const losses: string [] = [];
 		for (const match of MATCH_DATA) {
