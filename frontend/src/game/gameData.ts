@@ -48,6 +48,7 @@ export class GameData {
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = debounce((y: number, gameRoom: string) => {
       // console.log("sending player move");
+      console.log("game room", this.gameRoom);
       this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
     }, 1);
   }
@@ -210,6 +211,7 @@ export class GameData {
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
+    console.log("isLeft: ", this.isLeft);
     this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
       this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
@@ -226,6 +228,7 @@ export class GameData {
   };
 
   updatePlayerPosition(y: number) {
+    console.log("gameRoom: ", this.gameRoom);
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
     } else {

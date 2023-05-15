@@ -7,7 +7,7 @@ import { GameStartDTO, GameEndDTO, GamePauseDTO, GameStateDTO } from "src/dto/ga
 import { Player } from "./player";
 import { MatchService } from "src/match/match.service";
 
-class CollisionResult{
+export class CollisionResult{
 	collided: boolean;
 	collideTime : number;
 	normalX: number;
@@ -37,6 +37,7 @@ export class GameRoom{
 	lastWinner: string;
 	player1Score: number;
 	player2Score: number;
+	winScore: number;
 	gameEnded: boolean;
 	gameReset: boolean;
 	gamePaused: boolean;
@@ -60,11 +61,11 @@ export class GameRoom{
 		this.leftPaddle = new Rect(setting.paddleOffsetX, this.canvasHeight / 2, setting.paddleWidth, setting.leftPaddleHeight);
 		this.rightPaddle = new Rect(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.rightPaddleHeight);
 		this.interval = null;
-		
 		this._players = [player1.intraName, player2.intraName];
 		this.lastWinner = '';
 		this.player1Score = 0;
 		this.player2Score = 0;
+		this.winScore = setting.scoreToWin;
 		this.gameReset = false;
 		this.gamePaused = false;
 
@@ -80,8 +81,12 @@ export class GameRoom{
 		await this.countdown(3);
 		if (this.interval == null){
 			this.interval = setInterval(async () => {
+			
 				if (this.gameReset == true){
 					this.resetGame(server);
+					server.to(this.roomID).emit('gameLoop',
+					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+					this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
 					await this.countdown(1);
 					this.gameReset = false;
 				}
@@ -93,7 +98,7 @@ export class GameRoom{
 				}
 
 				else{
-					this.gameUpdate();
+					this.gameUpdate(server);
 				}
 
 				if (this.player1Score === this.roomSettings.scoreToWin || this.player2Score === this.roomSettings.scoreToWin){
@@ -107,7 +112,7 @@ export class GameRoom{
 		}
 	}
 
-	gameUpdate(){
+	gameUpdate(server: Server){
 		this.Ball.update();
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score!=0){
@@ -120,7 +125,6 @@ export class GameRoom{
 				this.lastWinner = "player2";
 			}
 			this.gameReset = true;
-			// console.log(this.player1Score, ":" , this.player2Score);
 		}
 		this.gameCollisionDetection();
 	}
@@ -215,7 +219,7 @@ export class GameRoom{
 		if (socketId == this.player1.socket.id){
 			this.leftPaddle.posY = value - 50;
 		}
-		else if (socketId == this.player2.socket.id){
+		if (socketId == this.player2.socket.id){
 			this.rightPaddle.posY = value - 50;
 		}
 	}
@@ -295,10 +299,5 @@ export class GameRoom{
 			counter--;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
-	}
-
-	async fieldChange(){
-		await this.countdown(10);
-		console.log("field changed");
 	}
 }

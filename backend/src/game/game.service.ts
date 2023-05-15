@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "src/user/user.service";
 import { GameRoom } from "./entity/gameRoom";
+import { PowerGameRoom } from "./entity/powerGameRoom";
 import { GameSetting, GameMode } from "./entity/gameSetting";
 import { Socket, Server } from "socket.io";
 import { Player } from "./entity/player";
@@ -159,16 +160,22 @@ export class GameService {
 	}
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
-		const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
-		const ROOM = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
-		player1.socket.join(ROOM.roomID);
-		player2.socket.join(ROOM.roomID);
-		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, ROOM.roomID)));
-		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, ROOM.roomID)));
-		// server.to(ROOM.roomID).emit('gameState', { type: "GameStart", data: ROOM.roomID});
-		this.gameRooms.set(ROOM.roomID, ROOM);
-		await ROOM.run(server);
-		return (ROOM.roomID);
+		let room;
+		if (gameType === "standard"){
+			const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
+			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
+		}
+		else if (gameType === "power"){
+			const ROOM_SETTING = new GameSetting(100,100,GameMode.POWER);
+			room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
+		}
+		player1.socket.join(room.roomID);
+		player2.socket.join(room.roomID);
+		player1.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player2.intraName, gameType, true, room.roomID)));
+		player2.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(player1.intraName, gameType, false, room.roomID)));
+		this.gameRooms.set(room.roomID, room);
+		await room.run(server);
+		return (room.roomID);
 	}
 
 	async startGame(roomID: string, server: Server){
