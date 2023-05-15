@@ -203,7 +203,7 @@ function HomePage(props: HomePageProps) {
     setTimeout(() => {
       setExpandProfile(!expandProfile);
     }, 500);
-    return ;
+    return;
   }
 
   function handleProfileCommand(command: string[]) {
@@ -214,7 +214,7 @@ function HomePage(props: HomePageProps) {
     // handle profile
     if (command.length === 1) {
       viewMyProfile();
-      return ;
+      return;
     }
 
     // handle profile <name>
@@ -224,21 +224,21 @@ function HomePage(props: HomePageProps) {
 
       if (wantToView === userData.intraName) {
         viewMyProfile();
-        return ;
+        return;
       }
 
       // should not able to view someone's profile if that person blocked you. treat as user not found
       if (myFriends.find((friend) => friend.senderIntraName === wantToView || friend.receiverIntraName === wantToView)?.status.toLowerCase() === "blocked") {
-        errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView});
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
         newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
         setElements(appendNewCard(newList));
-        return ;
+        return;
       }
 
       getProfileOfUser(wantToView).then((response) => {
         const newPreviewProfile = response.data as UserData;
         if (newPreviewProfile as any === '') {
-          errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView});
+          errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
           newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
           setElements(appendNewCard(newList));
           return;
@@ -260,7 +260,7 @@ function HomePage(props: HomePageProps) {
     if (command.length > 2) {
       newList = appendNewCard(<HelpCard key={"help" + index} title="profile" option='commands' usage='<command>' commandOptions={allCommands} />);
       setElements(newList);
-      return ;
+      return;
     }
   }
 
@@ -408,18 +408,33 @@ function HomePage(props: HomePageProps) {
       userIntraNames = userIntraNames.filter((name) => name !== userData.intraName);
     }
 
-    // get all user data
-    const userProfiles = await Promise.all(
-      userIntraNames.map(intraName => getProfileOfUser(intraName))
-    );
+    let strangersNames: string[] = [];
+    // for unblock and unfriend, need to get data from friend list
+    userIntraNames.forEach((intraName) => {
+      const friend = myFriends.find((friend) => friend.receiverIntraName === intraName || friend.senderIntraName === intraName);
+      if (friend) {
+        if (belongsTotheDesireCategory(action, friend.status))
+          newSelectedFriends.push(friend);
+        else
+          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend });
+      }
+      else {
+        strangersNames.push(intraName);
+      }
+    });
+
+    // get all stranger data
+    const strangerProfiles = await Promise.all(strangersNames.map(intraName => getProfileOfUser(intraName)));
 
     // categorized user data
-    const categorizedUsers = userProfiles.map((user, index) => {
-      if (user.data as any === '' || (user.data as ErrorData).error) return userIntraNames[index];
+    const categorizedUsers = strangerProfiles.map((user, index) => {
 
+      // user not found
+      if ((user.data as ErrorData).error) return strangersNames[index];
+
+      // user found but gurantee is a stranger
       const userData: UserData = user.data as UserData;
-      let relationshipType: string = checkIfFriendPresent(myFriends, userData.intraName) ? "FRIEND" : "STRANGER";
-      return { user: userData, type: relationshipType };
+      return { user: userData, type: "STRANGER" };
     });
 
     for (const user of categorizedUsers) {
@@ -432,14 +447,6 @@ function HomePage(props: HomePageProps) {
         } else {
           errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: user.user.intraName });
         }
-      } else if (typeof user === 'object' && user.type === "FRIEND") {
-        const friend = myFriends.find(
-          friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
-        );
-        if (belongsTotheDesireCategory(action, friend!.status))
-          newSelectedFriends.push(friend!)
-        else
-          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend! as FriendData });
       }
     }
 
@@ -449,6 +456,18 @@ function HomePage(props: HomePageProps) {
     if (newSelectedFriends.length > 0)
       setLeftWidget(<FriendAction user={userData} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
+
+  /**
+   * else if (typeof user === 'object' && user.type === "FRIEND") {
+        const friend = myFriends.find(
+          friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
+        );
+        if (belongsTotheDesireCategory(action, friend!.status))
+          newSelectedFriends.push(friend!)
+        else
+          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend! as FriendData });
+      }
+   */
 
   // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
   // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
@@ -475,12 +494,12 @@ function HomePage(props: HomePageProps) {
         setLeftWidget(<FriendAction user={userData} action={command[0]} onQuit={() => setLeftWidget(null)} />);
       else if (command.length >= 2) {
         performActionOnMultipleUsers(command[0], command.slice(1));
-        return ;
+        return;
       }
       newList = elements;
     } else if (command[0] === "add" && command.length >= 2) {
       addMultipleFriends(command.slice(1));
-      return ;
+      return;
     } else
       newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp" + index} />);
     setElements(newList);
