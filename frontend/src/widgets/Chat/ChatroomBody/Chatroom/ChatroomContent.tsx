@@ -97,7 +97,7 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function displayMessages() {
 
-    if (!chatMemberLastRead) return;
+    if (!chatMemberLastRead) return [];
 
     const lastReadTime = new Date(chatMemberLastRead!);
     const oldMessages = allMessages.filter((message) => new Date(message.timeStamp) < lastReadTime);
