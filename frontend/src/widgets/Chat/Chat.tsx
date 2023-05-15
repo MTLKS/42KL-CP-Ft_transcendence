@@ -16,10 +16,12 @@ function Chat() {
 
   useEffect(() => {
     // for receive new message
+    const newUnreadChatrooms: number[] = [];
     chatSocket.connect();
     chatSocket.listen("message", (data: any) => {
       if (unreadChatrooms.includes(data.channelId)) return;
-      unreadChatrooms.push(data.channelId);
+      newUnreadChatrooms.push(data.channelId);
+      setUnreadChatrooms(newUnreadChatrooms);
     });
   }, []);
 
@@ -32,7 +34,7 @@ function Chat() {
     <UnreadChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>
       <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody}}>
         <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
-          <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />
+          <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms && unreadChatrooms.length > 0} />
           {expanded && chatroomBody}
         </div>
       </ChatContext.Provider>
