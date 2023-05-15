@@ -2,11 +2,10 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity( { name: 'friendship' } )
 export class Friendship {
-	constructor(senderIntraName: string, receiverIntraName: string, status: string, chatted: boolean) {
+	constructor(senderIntraName: string, receiverIntraName: string, status: string) {
 		this.senderIntraName = senderIntraName;
 		this.receiverIntraName = receiverIntraName;
 		this.status = status;
-		this.chatted = chatted;
 	}
 
 	@PrimaryGeneratedColumn()
@@ -22,7 +21,4 @@ export class Friendship {
 
 	@Column()
 	status: string;
-
-	@Column()
-	chatted: boolean;
 }

@@ -86,7 +86,7 @@ export class FriendshipService {
 		const RECEIVER = await this.userRepository.findOne({ where: {intraName: receiverIntraName} });
 		if (RECEIVER === null)
 			return { error: "ReceiverIntraName error - user does not exist" };
-		const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase(), false);
+		const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase());
 		await this.friendshipRepository.save(NEW_FRIENDSHIP);
 		return NEW_FRIENDSHIP;
 	}
@@ -129,7 +129,7 @@ export class FriendshipService {
 				await this.friendshipRepository.save(FRIENDSHIP);
 				return FRIENDSHIP;
 			} else {
-				const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase(), FRIENDSHIP.chatted);
+				const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase());
 				await this.friendshipRepository.delete(RECEIVER);
 				await this.friendshipRepository.save(NEW_FRIENDSHIP);
 				return NEW_FRIENDSHIP;

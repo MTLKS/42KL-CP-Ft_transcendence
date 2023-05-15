@@ -42,7 +42,6 @@ export class ChatService {
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: intraName}, {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName}] });
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid friendhsip - you are not friends with this user" } );
-		FRIENDSHIP.chatted = true;
 		await this.friendshipRepository.save(FRIENDSHIP)
 		const NEW_MESSAGE = new Message(USER_DATA, CHANNEL.channelId, false, message, new Date().toISOString());
 		await this.messageRepository.save(NEW_MESSAGE);
@@ -92,7 +91,7 @@ export class ChatService {
 		if (USER_DATA.error !== undefined)
 			return USER_DATA;
 		const FRIENDSHIPS = await this.friendshipService.getFriendship(accessToken);
-		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.senderIntraName === USER_DATA.intraName || friendship.receiverIntraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" && friendship.chatted === true ).flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== USER_DATA.intraName);
+		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.senderIntraName === USER_DATA.intraName || friendship.receiverIntraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" ).flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== USER_DATA.intraName);
 		let channel = [];
 		for (let i = 0; i < FRIENDS.length; i++) {
 			const CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: FRIENDS[i]} }, relations: ['owner'] });
