@@ -20,6 +20,8 @@ export class UserService {
 			return { error: "Invalid access token - access token is invalid" };
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
+		if (USER_DATA === null)
+			return { error: "Invalid access token - access token does not exist" };
 		USER_DATA.accessToken = "hidden";
 		USER_DATA.tfaSecret = USER_DATA.tfaSecret === null ? "DISABLED" : "ENABLED";
 		return USER_DATA;
@@ -56,6 +58,8 @@ export class UserService {
 		if (intraName === undefined)
 			return { error: "Invalid body - body must include intraName(string)" };
 		const USER_DATA = await this.getMyUserData(accessToken);
+		if (USER_DATA.error !== undefined)
+			return USER_DATA;
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
 			return { error: "Invalid intraName - intraName does not exist" };

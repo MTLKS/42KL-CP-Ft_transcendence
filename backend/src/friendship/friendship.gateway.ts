@@ -12,7 +12,7 @@ export class FriendshipGateway implements OnGatewayConnection {
 
 	@UseGuards(AuthGuard)
 	async handleConnection(client: any) {
-		await this.friendshipService.userConnect(client);
+		await this.friendshipService.userConnect(client, this.server);
 	}
 
 	@UseGuards(AuthGuard)
