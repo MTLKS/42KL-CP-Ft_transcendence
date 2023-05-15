@@ -15,6 +15,8 @@ interface TimeZoneProps {
   type: TimeZoneType;
 }
 
+const svgSizeRatio = 0.5;
+
 function TimeZone(props: TimeZoneProps) {
   const { position, size, type } = props;
   const app = useApp();
@@ -33,7 +35,7 @@ function TimeZone(props: TimeZoneProps) {
   const texture = useMemo(() => {
     const box = new PIXI.Graphics();
     box.beginFill(color, 0.1);
-    box.lineStyle(8, color, 1);
+    box.lineStyle(12, color, 1);
     box.drawCircle(0, 0, size.w / 2);
     box.endFill();
 
@@ -67,7 +69,13 @@ function TimeZone(props: TimeZoneProps) {
   return (
     <>
       <Sprite x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
-      <Sprite x={position.x + 75} y={position.y + 75} width={size.w - 150} height={size.h - 150} texture={iconTexture} />
+      <Sprite
+        x={position.x + size.w * (1 - svgSizeRatio) / 2}
+        y={position.y + size.h * (1 - svgSizeRatio) / 2}
+        width={size.w * svgSizeRatio}
+        height={size.h * svgSizeRatio}
+        texture={iconTexture}
+      />
     </>
   )
 }

@@ -5,19 +5,23 @@ import ProfileElo from './ProfileElo';
 import ProfileStat from './ProfileStat';
 import { UserData } from '../../../model/UserData';
 import UserContext from '../../../contexts/UserContext';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 
 interface ProfileBodyProps {
   pixelSize: number
   expanded: boolean;
   status: string;
+  onProfileClick: () => void;
 }
 
 function ProfileBody(props: ProfileBodyProps) {
-  const { myProfile } = useContext(UserContext);
-  const { pixelSize, expanded, status } = props;
+  const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
+  const { pixelSize, expanded, status, onProfileClick } = props;
   const { avatar, elo } = myProfile;
   return (
-    <div className={` flex flex-row w-full box-border transition-all duration-300 ease-in-out ${!expanded ? "h-20" : "mb-1 mt-1"}`}>
+    <div className={` flex flex-row w-full box-border transition-all duration-300 ease-in-out ${!expanded ? "h-20" : "mb-1 mt-1"}  cursor-pointer`}
+      onClick={onProfileClick}
+    >
       <div className={expanded ? 'flex-1 mr-1 bg-dimshadow transition-all' : 'w-20 h-20 aspect-square transition-all'}>
         <PixelatedImage src={avatar} pixelSize={pixelSize} className='w-full' />
       </div>

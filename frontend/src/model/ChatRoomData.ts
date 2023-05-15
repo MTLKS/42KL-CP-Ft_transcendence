@@ -1,29 +1,39 @@
-interface ChatRoomData {
-  id: string;
-  name: string;
-  ownerId: string;
-  private: boolean;
-  password: string | null;
-}
-
-interface ChatRoomMemberData {
-  channelId: string;
-  userId: string;
-  admin: boolean;
-  banned: boolean;
-  muted: boolean;
-  lastRead: Date;
-}
+import { UserData } from "./UserData";
 
 Date.prototype.toJSON = function () {
   return this.getTime().toString();
 };
 
-interface ChatRoomMessageData {
-  messageId: string;
-  senderId: string;
-  recieverId: string;
+export interface ChatroomData {
+  channelId: number;
+  channelName: string;
+  isPrivate: boolean;
+  isRoom: boolean;
+  owner: UserData | null;
+  password: string | null;
+}
+
+export interface ChatroomMessageData {
   channel: boolean;
+  channelId: number;
   message: string;
-  timestamp: Date;
+  messageId: number;
+  timeStamp: string;
+  user: UserData;
+}
+
+export interface NewMessageData {
+  messageId: number;
+  intraName: string;
+  message: string;
+}
+
+export interface MemberData {
+  user: UserData,
+  channelId: number,
+  admin: boolean,
+  banned: boolean,
+  muted: boolean,
+  lastRead: string,
+  memberId: number
 }
