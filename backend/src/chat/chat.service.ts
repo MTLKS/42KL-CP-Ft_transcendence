@@ -53,7 +53,8 @@ export class ChatService {
 			member.lastRead = new Date().toISOString();
 			await this.memberRepository.save(member);
 		}
-		server.to(CHANNEL.channelId).emit("message", NEW_MESSAGE);
+		NEW_MESSAGE.channelId = (await this.memberRepository.findOne({ where: {user: { intraName: intraName }} })).channelId
+		server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 	}
 
 	// Marks a message as read
@@ -72,7 +73,7 @@ export class ChatService {
 		const MY_MEMBER = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channelId: FRIEND_CHANNEL.channelId}, relations: ['user'] });
 		MY_MEMBER.lastRead = new Date().toISOString();
 		await this.memberRepository.save(MY_MEMBER);
-		server.to(MY_CHANNEL.channelId).emit("read", MY_MEMBER );
+		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER) );
 	}
 
 	// Retrives user's member data
