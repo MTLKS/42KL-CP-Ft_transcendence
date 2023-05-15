@@ -44,7 +44,41 @@ export class MatchService {
 				{ player2IntraName: intraName, winner: Not(intraName) }
 			]
 		});
+	
+		const MATCH_DATA = await this.getMatchesByIntraName(intraName, 100, 0);
+		console.log(MATCH_DATA);
 
-		return { win: WIN_COUNT, lose: LOSE_COUNT };
+		const wins: string [] = [];
+		const losses: string [] = [];
+		for (const match of MATCH_DATA) {
+			if (intraName === match.player1IntraName) {
+				if (intraName === match.winner)
+					wins.push(match.player2IntraName);
+				else
+					losses.push(match.player2IntraName);
+			} else {
+				if (intraName === match.winner)
+					wins.push(match.player1IntraName);
+				else
+					losses.push(match.player1IntraName);
+			}
+		}
+
+		const PUNCHING_BAG = this.getMostCommonPlayer(wins);
+		const WORST_NIGHTMARE = this.getMostCommonPlayer(losses);
+
+		return { win: WIN_COUNT, lose: LOSE_COUNT, worst_nightmare: WORST_NIGHTMARE, punching_bag: PUNCHING_BAG };
+	}
+
+	private getMostCommonPlayer(players: string[]): string | undefined {
+		const playerCount = new Map<string, number>();
+
+		for (const player of players) {
+      const count = playerCount.get(player) || 0;
+      playerCount.set(player, count + 1);
+    }
+
+    const sortedPlayers = [...playerCount.entries()].sort((a, b) => b[1] - a[1]);
+    return sortedPlayers.length > 0 ? sortedPlayers[0][0] : undefined;
 	}
 }
