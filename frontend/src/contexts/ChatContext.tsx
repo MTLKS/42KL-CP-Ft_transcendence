@@ -78,3 +78,13 @@ export const ChatMessagesComponentContext = createContext<ChatMessagesComponentC
   setMessagesComponent: (newMessagesComponent: JSX.Element[]) => {},
   setIsFirstLoad: (isFirstLoad: boolean) => {},
 });
+
+interface UnreadChatroomsContextType {
+  unreadChatrooms: number[];
+  setUnreadChatrooms: (newUnreadChatrooms: number[]) => void;
+}
+
+export const UnreadChatroomsContext = createContext<UnreadChatroomsContextType>({
+  unreadChatrooms: [],
+  setUnreadChatrooms: (newUnreadChatrooms: number[]) => {},
+});
