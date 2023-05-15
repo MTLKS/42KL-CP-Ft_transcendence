@@ -6,12 +6,13 @@ import ChatroomContent from './ChatroomContent';
 import { ChatroomData } from '../../../../model/ChatRoomData';
 
 interface ChatroomProps {
+  hasUnReadMsg: boolean;
   chatroomData: ChatroomData;
 }
 
 function Chatroom(props: ChatroomProps) {
 
-  const { chatroomData } = props;
+  const { chatroomData, hasUnReadMsg } = props;
   const { setChatBody } = useContext(ChatContext);
 
   return (
@@ -29,7 +30,7 @@ function Chatroom(props: ChatroomProps) {
       </div>
       <div className='border-box flex flex-row justify-between w-full items-center p-5 border-b-2 border-highlight/50'>
         <p className='text-highlight font-extrabold text-base truncate group-hover:underline'>{chatroomData.owner!.userName} ({chatroomData.owner!.intraName})</p>
-        {/* <ChatMsgIndicator /> */}
+        <ChatMsgIndicator hasNewMessage={hasUnReadMsg} />
       </div>
     </div>
   )

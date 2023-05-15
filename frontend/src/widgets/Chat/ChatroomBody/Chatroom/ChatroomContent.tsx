@@ -5,7 +5,7 @@ import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '.
 import { getChatroomMessages, getMemberData } from '../../../../functions/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
-import { ChatContext, ChatMessagesComponentContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatMessagesComponentContext, ChatroomMessagesContext, UnreadChatroomsContext } from '../../../../contexts/ChatContext';
 import { UserData } from '../../../../model/UserData';
 import { playNewMessageSound } from '../../../../functions/audio';
 import ChatUnreadSeparator from './ChatUnreadSeparator';
@@ -24,6 +24,7 @@ export function appendNewMessage(newMessage: ChatroomMessageData, messages: Chat
 function ChatroomContent(props: ChatroomContentProps) {
 
   const { chatroomData } = props;
+  const { unreadChatrooms, setUnreadChatrooms } = useContext(UnreadChatroomsContext);
   const { chatSocket } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
   const [allMessages, setAllMessages] = useState<ChatroomMessageData[]>([]);
@@ -35,6 +36,12 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
 
   useEffect(() => {
+    // pop off this channel id from the list of unread channels
+    if (unreadChatrooms.includes(chatroomData.channelId)) {
+      const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
+      setUnreadChatrooms(newUnreadChatrooms);
+    }
+
     // fetch message history
     fetchMessageHistory();
     // get chatroom member data
@@ -87,7 +94,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
       setAllMessages((messages) => appendNewMessage(newMessage, messages));
-      pingServerToUpdateLastRead(); // might cause issue
+      pingServerToUpdateLastRead();
       playNewMessageSound();
     });
     return () => {
@@ -122,7 +129,7 @@ function ChatroomContent(props: ChatroomContentProps) {
         messagesComponent.push(<ChatroomMessage key={messageData.messageId + new Date().toDateString()} messageData={messageData} isMyMessage={myProfile.intraName === messageData.user.intraName} />);
       }
     });
-    pingServerToUpdateLastRead();
+    if (isFirstLoad) pingServerToUpdateLastRead();
     return messagesComponent;
   }
 }

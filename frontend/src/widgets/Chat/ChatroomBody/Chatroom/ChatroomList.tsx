@@ -5,7 +5,7 @@ import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChatRoom from '../CreateChat/NewChatRoom';
-import { ChatContext } from '../../../../contexts/ChatContext';
+import { ChatContext, UnreadChatroomsContext } from '../../../../contexts/ChatContext';
 import UserContext from '../../../../contexts/UserContext';
 import { getChatroomList } from '../../../../functions/chatAPIs';
 import { ChatroomData } from '../../../../model/ChatRoomData';
@@ -25,6 +25,7 @@ function getTemporaryChatrooms(prefix: string): string[] {
 
 function ChatroomList() {
 
+  const { unreadChatrooms } = useContext(UnreadChatroomsContext);
   const { myProfile } = useContext(UserContext);
   const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
@@ -74,7 +75,7 @@ function ChatroomList() {
   }
 
   function displayChatrooms() {
-    return chatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} />);
+    return chatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />);
   }
 }
 

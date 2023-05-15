@@ -53,7 +53,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
         intraName: chatroomData.owner!.intraName,
         message: message,
       });
-      // pingServer();
       // append new message to the top of the list (index 0)
       const newMessage: ChatroomMessageData = {
         channel: false, // considering DM only for now
