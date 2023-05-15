@@ -26,5 +26,5 @@ export class ChatGateway implements OnGatewayConnection {
 	@SubscribeMessage('read')
 	async read(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
 		await this.chatService.read(client, this.server, body.channelId);
-	}
+	}	
 }

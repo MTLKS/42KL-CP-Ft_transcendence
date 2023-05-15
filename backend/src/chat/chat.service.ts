@@ -92,11 +92,16 @@ export class ChatService {
 			return USER_DATA;
 		const FRIENDSHIPS = await this.friendshipService.getFriendship(accessToken);
 		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.senderIntraName === USER_DATA.intraName || friendship.receiverIntraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" ).flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== USER_DATA.intraName);
+		const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName }}, relations: ['owner'] });
 		let channel = [];
-		for (let i = 0; i < FRIENDS.length; i++) {
-			const CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: FRIENDS[i]} }, relations: ['owner'] });
-			if (CHANNEL !== null)
-				channel.push(CHANNEL);
+		for (let friend of FRIENDS) {
+			const CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: friend} }, relations: ['owner'] });
+			if (CHANNEL === null)
+				continue ;
+			const LAST_MESSAGE = await this.messageRepository.findOne({ where: {channelId: MY_CHANNEL.channelId, user: { intraName: friend}}, order: {timeStamp: "DESC"} });
+			const MEMBER = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName}, channelId: CHANNEL.channelId}, relations: ['user'] });
+			CHANNEL["newMessage"] = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > MEMBER.lastRead;
+			channel.push(CHANNEL);
 		}
 		return this.userService.hideData(channel);
 	}
@@ -118,4 +123,5 @@ export class ChatService {
 			return { error: "Invalid channelId - you are not friends with this user" };
 		return await this.messageRepository.find({ where: [{channelId: MY_CHANNEL.channelId, user: {intraName: FRIEND_CHANNEL.owner.intraName}}, {channelId: channelId, user: {intraName: USER_DATA.intraName}}], relations: ['user'] });
 	}
+
 }

@@ -51,22 +51,22 @@ export class FriendshipService {
 	// Gets all friendship by intraName
 	async getFriendshipByIntraNAme(intraName: string): Promise<any> {
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverIntraName: intraName} });
-		for (let i = 0; i < RECEIVER.length; i++) {
-			const USER = await this.userRepository.findOne({ where: {intraName: RECEIVER[i].senderIntraName} });
+		for (let receiver of RECEIVER) {
+			const USER = await this.userRepository.findOne({ where: {intraName: receiver.senderIntraName} });
 			if (USER === null)
 				continue;
-			RECEIVER[i]['userName'] = USER.userName;
-			RECEIVER[i]['elo'] = USER.elo;
-			RECEIVER[i]['avatar'] = USER.avatar;
+			receiver['userName'] = USER.userName;
+			receiver['elo'] = USER.elo;
+			receiver['avatar'] = USER.avatar;
 		}
 		const SENDER = await this.friendshipRepository.find({ where: {senderIntraName: intraName} });
-		for (let i = 0; i < SENDER.length; i++) {
-			const USER = await this.userRepository.findOne({ where: {intraName: SENDER[i].receiverIntraName} });
+		for (let sender of SENDER) {
+			const USER = await this.userRepository.findOne({ where: {intraName: sender.receiverIntraName} });
 			if (USER === null)
 				continue;
-			SENDER[i]['userName'] = USER.userName;
-			SENDER[i]['elo'] = USER.elo;
-			SENDER[i]['avatar'] = USER.avatar;
+			sender['userName'] = USER.userName;
+			sender['elo'] = USER.elo;
+			sender['avatar'] = USER.avatar;
 		}
 		return [...RECEIVER, ...SENDER];
 	}
