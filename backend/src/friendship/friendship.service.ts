@@ -83,6 +83,9 @@ export class FriendshipService {
 			return { error: "Friendship status (ACCEPTED) is not supported - use PATCH method to edit an existing PENDING friendship to ACCEPTED friendship instead" }
 		if ((await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} })) !== null || (await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName} })) !== null)
 			return { error: "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
+		const RECEIVER = await this.userRepository.findOne({ where: {intraName: receiverIntraName} });
+		if (RECEIVER === null)
+			return { error: "ReceiverIntraName error - user does not exist" };
 		const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase(), false);
 		await this.friendshipRepository.save(NEW_FRIENDSHIP);
 		return NEW_FRIENDSHIP;
