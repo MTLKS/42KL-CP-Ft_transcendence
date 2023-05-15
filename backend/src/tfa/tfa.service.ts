@@ -12,7 +12,6 @@ export class TFAService{
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
 
 	async requestNewSecret(accessToken: string) : Promise<any> {
-		console.log("NEW!");
 		try {
 			const USER_DATA = await this.userService.getMyUserData(accessToken);
 			const DATA = await this.userRepository.findOne({ where: {intraName: USER_DATA.intraName} });

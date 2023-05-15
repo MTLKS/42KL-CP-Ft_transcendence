@@ -131,8 +131,6 @@ export class UserService {
 			accessToken = null;
 		}
 		const NEW_USER = await this.userRepository.findOne({ where: {accessToken} });
-		if (NEW_USER === null)
-			return { error: "Invalid accessToken - user information does not exists" };
 		const EXISTING = await this.userRepository.findOne({ where: {userName} });
 		if (EXISTING !== null && accessToken !== EXISTING.accessToken)
 			return { error: "Invalid username - username already exists or invalid" };
