@@ -24,8 +24,11 @@ import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
-import { gameData } from '../main';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
+import { set } from 'lodash';
+import { ErrorData } from '../contexts/ErrorContext';
+import { gameData } from '../main';
+import previewProfileContext from '../contexts/PreviewProfileContext';
 import { GameResponseDTO } from '../model/GameResponseDTO';
 
 const availableCommands = [
