@@ -163,7 +163,6 @@ function UserForm(props: UserFormProps) {
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
-      console.log(formData.get("userName"));
       try {
         Api.updateToken("TFA", tfaCode);
         await Api.patch("/user", formData).then((res) => {

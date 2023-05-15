@@ -96,7 +96,7 @@ function HomePage(props: HomePageProps) {
 
   return (
     <PreviewProfileContext.Provider value={{ currentPreviewProfile: currentPreviewProfile, setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
-      <UserContext.Provider value={{ myProfile: userData, setMyProfile: setCurrentPreviewProfile }}>
+      <UserContext.Provider value={{ myProfile: userData, setMyProfile: setUserData }}>
         <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             <div className='h-full w-full p-7'>

@@ -41,10 +41,8 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   const popoffSeparator = () => {
-    console.log("before: ", messagesComponent);
     if (separatorAtIndex === -1) return messagesComponent;
     const newMessagesComponent = messagesComponent.filter((_, index) => index !== separatorAtIndex);
-    console.log("after: ", newMessagesComponent);
     return (newMessagesComponent);
   }
 

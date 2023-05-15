@@ -9,6 +9,7 @@ import { ChatContext } from '../../../../contexts/ChatContext';
 import UserContext from '../../../../contexts/UserContext';
 import { getChatroomList } from '../../../../functions/chatAPIs';
 import { ChatroomData } from '../../../../model/ChatRoomData';
+import { FriendsContext } from '../../../../contexts/FriendContext';
 
 /**
  * @param prefix IntraId + '_tcr_'
@@ -25,12 +26,13 @@ function getTemporaryChatrooms(prefix: string): string[] {
 function ChatroomList() {
 
   const { myProfile } = useContext(UserContext);
+  const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
   const [chatrooms, setChatrooms] = useState<ChatroomData[]>([]);
 
   useEffect(() => {
     getAllChatrooms();
-  }, []);
+  }, [friends]);
 
   return (
     <div className='flex flex-col border-box h-0 flex-1 relative'>
@@ -43,7 +45,6 @@ function ChatroomList() {
         <div className='absolute bottom-0 right-0 flex flex-row gap-x-3.5 mb-5 mr-5 bg-transparent'>
           <ChatButton icon={<HiServer />} title="join channel" />
           <ChatButton icon={<FaPlusSquare />} title="new channel" onClick={() => setChatBody(<NewChatRoom type='channel' />)} />
-          <ChatButton icon={<FaPlusSquare />} title="new chat" onClick={() => setChatBody(<NewChatRoom type='dm' chatrooms={chatrooms} />)} />
         </div>
       }
     </div>
