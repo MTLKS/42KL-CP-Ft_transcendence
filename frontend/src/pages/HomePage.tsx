@@ -27,6 +27,7 @@ import Tfa from '../components/tfa';
 import { gameTick } from '../main';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
 import { set } from 'lodash';
+import { ErrorData } from '../contexts/ErrorContext';
 
 const availableCommands = [
   "sudo",
@@ -414,8 +415,7 @@ function HomePage(props: HomePageProps) {
 
     // categorized user data
     const categorizedUsers = userProfiles.map((user, index) => {
-
-      if (user.data as any === '') return userIntraNames[index];
+      if (user.data as any === '' || (user.data as ErrorData).error) return userIntraNames[index];
 
       const userData: UserData = user.data as UserData;
       let relationshipType: string = checkIfFriendPresent(myFriends, userData.intraName) ? "FRIEND" : "STRANGER";
