@@ -20,13 +20,8 @@ function Chat() {
     chatSocket.listen("message", (data: any) => {
       if (unreadChatrooms.includes(data.channelId)) return;
       unreadChatrooms.push(data.channelId);
-      setHasNewMessage(true);
     });
   }, []);
-
-  useEffect(() => {
-    console.log(unreadChatrooms);
-  }, [unreadChatrooms]);
 
   // toggle chat
   const handleToggleChat = () => {

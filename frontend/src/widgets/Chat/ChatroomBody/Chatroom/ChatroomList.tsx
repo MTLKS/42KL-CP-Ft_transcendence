@@ -25,15 +25,30 @@ function getTemporaryChatrooms(prefix: string): string[] {
 
 function ChatroomList() {
 
-  const { unreadChatrooms } = useContext(UnreadChatroomsContext);
+  const { chatSocket } = useContext(ChatContext);
+  const { unreadChatrooms, setUnreadChatrooms } = useContext(UnreadChatroomsContext);
   const { myProfile } = useContext(UserContext);
   const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
   const [chatrooms, setChatrooms] = useState<ChatroomData[]>([]);
 
+
+  useEffect(() => {
+    const newUnreadChatrooms: number[] = [];
+    chatSocket.listen("message", (data: any) => {
+      if (unreadChatrooms.includes(data.channelId)) return;
+      newUnreadChatrooms.push(data.channelId);
+      setUnreadChatrooms(newUnreadChatrooms);
+    });
+  }, []);
+
   useEffect(() => {
     getAllChatrooms();
   }, [friends]);
+
+  useEffect(() => {
+    console.log("unreadchatrooms", unreadChatrooms);
+  }, [unreadChatrooms]);
 
   return (
     <div className='flex flex-col border-box h-0 flex-1 relative'>
