@@ -3,8 +3,11 @@ import { checkTFA } from '../../functions/tfa';
 import { set } from 'lodash';
 
 interface UserFormTfaProps {
+  tfaCode: string;
+  setTfaCode: React.Dispatch<React.SetStateAction<string>>;
   tfaVerified: boolean;
   setTFAVerified: React.Dispatch<React.SetStateAction<boolean>>;
+  handleSubmit: () => void;
 }
 
 function UserFormTFAStatus(props: {tfaVerified: boolean}) {
@@ -12,19 +15,17 @@ function UserFormTFAStatus(props: {tfaVerified: boolean}) {
   // Props
   const { tfaVerified } = props;
 
-  if (tfaVerified) {
-    return (<p className='bg-accGreen text-highlight px-3 py-1'>SUCCESS!</p>)
-  }
+  if (tfaVerified) return (<p className='bg-accGreen text-highlight px-3 py-1'>SUCCESS!</p>);
   return (<p className='bg-accRed text-highlight px-3 py-1'>FAILED!</p>);
 }
 
 function UserFormTfa(props: UserFormTfaProps) {
 
   // Props
-  const { tfaVerified, setTFAVerified } = props;
+  const { tfaCode, setTfaCode, tfaVerified, setTFAVerified, handleSubmit } = props;
 
   // Hooks
-  const [tfaCode, setTfaCode] = useState<string>('');
+  // const [tfaCode, setTfaCode] = useState<string>('');
   const tfaCodeInputRef = useRef<HTMLInputElement>(null);
   const [currentDigit, setCurrentDigit] = useState<number>(0);
   const [hasResult, setHasResult] = useState<boolean>(false);
@@ -44,6 +45,12 @@ function UserFormTfa(props: UserFormTfaProps) {
       verifyTfaCode();
     }
   }, [tfaCode]);
+
+  useEffect(() => {
+    if (tfaVerified) {
+      handleSubmit();
+    }
+  }, [tfaVerified]);
 
   return (
     <div className='animate-pulse-short'>
