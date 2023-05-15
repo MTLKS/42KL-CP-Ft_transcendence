@@ -9,8 +9,9 @@ function Clock() {
   const [clockTime, setClockTime] = useState(getCurrentTime());
 
   useEffect(() => {
-    setInterval(() => setClockTime(getCurrentTime), 100);
-  })
+    const interval = setInterval(() => setClockTime(getCurrentTime), 1000);
+    return () => clearInterval(interval);
+  }, [])
 
   return (
     <div className='absolute top-0 right-0 px-5 py-7 w-fit h-fit bg-highlight rounded-bl-xl font-extrabold text-lg'>

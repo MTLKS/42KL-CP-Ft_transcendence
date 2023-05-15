@@ -38,9 +38,10 @@ function TimeZone(props: TimeZoneProps) {
     box.lineStyle(12, color, 1);
     box.drawCircle(0, 0, size.w / 2);
     box.endFill();
-
-    return app.renderer.generateTexture(box);
-  }, [size, type]);
+    const texture = app.renderer.generateTexture(box);
+    box.destroy();
+    return texture;
+  }, [size.w, size.h, type]);
 
   const iconTexture = useMemo(() => {
 
@@ -68,10 +69,11 @@ function TimeZone(props: TimeZoneProps) {
   }, [, type]);
   return (
     <>
-      <Sprite x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
+      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
       <Sprite
-        x={position.x + size.w * (1 - svgSizeRatio) / 2}
-        y={position.y + size.h * (1 - svgSizeRatio) / 2}
+        anchor={0.5}
+        x={position.x}
+        y={position.y}
         width={size.w * svgSizeRatio}
         height={size.h * svgSizeRatio}
         texture={iconTexture}

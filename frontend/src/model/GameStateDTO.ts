@@ -12,7 +12,7 @@ export interface GameEndDTO {
 }
 
 export interface GamePauseDTO {
-	abandonDate: Date
+	abandonDate: number
 }
 
 export interface GameStateDTO {
