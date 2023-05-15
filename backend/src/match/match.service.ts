@@ -68,7 +68,7 @@ export class MatchService {
 		return { win: WIN_COUNT, lose: LOSE_COUNT, worst_nightmare: WORST_NIGHTMARE, punching_bag: PUNCHING_BAG };
 	}
 
-	private getMostCommonPlayer(players: string[]): string | undefined {
+	private getMostCommonPlayer(players: string[]): string {
 		const playerCount = new Map<string, number>();
 
 		for (const player of players) {
@@ -77,6 +77,6 @@ export class MatchService {
     }
 
     const sortedPlayers = [...playerCount.entries()].sort((a, b) => b[1] - a[1]);
-    return sortedPlayers.length > 0 ? sortedPlayers[0][0] : undefined;
+    return sortedPlayers.length > 0 ? sortedPlayers[0][0] : "";
 	}
 }
