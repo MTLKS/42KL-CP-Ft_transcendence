@@ -246,7 +246,7 @@ function HomePage(props: HomePageProps) {
         newList = elements;
         const newProfileCard = <Profile expanded={true} />;
         setTopWidget(newProfileCard);
-        setCurrentPreviewProfile(newPreviewProfile);
+        setCurrentPreviewProfile(newPreviewProfile as UserData);
         setTimeout(() => {
           if (expandProfile)
             setExpandProfile(!expandProfile);
@@ -331,7 +331,7 @@ function HomePage(props: HomePageProps) {
     // iterate through the names and attempt get their user data to add as friend
     for (const friendName of friendIntraNames) {
       const friendProfile = await getProfileOfUser(friendName);
-      if (!friendProfile.data) {
+      if ((friendProfile.data as ErrorData).error) {
         errors.push({ error: friendErrors.USER_NOT_FOUND, data: friendName as string });
         continue;
       }

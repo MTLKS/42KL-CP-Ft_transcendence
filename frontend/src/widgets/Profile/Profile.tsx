@@ -13,7 +13,7 @@ interface ProfileProps {
 }
 
 function Profile(props: ProfileProps) {
-  const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
+  const { currentPreviewProfile: myProfile, setPreviewProfileFunction } = useContext(PreviewProfileContext);
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState("online");
@@ -21,7 +21,9 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
-    else setExpanded(false);
+    else {
+      setExpanded(false);
+    }
   }, [props.expanded]);
 
   useEffect(() => {
