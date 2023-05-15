@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Stage, Container, Text, Graphics, useTick, withFilters, useApp } from '@pixi/react'
+import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer } from '@pixi/react'
 import Paddle from './game_objects/Paddle';
 import { BoxSize, Offset } from '../model/GameModels';
 import Pong from './game_objects/Pong';
@@ -10,6 +10,7 @@ import GameText from './game_objects/GameText';
 import { GameDataCtx } from '../GameApp';
 import ParticlesRenderer from './game_objects/ParticlesRenderer';
 import Entities from './game_objects/Entities';
+import GameEntity, { GameBlackhole, GameBlock, GameTimeZone } from '../model/GameEntities';
 import GameParticle from '../model/GameParticle';
 import sleep from '../functions/sleep';
 import * as particles from '@pixi/particle-emitter';
@@ -62,12 +63,25 @@ function Game(props: GameProps) {
       if (particle.opacity <= 0) {
         newParticles.splice(newParticles.indexOf(particle), 1);
       }
+      let finalTimeFactor = 1;
       gameData.gameEntities.forEach((entity) => {
-        if (entity.type == "blackhole")
-          particle.setGravityAccel(entity.x, entity.y, 2);
+        if (entity instanceof GameBlackhole) {
+          const distance = Math.sqrt(
+            Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
+          );
+          if (distance < 1 || distance > 300) return;
+          particle.setGravityAccel(entity.x, entity.y, entity.magnitude);
+        }
+        if (entity instanceof GameTimeZone) {
+          const distance = Math.sqrt(
+            Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
+          );
+          if (distance < 1 || distance > entity.w / 2) return;
+          finalTimeFactor *= entity.timeFactor;
+        }
       });
       gameData.applGlobalEffectToParticle(particle);
-      particle.update();
+      particle.update(finalTimeFactor);
     });
     newParticles.push(
       new GameParticle({

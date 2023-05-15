@@ -1,10 +1,15 @@
 import SocketApi from "../api/socketApi";
 import { GameDTO } from "../model/GameDTO";
 import { GameResponseDTO } from "../model/GameResponseDTO";
-import { GameStateDTO, GameStartDTO, GameEndDTO, GamePauseDTO } from "../model/GameStateDTO";
+import {
+  GameStateDTO,
+  GameStartDTO,
+  GameEndDTO,
+  GamePauseDTO,
+} from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { clamp, debounce } from "lodash";
-import GameEntity, { GameBlackhole } from "../model/GameEntities";
+import GameEntity, { GameBlackhole, GameTimeZone } from "../model/GameEntities";
 import sleep from "../functions/sleep";
 import * as particles from "@pixi/particle-emitter";
 import GameParticle from "../model/GameParticle";
@@ -63,19 +68,19 @@ export class GameData {
 
   async joinQueue(queueType: string): Promise<GameResponseDTO> {
     this.socketApi.sendMessages("joinQueue", { queue: queueType });
-    return new Promise(resolve => {
-      this.socketApi.socket.on("gameResponse", event => {
+    return new Promise((resolve) => {
+      this.socketApi.socket.on("gameResponse", (event) => {
         resolve(event);
-      })
+      });
     });
   }
 
   async leaveQueue(): Promise<GameResponseDTO> {
-    this.socketApi.sendMessages("leaveQueue", { });
-    return new Promise(resolve => {
-      this.socketApi.socket.on("gameResponse", event => {
+    this.socketApi.sendMessages("leaveQueue", {});
+    return new Promise((resolve) => {
+      this.socketApi.socket.on("gameResponse", (event) => {
         resolve(event);
-      })
+      });
     });
   }
 
@@ -89,6 +94,12 @@ export class GameData {
     if (this.setShouldRender) this.setShouldRender?.(true);
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
+    );
+    this.gameEntities.push(
+      new GameTimeZone({ x: 1200, y: 300, w: 300, h: 300 }, 0.4)
+    );
+    this.gameEntities.push(
+      new GameTimeZone({ x: 1200, y: 600, w: 300, h: 300 }, 1.5)
     );
   }
 

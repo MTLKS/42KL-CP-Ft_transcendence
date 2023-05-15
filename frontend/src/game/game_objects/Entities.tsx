@@ -14,7 +14,7 @@ function Entities() {
         return <Blackhole key={index} x={x} y={y} w={w} h={h} />
       }
       if (entity instanceof GameTimeZone) {
-        const { x, y, w, h, speedFactor } = entity;
+        const { x, y, w, h, timeFactor: speedFactor } = entity;
         return <TimeZone key={index} position={{ x, y }} size={{ w, h }} type={speedFactor > 1 ? TimeZoneType.SPEEDUP : TimeZoneType.SLOWDOWN} />
       }
     });

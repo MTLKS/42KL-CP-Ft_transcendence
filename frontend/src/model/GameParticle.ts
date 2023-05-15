@@ -137,18 +137,22 @@ class GameParticle {
     };
   }
 
-  public update() {
+  public update(
+    timeFactor: number = 1,
+    globalGravityX: number = 0,
+    globalGravityY: number = 0
+  ) {
     if (this.opacity <= 0) return;
-    this.x += this.vx;
-    this.y += this.vy;
-    this.vx += this.ax;
-    this.vy += this.ay;
-    this.ax += this.jx;
-    this.ay += this.jy;
-    this.opacity -= this.opacityDecay;
+    this.x += this.vx * timeFactor;
+    this.y += this.vy * timeFactor;
+    this.vx += (this.ax + globalGravityX) * timeFactor;
+    this.vy += (this.ay + globalGravityY) * timeFactor;
+    this.ax += this.jx * timeFactor;
+    this.ay += this.jy * timeFactor;
+    this.opacity -= this.opacityDecay * timeFactor;
     if (this.sizeDecay != 0) {
-      this.w -= this.sizeDecay;
-      this.h -= this.sizeDecay;
+      this.w -= this.sizeDecay * timeFactor;
+      this.h -= this.sizeDecay * timeFactor;
     }
     if (this.speedDecayFactor != 0) {
       this.vx *= this.speedDecayFactor;
@@ -177,11 +181,6 @@ class GameParticle {
    * should not be used with setGravityJolt
    */
   public setGravityAccel(x: number, y: number, magnitude: number) {
-    if (!this.gravity) return;
-    const distance = Math.sqrt(
-      Math.pow(this.x - x, 2) + Math.pow(this.y - y, 2)
-    );
-    if (distance < 1 || distance > 300) return;
     this.ax = (x - this.x) * magnitude * 0.005;
     this.ay = (y - this.y) * magnitude * 0.005;
   }
