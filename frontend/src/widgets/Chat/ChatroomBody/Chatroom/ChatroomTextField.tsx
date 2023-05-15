@@ -48,7 +48,11 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
+
       e.preventDefault();
+      
+      if (message === '') return;
+
       chatSocket.sendMessages("message", {
         intraName: chatroomData.owner!.intraName,
         message: message,
