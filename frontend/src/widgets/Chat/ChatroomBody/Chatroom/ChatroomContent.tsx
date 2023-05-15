@@ -97,9 +97,6 @@ function ChatroomContent(props: ChatroomContentProps) {
       pingServerToUpdateLastRead();
       playNewMessageSound();
     });
-    return () => {
-      chatSocket.removeListener("message");
-    }
   }
 
   function displayMessages() {
