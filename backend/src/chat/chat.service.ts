@@ -110,7 +110,7 @@ export class ChatService {
 			return { error: "Invalid channelId - channel is not found" };
 		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
 			return { error: "Invalid channelId - you are not friends with this user" };
-		const MESSAGES = await this.messageRepository.find({ where: [{receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL}, {receiverChannel: { channelId: channelId}, senderChannel: MY_CHANNEL}], relations: ['senderChannel', 'receiverChannel'] });
+		const MESSAGES = await this.messageRepository.find({ where: [{receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL}, {receiverChannel: { channelId: channelId}, senderChannel: MY_CHANNEL}], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
 		return this.userService.hideData(MESSAGES);
 	}
 
