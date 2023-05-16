@@ -8,6 +8,7 @@ interface UserData {
   intraName: string;
   tfaSecret: string | null;
   userName: string;
+	winning: boolean;
 }
 
 let myProfile: UserData = {
@@ -17,7 +18,8 @@ let myProfile: UserData = {
 	intraId: 130305,
 	intraName: "wricky-t",
 	tfaSecret: null,
-	userName: "JOHNDOE"
+	userName: "JOHNDOE",
+	winning: true
 }
 
 interface UserContextProps {
