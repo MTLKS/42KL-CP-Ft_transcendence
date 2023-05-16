@@ -151,6 +151,8 @@ export class UserService {
 			return body;
 
 		if (Array.isArray(body)) {
+			if (body.length === 0)
+				return body;
 			for (let i = 0; i < body.length; i++)
 				body[i] = this.hideData(body[i]);
 			return body;

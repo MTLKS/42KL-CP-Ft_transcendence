@@ -15,7 +15,7 @@ function ChatToggle(props: ChatToggleProps) {
   const { toggleChat, expanded } = props;
 
   return (
-    <div className='flex flex-row w-full h-fit p-4 uppercase text-dimshadow bg-highlight justify-between items-center cursor-pointer' onClick={toggleChat}>
+    <div className='flex flex-row w-full h-fit p-4 uppercase text-dimshadow bg-highlight justify-between items-center cursor-pointer z-50' onClick={toggleChat}>
       <div className='flex flex-row text-xl items-center'>
         <p className='font-extrabold'>chat</p>
         <BsFillChatLeftFill className='ml-3' />

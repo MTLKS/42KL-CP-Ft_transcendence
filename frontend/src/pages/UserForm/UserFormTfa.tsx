@@ -47,6 +47,12 @@ function UserFormTfa(props: UserFormTfaProps) {
   }, [tfaCode]);
 
   useEffect(() => {
+    if (!tfaVerified) {
+      setTimeout(() => {
+        setTfaCode('');
+      }, 500);
+      tfaCodeInputRef.current?.focus();
+    }
     if (tfaVerified) {
       handleSubmit();
     }

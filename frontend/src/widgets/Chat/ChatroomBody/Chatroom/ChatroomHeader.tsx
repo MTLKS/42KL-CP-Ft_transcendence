@@ -1,6 +1,28 @@
 import React from 'react'
 import { ImEarth } from 'react-icons/im'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
+import { ChatContext, ChatroomContentContext } from '../../../../contexts/ChatContext';
+import ChatroomList from './ChatroomList';
+import { FaUser } from 'react-icons/fa';
+import { ChatroomData } from '../../../../model/ChatRoomData';
+
+interface ChatroomHeaderProps {
+  chatroomData: ChatroomData;
+}
+
+function ChatroomIcon(props: { isRoom: boolean }) {
+  
+  const { isRoom } = props;
+
+  if (!isRoom) return (<FaUser className='text-base' />);
+
+  return (<></>);
+}
+
+function ChatroomHeader(props: ChatroomHeaderProps) {
+
+  const { chatroomData } = props;
+  const { setChatBody } = useContext(ChatContext);
 
 function ChatroomHeader() {
   return (
@@ -15,6 +37,13 @@ function ChatroomHeader() {
       </ChatNavbar>
     </div>
   )
+<<<<<<< HEAD
+=======
+
+  function closeChatroom() {
+    setChatBody(<ChatroomList />);
+  }
+>>>>>>> 2ff5f774372f609a14351f6876ad82806f3ee235
 }
 
 export default ChatroomHeader

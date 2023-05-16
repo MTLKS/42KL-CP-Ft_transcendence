@@ -1,29 +1,43 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FaPaperPlane, FaGamepad, FaPlusCircle } from 'react-icons/fa'
-import { ChatContext, ChatMessagesComponentContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
-import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '../../../../model/ChatRoomData';
+import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
+import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import UserContext from '../../../../contexts/UserContext';
-import ChatroomMessage from './ChatroomMessage';
-import { set } from 'lodash';
 
 interface ChatroomTextFieldProps {
   chatroomData: ChatroomData;
   pingServer: () => void;
+  setIsFirstLoad: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function ChatroomTextField(props: ChatroomTextFieldProps) {
 
-  const { chatroomData, pingServer } = props;
-  const { separatorAtIndex, setSeparatorAtIndex, messagesComponent, setMessagesComponent, setIsFirstLoad } = useContext(ChatMessagesComponentContext);
+  const { chatroomData, pingServer, setIsFirstLoad } = props;
   const { chatSocket } = useContext(ChatContext);
   const { messages, setMessages } = useContext(ChatroomMessagesContext);
   const { myProfile } = useContext(UserContext);
   const [previousRows, setPreviousRows] = useState(1);
   const [rows, setRows] = useState(1);
   const [message, setMessage] = useState('');
+  const [isFocusing, setIsFocusing] = useState(false);
+  const [textTooLong, setTextTooLong] = useState(false);
+
+  useEffect(() => {
+    if (textTooLong) {
+      setTimeout(() => {
+        setTextTooLong(false);
+      }, 800);
+    }
+  }, [textTooLong]);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { scrollHeight, clientHeight, value } = e.target;
+
+    if (value.length > 1024) {
+      setMessage(value.slice(0, 1024));
+      setTextTooLong(true);
+      return;
+    };
 
     if (value === '') {
       setRows(1);
@@ -40,15 +54,9 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     setMessage(value);
   }
 
-  const popoffSeparator = () => {
-    if (separatorAtIndex === -1) return messagesComponent;
-    const newMessagesComponent = messagesComponent.filter((_, index) => index !== separatorAtIndex);
-    return (newMessagesComponent);
-  }
-
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-
+      
       e.preventDefault();
       
       if (message === '') return;
@@ -59,25 +67,36 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
       });
       // append new message to the top of the list (index 0)
       const newMessage: ChatroomMessageData = {
-        channel: false, // considering DM only for now
-        channelId: chatroomData.channelId,
+        senderChannel: {
+          owner: myProfile,
+          channelName: myProfile.intraName,
+          isPrivate: true,
+          isRoom: false,
+          channelId: myProfile.intraId,
+          password: null
+        },
+        receiverChannel: {
+          owner: chatroomData.owner!,
+          channelName: chatroomData.channelName,
+          isPrivate: chatroomData.isPrivate,
+          isRoom: chatroomData.isRoom,
+          channelId: chatroomData.channelId,
+          password: chatroomData.password,
+        },
+        // channel: false, // considering DM only for now
+        // channelId: chatroomData.channelId,
+        isRoom: chatroomData.isRoom,
         message: message,
         messageId: new Date().getTime(),
         timeStamp: new Date().toISOString(),
-        user: myProfile,
+        // user: myProfile,
       };
-      const newMessagesComponent = [
-        <ChatroomMessage key={"tempMessage" + newMessage.timeStamp} messageData={newMessage} isMyMessage={myProfile.intraName === newMessage.user.intraName} />,
-        ...popoffSeparator(),
-      ]
       const newMessages = [
         newMessage,
         ...messages,
       ];
-      setMessagesComponent(newMessagesComponent);
       setMessages(newMessages);
       setMessage('');
-      setSeparatorAtIndex(-1);
       setRows(1);
       setIsFirstLoad(false);
       pingServer();
@@ -86,13 +105,14 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   return (
     <div className='w-full flex flex-row bg-dimshadow/0 items-end'>
-      <div className='w-[80%] flex flex-row'>
+      <div className='w-[80%] flex flex-row relative'>
+        { isFocusing && <span className={`text-xs ${message.length === 1024 || textTooLong ? 'bg-accRed text-highlight' : 'bg-highlight text-dimshadow'} h-fit px-[1ch] font-bold absolute -top-3 right-16`}>{textTooLong ? "TEXT TOO LONG!" : `${message.length}/1024`}</span> }
         <textarea
           className='resize-none text-xl outline-none flex-1 border-highlight border-4 border-l-0 border-b-0 bg-dimshadow text-highlight p-3 scrollbar-hide whitespace-pre-line'
           rows={rows}
           value={message}
-          onBlur={() => setRows(1)}
-          onFocus={() => setRows(previousRows)}
+          onBlur={() => { setRows(1); setIsFocusing(false); }}
+          onFocus={() => { setRows(previousRows); setIsFocusing(true); } }
           onChange={handleInput}
           onKeyDown={handleKeyPress}
         >

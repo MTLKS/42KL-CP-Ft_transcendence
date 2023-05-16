@@ -59,6 +59,35 @@ function NewChatRoom(props: NewChatRoomProps) {
       return true;
     }
   }
+
+  async function handleCreateChatroom() {
+
+    // if no friend is selected, do nothing
+    if (state.members.length === 0) return;
+
+    // if chatroom already existed, do nothing
+    const chatroomExisted = chatrooms?.some(chatroom => chatroom.channelName === state.members[0] && chatroom.isRoom === false);
+    if (chatroomExisted) {
+      // TODO: set chatroom as active or just show an error message
+      setChatBody(<ChatroomList />);
+      return;
+    }
+
+    const owner = state.isChannel ? myProfile : (await getProfileOfUser(state.members[0])).data as UserData;
+
+    // currently only consider DM
+    const tempChatRoom: ChatroomData = {
+      channelId: 0,
+      channelName: state.members[0],
+      isPrivate: true,
+      isRoom: false,
+      owner: owner,
+      password: null,
+      newMessage: false,
+    }
+    localStorage.setItem(`${myProfile.intraId.toString()}_tcr_${state.members[0]}`, JSON.stringify(tempChatRoom));
+    setChatBody(<ChatroomList />);
+  }
 }
 
 export default NewChatRoom

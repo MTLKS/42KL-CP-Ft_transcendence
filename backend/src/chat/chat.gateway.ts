@@ -26,5 +26,11 @@ export class ChatGateway implements OnGatewayConnection {
 	@SubscribeMessage('read')
 	async read(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
 		await this.chatService.read(client, this.server, body.channelId);
-	}	
+	}
+
+	@UseGuards(AuthGuard)
+	@SubscribeMessage('typing')
+	async typing(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
+		await this.chatService.typing(client, this.server, body.intraName);
+	}
 }
