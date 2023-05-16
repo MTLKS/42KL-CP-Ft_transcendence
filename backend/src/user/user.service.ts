@@ -140,4 +140,14 @@ export class UserService {
 		NEW_USER[0].tfaSecret = "hidden";
 		return NEW_USER[0];
 	}
+
+	// Update user elo and winning
+	async updateUserElo(intraName: string, elo: number, winning: boolean) {
+		const USER = await this.userRepository.findOne({ where: { intraName: intraName } });
+		if (USER === undefined)
+			return;
+		USER.elo = elo;
+		USER.winning = winning;
+		this.userRepository.save(USER);
+	}
 }

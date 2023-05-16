@@ -139,9 +139,9 @@ export class GameService {
 		}
 
 		//TESTING
-		var player1 = this.queues[clientQueue].pop();
+		// var player1 = this.queues[clientQueue].pop();
 		// this.ingame.push(player1);
-		this.joinGame(player1, player1, clientQueue, server);
+		// this.joinGame(player1, player1, clientQueue, server);
 	}
 
 	async leaveQueue(client: Socket) {
@@ -163,11 +163,11 @@ export class GameService {
 		let room;
 		if (gameType === "boring"){
 			const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
-			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
+			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
 		}
 		else if (gameType === "standard"){
 			const ROOM_SETTING = new GameSetting(100,100,GameMode.POWER);
-			room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
+			room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
 		}
 		player1.socket.join(room.roomID);
 		player2.socket.join(room.roomID);

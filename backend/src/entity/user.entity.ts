@@ -32,4 +32,7 @@ export class User {
 
   @Column({ nullable: true })
   tfaSecret: string;
+
+  @Column({ default: true })
+  winning: boolean;
 }

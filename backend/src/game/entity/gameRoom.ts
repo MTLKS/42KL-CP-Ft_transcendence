@@ -6,6 +6,7 @@ import { GameDTO } from "src/dto/game.dto";
 import { GameStartDTO, GameEndDTO, GamePauseDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
 import { MatchService } from "src/match/match.service";
+import { UserService } from "src/user/user.service";
 
 export class CollisionResult{
 	collided: boolean;
@@ -47,8 +48,9 @@ export class GameRoom{
 	_players: Array<string>;
 	roomSettings: GameSetting;
 	matchService: MatchService;
+	userService: UserService;
 
-	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService){
+	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService){
 		this.roomID = player1.intraName + player2.intraName;
 		this.gameType = gameType;
 		this.player1 = player1;
@@ -71,6 +73,7 @@ export class GameRoom{
 		this.gamePaused = false;
 
 		this.matchService = matchService;
+		this.userService = userService;
 
 		//Check for game mode
 		this.roomSettings = setting;
@@ -257,12 +260,31 @@ export class GameRoom{
 		// console.log(`game ${this.roomID} paused due to player disconnect`);
 	}
 
-	endGame(server: Server, winner: string, wonBy: string) {
+	async endGame(server: Server, winner: string, wonBy: string) {
 		clearInterval(this.interval);
 		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
 		// console.log(`game ${this.roomID} ended`);
 		this.gameEnded = true;
 		this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
+
+		let loser: string;
+		if (winner === this.player1.intraName)
+			loser = this.player2.intraName;
+		else
+			loser = this.player1.intraName;
+		const WINNER = await this.userService.getUserDataByIntraName(winner);
+		const LOSER = await this.userService.getUserDataByIntraName(loser);
+
+		let winnerElo = WINNER.elo;
+		let loserElo = LOSER.elo;
+		let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
+		let change = Math.round(20 * (1 - expected));
+
+		winnerElo += change;
+		loserElo -= change;
+
+		this.userService.updateUserElo(winner, winnerElo, true);
+		this.userService.updateUserElo(loser, loserElo, false);
 	}
 
 	endGameNoMatch() {
