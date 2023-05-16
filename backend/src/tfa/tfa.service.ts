@@ -30,10 +30,13 @@ export class TFAService{
 	}
 
 	async forgotSecret(accessToken: string): Promise<any> {
+		const INTRA_DATA = await this.userService.getMyIntraData(accessToken);
+		if (INTRA_DATA.error !== undefined)
+			return { error: INTRA_DATA.error };
 		this.mailerService.sendMail({
-			to: "chuahtseyung2002@gmail.com",
+			to: INTRA_DATA.email,
 			from: "PongSH@gmail.com",
-			subject: "Forgot 2FA Secret Subject",
+			subject: "2FA Secret Recovery One-Time-Password",
 			text: "Forgot 2FA Secret Text",
 			html: '<b>Forgot 2FA Secret HTML</b>'
 		})
