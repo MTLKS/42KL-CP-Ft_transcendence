@@ -3,6 +3,7 @@ import ChatToggle from './ChatWidgets/ChatToggle'
 import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
 import { ChatContext, ChatroomsContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
+import { ChatroomMessageData } from '../../model/ChatRoomData';
 
 const CHAT_SOCKET_NAMESPACE = "chat";
 
@@ -17,9 +18,9 @@ function Chat() {
     // for receive new message
     const newUnreadChatrooms: number[] = [];
     chatSocket.connect();
-    chatSocket.listen("message", (data: any) => {
-      if (unreadChatrooms.includes(data.channelId)) return;
-      newUnreadChatrooms.push(data.channelId);
+    chatSocket.listen("message", (data: ChatroomMessageData) => {
+      if (unreadChatrooms.includes(data.senderChannel.channelId)) return;
+      newUnreadChatrooms.push(data.senderChannel.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
     return () => chatSocket.removeListener("message");

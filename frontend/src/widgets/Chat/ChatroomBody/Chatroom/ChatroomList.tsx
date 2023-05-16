@@ -7,7 +7,7 @@ import ChatEmptyState from '../../ChatEmptyState';
 import NewChatRoom from '../CreateChat/NewChatRoom';
 import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../functions/chatAPIs';
-import { ChatroomData } from '../../../../model/ChatRoomData';
+import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 
 function ChatroomList() {
@@ -20,9 +20,9 @@ function ChatroomList() {
 
   useEffect(() => {
     const newUnreadChatrooms: number[] = [...unreadChatrooms];
-    chatSocket.listen("message", (data: any) => {
-      if (unreadChatrooms.includes(data.channelId)) return;
-      newUnreadChatrooms.push(data.channelId);
+    chatSocket.listen("message", (data: ChatroomMessageData) => {
+      if (unreadChatrooms.includes(data.senderChannel.channelId)) return;
+      newUnreadChatrooms.push(data.senderChannel.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
     return () => chatSocket.removeListener("message");
