@@ -27,6 +27,7 @@ import Tfa from '../components/tfa';
 import { gameTick } from '../main';
 import previewProfileContext from '../contexts/PreviewProfileContext';
 import { CommandOptionData } from '../components/PromptField';
+import { GameResponseDTO } from '../model/GameResponseDTO';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
