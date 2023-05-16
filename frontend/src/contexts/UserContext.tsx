@@ -1,4 +1,5 @@
 import { createContext } from 'react';
+import SocketApi from '../api/socketApi';
 
 interface UserData {
   accessToken: string;
@@ -21,11 +22,13 @@ let myProfile: UserData = {
 }
 
 interface UserContextProps {
+	defaultSocket: SocketApi,
 	myProfile: UserData;
 	setMyProfile: (profile: UserData) => void;
 }
 
 const UserContext = createContext<UserContextProps>({
+	defaultSocket: new SocketApi(),
 	myProfile: myProfile,
 	setMyProfile: (profile) => { myProfile = profile }
 });

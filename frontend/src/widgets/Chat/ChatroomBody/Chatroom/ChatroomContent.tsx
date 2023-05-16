@@ -34,7 +34,6 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log(chatroomData);
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
@@ -111,8 +110,6 @@ function ChatroomContent(props: ChatroomContentProps) {
       messageToDisplay = oldMessages;
       setIsFirstLoad(false);
     }
-
-    console.log(messageToDisplay);
 
     messageToDisplay.forEach((message) => {
       if (typeof message === "string" && message === "new") {

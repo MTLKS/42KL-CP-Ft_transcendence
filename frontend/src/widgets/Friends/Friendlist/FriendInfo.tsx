@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
 import { FriendData } from '../../../model/FriendData'
 import Highlighter from '../../../components/Highlighter';
-import socketApi from '../../../api/socketApi';
+import UserContext from '../../../contexts/UserContext';
+import SocketApi from '../../../api/socketApi';
 
 interface FriendInfoProps {
   friend: FriendData,
@@ -13,7 +14,8 @@ interface FriendInfoProps {
 
 function FriendInfo(props: FriendInfoProps) {
 
-  const [onlineStatus, setOnlineStatus] = useState("");
+  // const { defaultSocket } = useContext(UserContext);
+  const [onlineStatus, setOnlineStatus] = useState("offline");
   const { friend, intraName, searchTerm } = props;
   let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
   let friendshipStatus = friend.status.toLowerCase();
@@ -23,24 +25,23 @@ function FriendInfo(props: FriendInfoProps) {
     : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
   )
 
+  useEffect(() => {
+    if (friendshipStatus === "blocked")
+      return;
+    let friendInfoSocket = new SocketApi();
+    console.log(friendIntraName);
+    friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: true });
+    friendInfoSocket.listen("statusRoom", (data: any) => {
+      if (data !== undefined && data.status !== undefined && data.intraName === friendIntraName)
+        setOnlineStatus((data.status as string).toLowerCase());
+    });
 
-  // Handle user's online/offline status
-  // useEffect(() => {
-  //   if (friend.status.toLowerCase() === "blocked")
-  //     return;
-  //   console.log(`Yo I want to check if ${friendIntraName} is online`);
-  //   socketApi.sendMessages("statusRoom", {});
-  //   socketApi.listen("statusRoom", (data: any) => {
-  //     setOnlineStatus((data.status as string).toLowerCase());
-  //     console.log(data);
-  //   });
-
-  //   return () => {
-  //     console.log("Aight thanks mate. Thanks for letting me know.");
-  //     socketApi.removeListener("statusRoom");
-  //     socketApi.sendMessages("statusRoom", { intraName: friendIntraName, joining: false});
-  //   }
-  // })
+    return () => {
+      // console.log("remove listener:", friendIntraName);
+      friendInfoSocket.removeListener("statusRoom");
+      friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: false });
+    }
+  }, [friend]);
 
   return (
     <div className='flex flex-row text-highlight'>
@@ -78,7 +79,3 @@ function FriendInfo(props: FriendInfoProps) {
 }
 
 export default FriendInfo
-
-function useEffect(arg0: () => void) {
-  throw new Error('Function not implemented.');
-}

@@ -1,6 +1,6 @@
-const NEW_MESSAGE_NOTIFICATION_SOUND = '../../assets/sounds/new-message.wav';
+import audioUrl from '../../assets/sounds/new-message.wav?url';
 
-const newMessageNotification = new Audio(NEW_MESSAGE_NOTIFICATION_SOUND);
+const newMessageNotification = new Audio(process.env.PUBLIC_URL + `/assets/sounds/new-message.wav`);
 
 export const playNewMessageSound = () => {
   newMessageNotification.addEventListener('loadedmetadata', () => {

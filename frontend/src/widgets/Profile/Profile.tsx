@@ -4,9 +4,8 @@ import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
 import SocketApi from '../../api/socketApi';
-import { status } from '../../functions/friendlist';
-import UserContext from '../../contexts/UserContext';
 import PreviewProfileContext from '../../contexts/PreviewProfileContext';
+import UserContext from '../../contexts/UserContext';
 
 interface ProfileProps {
   expanded?: boolean;
@@ -18,6 +17,7 @@ function Profile(props: ProfileProps) {
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState("online");
   const [animating, setAnimating] = useState(false);
+  const {defaultSocket} = useContext(UserContext);
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
@@ -28,18 +28,17 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     pixelatedToSmooth();
-    let socketApi: SocketApi;
     if (!myProfile.intraName) return;
-    socketApi = new SocketApi();
-    socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
-    socketApi.listen("statusRoom", (data: any) => {
-      if (data !== undefined && data.status !== undefined)
+    defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
+    defaultSocket.listen("statusRoom", (data: any) => {
+      if (data !== undefined && data.status !== undefined && data.intraName === myProfile.intraName)
         setStatus((data.status as string).toLowerCase());
     });
 
     return () => {
-      socketApi.removeListener("statusRoom");
-      socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
+      console.log("remove listener:", myProfile.intraName);
+      defaultSocket.removeListener("statusRoom");
+      defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
     }
   }, [myProfile.intraName]);
 

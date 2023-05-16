@@ -29,7 +29,6 @@ function Friendlist(props: FriendlistProps) {
   const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
-  const { myProfile } = useContext(UserContext);
 
   // Filtered Raw data
   const acceptedFriends = useMemo(() => filterFriends(friends, FriendTags.accepted), []);

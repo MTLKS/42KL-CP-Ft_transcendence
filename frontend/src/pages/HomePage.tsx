@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import Pong from './Pong'
 import Card, { CardType } from '../components/Card';
 import Terminal from './Terminal';
 import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Chat from '../widgets/Chat/Chat';
 import { UserData } from '../model/UserData';
-import { getMyProfile, getProfileOfUser } from '../functions/profile';
+import { getProfileOfUser } from '../functions/profile';
 import YoutubeEmbed from '../components/YoutubeEmbed';
 import { friendListOf, getFriendList } from '../functions/friendlist';
 import { FriendData } from '../model/FriendData';
@@ -25,10 +24,8 @@ import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
-import { set } from 'lodash';
 import { ErrorData } from '../contexts/ErrorContext';
 import { gameData } from '../main';
-import previewProfileContext from '../contexts/PreviewProfileContext';
 import { GameResponseDTO } from '../model/GameResponseDTO';
 
 const availableCommands = [
@@ -61,7 +58,7 @@ function HomePage(props: HomePageProps) {
   const [currentPreviewProfile, setCurrentPreviewProfile] = useState<UserData>(userData);
   const [elements, setElements] = useState<JSX.Element[]>([])
   const [index, setIndex] = useState(0);
-  const [shouldDiaplyGame, setShouldDiaplayGame] = useState(false);
+  const [shouldDisplayGame, setShouldDisplayGame] = useState(false);
   const [topWidget, setTopWidget] = useState(<Profile />);
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
@@ -69,6 +66,7 @@ function HomePage(props: HomePageProps) {
   const [expandProfile, setExpandProfile] = useState(false);
   const [myFriends, setMyFriends] = useState<FriendData[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
+  const defaultSocket = useMemo(() => new SocketApi(), []);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
@@ -89,20 +87,24 @@ function HomePage(props: HomePageProps) {
 
   useEffect(() => {
     initFriendshipSocket();
-    gameData.setSetShouldDisplayGame = setShouldDiaplayGame;
+    gameData.setSetShouldDisplayGame = setShouldDisplayGame;
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
       setMyFriends(newFriendsData);
     });
+
+    return () => {
+      friendshipSocket.removeListener("friendshipRoom");
+    }
   }, []);
 
   return (
     <PreviewProfileContext.Provider value={{ currentPreviewProfile: currentPreviewProfile, setPreviewProfileFunction: setCurrentPreviewProfile, setTopWidgetFunction: setTopWidget }}  >
-      <UserContext.Provider value={{ myProfile: userData, setMyProfile: setUserData }}>
-        <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
+      <UserContext.Provider value={{ defaultSocket: defaultSocket, myProfile: userData, setMyProfile: setUserData }}>
+        <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
-            {shouldDiaplyGame ? <MatrixRain></MatrixRain> :
+            {shouldDisplayGame ? <MatrixRain></MatrixRain> :
               <div className='h-full w-full p-7'>
                 {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
                 <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
@@ -237,8 +239,8 @@ function HomePage(props: HomePageProps) {
       }
 
       getProfileOfUser(wantToView).then((response) => {
-        const newPreviewProfile = response.data as UserData;
-        if (newPreviewProfile as any === '') {
+        const newPreviewProfile = response.data as any;
+        if ((newPreviewProfile as ErrorData).error) {
           errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
           newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
           setElements(appendNewCard(newList));
@@ -457,18 +459,6 @@ function HomePage(props: HomePageProps) {
     if (newSelectedFriends.length > 0)
       setLeftWidget(<FriendAction user={userData} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
-
-  /**
-   * else if (typeof user === 'object' && user.type === "FRIEND") {
-        const friend = myFriends.find(
-          friend => friend.receiverIntraName === user.user.intraName || friend.senderIntraName === user.user.intraName
-        );
-        if (belongsTotheDesireCategory(action, friend!.status))
-          newSelectedFriends.push(friend!)
-        else
-          errors.push({ error: friendErrors.INVALID_RELATIONSHIP, data: friend! as FriendData });
-      }
-   */
 
   // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
   // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
