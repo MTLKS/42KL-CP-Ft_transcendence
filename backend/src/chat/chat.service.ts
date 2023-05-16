@@ -135,4 +135,12 @@ export class ChatService {
 		await this.memberRepository.save(new Member(USER_DATA, ROOM.channelId, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
 	}
+
+	// Updates room settings
+	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, password: string): Promise<any> {
+	}
+
+	// Deletes a room
+	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
+	}
 }

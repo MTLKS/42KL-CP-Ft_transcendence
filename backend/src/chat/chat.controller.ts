@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post, Patch, Delete } from "@nestjs/common";
 import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
 import { UseGuards } from "@nestjs/common";
@@ -29,5 +29,17 @@ export class ChatController {
 	@UseGuards(AuthGuard)
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
+	}
+
+	@Patch('room')
+	@UseGuards(AuthGuard)
+	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.password);
+	}
+
+	@Delete('room')
+	@UseGuards(AuthGuard)
+	deleteRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.deleteRoom(accessToken, body.channelId);
 	}
 }
