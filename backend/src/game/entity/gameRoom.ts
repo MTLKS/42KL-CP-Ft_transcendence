@@ -85,8 +85,7 @@ export class GameRoom{
 				if (this.gameReset == true){
 					this.resetGame(server);
 					server.to(this.roomID).emit('gameLoop',
-					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-					this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
 					await this.countdown(1);
 					this.gameReset = false;
 				}
