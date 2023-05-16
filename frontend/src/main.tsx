@@ -15,7 +15,7 @@ reactRoot.render(
   // </React.StrictMode>,
 )
 
-export const gameData = new GameData();
+export const gameTick = new GameData();
 const pixiApp = new Application({
   width: 1600,
   height: 900,
@@ -27,4 +27,4 @@ const pixiApp = new Application({
 });
 
 const pixiRoot = createRoot(pixiApp.stage);
-pixiRoot.render(<GameApp pixiApp={pixiApp} gameData={gameData} />);
+pixiRoot.render(<GameApp pixiApp={pixiApp} gameData={gameTick} />);

@@ -17,8 +17,7 @@ export class Message {
 	@ManyToOne(() => User, user => user)
 	user: User;
 
-	// Change this to a ManyToOne channel relationship
-	@Column()
+	@Column({ nullable: true})
 	channelId: number;
 
 	@Column()
