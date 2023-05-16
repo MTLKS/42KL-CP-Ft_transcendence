@@ -9,7 +9,11 @@ import {
 } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { clamp, debounce } from "lodash";
-import GameEntity, { GameBlackhole, GameTimeZone } from "../model/GameEntities";
+import GameEntity, {
+  GameBlackhole,
+  GameBlock,
+  GameTimeZone,
+} from "../model/GameEntities";
 import sleep from "../functions/sleep";
 import * as particles from "@pixi/particle-emitter";
 import GameParticle from "../model/GameParticle";
@@ -93,9 +97,10 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
-    // this.gameEntities.push(
-    //   new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.1)
-    // );
+    this.gameEntities.push(new GameBlock({ x: 400, y: 500, w: 150, h: 150 }));
+    this.gameEntities.push(
+      new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.3)
+    );
     // this.gameEntities.push(
     //   new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
     // );
