@@ -21,8 +21,8 @@ export class ChatController {
 
 	@Get('dm/message/:channelID')
 	@UseGuards(AuthGuard)
-	getMyDM(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
-		return this.chatService.getMyDM(accessToken, channelId);
+	getMyDMMessages(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
+		return this.chatService.getMyDMMessages(accessToken, channelId);
 	}
 
 	@Post('room')
@@ -34,7 +34,7 @@ export class ChatController {
 	@Patch('room')
 	@UseGuards(AuthGuard)
 	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.password);
+		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
 	}
 
 	@Delete('room')
