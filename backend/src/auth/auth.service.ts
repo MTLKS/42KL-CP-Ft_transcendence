@@ -1,5 +1,4 @@
 import { UserService } from "src/user/user.service";
-import { PassportStrategy } from "@nestjs/passport";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
 import { Injectable } from "@nestjs/common";
@@ -21,14 +20,9 @@ export class AuthService {
 		}
 	}
 
+	// Redirects from google auth with user information
 	async googleAuthRedirect(req: any): Promise<any> {
-		if (!req.user) {
-			return 'No user from google'
-		}
-		return {
-			message: 'User information from google',
-			user: req.user
-		}
+		return !req.user ? 'No user from google' : req.user
 	}
 
 	// Use the code from query to get token info
