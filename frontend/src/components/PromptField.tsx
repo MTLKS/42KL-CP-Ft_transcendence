@@ -225,7 +225,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       handleCommands(words, value);
       let newHistory = [...commandHistory];
       if (commandHistory.length > 20) newHistory = newHistory.slice(1);
-      else if (commandHistory[commandHistory.length - 1] !== words[0] && words[0]) newHistory.push(words[0]);
+      else if (commandHistory[commandHistory.length - 1] !== value && value) newHistory.push(value);
       setCommandHistory(newHistory);
       setValue('');
       setHistoryIndex(-1);
