@@ -52,8 +52,6 @@ export class GameData {
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = debounce((y: number, gameRoom: string) => {
-      // console.log("sending player move");
-      console.log("game room", this.gameRoom);
       this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
     }, 1);
   }
@@ -239,7 +237,6 @@ export class GameData {
   };
 
   updatePlayerPosition(y: number) {
-    console.log("gameRoom: ", this.gameRoom);
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
     } else {
