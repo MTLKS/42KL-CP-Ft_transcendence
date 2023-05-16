@@ -57,7 +57,6 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   if (!chatMemberLastRead || !isMessagesSet) return <></>;
 
-function ChatroomContent() {
   return (
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
@@ -67,7 +66,7 @@ function ChatroomContent() {
         </div>
           <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
       </div>
-    </div>
+    </ChatroomMessagesContext.Provider>
   )
 
   async function fetchMessageHistory() {

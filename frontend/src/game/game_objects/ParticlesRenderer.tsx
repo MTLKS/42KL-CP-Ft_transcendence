@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
-import GameParticle, { GameLightningParticle } from '../../model/GameParticle';
+import GameParticle from '../../model/GameParticle';
 import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
 import { GameBlackhole } from '../../model/GameEntities';
@@ -10,7 +10,7 @@ import Worker from '../../workers/gameGraphic.worker?worker'
 
 interface ParticlesRendererProps {
   particles: GameParticle[];
-  lightningParticles: GameLightningParticle[];
+  lightningParticles: GameParticle[][];
 }
 function ParticlesRenderer(props: ParticlesRendererProps) {
   // const [particles, setParticles] = useState<GameParticle[]>([]);
@@ -103,13 +103,13 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       } else if (!gravity) {
         trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
       } else {
-        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
+        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={1} texture={textures[colorIndex]} />);
       }
     });
     lightningParticles.forEach((lightning) => {
-      lightning.particles.forEach((p) => {
+      lightning.forEach((p) => {
         const { id, x, y, w, h, colorIndex, rotRad } = p;
-        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={0.5} texture={textures[colorIndex]} />);
+        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={1} texture={textures[colorIndex]} />);
       });
     });
   }, [particles, lightningParticles]);

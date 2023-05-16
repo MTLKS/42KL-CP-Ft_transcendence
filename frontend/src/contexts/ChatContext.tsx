@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import SocketApi from "../api/socketApi";
+import { ChatroomData, ChatroomMessageData, MemberData } from "../model/ChatRoomData";
 
 interface ChatContextType {
   chatSocket: SocketApi,

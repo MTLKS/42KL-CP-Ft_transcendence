@@ -1,14 +1,17 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import ChatToggle from './ChatWidgets/ChatToggle'
 import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
 import { ChatContext, ChatroomsContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
 import { ChatroomMessageData } from '../../model/ChatRoomData';
+import { getFriendList } from '../../functions/friendlist';
+import { FriendsContext } from '../../contexts/FriendContext';
 
-const CHAT_SOCKET_NAMESPACE = "/chat";
+const CHAT_SOCKET_NAMESPACE = "chat";
 
 function Chat() {
 
+  const { setFriends } = useContext(FriendsContext);
   const [unreadChatrooms, setUnreadChatrooms] = useState<number[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [chatroomBody, setChatroomBody] = useState(<ChatroomList />);
@@ -26,8 +29,14 @@ function Chat() {
     return () => chatSocket.removeListener("message");
   }, []);
 
+  useEffect(() => {
+    if (expanded) getFriendList().then(friends => setFriends(friends.data));
+  }, [expanded]);
+
   // toggle chat
-  const handleToggleChat = () => setExpanded(!expanded);
+  const handleToggleChat = () => {
+    setExpanded(!expanded);
+  }
 
   return (
     <ChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>

@@ -95,12 +95,12 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
-    // this.gameEntities.push(
-    //   new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.4)
-    // );
-    // this.gameEntities.push(
-    //   new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 1.7)
-    // );
+    this.gameEntities.push(
+      new GameTimeZone({ x: 1200, y: 300, w: 300, h: 300 }, 0.4)
+    );
+    this.gameEntities.push(
+      new GameTimeZone({ x: 1200, y: 600, w: 300, h: 300 }, 1.5)
+    );
   }
 
   displayGame() {
@@ -222,7 +222,7 @@ export class GameData {
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
-    // console.log("isLeft: ", this.isLeft);
+    console.log("isLeft: ", this.isLeft);
     this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
       this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Chatroom from './Chatroom'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { HiServer } from 'react-icons/hi';
@@ -42,16 +42,17 @@ function ChatroomList() {
   }, [chatrooms]);
 
   return (
-    <div className='relative flex flex-col overflow-y-scroll scrollbar-hide border-box h-full'>
-      {<ChatEmptyState /> ||
-        <>
-          <Chatroom />
-          <div className='absolute bottom-0 right-0 flex flex-row gap-x-3.5 mb-5 mr-5'>
-            <ChatButton icon={<HiServer />} title="join channel" />
-            <ChatButton icon={<FaPlusSquare />} title="new channel" onClick={() => setChatBody(<NewChatRoom type='channel' />)} />
-            <ChatButton icon={<FaPlusSquare />} title="new chat" onClick={() => setChatBody(<NewChatRoom type='dm' />)} />
-          </div>
-        </>
+    <div className='flex flex-col border-box h-0 flex-1 relative'>
+      {chatrooms.length > 0
+        ? <div className='h-full w-full overflow-y-scroll scrollbar-hide'>{displayChatrooms()}</div>
+        : <ChatEmptyState />
+      }
+      {
+        chatrooms.length > 0 &&
+        <div className='absolute bottom-0 right-0 flex flex-row gap-x-3.5 mb-5 mr-5 bg-transparent'>
+          <ChatButton icon={<HiServer />} title="join channel" />
+          <ChatButton icon={<FaPlusSquare />} title="new channel" onClick={() => setChatBody(<NewChatRoom type='channel' />)} />
+        </div>
       }
     </div>
   )

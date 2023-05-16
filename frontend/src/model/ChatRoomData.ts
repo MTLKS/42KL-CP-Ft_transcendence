@@ -1,19 +1,4 @@
-export interface ChatRoomData {
-  id: string;
-  name: string;
-  ownerId: string;
-  private: boolean;
-  password: string | null;
-}
-
-export interface ChatRoomMemberData {
-  channelId: string;
-  userId: string;
-  admin: boolean;
-  banned: boolean;
-  muted: boolean;
-  lastRead: Date;
-}
+import { UserData } from "./UserData";
 
 Date.prototype.toJSON = function () {
   return this.getTime().toString();
@@ -51,5 +36,14 @@ export interface NewMessageData {
   messageId: number;
   intraName: string;
   message: string;
-  timestamp: Date;
+}
+
+export interface MemberData {
+  user: UserData,
+  channelId: number,
+  admin: boolean,
+  banned: boolean,
+  muted: boolean,
+  lastRead: string,
+  memberId: number
 }

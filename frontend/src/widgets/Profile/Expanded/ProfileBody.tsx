@@ -5,6 +5,7 @@ import ProfileElo from './ProfileElo';
 import ProfileStat from './ProfileStat';
 import { UserData } from '../../../model/UserData';
 import UserContext from '../../../contexts/UserContext';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 
 interface ProfileBodyProps {
   pixelSize: number
@@ -14,7 +15,7 @@ interface ProfileBodyProps {
 }
 
 function ProfileBody(props: ProfileBodyProps) {
-  const { myProfile } = useContext(UserContext);
+  const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
   const { pixelSize, expanded, status, onProfileClick } = props;
   const { avatar, elo } = myProfile;
   return (
