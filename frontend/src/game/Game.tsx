@@ -33,20 +33,20 @@ function Game(props: GameProps) {
       centerX: 400,
       centerY: 400,
       paddingX: 15,
-      paddingY: 70,
+      paddingY: 60,
     }),
-    new GameLightningParticle({
-      centerX: 400,
-      centerY: 400,
-      paddingX: 15,
-      paddingY: 70,
-    }),
-    new GameLightningParticle({
-      centerX: 400,
-      centerY: 400,
-      paddingX: 15,
-      paddingY: 70,
-    }),
+    // new GameLightningParticle({
+    //   centerX: 400,
+    //   centerY: 400,
+    //   paddingX: 17,
+    //   paddingY: 62,
+    // }),
+    // new GameLightningParticle({
+    //   centerX: 400,
+    //   centerY: 400,
+    //   paddingX: 15,
+    //   paddingY: 58,
+    // }),
   ]);
   const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
@@ -196,6 +196,8 @@ function Game(props: GameProps) {
       ...lightningParticles,
     ];
     newLightningParticles.forEach((lightning) => {
+      lightning.centerX = leftPaddlePosition.x + 7.5;
+      lightning.centerY = leftPaddlePosition.y;
       lightning.update();
     });
     setParticles(newParticles);
@@ -233,6 +235,7 @@ function Game(props: GameProps) {
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
       <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} />
+      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={{ x: 392.5, y: 400 }} />
       <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} />
       <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />
     </Container>

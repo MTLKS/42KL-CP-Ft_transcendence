@@ -202,6 +202,7 @@ class GameLightningParticle {
   paddingY: number;
   currentTagetX: number;
   currentTagetY: number;
+  pointIndex: number;
   constructor({
     centerX,
     centerY,
@@ -213,15 +214,25 @@ class GameLightningParticle {
     this.centerY = centerY;
     this.paddingX = paddingX;
     this.paddingY = paddingY;
-    this.currentTagetX = centerX + paddingX;
-    this.currentTagetY = centerY - paddingY;
+    this.currentTagetX = 0;
+    this.currentTagetY = 0;
+    this.pointIndex = 0;
   }
 
   public update() {
     this.particles.forEach((particle) => {
       particle.update();
     });
-    while (this.particles.length > 12) this.particles.shift();
+    this.particles.forEach((particle) => {
+      if (particle.opacity <= 0.01)
+        this.particles.splice(this.particles.indexOf(particle), 1);
+      particle.update();
+    });
+    if (this.particles.length > 12) {
+      for (let i = 0; i < this.particles.length - 12; i++) {
+        this.particles[i].opacityDecay = 0.05;
+      }
+    }
     this.addParticle();
     if (
       Math.abs(
@@ -231,27 +242,21 @@ class GameLightningParticle {
         this.currentTagetY - this.particles[this.particles.length - 1].y
       ) < 10
     ) {
-      if (
-        this.currentTagetX == this.centerX + this.paddingX &&
-        this.currentTagetY == this.centerY - this.paddingY
-      ) {
-        this.currentTagetY = this.centerY + this.paddingY;
-      } else if (
-        this.currentTagetX == this.centerX + this.paddingX &&
-        this.currentTagetY == this.centerY + this.paddingY
-      ) {
-        this.currentTagetX = this.centerX - this.paddingX;
-      } else if (
-        this.currentTagetX == this.centerX - this.paddingX &&
-        this.currentTagetY == this.centerY + this.paddingY
-      ) {
-        this.currentTagetY = this.centerY - this.paddingY;
-      } else if (
-        this.currentTagetX == this.centerX - this.paddingX &&
-        this.currentTagetY == this.centerY - this.paddingY
-      ) {
+      if (this.pointIndex == 0) {
         this.currentTagetX = this.centerX + this.paddingX;
+        this.currentTagetY = this.centerY + this.paddingY;
+      } else if (this.pointIndex == 1) {
+        this.currentTagetX = this.centerX - this.paddingX;
+        this.currentTagetY = this.centerY + this.paddingY;
+      } else if (this.pointIndex == 2) {
+        this.currentTagetX = this.centerX - this.paddingX;
+        this.currentTagetY = this.centerY - this.paddingY;
+      } else if (this.pointIndex == 3) {
+        this.currentTagetX = this.centerX + this.paddingX;
+        this.currentTagetY = this.centerY - this.paddingY;
       }
+      this.pointIndex++;
+      if (this.pointIndex > 3) this.pointIndex = 0;
     }
   }
 
@@ -261,7 +266,7 @@ class GameLightningParticle {
         new GameParticle({
           x: this.centerX + this.paddingX,
           y: this.centerY - this.paddingY,
-          opacity: 1,
+          opacity: 0.7,
           w: 10,
           h: 20 + 30 * Math.random(),
           colorIndex: 3,
@@ -269,7 +274,7 @@ class GameLightningParticle {
         })
       );
     else {
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 2; i++) {
         const lastParticle = this.particles[this.particles.length - 1];
         const newStartX =
           lastParticle.x - (lastParticle.h - 3) * Math.sin(lastParticle.rotRad);
@@ -284,7 +289,7 @@ class GameLightningParticle {
             new GameParticle({
               x: newStartX,
               y: newStartY,
-              opacity: 1,
+              opacity: 0.7,
               w: 5 + 10 * Math.random(),
               h: distance,
               colorIndex: 3,
@@ -305,7 +310,7 @@ class GameLightningParticle {
               y:
                 lastParticle.y +
                 (lastParticle.h - 3) * Math.cos(lastParticle.rotRad),
-              opacity: 1,
+              opacity: 0.7,
               w: 5 + 15 * Math.random(),
               h: 20 + 30 * Math.random(),
               colorIndex: 3,
