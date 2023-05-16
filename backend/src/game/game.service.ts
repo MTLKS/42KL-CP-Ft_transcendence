@@ -8,6 +8,7 @@ import { Player } from "./entity/player";
 import { GameResponseDTO } from "src/dto/gameResponse.dto";
 import { GameStateDTO, GameStartDTO, GameEndDTO, GamePauseDTO } from "src/dto/gameState.dto";
 import { MatchService } from "src/match/match.service";
+import { DeathGameRoom } from "./entity/deathGameRoom";
 
 //TODO : "gameState" event-> game start, game end, field effect
 
@@ -161,13 +162,15 @@ export class GameService {
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
 		let room;
-		if (gameType === "boring"){
-			const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
+		if (gameType === "boring") {
+			const ROOM_SETTING = new GameSetting(100,100,GameMode.BORING);
 			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
-		}
-		else if (gameType === "standard"){
-			const ROOM_SETTING = new GameSetting(100,100,GameMode.POWER);
+		} else if (gameType === "standard") {
+			const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
 			room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
+		} else {
+			const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
+			room = new DeathGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
 		}
 		player1.socket.join(room.roomID);
 		player2.socket.join(room.roomID);
