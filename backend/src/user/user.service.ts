@@ -147,10 +147,12 @@ export class UserService {
 
 	// Hides sensitive data
 	hideData(body: any): any {
-		if (body === undefined || body.length === 0)
+		if (body === undefined)
 			return body;
 
 		if (Array.isArray(body)) {
+			if (body.length === 0)
+				return body;
 			for (let i = 0; i < body.length; i++)
 				body[i] = this.hideData(body[i]);
 			return body;
