@@ -1,11 +1,8 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import ChatToggle from './ChatWidgets/ChatToggle'
 import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
 import { ChatContext, ChatroomsContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
-import { FriendsContext } from '../../contexts/FriendContext';
-import { ChatroomData } from '../../model/ChatRoomData';
-import { getChatroomList } from '../../functions/chatAPIs';
 
 const CHAT_SOCKET_NAMESPACE = "chat";
 
@@ -21,7 +18,6 @@ function Chat() {
     const newUnreadChatrooms: number[] = [];
     chatSocket.connect();
     chatSocket.listen("message", (data: any) => {
-      console.log("new message");
       if (unreadChatrooms.includes(data.channelId)) return;
       newUnreadChatrooms.push(data.channelId);
       setUnreadChatrooms(newUnreadChatrooms);

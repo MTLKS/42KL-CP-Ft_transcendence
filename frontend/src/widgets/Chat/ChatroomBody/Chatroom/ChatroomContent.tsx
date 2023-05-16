@@ -34,6 +34,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
 
   useEffect(() => {
+    console.log(chatroomData);
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
@@ -49,7 +50,7 @@ function ChatroomContent(props: ChatroomContentProps) {
     return () => chatSocket.removeListener("message"); // don't remove this
   }, []);
   
-  const all = useMemo(() => {
+  const messagesComponent = useMemo(() => {
     if (!chatMemberLastRead) return;
     return displayAllMessages();
   }, [allMessages.length, chatMemberLastRead]);
@@ -61,8 +62,7 @@ function ChatroomContent(props: ChatroomContentProps) {
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
         <ChatroomHeader chatroomData={chatroomData} />
         <div className='h-full overflow-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth'>
-          {/* { messagesComponent } */}
-          { all }
+          { messagesComponent }
         </div>
           <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
       </div>
@@ -112,11 +112,13 @@ function ChatroomContent(props: ChatroomContentProps) {
       setIsFirstLoad(false);
     }
 
+    console.log(messageToDisplay);
+
     messageToDisplay.forEach((message) => {
       if (typeof message === "string" && message === "new") {
         messagesComponent.push(<div ref={scrollToHereRef} key={"separator_div" + new Date().toDateString()}><ChatUnreadSeparator key={"separator" + new Date().toISOString()}/></div>);
       } else if (typeof message === "object")
-        messagesComponent.push(<ChatroomMessage key={message.messageId + new Date().toDateString()} messageData={message} isMyMessage={myProfile.intraName === message.user.intraName} />);
+        messagesComponent.push(<ChatroomMessage key={message.messageId + new Date().toDateString()} messageData={message} isMyMessage={myProfile.intraName === message.senderChannel.owner.intraName} />);
       }
     );
     pingServerToUpdateLastRead();
