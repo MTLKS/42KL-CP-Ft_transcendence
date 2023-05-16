@@ -1,4 +1,4 @@
-import React, { Fragment, Ref, createRef, forwardRef, useEffect, useImperativeHandle, useState } from 'react'
+import React, { Fragment, Ref, createRef, forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import sleep from '../functions/sleep'
 import login from '../functions/login'
 import rickroll from '../functions/rickroll'
@@ -12,7 +12,7 @@ interface offset {
 interface PromptFieldProps {
   handleCommands: (commands: string[], fullstring: string) => void;
   center: boolean;
-  availableCommands?: string[];
+  availableCommands?: CommandOptionData[];
   commandClassName?: string | null;
   focusColor?: string | null;
   capitalize?: boolean;
@@ -22,6 +22,31 @@ interface PromptFieldProps {
   showtip?: boolean;
 }
 
+interface CommandOptionDataProps {
+  command?: string;
+  options?: string[];
+  parameters?: string;
+}
+
+export class CommandOptionData {
+  command: string;
+  options: string[];
+  parameter: string;
+  constructor({ command, options, parameters }: CommandOptionDataProps) {
+    this.command = command ?? "";
+    this.options = options ?? [];
+    this.parameter = parameters ?? "";
+  }
+
+  isCommand(command: string): boolean {
+    return this.command.startsWith(command);
+  }
+
+  findOption(option: string): string | undefined {
+    return this.options.find((opt) => opt.startsWith(option));
+  }
+}
+
 const PromptField = forwardRef((props: PromptFieldProps, ref) => {
   const { handleCommands, center, availableCommands = [], commandClassName,
     focusColor, capitalize, errorClassName, wrap, enableHistory = false, showtip = false } = props;
@@ -29,6 +54,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
   const fontWidth: number = 10;
   const [value, setValue] = useState('');
   const [offset, setOffset] = useState({ top: 12, left: caretStart } as offset);
+  const [toolTipOffset, setToolTipOffset] = useState({ top: 0, left: 0 } as offset);
   const [focus, setFocus] = useState(false);
   const [commandHistory, setCommandHistory] = useState([] as string[]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -46,17 +72,28 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
   }));
 
   checkValid();
+  const lastRef = useRef<HTMLSpanElement>(null);
 
-  let spans: JSX.Element[];
+  const spans = useMemo(() => {
+    let spans: JSX.Element[] = splitValue
+      .map((word, index) =>
 
-  spans = splitValue
-    .map((word, index) =>
-      <Fragment key={index}>
-        <span className={`${spansStyles[index]} whitespace-pre`}>{word}</span>
-        &nbsp;
-      </Fragment>
-    )
-  if (splitValue.length === 1 && splitValue[0] === "") spans = [];
+        <Fragment key={index}>
+          <span ref={index === splitValue.length - 1 ? lastRef : null} className={`${spansStyles[index]} whitespace-pre`}>{word}</span>
+          &nbsp;
+        </Fragment>
+      )
+    if (splitValue.length === 1 && splitValue[0] === "") spans = [];
+    return spans;
+  }, [value]);
+
+
+  useLayoutEffect(() => {
+    if (lastRef.current) {
+      setToolTipOffset({ top: lastRef.current.offsetTop, left: lastRef.current.offsetLeft });
+    }
+  }, [lastRef.current]);
+
 
   useEffect(() => {
     if (inputRef.current) {
@@ -70,7 +107,23 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     inputRef.current!.focus();
   }, [value]);
 
-  const toolTip = availableCommands.find((command) => command.startsWith(value));
+  const { toolTipCommand, toolTipOption, toolTipParameter, toolTipDisplay } = useMemo(() => {
+    const selectCommand = availableCommands.find((command) => command.isCommand(splitValue[0]));
+    const toolTipCommand: string | undefined = selectCommand?.command;
+
+    let toolTipOption: string | undefined = undefined;
+    if (splitValue.length === 2) toolTipOption = selectCommand?.findOption(splitValue[1]);
+    let toolTipParameter: string | undefined = undefined;
+    if (splitValue.length >= 3) toolTipParameter = selectCommand?.parameter;
+
+    let toolTipDisplay: string | undefined = undefined;
+    if (splitValue.length === 1) toolTipDisplay = toolTipCommand;
+    else if (splitValue.length === 2) toolTipDisplay = toolTipOption;
+    else toolTipDisplay = toolTipParameter;
+
+    return { toolTipCommand, toolTipOption, toolTipParameter, toolTipDisplay };
+  }, [value])
+
 
   return (
     <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
@@ -106,9 +159,12 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
           onClickCapture={(e) => e.stopPropagation()}
         />
         <div className=' absolute opacity-20'
-          style={{ display: toolTip && value !== "" && showtip ? "" : "none" }}
+          style={{
+            display: toolTipDisplay && value !== "" && showtip ? "" : "none",
+            left: toolTipOffset.left, top: toolTipOffset.top
+          }}
         >
-          {toolTip}
+          {toolTipDisplay}
         </div>
         <div className={'animate-pulse absolute w-2 h-9 bg-highlight top-2'}
           style={{ left: offset.left, top: offset.top }} />
@@ -131,7 +187,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       if (index == 0) {
         let found = false;
         availableCommands.forEach((command) => {
-          if (command.startsWith(element)) {
+          if (command.isCommand(element)) {
             spansStyles.push(commandClassName ?? '');
             found = true;
             return;
@@ -195,11 +251,16 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setValue(newCommand);
       setHistoryIndex(newHistoryIndex);
     }
-    if (e.key === 'Tab' || e.key === 'ArrowRight' && toolTip) {
+    if (e.key === 'Tab' || e.key === 'ArrowRight' && toolTipCommand) {
       e.preventDefault();
-      if (toolTip) {
-        e.currentTarget.value = toolTip;
-        setValue(toolTip);
+      if (toolTipCommand && splitValue.length === 1) {
+        e.currentTarget.value = toolTipCommand;
+        setValue(toolTipCommand);
+      }
+      else if (toolTipOption && splitValue.length === 2) {
+        const finalString = toolTipCommand + ' ' + toolTipOption;
+        e.currentTarget.value = finalString;
+        setValue(finalString);
       }
     }
   }
