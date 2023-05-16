@@ -46,10 +46,6 @@ function ChatroomList() {
     getAllChatrooms();
   }, [friends]);
 
-  useEffect(() => {
-    console.log("unreadchatrooms", unreadChatrooms);
-  }, [unreadChatrooms]);
-
   return (
     <div className='flex flex-col border-box h-0 flex-1 relative'>
       {chatrooms.length > 0
@@ -75,17 +71,6 @@ function ChatroomList() {
     if (chatroomsFromDb.data.length > 0) {
       chatrooms.push(...chatroomsFromDb.data);
     }
-
-    const temporaryChatrooms = getTemporaryChatrooms(`${myProfile.intraId.toString()}_tcr_`);
-    temporaryChatrooms.forEach(chatroom => {
-      const tempChatroomData = JSON.parse(chatroom);
-      if (chatrooms.length > 0 && chatrooms.some(chatroom => chatroom.channelName === tempChatroomData.channelName && !chatroom.isRoom)) {
-        localStorage.removeItem(`${myProfile.intraId.toString()}_tcr_${tempChatroomData.channelName}`);
-        return ;
-      } else {
-        chatrooms.push(tempChatroomData);
-      }
-    });
     setChatrooms(chatrooms);
   }
 

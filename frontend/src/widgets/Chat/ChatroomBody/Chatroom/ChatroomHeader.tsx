@@ -8,6 +8,7 @@ import { ChatroomData } from '../../../../model/ChatRoomData';
 
 interface ChatroomHeaderProps {
   chatroomData: ChatroomData;
+  setIsFirstLoad: (isFirstLoad: boolean) => void;
 }
 
 function ChatroomIcon(props: { isRoom: boolean }) {
@@ -21,8 +22,7 @@ function ChatroomIcon(props: { isRoom: boolean }) {
 
 function ChatroomHeader(props: ChatroomHeaderProps) {
 
-  const { chatSocket } = useContext(ChatContext);
-  const { chatroomData } = props;
+  const { chatroomData, setIsFirstLoad } = props;
   const { setChatBody } = useContext(ChatContext);
 
   return (

@@ -11,7 +11,6 @@ function Chat() {
   const [unreadChatrooms, setUnreadChatrooms] = useState<number[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [chatroomBody, setChatroomBody] = useState(<ChatroomList />);
-  const [hasNewMessage, setHasNewMessage] = useState(false);
   const chatSocket = useMemo(() => new SocketApi(CHAT_SOCKET_NAMESPACE), []);
 
   useEffect(() => {

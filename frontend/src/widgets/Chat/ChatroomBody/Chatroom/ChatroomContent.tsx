@@ -29,7 +29,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   const { myProfile } = useContext(UserContext);
   const [allMessages, setAllMessages] = useState<ChatroomMessageData[]>([]);
   const [isMessagesSet, setIsMessagesSet] = useState<boolean>(false);
-  const [chatMemberLastRead, setChatMemberLastRead] = useState<string>();
+  const [chatMemberLastRead, setChatMemberLastRead] = useState<string>('');
   const scrollToHereRef = useRef<HTMLDivElement>(null);
   const [separatorAtIndex, setSeparatorAtIndex] = useState<number>(-1);
   const [messagesComponent, setMessagesComponent] = useState<JSX.Element[]>([]);
@@ -47,7 +47,7 @@ function ChatroomContent(props: ChatroomContentProps) {
     // get chatroom member data
     getChatroomMemberData();
     // listen for incoming messages
-    return listenForIncomingMessages();
+    listenForIncomingMessages();
   }, []);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   return (
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
-        <ChatroomHeader chatroomData={chatroomData} />
+        <ChatroomHeader chatroomData={chatroomData} setIsFirstLoad={setIsFirstLoad} />
         <div className='h-full overflow-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth'>
           { messagesComponent }
         </div>
@@ -85,10 +85,6 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function pingServerToUpdateLastRead() {
     chatSocket.sendMessages("read", { channelId: chatroomData.channelId });
-    chatSocket.listen("read", (data: MemberData) => {
-      setChatMemberLastRead(data.lastRead);
-    });
-    chatSocket.removeListener("read");
   }
 
   function listenForIncomingMessages() {
@@ -101,7 +97,7 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function displayMessages() {
 
-    if (!chatMemberLastRead) return [];
+    if (chatMemberLastRead === '' || !isMessagesSet) return [];
 
     const lastReadTime = new Date(chatMemberLastRead!);
     const oldMessages = allMessages.filter((message) => new Date(message.timeStamp) < lastReadTime);
@@ -116,6 +112,8 @@ function ChatroomContent(props: ChatroomContentProps) {
       messagesToDisplay = [...oldMessages];
     }
 
+    console.log(messagesToDisplay);
+
     let messagesComponent: JSX.Element[] = [];
     messagesToDisplay.map((message, index) => {
       if (message.type === "separator") {
@@ -126,7 +124,10 @@ function ChatroomContent(props: ChatroomContentProps) {
         messagesComponent.push(<ChatroomMessage key={messageData.messageId + new Date().toDateString()} messageData={messageData} isMyMessage={myProfile.intraName === messageData.user.intraName} />);
       }
     });
-    if (isFirstLoad) pingServerToUpdateLastRead();
+    if (isFirstLoad) {
+      console.log("isFirstLoad");
+      pingServerToUpdateLastRead();
+    }
     return messagesComponent;
   }
 }

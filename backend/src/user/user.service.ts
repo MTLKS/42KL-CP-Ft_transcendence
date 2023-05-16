@@ -147,7 +147,7 @@ export class UserService {
 
 	// Hides sensitive data
 	hideData(body: any): any {
-		if (body === undefined)
+		if (body === undefined || body.length === 0)
 			return body;
 
 		const hideUser = (user: any) => ({
