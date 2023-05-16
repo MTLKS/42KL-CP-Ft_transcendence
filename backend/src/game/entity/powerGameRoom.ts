@@ -102,6 +102,7 @@ export class PowerGameRoom extends GameRoom{
 				this.player2Score++;
 				this.lastWinner = "player2";
 			}
+			this.resetTime = Date.now();
 			this.gameReset = true;
 		}
 		

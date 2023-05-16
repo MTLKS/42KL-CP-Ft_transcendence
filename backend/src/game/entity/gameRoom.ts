@@ -34,6 +34,7 @@ export class GameRoom{
 	leftPaddle: Rect;
 	rightPaddle: Rect;
 	interval: NodeJS.Timer | null;
+	resetTime: number;
 	lastWinner: string;
 	player1Score: number;
 	player2Score: number;
@@ -84,10 +85,11 @@ export class GameRoom{
 			
 				if (this.gameReset == true){
 					this.resetGame(server);
-					server.to(this.roomID).emit('gameLoop',
-					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
-					await this.countdown(1);
-					this.gameReset = false;
+					let timer = 2;
+					let elapsedTime = (Date.now() - this.resetTime) / 1000;
+					if (elapsedTime >= timer){
+						this.gameReset = false;
+					}
 				}
 
 				else if (this.gamePaused == true){
@@ -123,6 +125,7 @@ export class GameRoom{
 				this.player2Score++;
 				this.lastWinner = "player2";
 			}
+			this.resetTime = Date.now();
 			this.gameReset = true;
 		}
 		this.gameCollisionDetection();
@@ -240,7 +243,7 @@ export class GameRoom{
 		this.gamePaused = false;
 		this.gamePauseDate = null;
 		this.gamePausePlayer = null;
-		console.log(`${player.intraName} reconnected to ${this.roomID}`);
+		// console.log(`${player.intraName} reconnected to ${this.roomID}`);
 	}
 
 	// TODO: wait for reconnect, abandon game after x seconds
@@ -251,13 +254,13 @@ export class GameRoom{
 		this.gamePauseDate = Date.now();
 		this.gamePausePlayer = pausePlayer;
 		server.to(this.roomID).emit('gameState', new GameStateDTO("GamePause", new GamePauseDTO(this.gamePauseDate)))
-		console.log(`game ${this.roomID} paused due to player disconnect`);
+		// console.log(`game ${this.roomID} paused due to player disconnect`);
 	}
 
 	endGame(server: Server, winner: string, wonBy: string) {
 		clearInterval(this.interval);
 		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
-		console.log(`game ${this.roomID} ended`);
+		// console.log(`game ${this.roomID} ended`);
 		this.gameEnded = true;
 		this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
 	}
@@ -265,7 +268,7 @@ export class GameRoom{
 	endGameNoMatch() {
 		clearInterval(this.interval);
 		this.gameEnded = true;
-		console.log(`game ${this.roomID} ended due to both players disconnect`);
+		// console.log(`game ${this.roomID} ended due to both players disconnect`);
 	}
 
 	/**

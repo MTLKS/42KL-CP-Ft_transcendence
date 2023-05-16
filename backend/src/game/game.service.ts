@@ -19,9 +19,9 @@ export class GameService {
 	
 	//Lobby variables
 	private queues = {
+		"boring": [],
 		"standard": [],
-		"power": [],
-		"sudden": []
+		"death": []
 	};
 	private connected = [];
 
@@ -139,9 +139,9 @@ export class GameService {
 		}
 
 		//TESTING
-		// var player1 = this.queues[clientQueue].pop();
+		var player1 = this.queues[clientQueue].pop();
 		// this.ingame.push(player1);
-		// this.joinGame(player1, player1, clientQueue, server);
+		this.joinGame(player1, player1, clientQueue, server);
 	}
 
 	async leaveQueue(client: Socket) {
@@ -161,11 +161,11 @@ export class GameService {
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
 		let room;
-		if (gameType === "standard"){
+		if (gameType === "boring"){
 			const ROOM_SETTING = new GameSetting(100,100,GameMode.STANDARD);
 			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
 		}
-		else if (gameType === "power"){
+		else if (gameType === "standard"){
 			const ROOM_SETTING = new GameSetting(100,100,GameMode.POWER);
 			room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService);
 		}
