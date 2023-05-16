@@ -1,15 +1,5 @@
 import { createContext } from 'react';
-
-interface UserData {
-  accessToken: string;
-  avatar: string;
-  elo: number;
-  intraId: number;
-  intraName: string;
-  tfaSecret: string | null;
-  userName: string;
-	winning: boolean;
-}
+import { UserData } from '../model/UserData';
 
 let myProfile: UserData = {
 	accessToken: "hidden",

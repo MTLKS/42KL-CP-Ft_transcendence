@@ -6,4 +6,5 @@ export interface UserData {
   accessToken: string;
   avatar: string;
   tfaSecret: string | null;
+  winning: boolean;
 }
