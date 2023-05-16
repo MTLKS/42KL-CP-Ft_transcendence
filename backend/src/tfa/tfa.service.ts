@@ -1,15 +1,15 @@
+import { MailerService } from "@nestjs-modules/mailer";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
 import { Injectable } from "@nestjs/common";
 import { authenticator } from "otplib";
-import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as qrCode from "qrcode";
 
 @Injectable()
 export class TFAService{
-	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
+	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService, private readonly mailerService: MailerService) {}
 
 	async requestNewSecret(accessToken: string) : Promise<any> {
 		try {
@@ -27,6 +27,17 @@ export class TFAService{
 		} catch {
 			return { qr: null, secretKey: null };
 		}
+	}
+
+	async forgotSecret(accessToken: string): Promise<any> {
+		this.mailerService.sendMail({
+			to: "chuahtseyung2002@gmail.com",
+			from: "PongSH@gmail.com",
+			subject: "Forgot 2FA Secret Subject",
+			text: "Forgot 2FA Secret Text",
+			html: '<b>Forgot 2FA Secret HTML</b>'
+		})
+		console.log("Sent!");
 	}
 
 	async validateOTP(accessToken: string, otp: string) : Promise<any> {
