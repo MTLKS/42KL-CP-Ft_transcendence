@@ -5,46 +5,41 @@ import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChatRoom from '../CreateChat/NewChatRoom';
-import { ChatContext, UnreadChatroomsContext } from '../../../../contexts/ChatContext';
-import UserContext from '../../../../contexts/UserContext';
+import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../functions/chatAPIs';
 import { ChatroomData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 
-/**
- * @param prefix IntraId + '_tcr_'
- * @returns temporary chatrooms
- */
-function getTemporaryChatrooms(prefix: string): string[] {
-
-  const keys = Object.keys(localStorage);
-  const prefixedKeys = keys.filter(key => key.startsWith(prefix));
-  const chatrooms = prefixedKeys.map(key => localStorage.getItem(key) as string);
-  return chatrooms;
-}
-
 function ChatroomList() {
 
   const { chatSocket } = useContext(ChatContext);
-  const { unreadChatrooms, setUnreadChatrooms } = useContext(UnreadChatroomsContext);
-  const { myProfile } = useContext(UserContext);
+  const { unreadChatrooms, setUnreadChatrooms } = useContext(ChatroomsContext);
   const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
   const [chatrooms, setChatrooms] = useState<ChatroomData[]>([]);
 
-
   useEffect(() => {
-    const newUnreadChatrooms: number[] = [];
+    const newUnreadChatrooms: number[] = [...unreadChatrooms];
     chatSocket.listen("message", (data: any) => {
       if (unreadChatrooms.includes(data.channelId)) return;
       newUnreadChatrooms.push(data.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
+    return () => chatSocket.removeListener("message");
   }, []);
 
   useEffect(() => {
     getAllChatrooms();
   }, [friends]);
+
+  useEffect(() => {
+    const newUnreadChatrooms: number[] = [...unreadChatrooms];
+    chatrooms.forEach(chatroom => {
+      if (chatroom.newMessage && !unreadChatrooms.includes(chatroom.channelId))
+        newUnreadChatrooms.push(chatroom.channelId);
+    });
+    setUnreadChatrooms(newUnreadChatrooms);
+  }, [chatrooms]);
 
   return (
     <div className='flex flex-col border-box h-0 flex-1 relative'>
