@@ -54,7 +54,6 @@ export class StatusService {
 		if (joining === undefined)
 			return server.to(intraName).emit('statusRoom', { error: "Invalid body - joining(boolean) is undefined" });
 		if (joining === true) {
-			const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 			const FRIEND_STATUS = await this.statusRepository.findOne({ where: {intraName: intraName} });
 			if (FRIEND_STATUS === null)
 				return server.to(intraName).emit('statusRoom', { error: "Invalid intraName - IntraName not found" });

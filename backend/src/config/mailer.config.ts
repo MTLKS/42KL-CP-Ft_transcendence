@@ -8,6 +8,7 @@ export const MAILER_CONFIG: MailerOptions = {
 		auth: {
 			user: process.env.GOOGLE_APP_EMAIL,
 			pass: process.env.GOOGLE_APP_PASSWORD
-		}
+		},
+		secure: true
 	}
 }
