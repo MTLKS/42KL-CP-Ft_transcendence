@@ -55,8 +55,6 @@ function ChatroomList() {
       }
     </div>
   )
-<<<<<<< HEAD
-=======
 
   // this includes the chatrooms from the database and the temporary chatrooms that are temporary stored in the local storage
   async function getAllChatrooms() {
@@ -73,7 +71,6 @@ function ChatroomList() {
   function displayChatrooms() {
     return chatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />);
   }
->>>>>>> 2ff5f774372f609a14351f6876ad82806f3ee235
 }
 
 export default ChatroomList
