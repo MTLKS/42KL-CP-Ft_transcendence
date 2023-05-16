@@ -26,7 +26,7 @@ export class AuthGuard implements CanActivate {
 			path = "Socket: " + REQUEST.nsp.name;
 		}
 
-		// console.log(LCYAN + "Authorization code:", authCode + RESET);
+		console.log(LCYAN + "Authorization code:", authCode + RESET);
 		try {
 			const ACCESS_TOKEN = CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 			console.log(BLUE + "Access token:", ACCESS_TOKEN + RESET);

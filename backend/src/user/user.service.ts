@@ -147,39 +147,27 @@ export class UserService {
 
 	// Hides sensitive data
 	hideData(body: any): any {
-		if (body === undefined || body.length === 0)
+		if (body === undefined)
 			return body;
 
-		const hideUser = (user: any) => ({
-			...user,
-			accessToken: "hidden",
-			tfaSecret: "hidden",
-		});
-
 		if (Array.isArray(body)) {
-			if (body[0].owner !== undefined)
-				return body.map((item) => ({
-					...item,
-					owner: hideUser(item.owner),
-				}));
-			else if (body[0].user !== undefined)
-				return body.map((item) => ({
-					...item,
-					user: hideUser(item.user),
-				}));
-		} else {
-			if (body.owner !== undefined) {
-				return {
-						...body,
-						owner: hideUser(body.owner),
-					};
-			}
-			else if (body.user !== undefined) {
-				return {
-					...body,
-					user: hideUser(body.user),
-				};
-			}
+			for (let i = 0; i < body.length; i++)
+				body[i] = this.hideData(body[i]);
+			return body;
 		}
+		
+		if (typeof body === "object" && body !== null) {
+			const OBJ = {};
+			for (const [key, value] of Object.entries(body)) {
+				OBJ[key] = this.hideData(value);
+				if (key === "accessToken") {
+					OBJ[key] = "hidden";
+				} else if (key === "tfaSecret") {
+					OBJ[key] = "hidden";
+				}
+			}
+			return OBJ;
+		}
+		return body;
 	}
 }
