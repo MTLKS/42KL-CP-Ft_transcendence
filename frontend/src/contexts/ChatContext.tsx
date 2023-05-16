@@ -57,13 +57,11 @@ export const ChatMemberContext = createContext<ChatMemberContextType>({
 });
 
 interface ChatroomsContextType {
-  chatrooms: ChatroomData[],
   unreadChatrooms: number[];
   setUnreadChatrooms: (newUnreadChatrooms: number[]) => void;
 }
 
 export const ChatroomsContext = createContext<ChatroomsContextType>({
-  chatrooms: [],
   unreadChatrooms: [],
   setUnreadChatrooms: (newUnreadChatrooms: number[]) => {},
 });
