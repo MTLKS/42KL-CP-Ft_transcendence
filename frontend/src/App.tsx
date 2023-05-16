@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import login, { checkAuth } from "./functions/login";
@@ -6,24 +6,22 @@ import HomePage from "./pages/HomePage";
 import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./functions/profile";
 import { UserData } from "./model/UserData";
-import { update } from "lodash";
 
 function App() {
   const [logged, setLogged] = useState(false);
   const [newUser, setNewUser] = useState(false);
   const [userData, setUserData] = useState<UserData>({} as UserData);
-  const [updateUser, setUpdateUser] = useState(false);
 
   useEffect(() => {
     checkIfLoggedIn();
   }, []);
 
   let page = <Login />;
-  if (newUser || updateUser) {
-    page = <UserForm userData={userData} isUpdatingUser={updateUser} setIsUpdatingUser={setUpdateUser} />;
+  if (newUser) {
+    page = <UserForm userData={userData} />;
   }
   else if (logged) {
-    page = <HomePage setUserData={setUserData} setUpdateUser={setUpdateUser} userData={userData} />;
+    page = <HomePage setNewUser={setNewUser} setUserData={setUserData} userData={userData} />;
   }
 
   return (

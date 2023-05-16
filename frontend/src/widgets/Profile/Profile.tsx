@@ -6,14 +6,13 @@ import RecentMatches from './RecentMatches/RecentMatches';
 import SocketApi from '../../api/socketApi';
 import { status } from '../../functions/friendlist';
 import UserContext from '../../contexts/UserContext';
-import PreviewProfileContext from '../../contexts/PreviewProfileContext';
 
 interface ProfileProps {
   expanded?: boolean;
 }
 
 function Profile(props: ProfileProps) {
-  const { currentPreviewProfile: myProfile, setPreviewProfileFunction } = useContext(PreviewProfileContext);
+  const { myProfile } = useContext(UserContext);
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState("online");
@@ -21,9 +20,7 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
-    else {
-      setExpanded(false);
-    }
+    else setExpanded(false);
   }, [props.expanded]);
 
   useEffect(() => {
@@ -43,13 +40,11 @@ function Profile(props: ProfileProps) {
     }
   }, [myProfile.intraName]);
 
-  return (
-    <div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
-      <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
-      <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} onProfileClick={onProfileClick} />
-      <RecentMatches expanded={expanded} />
-    </div>
-  );
+  return (<div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
+    <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} onProfileClick={onProfileClick} />
+    <RecentMatches expanded={expanded} />
+  </div>);
 
   async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;

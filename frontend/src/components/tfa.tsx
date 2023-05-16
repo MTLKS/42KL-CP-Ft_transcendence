@@ -1,11 +1,7 @@
 import { getTFA, removeTFA, checkTFA } from '../functions/tfa';
 import { ITFAData } from '../model/TfaData';
-import React, { useContext, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Card, { CardType } from './Card';
-import UserContext from '../contexts/UserContext';
-import { getMyProfile } from '../functions/profile';
-import { set, update } from 'lodash';
-import { UserData } from '../model/UserData';
 
 interface TFAProps {
 	commands: string[];
@@ -17,8 +13,7 @@ enum TFACommands {
 	unset,
 	exist,
 	success,
-	fail,
-	notset
+	fail
 }
 
 function help() {
@@ -34,15 +29,9 @@ function help() {
 	)
 }
 
-async function updateMyProfile(setProfile: (profile: UserData) => void) {
-	const profile = ((await getMyProfile()).data as UserData);
-	setProfile(profile);
-}
-
 function Tfa(props: TFAProps) {
 
 	const { commands } = props;
-	const { setMyProfile } = useContext(UserContext);
 	const [tfa, setTfa] = React.useState<ITFAData>({} as ITFAData);
 	const [result, setResult] = React.useState<TFACommands>(TFACommands.exist);
 
@@ -51,21 +40,19 @@ function Tfa(props: TFAProps) {
 			getTFA().then((data) => {
 				setTfa(data);
 				setResult(data.qr === null && data.secretKey === null ? TFACommands.exist : TFACommands.set)
-				updateMyProfile(setMyProfile);
 			})
 		}, [])
 	} else if (commands.length === 3 && commands[1] === "unset" && commands[2].length === 6 && commands[2].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
 			setResult(TFACommands.fail)
 			removeTFA(commands[2]).then(() => {
-				setResult(TFACommands.unset);
-				updateMyProfile(setMyProfile);
+				setResult(TFACommands.unset)
 			})
 		}, [])
 	} else if (commands.length === 2 && commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
-			checkTFA(commands[1]).then((res) => {
-				setResult(res.error !== undefined ? TFACommands.notset : res.boolean ? TFACommands.success : TFACommands.fail)
+			checkTFA(commands[1]).then((data) => {
+				setResult(data.boolean ? TFACommands.success : TFACommands.fail)
 			})
 		}, [])
 	} else {
@@ -78,7 +65,7 @@ function Tfa(props: TFAProps) {
 				<figure>
 					<p className='text-center'>Scan QR code with your Google Authenticator app</p>
 					<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
-					<p className='text-center'> or use secret key: {tfa.secretKey}</p>
+					<p className='text-center'> SECRET: {tfa.secretKey}</p>
 				</figure>
 			</Card>
 		);
@@ -90,8 +77,6 @@ function Tfa(props: TFAProps) {
 		return (<Card type={CardType.SUCCESS}><p>TFA OTP is correct</p></Card>);
 	} else if (result === TFACommands.fail) {
 		return (<Card type={CardType.ERROR}><p>TFA OTP is incorrect</p></Card>);
-	} else if (result === TFACommands.notset) {
-		return (<Card type={CardType.ERROR}><p>TFA is not set</p></Card>);
 	}
 	return help();
 }

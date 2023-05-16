@@ -24,7 +24,7 @@ import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
-import { gameTick } from '../main';
+import { gameData } from '../main';
 import previewProfileContext from '../contexts/PreviewProfileContext';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
@@ -59,7 +59,7 @@ function HomePage(props: HomePageProps) {
   const [currentPreviewProfile, setCurrentPreviewProfile] = useState<UserData>(userData);
   const [elements, setElements] = useState<JSX.Element[]>([])
   const [index, setIndex] = useState(0);
-  const [startMatch, setStartMatch] = useState(false);
+  const [shouldDiaplyGame, setShouldDiaplayGame] = useState(false);
   const [topWidget, setTopWidget] = useState(<Profile />);
   const [midWidget, setMidWidget] = useState(<MatrixRain />);
   const [botWidget, setBotWidget] = useState(<Chat />);
@@ -87,6 +87,7 @@ function HomePage(props: HomePageProps) {
 
   useEffect(() => {
     initFriendshipSocket();
+    gameData.setSetShouldDisplayGame = setShouldDiaplayGame;
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
@@ -99,20 +100,22 @@ function HomePage(props: HomePageProps) {
       <UserContext.Provider value={{ myProfile: currentPreviewProfile, setMyProfile: setCurrentPreviewProfile }}>
         <FriendsContext.Provider value={{ friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
-            <div className='h-full w-full p-7'>
-              {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-              <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
-                <div className='h-full flex-1'>
-                  {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} startMatch={startMatch} />}
-                </div>
-                <div className=' bg-highlight h-full w-1' />
-                <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
-                  {topWidget}
-                  {midWidget}
-                  {botWidget}
+            {shouldDiaplyGame ? <MatrixRain></MatrixRain> :
+              <div className='h-full w-full p-7'>
+                {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
+                <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
+                  <div className='h-full flex-1'>
+                    {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+                  </div>
+                  <div className=' bg-highlight h-full w-1' />
+                  <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+                    {topWidget}
+                    {midWidget}
+                    {botWidget}
+                  </div>
                 </div>
               </div>
-            </div>
+            }
           </SelectedFriendContext.Provider>
         </FriendsContext.Provider>
       </UserContext.Provider>
@@ -129,24 +132,20 @@ function HomePage(props: HomePageProps) {
         newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
       case "display":
-        if (!startMatch)
-          setStartMatch(true);
+        gameData.displayGame();
         break;
       case "start":
-        gameTick.startGame();
+        gameData.startGame();
         break;
       case "queue":
-        gameTick.joinQueue(command[1]);
-        break;
+        handleQueueCommand(command[1], newList);
+        return;
       case "dequeue":
-        gameTick.leaveQueue();
-        break;
+        handleDequeueCommand(newList);
+        return;
       case "end":
-        if (startMatch) {
-          const canvas = document.getElementById('pixi') as HTMLCanvasElement;
-          canvas.style.display = "none";
-          setStartMatch(false);
-        }
+        gameData.stopDisplayGame();
+        gameData.endGame();
         break;
       case "profile":
         handleProfileCommand(command);
@@ -422,6 +421,22 @@ function HomePage(props: HomePageProps) {
       newList = appendNewCard(<HelpCard title="friend" usage="friend <option>" option="options" commandOptions={friendCommands} key={"friendhelp" + index} />);
     setElements(newList);
     return newList;
+  }
+
+  async function handleQueueCommand(argument: string, newList: JSX.Element[]) {
+    let response: GameResponseDTO = await gameData.joinQueue(argument);
+    if (response.type === "success")
+      newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+    else
+      newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+    setElements(newList);
+  }
+
+  async function handleDequeueCommand(newList: JSX.Element[]) {
+    let response: GameResponseDTO = await gameData.leaveQueue();
+    if (response.type === "success")
+      newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+    setElements(newList);
   }
 }
 

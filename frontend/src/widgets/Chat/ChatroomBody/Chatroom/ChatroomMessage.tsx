@@ -1,29 +1,14 @@
-import React, { useEffect } from 'react'
-import { ChatroomMessageData } from '../../../../model/ChatRoomData'
+import React from 'react'
 
-interface ChatroomMessageProps {
-  messageData: ChatroomMessageData;
-  isMyMessage: boolean;
-}
-
-function convertDatetoString(ISOString: string) {
-  const date = new Date(ISOString);
-  const formattedDateString = date.toLocaleString();
-  return formattedDateString;
-}
-
-function ChatroomMessage(props: ChatroomMessageProps) {
-
-  const { messageData, isMyMessage } = props;
-
+function ChatroomMessage() {
   return (
-    <div className={`flex flex-col ${isMyMessage ? 'items-end ml-auto' : 'items-start'} w-[90%] box-border gap-y-1`}>
+    <div className='flex flex-col items-start w-[90%] gap-y-1'>
       {/** TODO: Depending on the sender message, change style */}
-      <p className={`text-xs font-normal ${ isMyMessage ? 'bg-accCyan text-highlight' : 'bg-highlight text-dimshadow' } w-fit cursor-pointer px-1`}>{ messageData.user.userName }</p>
-      <p className={`w-full break-all ${ isMyMessage ? 'text-right' : 'text-left' } text-base font-medium text-highlight select-text selection:bg-highlight selection:text-dimshadow whitespace-pre`}>
-        { messageData.message }
+      <p className='text-xs font-normal bg-highlight w-fit text-dimshadow cursor-pointer px-1'>pecking duck</p>
+      <p className='w-full break-all text-left text-base font-medium text-highlight select-text selection:bg-highlight selection:text-dimshadow'>
+        ROCK & STONE, BROTHERS! ROCK & STONE! LEAVE NO DWARF BEHIND!
       </p>
-      <p className='text-highlight/50 text-xs font-normal'>{ convertDatetoString(messageData.timeStamp) }</p>
+      <p className='text-highlight/50 text-xs font-normal'>12/23/23 04:42pm</p>
     </div>
   )
 }

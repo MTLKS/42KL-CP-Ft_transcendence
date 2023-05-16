@@ -19,6 +19,7 @@ function UserFormAvatar(props: UserFormAvatarProps) {
   }
 
   const handleChangeAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let ext;
     const reader = new FileReader();
 
     // define a callback function to be called when the file is loaded
@@ -27,6 +28,10 @@ function UserFormAvatar(props: UserFormAvatarProps) {
         setAvatar(reader.result as string);
       }
     };
+    ext = e.target.files![0].name.split('.').pop();
+    if (ext === undefined)
+      ext = 'jpeg';
+    setFileExtension(ext);
     reader.readAsDataURL(e.target.files![0]);
   }
 

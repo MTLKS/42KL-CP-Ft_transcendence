@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import FriendlistTitle from './FriendlistTitle'
 import EmptyFriendlist from './EmptyFriendlist';
 import { UserData } from '../../../model/UserData';
@@ -7,10 +7,8 @@ import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
 import { FriendsContext } from '../../../contexts/FriendContext';
-import UserContext from '../../../contexts/UserContext';
 
 interface FriendlistProps {
-  friends: FriendData[]; // need to be changed to compulsory
   userData: UserData;
   onQuit: () => void;
 }
@@ -18,7 +16,8 @@ interface FriendlistProps {
 function Friendlist(props: FriendlistProps) {
 
   // Props
-  const { friends, userData, onQuit } = props;
+  const { userData, onQuit } = props;
+  const { friends } = useContext(FriendsContext);
 
   // Use Hooks
   const [inputValue, setInputValue] = useState("");
@@ -29,19 +28,18 @@ function Friendlist(props: FriendlistProps) {
   const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
-  const { myProfile } = useContext(UserContext);
 
   // Filtered Raw data
-  const acceptedFriends = useMemo(() => filterFriends(friends, FriendTags.accepted), []);
-  const pendingFriends = useMemo(() => filterFriends(friends, FriendTags.pending), []);
-  const blockedFriends = useMemo(() => filterFriends(friends, FriendTags.blocked), []);
-  const sortedFriends = useMemo(() => acceptedFriends.concat(pendingFriends, blockedFriends), []);
+  const acceptedFriends = filterFriends(friends, FriendTags.accepted);
+  const pendingFriends = filterFriends(friends, FriendTags.pending);
+  const blockedFriends = filterFriends(friends, FriendTags.blocked);
+  const sortedFriends = acceptedFriends.concat(pendingFriends, blockedFriends);
 
   // convert sorted friends into lines
-  const lines: JSX.Element[] = useMemo(() => createFriendlistComponents(sortedFriends), [sortedFriends]);
+  const lines: JSX.Element[] = createFriendlistComponents(sortedFriends);
 
   // this should run when the component is mounted
-  useEffect(() => { 
+  useEffect(() => {
     handleResize();
     focusOnInput();
     observerSetup();
@@ -74,7 +72,7 @@ function Friendlist(props: FriendlistProps) {
       <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
         {
           friends.length === 0
-            ? <EmptyFriendlist userData={userData}/>
+            ? <EmptyFriendlist />
             : lines.slice(startingIndex, endingIndex)
         }
       </div>
@@ -123,7 +121,7 @@ function Friendlist(props: FriendlistProps) {
     let targetCategory: FriendData[] = [];
     let components: JSX.Element[] = [];
 
-    if (sortedFriends.length === 0) return [<EmptyFriendlist userData={userData} />];
+    if (sortedFriends.length === 0) return [<EmptyFriendlist />];
 
     components.push(
       <FriendlistEmptyLine key="el0" />,

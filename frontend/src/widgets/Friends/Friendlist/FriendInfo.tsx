@@ -53,11 +53,7 @@ function FriendInfo(props: FriendInfoProps) {
       </div>
       <FriendlistSeparator />
       <div className='w-[9ch]'>
-        {
-          friendshipStatus === "blocked"
-            ? <span className='text-highlight bg-accRed whitespace-pre'> HIDDEN </span>
-            : <Highlighter text={ friend.elo.toString()} searchTerm={searchTerm} />
-        }
+        <Highlighter text={friend.elo.toString()} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
