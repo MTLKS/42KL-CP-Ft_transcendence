@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Param } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post } from "@nestjs/common";
 import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
 import { UseGuards } from "@nestjs/common";
@@ -23,5 +23,11 @@ export class ChatController {
 	@UseGuards(AuthGuard)
 	getMyDM(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
 		return this.chatService.getMyDM(accessToken, channelId);
+	}
+
+	@Post('room')
+	@UseGuards(AuthGuard)
+	createRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.createRoom(accessToken, body);
 	}
 }

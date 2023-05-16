@@ -13,10 +13,7 @@ export class FriendshipService {
 
 	// User connect to friendship socket
 	async userConnect(client: any, server: any): Promise<any> {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
-		client.join(USER_DATA.intraName);
+		client.join((await this.userService.getMyUserData(client.handshake.headers.authorization)).intraName);
 	}
 
 	// User send friend request to friendship room
@@ -24,8 +21,6 @@ export class FriendshipService {
 		if (intraName === undefined)
 			return { error: "Invalid body - body must include intraName(string)" };
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
 		client.join(intraName);
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} });
 		if (FRIENDSHIP === null)
@@ -74,8 +69,6 @@ export class FriendshipService {
 	// Creates a new friendship
 	async newFriendship(accessToken: string, receiverIntraName: string, status: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
 		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
@@ -94,8 +87,6 @@ export class FriendshipService {
 	// Updates a friendship
 	async updateFriendship(accessToken: string, receiverIntraName: string, status: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
 		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
@@ -141,8 +132,6 @@ export class FriendshipService {
 	// Deletes a friendship
 	async	deleteFriendship(accessToken: string, receiverIntraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
 		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, "ACCEPTED");
 		if (ERROR)
 			return ERROR;
@@ -157,8 +146,6 @@ export class FriendshipService {
 	// Returns current friendship with a user
 	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
 		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, "ACCEPTED");
 		if (ERROR)
 			return ERROR;

@@ -58,8 +58,6 @@ export class UserService {
 		if (intraName === undefined)
 			return { error: "Invalid body - body must include intraName(string)" };
 		const USER_DATA = await this.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return USER_DATA;
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
 			return { error: "Invalid intraName - intraName does not exist" };

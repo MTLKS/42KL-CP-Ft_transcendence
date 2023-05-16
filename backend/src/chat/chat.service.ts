@@ -15,8 +15,6 @@ export class ChatService {
 	// Used to connect to own room
 	async userConnect(client: any): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return;
 		let dmRoom = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false} });
 		if (dmRoom === null)
 			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false));
@@ -26,8 +24,6 @@ export class ChatService {
 	// Used to send message to a room
 	async message(client: any, server: any, intraName: string, message: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return;
 		const MY_ROOM = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false}, relations: ['owner'] });
 		if (message === undefined || intraName === undefined)
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid body - body must include intraName(string) and message(string)" } );
@@ -60,8 +56,6 @@ export class ChatService {
 	// Marks a message as read
 	async read(client: any, server: any, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return;
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false}, relations: ['owner'] });
 		if (MY_CHANNEL === null)
 			return;
@@ -79,8 +73,6 @@ export class ChatService {
 	// Retrives user's member data
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return;
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName }, channelId: channelId}, relations: ['user'] });
 		return MEMBER_DATA === null ? { error: "Invalid channelId - member is not found in that channelId" } : this.userService.hideData(MEMBER_DATA);
 	} 
@@ -88,8 +80,6 @@ export class ChatService {
 	// Retrives all DM of the user
 	async getAllDMChannel(accessToken: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return USER_DATA;
 		const FRIENDSHIPS = await this.friendshipService.getFriendship(accessToken);
 		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.senderIntraName === USER_DATA.intraName || friendship.receiverIntraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" ).flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== USER_DATA.intraName);
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName }}, relations: ['owner'] });
@@ -111,8 +101,6 @@ export class ChatService {
 		if (channelId === undefined)
 			return { error: "Invalid body - body must include channelId(number)" };
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		if (USER_DATA.error !== undefined)
-			return USER_DATA;
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName}}, relations: ['owner'] });
 		if (MY_CHANNEL === null)
 			return { error: "Invalid intraname - No Member found for user" };
@@ -123,5 +111,11 @@ export class ChatService {
 			return { error: "Invalid channelId - you are not friends with this user" };
 		const MESSAGES = await this.messageRepository.find({ where: [{channelId: MY_CHANNEL.channelId, user: {intraName: FRIEND_CHANNEL.owner.intraName}}, {channelId: channelId, user: {intraName: USER_DATA.intraName}}], relations: ['user'] });
 		return this.userService.hideData(MESSAGES);
+	}
+
+	// Creates a new room
+	async createRoom(accessToken: string, roomName: string): Promise<any> {
+		const USER_DATA
+		const ROOM = new Channel()
 	}
 }
