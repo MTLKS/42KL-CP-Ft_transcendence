@@ -67,12 +67,29 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
       });
       // append new message to the top of the list (index 0)
       const newMessage: ChatroomMessageData = {
-        channel: false, // considering DM only for now
-        channelId: chatroomData.channelId,
+        senderChannel: {
+          owner: myProfile,
+          channelName: myProfile.intraName,
+          isPrivate: true,
+          isRoom: false,
+          channelId: myProfile.intraId,
+          password: null
+        },
+        receiverChannel: {
+          owner: chatroomData.owner!,
+          channelName: chatroomData.channelName,
+          isPrivate: chatroomData.isPrivate,
+          isRoom: chatroomData.isRoom,
+          channelId: chatroomData.channelId,
+          password: chatroomData.password,
+        },
+        // channel: false, // considering DM only for now
+        // channelId: chatroomData.channelId,
+        isRoom: chatroomData.isRoom,
         message: message,
         messageId: new Date().getTime(),
         timeStamp: new Date().toISOString(),
-        user: myProfile,
+        // user: myProfile,
       };
       const newMessages = [
         newMessage,

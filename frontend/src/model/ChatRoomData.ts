@@ -14,13 +14,22 @@ export interface ChatroomData {
   newMessage: boolean;
 }
 
+export interface ChannelData {
+  owner: UserData,
+  channelName: string,
+  isPrivate: boolean,
+	password: null | string,
+	isRoom: boolean,
+	channelId: number
+}
+
 export interface ChatroomMessageData {
-  channel: boolean;
-  channelId: number;
+  senderChannel: ChannelData;
+  receiverChannel: ChannelData;
+  isRoom: boolean;
   message: string;
   messageId: number;
   timeStamp: string;
-  user: UserData;
 }
 
 export interface NewMessageData {
