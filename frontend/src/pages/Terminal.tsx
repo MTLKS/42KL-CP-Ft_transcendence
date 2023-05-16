@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import PromptField from '../components/PromptField'
+import PromptField, { CommandOptionData } from '../components/PromptField'
 import ScrollView from '../components/ScrollView'
 import Card from '../components/Card'
 import login from '../functions/login'
@@ -10,7 +10,7 @@ import Clock from '../widgets/Clock'
 import Game from '../game/Game'
 import GameWindow from '../game/GameWindow'
 interface TerminalProps {
-  availableCommands: string[];
+  availableCommands: CommandOptionData[];
   handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
   startMatch: boolean;
