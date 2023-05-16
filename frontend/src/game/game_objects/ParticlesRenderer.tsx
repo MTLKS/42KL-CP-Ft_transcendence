@@ -106,7 +106,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     lightningParticles.forEach((lightning) => {
       lightning.particles.forEach((p) => {
         const { id, x, y, w, h, colorIndex, rotRad, opacity } = p;
-        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={opacity} texture={textures[colorIndex]} />);
+        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={h > 5 ? opacity : 0} texture={textures[colorIndex]} />);
       });
     });
   }, [particles, lightningParticles]);

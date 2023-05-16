@@ -243,17 +243,25 @@ class GameLightningParticle {
       ) < 10
     ) {
       if (this.pointIndex == 0) {
-        this.currentTagetX = this.centerX + this.paddingX;
-        this.currentTagetY = this.centerY + this.paddingY;
+        this.currentTagetX =
+          this.centerX + this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY + this.paddingY + 5 * (Math.random() - 0.5);
       } else if (this.pointIndex == 1) {
-        this.currentTagetX = this.centerX - this.paddingX;
-        this.currentTagetY = this.centerY + this.paddingY;
+        this.currentTagetX =
+          this.centerX - this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY + this.paddingY + 5 * (Math.random() - 0.5);
       } else if (this.pointIndex == 2) {
-        this.currentTagetX = this.centerX - this.paddingX;
-        this.currentTagetY = this.centerY - this.paddingY;
+        this.currentTagetX =
+          this.centerX - this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY - this.paddingY + 5 * (Math.random() - 0.5);
       } else if (this.pointIndex == 3) {
-        this.currentTagetX = this.centerX + this.paddingX;
-        this.currentTagetY = this.centerY - this.paddingY;
+        this.currentTagetX =
+          this.centerX + this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY - this.paddingY + 5 * (Math.random() - 0.5);
       }
       this.pointIndex++;
       if (this.pointIndex > 3) this.pointIndex = 0;

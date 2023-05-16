@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer } from '@pixi/react'
-import Paddle from './game_objects/Paddle';
+import Paddle, { PaddleType } from './game_objects/Paddle';
 import { BoxSize, Offset } from '../model/GameModels';
 import Pong from './game_objects/Pong';
 import RippleEffect, { Ring } from './game_objects/RippleEffect';
@@ -235,8 +235,7 @@ function Game(props: GameProps) {
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
       <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} />
-      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={{ x: 392.5, y: 400 }} />
-      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} />
+      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 150 }} position={leftPaddlePosition} type={PaddleType.Ngeeeaat} />
       <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />
     </Container>
     // <></>
