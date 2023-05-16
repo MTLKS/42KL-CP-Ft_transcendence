@@ -147,12 +147,15 @@ export class UserService {
 
 	// Hides sensitive data
 	hideData(body: any): any {
+		if (body === undefined)
+			return body;
+
 		const hideUser = (user: any) => ({
 			...user,
 			accessToken: "hidden",
 			tfaSecret: "hidden",
 		});
-	
+
 		if (Array.isArray(body)) {
 			if (body[0].owner !== undefined)
 				return body.map((item) => ({
