@@ -133,7 +133,7 @@ export class UserService {
 		if (EXISTING !== null && accessToken !== EXISTING.accessToken)
 			return { error: "Invalid username - username already exists or invalid" };
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
-			return { error: "Invalid username - username must be 1-16 alphanumeric characters (Including '-' and '_') only" };
+			return { error: "Invalid username - username must be 1-16 between alphanumeric characters (Including '-' and '_') only" };
 		fs.rename(image.path, "avatar/" + NEW_USER.intraName, () => {});
 		image.path = "avatar/" + NEW_USER.intraName;
 		NEW_USER.avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
@@ -165,16 +165,18 @@ export class UserService {
 					user: hideUser(item.user),
 				}));
 		} else {
-			if (body.owner !== undefined)
+			if (body.owner !== undefined) {
 				return {
-					...body,
-					user: hideUser(body.owner),
-				};
-			else if (body.user !== undefined)
+						...body,
+						owner: hideUser(body.owner),
+					};
+			}
+			else if (body.user !== undefined) {
 				return {
 					...body,
 					user: hideUser(body.user),
 				};
+			}
 		}
 	}
 }
