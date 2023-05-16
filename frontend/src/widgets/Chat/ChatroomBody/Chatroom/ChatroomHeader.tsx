@@ -40,7 +40,6 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
 
   function closeChatroom() {
     setChatBody(<ChatroomList />);
-    // chatSocket.removeListener("message");
   }
 }
 
