@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
 import { Injectable } from "@nestjs/common";
 import { authenticator } from "otplib";
-import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as qrCode from "qrcode";
 
