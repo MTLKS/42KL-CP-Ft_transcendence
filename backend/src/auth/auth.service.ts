@@ -20,6 +20,11 @@ export class AuthService {
 		}
 	}
 
+	// Redirects from google auth with user information
+	async googleAuthRedirect(req: any): Promise<any> {
+		return !req.user ? 'No user from google' : req.user
+	}
+
 	// Use the code from query to get token info
 	async postCode(code: string): Promise<any> {
 		const DATA = {

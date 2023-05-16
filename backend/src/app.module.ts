@@ -1,6 +1,7 @@
 import { FriendshipController } from './friendship/friendship.controller';
 import { FriendshipService } from './friendship/friendship.service';
 import { FriendshipGateway } from './friendship/friendship.gateway';
+import { MatchController } from './match/match.controller';
 import { TYPEORM_CONFIG } from './config/typeorm.config';
 import { MULTER_CONFIG } from 'src/config/multer.config';
 import { Friendship } from './entity/friendship.entity';
@@ -10,7 +11,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import { StatusService } from './status/status.service';
 import { StatusGateway } from './status/status.gateway';
 import { ChatController } from './chat/chat.controller';
+import { GoogleStrategy } from './auth/google.strategy';
 import { TFAController } from './tfa/tfa.controller';
+import { MatchService } from './match/match.service';
 import { AuthService } from './auth/auth.service';
 import { UserService } from './user/user.service';
 import { ChatService } from './chat/chat.service';
@@ -27,13 +30,11 @@ import { TFAService } from './tfa/tfa.service';
 import { User } from './entity/users.entity';
 import { AppService } from './app.service';
 import { Module } from '@nestjs/common';
-import { MatchService } from './match/match.service';
-import { MatchController } from './match/match.controller';
 import { Match } from './entity/match.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message, Match]), MulterModule.register(MULTER_CONFIG)],
   controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController, MatchController],
-  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService, MatchService],
+  providers: [AppService, AuthService, UserService, GoogleStrategy, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService, MatchService],
 })
 export class AppModule {}
