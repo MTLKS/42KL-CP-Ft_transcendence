@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomTextField from './ChatroomTextField'
 import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '../../../../model/ChatRoomData';
 import { getChatroomMessages, getMemberData } from '../../../../functions/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
-import { ChatContext, ChatMessagesComponentContext, ChatroomMessagesContext, UnreadChatroomsContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomMessagesContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { UserData } from '../../../../model/UserData';
 import { playNewMessageSound } from '../../../../functions/audio';
 import ChatUnreadSeparator from './ChatUnreadSeparator';
@@ -24,15 +24,13 @@ export function appendNewMessage(newMessage: ChatroomMessageData, messages: Chat
 function ChatroomContent(props: ChatroomContentProps) {
 
   const { chatroomData } = props;
-  const { unreadChatrooms, setUnreadChatrooms } = useContext(UnreadChatroomsContext);
+  const { unreadChatrooms, setUnreadChatrooms } = useContext(ChatroomsContext);
   const { chatSocket } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
   const [allMessages, setAllMessages] = useState<ChatroomMessageData[]>([]);
   const [isMessagesSet, setIsMessagesSet] = useState<boolean>(false);
-  const [chatMemberLastRead, setChatMemberLastRead] = useState<string>();
+  const [chatMemberLastRead, setChatMemberLastRead] = useState<string>('');
   const scrollToHereRef = useRef<HTMLDivElement>(null);
-  const [separatorAtIndex, setSeparatorAtIndex] = useState<number>(-1);
-  const [messagesComponent, setMessagesComponent] = useState<JSX.Element[]>([]);
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
 
   useEffect(() => {
@@ -47,13 +45,14 @@ function ChatroomContent(props: ChatroomContentProps) {
     // get chatroom member data
     getChatroomMemberData();
     // listen for incoming messages
-    return listenForIncomingMessages();
+    listenForIncomingMessages();
+    return () => chatSocket.removeListener("message"); // don't remove this
   }, []);
-
-  useEffect(() => {
+  
+  const all = useMemo(() => {
     if (!chatMemberLastRead) return;
-    setMessagesComponent(displayMessages());
-  }, [allMessages, chatMemberLastRead]);
+    return displayAllMessages();
+  }, [allMessages.length, chatMemberLastRead]);
 
   if (!chatMemberLastRead || !isMessagesSet) return <></>;
 
@@ -62,11 +61,10 @@ function ChatroomContent(props: ChatroomContentProps) {
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
         <ChatroomHeader chatroomData={chatroomData} />
         <div className='h-full overflow-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth'>
-          { messagesComponent }
+          {/* { messagesComponent } */}
+          { all }
         </div>
-        <ChatMessagesComponentContext.Provider value={{ separatorAtIndex, setSeparatorAtIndex, messagesComponent, setMessagesComponent, setIsFirstLoad }}>
-          <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} />
-        </ChatMessagesComponentContext.Provider>
+          <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
       </div>
     </ChatroomMessagesContext.Provider>
   )
@@ -85,48 +83,43 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function pingServerToUpdateLastRead() {
     chatSocket.sendMessages("read", { channelId: chatroomData.channelId });
-    chatSocket.listen("read", (data: MemberData) => {
-      setChatMemberLastRead(data.lastRead);
-    });
-    chatSocket.removeListener("read");
   }
 
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
       setAllMessages((messages) => appendNewMessage(newMessage, messages));
-      pingServerToUpdateLastRead();
       playNewMessageSound();
     });
   }
 
-  function displayMessages() {
+  function displayAllMessages(){
 
-    if (!chatMemberLastRead) return [];
+    if (chatMemberLastRead === '' || !isMessagesSet) return [];
 
-    const lastReadTime = new Date(chatMemberLastRead!);
-    const oldMessages = allMessages.filter((message) => new Date(message.timeStamp) < lastReadTime);
-    const newMessages = allMessages.filter((message) => new Date(message.timeStamp) >= lastReadTime);
-    let messagesToDisplay: any[] = [];
+    const chatMemberLastReadTime = new Date(chatMemberLastRead);
+    const oldMessages: ChatroomMessageData[] = allMessages.filter((message) => new Date(message.timeStamp) < chatMemberLastReadTime);
+    const newMessages: ChatroomMessageData[] = allMessages.filter((message) => new Date(message.timeStamp) >= chatMemberLastReadTime);
+    const messagesComponent: JSX.Element[] = [];
+    let messageToDisplay: (string | ChatroomMessageData)[] = [];
 
+    // if there's a new message, display a separator
     if (newMessages.length > 0 && isFirstLoad) {
-      messagesToDisplay = [...newMessages, {type: "separator"}, ...oldMessages];
+      messageToDisplay = [...newMessages, "new", ...oldMessages];
     } else if (newMessages.length > 0 && !isFirstLoad) {
-      messagesToDisplay = [...newMessages, ...oldMessages];
+      messageToDisplay = [...newMessages, ...oldMessages];
     } else {
-      messagesToDisplay = [...oldMessages];
+      messageToDisplay = oldMessages;
+      setIsFirstLoad(false);
     }
 
-    let messagesComponent: JSX.Element[] = [];
-    messagesToDisplay.map((message, index) => {
-      if (message.type === "separator") {
-        setSeparatorAtIndex(index);
+    messageToDisplay.forEach((message) => {
+      if (typeof message === "string" && message === "new") {
         messagesComponent.push(<div ref={scrollToHereRef} key={"separator_div" + new Date().toDateString()}><ChatUnreadSeparator key={"separator" + new Date().toISOString()}/></div>);
-      } else {
-        const messageData = message as ChatroomMessageData;
-        messagesComponent.push(<ChatroomMessage key={messageData.messageId + new Date().toDateString()} messageData={messageData} isMyMessage={myProfile.intraName === messageData.user.intraName} />);
+      } else if (typeof message === "object")
+        messagesComponent.push(<ChatroomMessage key={message.messageId + new Date().toDateString()} messageData={message} isMyMessage={myProfile.intraName === message.user.intraName} />);
       }
-    });
-    if (isFirstLoad) pingServerToUpdateLastRead();
+    );
+    pingServerToUpdateLastRead();
     return messagesComponent;
   }
 }

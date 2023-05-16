@@ -4,7 +4,7 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle'
 import ChatMember from '../ChatMember'
 import { FriendsContext } from '../../../../contexts/FriendContext'
-import { ChatContext, ChatroomsContext, NewChatContext } from '../../../../contexts/ChatContext'
+import { ChatContext, NewChatContext } from '../../../../contexts/ChatContext'
 import ChatroomList from '../Chatroom/ChatroomList'
 import newChatRoomReducer, { newChatRoomInitialState } from './newChatRoomReducer'
 import NewChatInfo from './NewChatInfo'
@@ -85,6 +85,7 @@ function NewChatRoom(props: NewChatRoomProps) {
       isRoom: false,
       owner: owner,
       password: null,
+      newMessage: false,
     }
     localStorage.setItem(`${myProfile.intraId.toString()}_tcr_${state.members[0]}`, JSON.stringify(tempChatRoom));
     setChatBody(<ChatroomList />);

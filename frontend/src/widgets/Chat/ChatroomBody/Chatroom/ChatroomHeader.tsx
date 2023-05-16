@@ -21,7 +21,6 @@ function ChatroomIcon(props: { isRoom: boolean }) {
 
 function ChatroomHeader(props: ChatroomHeaderProps) {
 
-  const { chatSocket } = useContext(ChatContext);
   const { chatroomData } = props;
   const { setChatBody } = useContext(ChatContext);
 
@@ -40,7 +39,6 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
 
   function closeChatroom() {
     setChatBody(<ChatroomList />);
-    // chatSocket.removeListener("message");
   }
 }
 

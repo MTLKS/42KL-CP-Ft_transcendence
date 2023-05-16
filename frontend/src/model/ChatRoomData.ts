@@ -11,6 +11,7 @@ export interface ChatroomData {
   isRoom: boolean;
   owner: UserData | null;
   password: string | null;
+  newMessage: boolean;
 }
 
 export interface ChatroomMessageData {

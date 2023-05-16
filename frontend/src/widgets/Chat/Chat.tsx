@@ -1,8 +1,11 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 import ChatToggle from './ChatWidgets/ChatToggle'
 import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
-import { ChatContext, UnreadChatroomsContext } from '../../contexts/ChatContext';
+import { ChatContext, ChatroomsContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
+import { FriendsContext } from '../../contexts/FriendContext';
+import { ChatroomData } from '../../model/ChatRoomData';
+import { getChatroomList } from '../../functions/chatAPIs';
 
 const CHAT_SOCKET_NAMESPACE = "chat";
 
@@ -11,7 +14,6 @@ function Chat() {
   const [unreadChatrooms, setUnreadChatrooms] = useState<number[]>([]);
   const [expanded, setExpanded] = useState(false);
   const [chatroomBody, setChatroomBody] = useState(<ChatroomList />);
-  const [hasNewMessage, setHasNewMessage] = useState(false);
   const chatSocket = useMemo(() => new SocketApi(CHAT_SOCKET_NAMESPACE), []);
 
   useEffect(() => {
@@ -19,10 +21,12 @@ function Chat() {
     const newUnreadChatrooms: number[] = [];
     chatSocket.connect();
     chatSocket.listen("message", (data: any) => {
+      console.log("new message");
       if (unreadChatrooms.includes(data.channelId)) return;
       newUnreadChatrooms.push(data.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
+    return () => chatSocket.removeListener("message");
   }, []);
 
   // toggle chat
@@ -31,14 +35,14 @@ function Chat() {
   }
 
   return (
-    <UnreadChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>
+    <ChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>
       <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody}}>
         <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
-          <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms && unreadChatrooms.length > 0} />
-          {expanded && chatroomBody}
+          <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />
+          {chatroomBody}
         </div>
       </ChatContext.Provider>
-    </UnreadChatroomsContext.Provider>
+    </ChatroomsContext.Provider>
   )
 }
 
