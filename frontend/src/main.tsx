@@ -15,7 +15,7 @@ reactRoot.render(
   // </React.StrictMode>,
 )
 
-export const gameTick = new GameData();
+export const gameData = new GameData();
 const pixiApp = new Application({
   width: 1600,
   height: 900,
@@ -25,9 +25,6 @@ const pixiApp = new Application({
   view: document.getElementById('pixi') as HTMLCanvasElement,
   antialias: true,
 });
-window.addEventListener('mousemove', (e) => {
-  gameTick.updatePlayerPosition(e.clientY);
-});
 
 const pixiRoot = createRoot(pixiApp.stage);
-pixiRoot.render(<GameApp pixiApp={pixiApp} gameTick={gameTick} />);
+pixiRoot.render(<GameApp pixiApp={pixiApp} gameData={gameData} />);

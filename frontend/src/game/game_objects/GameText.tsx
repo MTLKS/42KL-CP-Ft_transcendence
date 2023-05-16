@@ -1,7 +1,7 @@
 import { Sprite, Text, useApp } from '@pixi/react'
 import React, { useMemo } from 'react'
 import * as PIXI from 'pixi.js';
-import { Offset } from '../../modal/GameModels';
+import { Offset } from '../../model/GameModels';
 
 interface GameTextProps {
   position?: Offset;
@@ -27,8 +27,9 @@ function GameText(props: GameTextProps) {
     box.endFill();
 
     box.mask = textGraphic;
-
-    return app.renderer.generateTexture(box);
+    const texture = app.renderer.generateTexture(box);
+    box.destroy();
+    return texture;
   }, [text, fontSize, color, opacity]);
   return (
     <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture} />

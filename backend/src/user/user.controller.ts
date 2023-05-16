@@ -40,8 +40,8 @@ export class UserController {
 
 	@Get(':intraName')
 	@UseGuards(AuthGuard)
-	getUserDataByIntraName(@Param('intraName') intraName: string): any {
-		return this.userService.getUserDataByIntraName(intraName);
+	getUserDataByIntraName(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): any {
+		return this.userService.getUserDataByIntraName(accessToken, intraName);
 	}
 
 	@Patch()

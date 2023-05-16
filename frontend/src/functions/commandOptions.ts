@@ -1,14 +1,17 @@
 const primaryCommands = new Map<string, string>();
-primaryCommands.set("friend", "Manage your friendship.");
-primaryCommands.set("leaderboard", "Display game leaderboard.");
-primaryCommands.set("profile", "Display my or other user's profile.");
+primaryCommands.set("friend", "Manages your friendship.");
+primaryCommands.set("leaderboard", "Displays the game leaderboard.");
+primaryCommands.set("profile", "View my profile.");
+primaryCommands.set("profile <intraName> ", "Displays profile.");
+primaryCommands.set("tfa", "Sets and unsets Google 2-Factor-Authentication.");
+primaryCommands.set("reset", "Resets your profile (Requires TFA if enabled).");
 
 const utilityCommands = new Map<string, string>();
-utilityCommands.set("clear", "Clear the terminal.");
-utilityCommands.set("cowsay", "Make a cow say something.");
-utilityCommands.set("help", "Display this help message.");
+utilityCommands.set("clear", "Clears the terminal.");
+utilityCommands.set("cowsay <message> ", "Makes a cow say something.");
+utilityCommands.set("help", "Displays this help message.");
 utilityCommands.set("ok", "Ok.");
-utilityCommands.set("sudo", "Give you admin privilege.");
+utilityCommands.set("sudo", "Admin privilege for debugging.");
 
 const friendGeneralCommands = new Map<string, string>();
 friendGeneralCommands.set("list", "List all the friends.");

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import UserFormAvatar from './UserFormAvatar';
-import { UserData } from '../../modal/UserData';
+import { UserData } from '../../model/UserData';
 import UserFormName from './UserFormName';
 import UserFormQuestion from './UserFormQuestion';
 import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions/fun';
@@ -10,6 +10,8 @@ import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
 import Api from '../../api/api';
 import sleep from '../../functions/sleep';
 import login from '../../functions/login';
+import { FaArrowLeft } from 'react-icons/fa';
+import UserFormTfa from './UserFormTfa';
 
 interface IAPIResponse {
   intraId: number,
@@ -26,9 +28,11 @@ enum ErrorCode {
   IMAGETOOBIG,
   NAMETOOSHORT,
   NAMETOOLONG,
+  NAMEINVALID,
   NAMETAKEN,
   EMPTYNAME,
-  EMPTYANS
+  EMPTYANS,
+  TFANOTVERIFIED
 }
 
 const getError = (code: ErrorCode) => {
@@ -46,6 +50,10 @@ const getError = (code: ErrorCode) => {
       return ("Image too good, make it smaller. (MAX: 3MB)")
     case ErrorCode.NAMETAKEN:
       return ("Epic name taken, please choose another one.");
+    case ErrorCode.NAMEINVALID:
+      return ("Names like Elon Musk's son not allowed");
+    case ErrorCode.TFANOTVERIFIED:
+      return ("2FA not verified yet. 2 bad 2 furious!");
     default:
       return ("Error 42: Unknown error occurred");
   }
@@ -53,18 +61,27 @@ const getError = (code: ErrorCode) => {
 
 interface UserFormProps {
   userData: UserData;
+  isUpdatingUser: boolean;
+  setIsUpdatingUser: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function UserForm(props: UserFormProps) {
-  const { userData } = props;
 
+  // Props
+  const { userData, isUpdatingUser, setIsUpdatingUser } = props;
+
+  // Hooks
   const [avatar, setAvatar] = useState('');
-  const [userName, setFinalName] = useState(userData.intraName);
+  const [userName, setFinalName] = useState(userData.userName);
   const [fileExtension, setFileExtension] = useState<string>('jpeg');
   const [questionAns, setQuestionAns] = useState("");
-  const [awesomeSynonym, setAwesomeSynonym] = useState(getAwesomeSynonym());
-  const [iceBreakingQuestion, setIceBreakingQuestion] = useState(getRandomIceBreakingQuestion());
+  const awesomeSynonym = useMemo(() => getAwesomeSynonym(), []);
+  const iceBreakingQuestion = useMemo(() => getRandomIceBreakingQuestion(), []);
   const [popups, setPopups] = useState<JSX.Element[]>([]);
+  const [tfaCode, setTfaCode] = useState<string>('');
+  const [isVerifyingTFA, setIsVerifyingTFA] = useState(false);
+  const [isTFAEnabled, setIsTFAEnabled] = useState(userData.tfaSecret === "ENABLED");
+  const [TFAVerified, setTFAVerified] = useState(false);
 
   // convert the image from intra to data:base64
   useEffect(() => {
@@ -73,25 +90,31 @@ function UserForm(props: UserFormProps) {
   }, []);
 
   return (
-    <PolkaDotContainer>
+    <div className=''>
       <div className='w-full h-fit flex flex-col gap-2 lg:gap-4 items-end z-30 mt-6'>
         {popups}
       </div>
+      { 
+        // extra feature: check if the user actually modified their name and avatar or not. If they did, ask for confirmation before back to homepage
+        isUpdatingUser && 
+        <button className='absolute top-8 left-8 h-fit p-3 rounded-md bg-highlight text-center cursor-pointer flex flex-row gap-x-3 items-center group hover:bg-dimshadow border-highlight border-2 transition-all duration-200 focus:outline-dashed focus:outline-[3px] focus:outline-highlight' onClick={() => setIsUpdatingUser(false)}>
+          <FaArrowLeft className='text-dimshadow font-extrabold text-xl group-hover:text-highlight'/>
+          <span className='font-extrabold text-xl group-hover:text-highlight'>BACK</span>
+        </button>
+      }
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
         <UserFormAvatar intraName={userData.intraName} avatarUrl={avatar} setAvatar={setAvatar} setFileExtension={setFileExtension} />
         <div className='w-[48%] lg:w-[40%] h-full my-auto flex flex-col font-extrabold text-highlight gap-3'>
           <p className='uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold'>user info</p>
           <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} />
           <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} />
-          <div
-            className='font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out'
-            onClick={handleSubmit}
-          >
+          {isVerifyingTFA && <UserFormTfa tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={TFAVerified} setTFAVerified={setTFAVerified} handleSubmit={handleSubmit}/>}
+          <button className={`${isVerifyingTFA && 'hidden'} font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out focus:outline-dimshadow ${isVerifyingTFA && !TFAVerified && 'focus:bg-highlight'}`} onClick={handleSubmit}>
             Submit
-          </div>
+          </button>
         </div>
       </div>
-    </PolkaDotContainer>
+    </div>
   )
 
   function updateName(name: string) {
@@ -113,6 +136,8 @@ function UserForm(props: UserFormProps) {
       errors.push(ErrorCode.NAMETOOLONG);
     if (!questionAns)
       errors.push(ErrorCode.EMPTYANS);
+    if (/^[a-zA-Z0-9_-]+$/.test(userName) === false)
+      errors.push(ErrorCode.NAMEINVALID);
     return (errors);
   }
 
@@ -122,19 +147,24 @@ function UserForm(props: UserFormProps) {
     let formData = new FormData();
     let avatarFile;
 
+    if (TFAVerified === false && isTFAEnabled === true) {
+      if (isVerifyingTFA === false) {
+        setIsVerifyingTFA(true);
+        return ;
+      }
+
+      if (isVerifyingTFA) {
+        errors.push(ErrorCode.TFANOTVERIFIED);
+      }
+    }
+
     sessionStorage.removeItem(`image-${userData.avatar}`)
     if (errors.length === 0) {
-      Api.updateToken(
-        "Authorization",
-        document.cookie
-          .split(";")
-          .find((cookie) => cookie.includes("Authorization"))
-          ?.split("=")[1] ?? ""
-      );
       avatarFile = dataURItoFile(avatar, `${userData.intraName}`);
       formData.append("userName", userName);
       formData.append("image", avatarFile);
       try {
+        Api.updateToken("TFA", tfaCode);
         await Api.patch("/user", formData).then((res) => {
           let retVal = res.data as IAPIResponse;
           if (retVal.error === "Invalid username - username already exists or invalid") {

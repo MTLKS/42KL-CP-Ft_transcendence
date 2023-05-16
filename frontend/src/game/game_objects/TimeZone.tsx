@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
-import { BoxSize, Offset } from '../../modal/GameModels';
+import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 
 
@@ -14,6 +14,8 @@ interface TimeZoneProps {
   size: BoxSize;
   type: TimeZoneType;
 }
+
+const svgSizeRatio = 0.5;
 
 function TimeZone(props: TimeZoneProps) {
   const { position, size, type } = props;
@@ -33,12 +35,13 @@ function TimeZone(props: TimeZoneProps) {
   const texture = useMemo(() => {
     const box = new PIXI.Graphics();
     box.beginFill(color, 0.1);
-    box.lineStyle(8, color, 1);
+    box.lineStyle(12, color, 1);
     box.drawCircle(0, 0, size.w / 2);
     box.endFill();
-
-    return app.renderer.generateTexture(box);
-  }, [size, type]);
+    const texture = app.renderer.generateTexture(box);
+    box.destroy();
+    return texture;
+  }, [size.w, size.h, type]);
 
   const iconTexture = useMemo(() => {
 
@@ -66,8 +69,15 @@ function TimeZone(props: TimeZoneProps) {
   }, [, type]);
   return (
     <>
-      <Sprite x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
-      <Sprite x={position.x + 75} y={position.y + 75} width={size.w - 150} height={size.h - 150} texture={iconTexture} />
+      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
+      <Sprite
+        anchor={0.5}
+        x={position.x}
+        y={position.y}
+        width={size.w * svgSizeRatio}
+        height={size.h * svgSizeRatio}
+        texture={iconTexture}
+      />
     </>
   )
 }

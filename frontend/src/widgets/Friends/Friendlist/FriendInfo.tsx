@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
-import { FriendData } from '../../../modal/FriendData'
+import { FriendData } from '../../../model/FriendData'
 import Highlighter from '../../../components/Highlighter';
 import socketApi from '../../../api/socketApi';
 
@@ -19,9 +19,9 @@ function FriendInfo(props: FriendInfoProps) {
   let friendshipStatus = friend.status.toLowerCase();
 
   friendshipStatus = (friendshipStatus !== "pending"
-                        ? friendshipStatus
-                        : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
-                     )
+    ? friendshipStatus
+    : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
+  )
 
 
   // Handle user's online/offline status
@@ -45,27 +45,31 @@ function FriendInfo(props: FriendInfoProps) {
   return (
     <div className='flex flex-row text-highlight'>
       <div className='w-[16ch] normal-case'>
-        <Highlighter text={friend.userName} searchTerm={searchTerm}/>
+        <Highlighter text={friend.userName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className='w-[16ch]'>
-        <Highlighter text={friendIntraName} searchTerm={searchTerm}/>
+        <Highlighter text={friendIntraName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className='w-[9ch]'>
-        <Highlighter text={friend.elo.toString()} searchTerm={searchTerm}/>
+        {
+          friendshipStatus === "blocked"
+            ? <span className='text-highlight bg-accRed whitespace-pre'> HIDDEN </span>
+            : <Highlighter text={ friend.elo.toString()} searchTerm={searchTerm} />
+        }
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
-        <FriendlistTag type={friendshipStatus} searchTerm={searchTerm}/>
+        <FriendlistTag type={friendshipStatus} searchTerm={searchTerm} />
       </div>
       {
         <>
           <div className={`${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
-            <FriendlistSeparator/>
+            <FriendlistSeparator />
           </div>
           <div className={`w-[9ch] ${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
-            <Highlighter text={onlineStatus.toLowerCase()} searchTerm={searchTerm}/>
+            <Highlighter text={onlineStatus.toLowerCase()} searchTerm={searchTerm} />
           </div>
         </>
       }

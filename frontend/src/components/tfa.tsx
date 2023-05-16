@@ -1,7 +1,11 @@
 import { getTFA, removeTFA, checkTFA } from '../functions/tfa';
-import { ITFAData } from '../modal/TfaData';
-import React, { useEffect } from 'react'
+import { ITFAData } from '../model/TfaData';
+import React, { useContext, useEffect } from 'react'
 import Card, { CardType } from './Card';
+import UserContext from '../contexts/UserContext';
+import { getMyProfile } from '../functions/profile';
+import { set, update } from 'lodash';
+import { UserData } from '../model/UserData';
 
 interface TFAProps {
 	commands: string[];
@@ -30,25 +34,32 @@ function help() {
 	)
 }
 
+async function updateMyProfile(setProfile: (profile: UserData) => void) {
+	const profile = ((await getMyProfile()).data as UserData);
+	setProfile(profile);
+}
+
 function Tfa(props: TFAProps) {
-	
+
 	const { commands } = props;
+	const { setMyProfile } = useContext(UserContext);
 	const [tfa, setTfa] = React.useState<ITFAData>({} as ITFAData);
 	const [result, setResult] = React.useState<TFACommands>(TFACommands.exist);
-	
+
 	if (commands.length === 2 && commands[1] === "set") {
 		useEffect(() => {
 			getTFA().then((data) => {
 				setTfa(data);
 				setResult(data.qr === null && data.secretKey === null ? TFACommands.exist : TFACommands.set)
+				updateMyProfile(setMyProfile);
 			})
 		}, [])
 	} else if (commands.length === 3 && commands[1] === "unset" && commands[2].length === 6 && commands[2].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
 			setResult(TFACommands.fail)
-			checkTFA(commands[2]).then((res) => {
-				res.error !== undefined ? setResult(TFACommands.notset) : 
-					removeTFA(commands[2]).then(() => { setResult(TFACommands.unset)})
+			removeTFA(commands[2]).then(() => {
+				setResult(TFACommands.unset);
+				updateMyProfile(setMyProfile);
 			})
 		}, [])
 	} else if (commands.length === 2 && commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {

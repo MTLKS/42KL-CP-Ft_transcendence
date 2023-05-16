@@ -11,7 +11,12 @@ export type Events =
   | "startGame"
   | "gameLoop"
   | "playerMove"
-  | "gameState";
+  | "gameState"
+  | "message"
+  | "gameResponse"
+  | "joinQueue"
+  | "leaveQueue"
+  | "read";
 
 class SocketApi {
   socket: Socket;

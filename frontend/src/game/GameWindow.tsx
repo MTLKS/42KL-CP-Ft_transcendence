@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { gameTick } from '../main';
+import { gameData } from '../main';
 
 function GameWindow() {
   const ref = useRef<HTMLDivElement>(null);
@@ -11,7 +11,6 @@ function GameWindow() {
       if (!ref.current) return;
       const { top, left, width, height } = ref.current.getBoundingClientRect();
       const canvas = document.getElementById('pixi') as HTMLCanvasElement;
-      console.log(canvas);
       canvas.width = width - 12;
       canvas.height = height - 12;
       canvas.style.width = `${width - 12}px`;
@@ -19,8 +18,8 @@ function GameWindow() {
       canvas.style.display = 'block';
       document.documentElement.style.setProperty('--canvas-top', `${top + 6}px`);
       document.documentElement.style.setProperty('--canvas-left', `${left + 6}px`);
-      if (gameTick.setScale)
-        gameTick.setScale(width / 1600);
+      if (gameData.setScale)
+        gameData.setScale(width / 1600);
     }
 
     handleResize();
