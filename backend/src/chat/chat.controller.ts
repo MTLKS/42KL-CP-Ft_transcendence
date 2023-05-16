@@ -28,6 +28,6 @@ export class ChatController {
 	@Post('room')
 	@UseGuards(AuthGuard)
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.chatService.createRoom(accessToken, body);
+		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
 	}
 }

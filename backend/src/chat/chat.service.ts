@@ -6,6 +6,7 @@ import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Member } from "src/entity/member.entity";
 import { Injectable } from "@nestjs/common";
+import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 
 @Injectable()
@@ -30,7 +31,7 @@ export class ChatService {
 		if (intraName === USER_DATA.intraName)
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid intraName - you no friends so you DM yourself?" } );
 		if (message.length > 1024 || message.length < 1)
-			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid message - message is must be 1-1024 characters only" } );
+			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid message - message is must be between 1-1024 characters only" } );
 		const CHANNEL = await this.channelRepository.findOne({ where: {channelName: intraName, owner: {intraName: intraName}, isPrivate: true, password: null, isRoom: false}, relations: ['owner'] });
 		if (CHANNEL === null)
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid channelId - channel is not found" } );
@@ -114,8 +115,24 @@ export class ChatService {
 	}
 
 	// Creates a new room
-	async createRoom(accessToken: string, roomName: string): Promise<any> {
-		const USER_DATA
-		const ROOM = new Channel()
+	async createRoom(accessToken: string, channelName: string, isPrivate: boolean, password: string): Promise<any> {
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		if (channelName === undefined || isPrivate === undefined || password === undefined)
+			return { error: "Invalid body - body must include channelName(string), isPrivate(boolean) and password(nullable string)" };
+		if (password !== null) {
+			if (password.length < 1 || password.length > 16)
+				return { error: "Invalid password - password must be between 1-16 characters" };
+			try {
+				password = CryptoJS.AES.encrypt(password, process.env.ENCRYPT_KEY).toString()
+			} catch {
+				return { error: "Invalid password - password is invalid" };
+			}
+		}
+		if (channelName.length < 1 || channelName.length > 16)
+			return { error: "Invalid channelName - channelName must be between 1-16 characters" };
+		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true);
+		await this.channelRepository.save(ROOM);
+		await this.memberRepository.save(new Member(USER_DATA, ROOM.channelId, true, false, false, new Date().toISOString()));
+		return this.userService.hideData(ROOM);
 	}
 }
