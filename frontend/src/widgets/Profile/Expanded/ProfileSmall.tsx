@@ -1,17 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
-import StatusIndicator from '../../StatusIndicator';
-import { UserData } from '../../../modal/UserData';
+import StatusIndicator from '../StatusIndicator';
+import { UserData } from '../../../model/UserData';
+import UserContext from '../../../contexts/UserContext';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 
 interface ProfileSmallProps {
   expanded: boolean;
-  userData: UserData;
   status: string;
 }
 
 function ProfileSmall(props: ProfileSmallProps) {
-  const { expanded, userData, status } = props;
-  const { userName } = userData;
+  const { expanded, status } = props;
+  const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
+  const { userName } = myProfile;
   const [width, setWidth] = useState("w-0");
 
   useEffect(() => {

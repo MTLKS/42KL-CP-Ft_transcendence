@@ -3,33 +3,31 @@ import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
 import login, { checkAuth } from "./functions/login";
 import HomePage from "./pages/HomePage";
-import AxiosResponse from 'axios';
-import MouseCursor from "./components/MouseCursor";
 import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./functions/profile";
+import { UserData } from "./model/UserData";
 
 function App() {
   const [logged, setLogged] = useState(false);
   const [newUser, setNewUser] = useState(false);
-  const [userData, setUserData] = useState<any>(null);
+  const [userData, setUserData] = useState<UserData>({} as UserData);
+  const [updateUser, setUpdateUser] = useState(false);
 
   useEffect(() => {
     checkIfLoggedIn();
   }, []);
 
   let page = <Login />;
-  if (newUser) {
-    page = <UserForm userData={userData} />;
+  if (newUser || updateUser) {
+    page = <UserForm userData={userData} isUpdatingUser={updateUser} setIsUpdatingUser={setUpdateUser} />;
   }
   else if (logged) {
-    page = <HomePage />;
-  } 
+    page = <HomePage setUserData={setUserData} setUpdateUser={setUpdateUser} userData={userData} />;
+  }
 
   return (
     <PolkaDotContainer>
-      <MouseCursor>
-        {page}
-      </MouseCursor>
+      {page}
     </PolkaDotContainer>
   )
 
@@ -37,12 +35,12 @@ function App() {
     let loggin = false;
 
     getMyProfile().then((res) => {
-      if (res.data.accessToken) {
+      if ((res.data as UserData).accessToken) {
+        setUserData(res.data as UserData);
         setLogged(true);
         loggin = true;
       }
     }).catch((err) => {
-      console.log(err);
       setLogged(false);
     });
 
@@ -55,13 +53,12 @@ function App() {
     if (code.code) {
       checkAuth(code.code).then(async (res) => {
         if (res) {
-          console.log(res);
-          console.log((res as any).data.accessToken);
           localStorage.setItem('Authorization', (res as any).data.accessToken);
-          if ((res as any).data.accessToken)
+          if ((res as any).data.accessToken) {
             document.cookie = `Authorization=${(res as any).data.accessToken};`;
+          }
           if ((res as any).data.newUser) {
-            setUserData((await getMyProfile()).data);
+            setUserData((await getMyProfile()).data as UserData);
             setNewUser(true);
           }
           else

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import PromptField from '../components/PromptField'
+import PromptField, { CommandOptionData } from '../components/PromptField'
 import ScrollView from '../components/ScrollView'
 import Card from '../components/Card'
 import login from '../functions/login'
@@ -7,8 +7,10 @@ import rickroll from '../functions/rickroll'
 import Pong from './Pong'
 import sleep from '../functions/sleep'
 import Clock from '../widgets/Clock'
+import Game from '../game/Game'
+import GameWindow from '../game/GameWindow'
 interface TerminalProps {
-  availableCommands: string[];
+  availableCommands: CommandOptionData[];
   handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
 }
@@ -23,7 +25,7 @@ function Terminal(pros: TerminalProps) {
   }, []);
 
   return (
-    <div className='h-full w-full flex flex-col justify-end relative'
+    <div className='h-full flex-1 flex flex-col justify-end relative'
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <ScrollView reverse={true}>
@@ -34,6 +36,7 @@ function Terminal(pros: TerminalProps) {
         handleCommands={handleCommands}
         availableCommands={availableCommands}
         center={false} ref={promptFieldRef}
+        enableHistory showtip
       />
       <Clock />
     </div>

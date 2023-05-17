@@ -13,15 +13,22 @@ export default {
         accGreen: "rgb(var(--accent-green))",
       },
       fontFamily: {
-        'jbmono': ['JetBrains Mono', 'monospace'],
-        'bungee': ['Bungee', 'cursive']
+        jbmono: ["JetBrains Mono", "monospace"],
+        bungee: ["Bungee", "cursive"],
       },
       animation: {
-        'pulse-short': 'pulse 0.3s ease-in-out 1',
-        'left-to-right': 'left-to-right 1',
-        'shine': 'shine 2s infinite',
-        'h-shake': 'h-shake 0.5s'
-      }
+        "pulse-short": "pulse 0.3s ease-in-out 1",
+        "left-to-right": "left-to-right 1",
+        shine: "shine 2s infinite",
+        "h-shake": "h-shake 0.5s",
+        marquee: "marquee 15s linear infinite",
+        loadingFade: "loadingFade infinite 1s",
+      },
+      cursor: {
+        default: "url(./assets/cursor/smiley.svg), default",
+        pointer: "url(./assets/cursor/pointy.svg), pointer",
+        text: "url(./assets/cursor/texty.svg), text",
+      },
     },
   },
   plugins: [],

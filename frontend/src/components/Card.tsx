@@ -29,7 +29,7 @@ function Card(props: CardProps) {
       style={animation}
     >
       {type == CardType.SUCCESS ? <div className='h-full w-2 bg-accGreen' /> : <div className='h-full w-2 bg-accRed' />}
-      <div className='w-full bg-highlight/[0.02] text-base whitespace-pre text-highlight py-1 px-2'>
+      <div className='w-full bg-highlight/[0.02] text-base whitespace-pre text-highlight pt-1 px-2 pb-3'>
         {children}
       </div>
     </div>

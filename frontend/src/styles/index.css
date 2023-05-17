@@ -9,12 +9,16 @@
 @layer base {
 
   html {
-    @apply text-[rgba(var(--text-color))] font-jbmono;
+    @apply text-[rgba(var(--text-color))] font-jbmono cursor-default;
   }
 
   body {
-    @apply bg-highlight;
+    @apply bg-highlight relative;
   }
+}
+
+.pixiApp {
+  @apply absolute top-[var(--canvas-top)] left-[var(--canvas-left)] hidden border-4 border-highlight rounded-2xl z-20;
 }
 
 @layer utilities {
@@ -38,10 +42,8 @@
   .polka-dot {
     @apply h-screen w-screen rounded-3xl border-[4px] border-solid border-highlight;
     background-color: rgb(var(--dimmer-shadow));
-    background-image: radial-gradient(
-      rgba(var(--highlight-color)) 0.5px,
-      transparent 0.5px
-    );
+    background-image: radial-gradient(rgba(var(--highlight-color)) 0.5px,
+        transparent 0.5px);
     background-size: 20px 20px;
   }
 
@@ -55,42 +57,8 @@
     bottom: 0;
     z-index: -1;
   }
-  
+
   .hover:hover {
     @apply bg-highlight text-dimshadow;
-  }
-}
-
-@layer glitch {
-  .glitch {
-    position: relative;
-    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 255),
-      -0.02em -0.03em 0 rgba(0, 255, 0, 255),
-      0.02em 0.04em 0 rgba(0, 0, 255, 255);
-    animation: glitch 800ms infinite linear alternate-reverse;
-  }
-
-  .glitch-child1 {
-    position: absolute;
-    left: -0.02em;
-    top: -0.0125em;
-    opacity: 0.6;
-    clip-path: polygon(0 0, 100% 0, 100% 40%, 0 45%);
-    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 255),
-      -0.02em -0.03em 0 rgba(0, 255, 0, 255),
-      0.02em 0.04em 0 rgba(0, 0, 255, 255);
-    animation: glitch 600ms infinite linear alternate-reverse;
-  }
-
-  .glitch-child2 {
-    position: absolute;
-    left: 0.0125em;
-    top: 0.02em;
-    opacity: 0.6;
-    clip-path: polygon(0 100%, 100% 100%, 100% 55%, 0 60%);
-    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 255),
-      -0.02em -0.03em 0 rgba(0, 255, 0, 255),
-      0.02em 0.04em 0 rgba(0, 0, 255, 255);
-    animation: glitch 900ms infinite linear alternate-reverse;
   }
 }

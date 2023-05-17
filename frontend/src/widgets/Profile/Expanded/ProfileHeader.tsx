@@ -1,17 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import sleep from '../../../functions/sleep';
-import StatusIndicator from '../../StatusIndicator';
-import { UserData } from '../../../modal/UserData';
+import StatusIndicator from '../StatusIndicator';
+import { UserData } from '../../../model/UserData';
+import UserContext from '../../../contexts/UserContext';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 
 interface ProfileHeaderProps {
   expanded: boolean;
-  userData: UserData;
   status: string;
+  onProfileClick: () => void;
 }
 
 function ProfileHeader(props: ProfileHeaderProps) {
-  const { expanded, userData, status } = props;
-  const { userName, intraName } = userData;
+  const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
+  const { expanded, status, onProfileClick } = props;
+  const { userName, intraName } = myProfile;
   const maxHeight = 80;
   const [height, setHeight] = useState(0);
 
@@ -23,8 +26,9 @@ function ProfileHeader(props: ProfileHeaderProps) {
   }, [expanded]);
 
   return (
-    <div className='flex flex-row justify-between overflow-hidden w-full box-border transition-all duration-500 ease-in-out bg-dimshadow'
+    <div className='flex flex-row justify-between overflow-hidden w-full box-border transition-all duration-500 ease-in-out bg-dimshadow  cursor-pointer'
       style={{ height: height }}
+      onClick={onProfileClick}
     >
       <div className='flex flex-col flex-1 justify-center bg-dimshadow px-5'>
         <div className=' text-2xl text-highlight font-extrabold'>{userName} <a href={`https://profile.intra.42.fr/users/${intraName}`} className='hover:underline cursor-pointer' target='_blank'>({intraName})</a></div>

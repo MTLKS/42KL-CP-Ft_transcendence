@@ -7,7 +7,17 @@ export type Events =
   | "userDisconnect"
   | "changeStatus"
   | "statusRoom"
-  | "friendshipRoom" ;
+  | "friendshipRoom"
+  | "message"
+  | "typing"
+  | "read"
+  | "startGame"
+  | "gameLoop"
+  | "playerMove"
+  | "gameState"
+  | "gameResponse"
+  | "joinQueue"
+  | "leaveQueue";
 
 class SocketApi {
   socket: Socket;
