@@ -36,7 +36,7 @@ function Blackhole(props: BlackholeProps) {
     dropShadowFilter.color = 0x6B5B85;
     dropShadowFilter.alpha = 1;
     dropShadowFilter.blur = 10;
-    dropShadowFilter.distance = 0;
+    dropShadowFilter.offset = new PIXI.Point(0, 0);
     dropShadowFilter.padding = 40;
     dropShadowFilter.quality = 5;
     return [glowFilter, dropShadowFilter];

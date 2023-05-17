@@ -103,8 +103,7 @@ function Paddle(props: PaddleProps) {
     dropShadowFilter.color = 0xFEF8E2;
     dropShadowFilter.alpha = 0.5;
     dropShadowFilter.blur = 3;
-    dropShadowFilter.offset = new PIXI.Point(10, 5);
-    dropShadowFilter.distance = 0;
+    dropShadowFilter.offset = new PIXI.Point(0, 0);
     dropShadowFilter.padding = 40;
     dropShadowFilter.quality = 5;
     return dropShadowFilter;

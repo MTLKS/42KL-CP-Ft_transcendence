@@ -60,8 +60,7 @@ function TimeZone(props: TimeZoneProps) {
     dropShadowFilter.color = color;
     dropShadowFilter.alpha = 0.8;
     dropShadowFilter.blur = 3;
-    dropShadowFilter.offset = new PIXI.Point(10, 5);
-    dropShadowFilter.distance = 0;
+    dropShadowFilter.offset = new PIXI.Point(0, 0);
     dropShadowFilter.padding = 40;
     dropShadowFilter.quality = 5;
     return dropShadowFilter;

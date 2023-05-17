@@ -15,6 +15,7 @@ import GameParticle, { GameLightningParticle } from '../model/GameParticle';
 import sleep from '../functions/sleep';
 import * as particles from '@pixi/particle-emitter';
 import { GameData } from './gameData';
+import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravityArrow';
 
 interface GameProps {
   scale: number;
@@ -29,6 +30,7 @@ function Game(props: GameProps) {
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
   const [particles, setParticles] = useState<GameParticle[]>([]);
+  const [gameGravityArrow, setGameGravityArrow] = useState<GameGravityArrow | null>(new GameGravityArrow({ arrowsParticles: [], diraction: GameGravityArrowDiraction.UP }));
   const [lightningParticles, setLightningParticles] = useState<GameLightningParticle[]>([
     new GameLightningParticle({
       centerX: 400,
@@ -77,6 +79,8 @@ function Game(props: GameProps) {
       lightning.centerY = leftPaddlePosition.y;
       lightning.update();
     });
+    gameGravityArrow?.update();
+    setGameGravityArrow(gameGravityArrow);
     setParticles(newParticles);
     setLightningParticles(newLightningParticles);
     setPosition(newPosition);
@@ -110,12 +114,14 @@ function Game(props: GameProps) {
       <RippleEffect rings={rings} />
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
-      <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} />
-      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 150 }} position={leftPaddlePosition} type={PaddleType.Piiuuuuu} />
+      <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} gameGravityArrow={gameGravityArrow} />
+      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} type={PaddleType.Piiuuuuu} />
       <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />
     </Container>
   )
 }
+
+export default Game
 
 function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset) {
   const newParticles = [...particles];
@@ -253,5 +259,3 @@ function trailingSpit(newParticles: GameParticle[], newPosition: Offset, newPong
     })
   );
 }
-
-export default Game
