@@ -3,7 +3,6 @@ export interface FriendData {
   receiverIntraName: string;
   status: string;
   id: number;
-  chatted: boolean;
   userName: string
   elo: number;
   avatar: string;
