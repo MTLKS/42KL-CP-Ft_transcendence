@@ -1,8 +1,8 @@
 import { Body, Controller, Get, UseGuards } from '@nestjs/common';
 import { LeaderboardService } from './leaderboard.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
-import { LeaderboardInputDTO } from './dto/leaderboardInput.dto'
-import { LeaderboardResponseDTO } from './dto/leaderboardResponse.dto';
+import { LeaderboardInputDTO } from 'src/dto/leaderboardInput.dto'
+import { LeaderboardResponseDTO } from 'src/dto/leaderboardResponse.dto';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger'
 
 @ApiTags('Leaderboard')

@@ -2,6 +2,7 @@ import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
 import { Injectable } from "@nestjs/common";
+import { AppDTO } from "src/dto/app.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as dotenv from 'dotenv';
@@ -11,7 +12,7 @@ export class AuthService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) { dotenv.config(); }
 
 	// Starts the login process
-	async startLogin(accessToken: any): Promise<any> {
+	async startLogin(accessToken: string): Promise<AppDTO> {
 		try {
 			return { redirectUrl: ((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? process.env.CLIENT_DOMAIN + ":" + process.env.FE_PORT : process.env.APP_REDIRECT };
 		}
