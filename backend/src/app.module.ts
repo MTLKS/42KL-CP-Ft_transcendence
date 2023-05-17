@@ -1,4 +1,6 @@
+import { LeaderboardController } from "./leaderboard/leaderboard.controller"
 import { FriendshipController } from './friendship/friendship.controller';
+import { LeaderboardService } from "./leaderboard/leaderboard.service"
 import { FriendshipService } from './friendship/friendship.service';
 import { FriendshipGateway } from './friendship/friendship.gateway';
 import { TYPEORM_CONFIG } from './config/typeorm.config';
@@ -28,7 +30,7 @@ import { Module } from '@nestjs/common';
 
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message]), MulterModule.register(MULTER_CONFIG)],
-  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController],
-  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService],
+  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController, LeaderboardController],
+  providers: [AppService, AuthService, UserService, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, LeaderboardService],
 })
 export class AppModule {}
