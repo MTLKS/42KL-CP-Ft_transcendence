@@ -24,6 +24,7 @@ function ChatroomList() {
   useEffect(() => {
     const newUnreadChatrooms: number[] = [...unreadChatrooms];
     chatSocket.listen("message", (data: ChatroomMessageData) => {
+      getAllChatrooms();
       if (unreadChatrooms.includes(data.senderChannel.channelId)) return;
       newUnreadChatrooms.push(data.senderChannel.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
@@ -67,6 +68,15 @@ function ChatroomList() {
 
     const chatroomsFromDb = await getChatroomList();
     if (chatroomsFromDb.data.length > 0) {
+      // const sortedChatrooms: ChatroomData[] = (chatroomsFromDb.data as ChatroomData[]).sort((a, b) => {
+      //   if (a.lastActivity === undefined) return -1;
+      //   if (b.lastActivity === undefined) return 1;
+      //   return new Date(b.lastActivity).getTime() - new Date(a.lastActivity).getTime();
+      // })
+      // console.log(sortedChatrooms);
+      // const sortedChatrooms: ChatroomData[] = (chatroomsFromDb.data as ChatroomData[]).sort((a, b) => );
+      // chatrooms.push(...chatroomsThatHasNewMessage, ...chatroomsThatHasNoNewMessage);
+      console.log(chatroomsFromDb.data);
       chatrooms.push(...chatroomsFromDb.data);
     }
     setChatrooms(chatrooms);
