@@ -12,6 +12,8 @@ import { StatusService } from './status/status.service';
 import { StatusGateway } from './status/status.gateway';
 import { ChatController } from './chat/chat.controller';
 import { GoogleStrategy } from './auth/google.strategy';
+import { MAILER_CONFIG } from './config/mailer.config';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { TFAController } from './tfa/tfa.controller';
 import { MatchService } from './match/match.service';
 import { AuthService } from './auth/auth.service';
@@ -33,7 +35,7 @@ import { Module } from '@nestjs/common';
 import { Match } from './entity/match.entity';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message, Match]), MulterModule.register(MULTER_CONFIG)],
+  imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message, Match]), MulterModule.register(MULTER_CONFIG), MailerModule.forRoot(MAILER_CONFIG)],
   controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController, MatchController],
   providers: [AppService, AuthService, UserService, GoogleStrategy, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService, MatchService],
 })

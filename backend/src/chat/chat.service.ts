@@ -39,7 +39,6 @@ export class ChatService {
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: intraName}, {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName}] });
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid friendhsip - you are not friends with this user" } );
-		await this.friendshipRepository.save(FRIENDSHIP)
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false}, relations: ['owner'] });
 		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, false, message, new Date().toISOString());
 		await this.messageRepository.save(NEW_MESSAGE);
@@ -69,6 +68,23 @@ export class ChatService {
 		MY_MEMBER.lastRead = new Date().toISOString();
 		await this.memberRepository.save(MY_MEMBER);
 		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER) );
+	}
+
+	// Checks whether user is typing
+	async typing(client: any, server: any, intraName: string): Promise<any> {
+		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		const MY_ROOM = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false}, relations: ['owner'] });
+		if (intraName === USER_DATA.intraName)
+			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid intraName - you no friends so you DM yourself?" } );
+		const CHANNEL = await this.channelRepository.findOne({ where: {channelName: intraName, owner: {intraName: intraName}, isPrivate: true, password: null, isRoom: false}, relations: ['owner'] });
+		if (CHANNEL === null)
+			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid channelId - channel is not found" } );
+		
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: intraName}, {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName}] });
+		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
+			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid friendhsip - you are not friends with this user" } );
+		await this.friendshipRepository.save(FRIENDSHIP)
+		server.to(CHANNEL.channelId).emit("typing", USER_DATA.intraName + " is typing..." );
 	}
 
 	// Retrives user's member data

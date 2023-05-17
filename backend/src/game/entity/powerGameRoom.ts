@@ -152,13 +152,13 @@ export class PowerGameRoom extends GameRoom{
 	fieldEffect(){
 		const BALL_CENTER_X = this.Ball.posX + this.Ball.width / 2;
 		const BALL_CENTER_Y = this.Ball.posY + this.Ball.height / 2;
-		if (this.currentEffect == FieldEffect.TIME_ZONE){
+		if (this.currentEffect == FieldEffect.TIME_ZONE && this.circleObject != null){
 			if (this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y)){
 				this.Ball.velX *= (this.effectMagnitude + this.timeZonefactor);
 				this.Ball.velY *= (this.effectMagnitude + this.timeZonefactor);
 			}
 		}
-		else if (this.currentEffect == FieldEffect.BLACK_HOLE){
+		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
 			this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
 		}
 		
