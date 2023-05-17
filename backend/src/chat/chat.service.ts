@@ -36,7 +36,7 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid channelId - channel is not found" } );
 		
-		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: intraName}, {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName}] });
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{sender: {intraName: USER_DATA.intraName}, receiver: {intraName: intraName}}, {sender: {intraName: intraName}, receiver: {intraName: USER_DATA.intraName}}] });
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid friendhsip - you are not friends with this user" } );
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false}, relations: ['owner'] });
@@ -80,7 +80,7 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid channelId - channel is not found" } );
 		
-		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: intraName}, {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName}] });
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{sender: {intraName: USER_DATA.intraName}, receiver: {intraName: intraName}}, {sender: {intraName: intraName}, receiver: {intraName: USER_DATA.intraName}}] });
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid friendhsip - you are not friends with this user" } );
 		await this.friendshipRepository.save(FRIENDSHIP)

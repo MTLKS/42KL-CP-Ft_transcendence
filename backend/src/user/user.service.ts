@@ -61,7 +61,7 @@ export class UserService {
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
 			return { error: "Invalid intraName - intraName does not exist" };
-		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: FRIEND_DATA.intraName}, {senderIntraName: FRIEND_DATA.intraName, receiverIntraName: USER_DATA.intraName}] });
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{sender: {intraName: USER_DATA.intraName}, receiver: {intraName: FRIEND_DATA.intraName}}, {sender: {intraName: FRIEND_DATA.intraName}, receiver: {intraName: USER_DATA.intraName}}] });
 		if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 			return { error: "Invalid friendship - You are blocked by this user" };
 		FRIEND_DATA.accessToken = "hidden";
@@ -145,7 +145,7 @@ export class UserService {
 		return NEW_USER;
 	}
 
-	// Hides sensitive data
+	// Helper function to hides sensitive data
 	hideData(body: any): any {
 		if (body === undefined)
 			return body;

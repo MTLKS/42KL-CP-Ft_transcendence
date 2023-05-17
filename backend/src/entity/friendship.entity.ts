@@ -1,23 +1,22 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { User } from './users.entity';
 
 @Entity( { name: 'friendship' } )
 export class Friendship {
-	constructor(senderIntraName: string, receiverIntraName: string, status: string) {
-		this.senderIntraName = senderIntraName;
-		this.receiverIntraName = receiverIntraName;
+	constructor(sender: User, receiver: User, status: string) {
+		this.sender = sender;
+		this.receiver = receiver;
 		this.status = status;
 	}
 
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	// Change this to a ManyToOne user relationship
-	@Column()
-	senderIntraName: string;
+	@ManyToOne(() => User, user => user)
+	sender: User;
 	
-	// Change this to a ManyToOne user relationship
-	@Column()
-	receiverIntraName: string;
+	@ManyToOne(() => User, user => user)
+	receiver: User;
 
 	@Column()
 	status: string;
