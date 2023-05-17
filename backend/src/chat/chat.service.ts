@@ -18,7 +18,7 @@ export class ChatService {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		let dmRoom = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false} });
 		if (dmRoom === null)
-			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false));
+			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, new Date().toISOString()));
 		client.join(dmRoom.channelId);
 	}
 
@@ -40,6 +40,8 @@ export class ChatService {
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("message", { error: "Invalid friendhsip - you are not friends with this user" } );
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {channelName: USER_DATA.intraName, isRoom: false}, relations: ['owner'] });
+		MY_CHANNEL.lastActivity = new Date().toISOString();
+		await this.channelRepository.save(MY_CHANNEL);
 		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, false, message, new Date().toISOString());
 		await this.messageRepository.save(NEW_MESSAGE);
 
@@ -67,7 +69,7 @@ export class ChatService {
 		const MY_MEMBER = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channel: FRIEND_CHANNEL}, relations: ['user', 'channel'] });
 		MY_MEMBER.lastRead = new Date().toISOString();
 		await this.memberRepository.save(MY_MEMBER);
-		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER) );
+		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER));
 	}
 
 	// Checks whether user is typing
@@ -146,7 +148,7 @@ export class ChatService {
 		if (channelName.length < 1 || channelName.length > 16)
 			return { error: "Invalid channelName - channelName must be between 1-16 characters" };
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true);
+		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, new Date().toISOString());
 		await this.channelRepository.save(ROOM);
 		await this.memberRepository.save(new Member(USER_DATA, ROOM, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
