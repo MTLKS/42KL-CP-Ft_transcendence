@@ -84,7 +84,7 @@ export class ChatService {
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid friendhsip - you are not friends with this user" } );
 		await this.friendshipRepository.save(FRIENDSHIP)
-		server.to(CHANNEL.channelId).emit("typing", USER_DATA.intraName + " is typing..." );
+		server.to(CHANNEL.channelId).emit("typing", { intraName: USER_DATA.intraName} );
 	}
 
 	// Retrives user's member data
