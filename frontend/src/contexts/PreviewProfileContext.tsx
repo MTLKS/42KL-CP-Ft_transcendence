@@ -1,14 +1,27 @@
 import { UserData } from '../model/UserData';
 import { createContext } from 'react'
 
+let myProfile: UserData = {
+	accessToken: "hidden",
+	avatar: "",
+	elo: 400,
+	intraId: 130305,
+	intraName: "wricky-t",
+	tfaSecret: null,
+	userName: "JOHNDOE",
+	winning: false,
+}
+
 interface ProfileContextProps {
+	currentPreviewProfile: UserData;
 	setPreviewProfileFunction: (func: UserData) => void;
 	setTopWidgetFunction: (func: any) => void;
 }
 
-const previewProfileContext = createContext<ProfileContextProps>({
-	setPreviewProfileFunction: (func) => {},
-	setTopWidgetFunction: (func) => {},
+const PreviewProfileContext = createContext<ProfileContextProps>({
+	currentPreviewProfile: myProfile,
+	setPreviewProfileFunction: (func) => { },
+	setTopWidgetFunction: (func) => { },
 });
 
-export default previewProfileContext;
+export default PreviewProfileContext;

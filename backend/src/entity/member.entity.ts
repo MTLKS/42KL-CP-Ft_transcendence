@@ -19,7 +19,7 @@ export class Member {
 	@ManyToOne(() => User, user => user)
 	user: User;
 
-	@ManyToOne(() => User, user => user)
+	@ManyToOne(() => Channel, channel => channel)
 	channel: Channel
 
 	@Column()

@@ -30,7 +30,7 @@ function GameApp(props: GameAppProps) {
     pixiApp.stage.hitArea = new PIXI.Rectangle(0, 0, 1600, 900);
     pixiApp.stage.on('mousemove', onmousemove);
     return () => {
-      gameData.endGame();
+      // gameData.endGame(); // TODO: uncomment this
       pixiApp.stage.off('mousemove', onmousemove);
     }
   }, []);

@@ -4,7 +4,7 @@ import ProfileHeader from './Expanded/ProfileHeader';
 import ProfileBody from './Expanded/ProfileBody';
 import RecentMatches from './RecentMatches/RecentMatches';
 import SocketApi from '../../api/socketApi';
-import { status } from '../../functions/friendlist';
+import PreviewProfileContext from '../../contexts/PreviewProfileContext';
 import UserContext from '../../contexts/UserContext';
 
 interface ProfileProps {
@@ -12,11 +12,12 @@ interface ProfileProps {
 }
 
 function Profile(props: ProfileProps) {
-  const { myProfile } = useContext(UserContext);
+  const { currentPreviewProfile: myProfile, setPreviewProfileFunction } = useContext(PreviewProfileContext);
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState("online");
   const [animating, setAnimating] = useState(false);
+  const {defaultSocket} = useContext(UserContext);
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
@@ -25,18 +26,16 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     pixelatedToSmooth();
-    let socketApi: SocketApi;
     if (!myProfile.intraName) return;
-    socketApi = new SocketApi();
-    socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
-    socketApi.listen("statusRoom", (data: any) => {
-      if (data !== undefined && data.status !== undefined)
+    defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
+    defaultSocket.listen("statusRoom", (data: any) => {
+      if (data !== undefined && data.status !== undefined && data.intraName === myProfile.intraName)
         setStatus((data.status as string).toLowerCase());
     });
 
     return () => {
-      socketApi.removeListener("statusRoom");
-      socketApi.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
+      defaultSocket.removeListener("statusRoom");
+      defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
     }
   }, [myProfile.intraName]);
 

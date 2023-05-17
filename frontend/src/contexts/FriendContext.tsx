@@ -1,18 +1,26 @@
 import { createContext } from "react";
 import { FriendData } from "../model/FriendData";
-import { AxiosResponse } from "axios";
+import SocketApi from "../api/socketApi";
 
 interface FriendsContextType {
+  friendshipSocket: SocketApi,
   friends: FriendData[],
   setFriends: (updatedFriends: FriendData[]) => void;
 }
 
 export const FriendsContext = createContext<FriendsContextType>({
+  friendshipSocket: new SocketApi(),
   friends: [],
   setFriends: () => { },
 });
 
-export const SelectedFriendContext = createContext<FriendsContextType>({
+interface SeletectedFriendsContextType {
+  friends: FriendData[],
+  setFriends: (updatedFriends: FriendData[]) => void;
+}
+
+export const SelectedFriendContext = createContext<SeletectedFriendsContextType>({
+
   friends: [],
   setFriends: () => { },
 })

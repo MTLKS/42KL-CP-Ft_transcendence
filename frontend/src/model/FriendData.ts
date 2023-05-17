@@ -1,10 +1,10 @@
 export interface FriendData {
-  id: number;
   senderIntraName: string;
   receiverIntraName: string;
-  elo: number;
   status: string;
+  id: number;
   userName: string
+  elo: number;
   avatar: string;
 }
 

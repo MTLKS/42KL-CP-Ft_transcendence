@@ -35,10 +35,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, []);
 
   useEffect(() => {
-    console.log(typingMembers);
-  }, [typingMembers]);
-
-  useEffect(() => {
     if (textTooLong) {
       setTimeout(() => {
         setTextTooLong(false);
@@ -165,7 +161,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           </div>
         }
         <textarea
-          className='resize-none text-xl outline-none flex-1 border-highlight border-4 border-l-0 border-b-0 bg-dimshadow text-highlight p-3 scrollbar-hide whitespace-pre-line cursor-text'
+          className='resize-none text-xl outline-none flex-1 border-highlight border-4 border-l-0 border-b-0 bg-dimshadow text-highlight p-3 scrollbar-hide whitespace-pre-line cursor-text selection:bg-highlight selection:text-dimshadow'
           rows={rows}
           value={message}
           onBlur={() => { setRows(1); setIsFocusing(false); }}

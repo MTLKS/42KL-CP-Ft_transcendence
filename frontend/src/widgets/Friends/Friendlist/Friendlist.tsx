@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import FriendlistTitle from './FriendlistTitle'
 import EmptyFriendlist from './EmptyFriendlist';
 import { UserData } from '../../../model/UserData';
@@ -7,8 +7,10 @@ import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
 import { FriendsContext } from '../../../contexts/FriendContext';
+import UserContext from '../../../contexts/UserContext';
 
 interface FriendlistProps {
+  friends: FriendData[]; // need to be changed to compulsory
   userData: UserData;
   onQuit: () => void;
 }
@@ -16,8 +18,7 @@ interface FriendlistProps {
 function Friendlist(props: FriendlistProps) {
 
   // Props
-  const { userData, onQuit } = props;
-  const { friends } = useContext(FriendsContext);
+  const { friends, userData, onQuit } = props;
 
   // Use Hooks
   const [inputValue, setInputValue] = useState("");
@@ -28,18 +29,19 @@ function Friendlist(props: FriendlistProps) {
   const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
+  const { myProfile } = useContext(UserContext);
 
   // Filtered Raw data
-  const acceptedFriends = filterFriends(friends, FriendTags.accepted);
-  const pendingFriends = filterFriends(friends, FriendTags.pending);
-  const blockedFriends = filterFriends(friends, FriendTags.blocked);
-  const sortedFriends = acceptedFriends.concat(pendingFriends, blockedFriends);
+  const acceptedFriends = useMemo(() => filterFriends(friends, FriendTags.accepted), []);
+  const pendingFriends = useMemo(() => filterFriends(friends, FriendTags.pending), []);
+  const blockedFriends = useMemo(() => filterFriends(friends, FriendTags.blocked), []);
+  const sortedFriends = useMemo(() => acceptedFriends.concat(pendingFriends, blockedFriends), []);
 
   // convert sorted friends into lines
-  const lines: JSX.Element[] = createFriendlistComponents(sortedFriends);
+  const lines: JSX.Element[] = useMemo(() => createFriendlistComponents(sortedFriends), [sortedFriends]);
 
   // this should run when the component is mounted
-  useEffect(() => {
+  useEffect(() => { 
     handleResize();
     focusOnInput();
     observerSetup();
@@ -65,14 +67,15 @@ function Friendlist(props: FriendlistProps) {
       <input
         className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        onChange={handleInput}
+        // onChange={handleInput}
         value={inputValue}
         ref={inputRef}
       />
+      { userData.intraName !== myProfile.intraName && <p className='bg-highlight text-dimshadow w-fit px-[1ch]'>Currently viewing <span className='bg-accCyan text-highlight'>{userData.userName}</span>'s friend list</p>}
       <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
         {
           friends.length === 0
-            ? <EmptyFriendlist />
+            ? <EmptyFriendlist userData={userData}/>
             : lines.slice(startingIndex, endingIndex)
         }
       </div>
@@ -121,7 +124,7 @@ function Friendlist(props: FriendlistProps) {
     let targetCategory: FriendData[] = [];
     let components: JSX.Element[] = [];
 
-    if (sortedFriends.length === 0) return [<EmptyFriendlist />];
+    if (sortedFriends.length === 0) return [<EmptyFriendlist userData={userData} />];
 
     components.push(
       <FriendlistEmptyLine key="el0" />,
@@ -205,18 +208,18 @@ function Friendlist(props: FriendlistProps) {
   }
 
   // less: handle input
-  function handleInput(e: React.FormEvent<HTMLInputElement>) {
-    let value = e.currentTarget.value;
+  // function handleInput(e: React.FormEvent<HTMLInputElement>) {
+  //   let value = e.currentTarget.value;
 
-    if (value[value.length - 1] == '\\') value += '\\';
+  //   if (value[value.length - 1] == '\\') value += '\\';
 
-    setInputValue(value.toLowerCase());
-    if (value[0] === '/') {
-      setIsSearching(true);
-      return;
-    }
-    setInputValue("");
-  }
+  //   setInputValue(value.toLowerCase());
+  //   if (value[0] === '/') {
+  //     setIsSearching(true);
+  //     return;
+  //   }
+  //   setInputValue("");
+  // }
 }
 
 export default Friendlist;
