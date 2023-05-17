@@ -2,10 +2,14 @@ import { CanActivate, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ExecutionContext } from "@nestjs/common";
 import { TFAService } from "src/tfa/tfa.service";
-import { User } from "src/entity/user.entity";
+import { User } from "src/entity/users.entity";
 import { AuthGuard } from "./AuthGuard";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
+
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const RESET = "\x1b[0m";
 
 @Injectable()
 export class TFAGuard implements CanActivate {
@@ -21,7 +25,9 @@ export class TFAGuard implements CanActivate {
 		} catch {
 			authCode = REQUEST.handshake.headers.authorization;
 		}
-		const USER_DATA = await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
-		return USER_DATA[0].tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
+		const USER_DATA = await this.userRepository.findOne({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
+		const RET = USER_DATA.tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
+		console.log(RET === true ? GREEN + "Authorization is valid: correct TFA " + RESET : RED + "Authorization is invalid: incorrect TFA" + RESET);
+		return RET;
 	}
 }

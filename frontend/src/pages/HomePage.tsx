@@ -35,7 +35,7 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "leaderboard" }),
   new CommandOptionData({ command: "friend", options: ["add", "list", "block", "unblock", "requests"], parameters: "<username>" }),
   new CommandOptionData({ command: "cowsay" }),
-  new CommandOptionData({ command: "tfa" }),
+  new CommandOptionData({ command: "tfa", options: ["set", "unset", "forgot"] }),
   new CommandOptionData({ command: "sudo" }),
   new CommandOptionData({ command: "display" }),
   new CommandOptionData({ command: "start" }),

@@ -12,6 +12,12 @@ export class TFAController{
 	async requestNewSecret(@Headers('Authorization') accessToken: string) {
 		return await this.tfaService.requestNewSecret(accessToken);
 	}
+
+	@Get('forgot')
+	@UseGuards(AuthGuard)
+	async forgotSecret(@Headers('Authorization') accessToken: string) {
+		return await this.tfaService.forgotSecret(accessToken);
+	}
 	
 	@Post()
 	@UseGuards(AuthGuard)

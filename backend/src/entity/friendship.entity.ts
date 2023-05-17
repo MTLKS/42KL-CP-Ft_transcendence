@@ -11,9 +11,11 @@ export class Friendship {
 	@PrimaryGeneratedColumn()
 	id: number;
 
+	// Change this to a ManyToOne user relationship
 	@Column()
 	senderIntraName: string;
 	
+	// Change this to a ManyToOne user relationship
 	@Column()
 	receiverIntraName: string;
 
