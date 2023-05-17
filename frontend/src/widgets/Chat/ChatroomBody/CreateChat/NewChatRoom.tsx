@@ -8,23 +8,17 @@ import { ChatContext, NewChatContext } from '../../../../contexts/ChatContext'
 import ChatroomList from '../Chatroom/ChatroomList'
 import newChatRoomReducer, { newChatRoomInitialState } from './newChatRoomReducer'
 import NewChatInfo from './NewChatInfo'
-import UserContext from '../../../../contexts/UserContext'
-import { ChatroomData } from '../../../../model/ChatRoomData'
-import { getProfileOfUser } from '../../../../functions/profile'
-import { UserData } from '../../../../model/UserData'
 
 interface NewChatRoomProps {
-  chatrooms?: ChatroomData[],
   type: 'dm' | 'channel'
 }
 
 function NewChatRoom(props: NewChatRoomProps) {
 
   // Props
-  const { chatrooms, type } = props;
+  const { type } = props;
 
   const [state, dispatch] = useReducer(newChatRoomReducer, newChatRoomInitialState);
-  const { myProfile } = useContext(UserContext);
   const { setChatBody } = useContext(ChatContext);
   const { friends } = useContext(FriendsContext);
   const acceptedFriends = useMemo(() => friends.filter(friend => friend.status.toLowerCase() === 'accepted'), [friends]);
@@ -33,12 +27,16 @@ function NewChatRoom(props: NewChatRoomProps) {
     dispatch({ type: 'SET_IS_CHANNEL', payload: type === 'channel' });
   }, []);
 
+  useEffect(() => {
+    console.log(state.members);
+  }, [state.members]);
+
   return (
     <NewChatContext.Provider value={{ members: state.members }}>
       <div className='w-full h-full'>
         <ChatNavbar
           title={`new ${type}`}
-          nextComponent={<ChatButton title={type === "dm" ? "create" : `next (${state.members && state.members.length})`} onClick={type === "dm" ? handleCreateChatroom : () => setChatBody(<NewChatInfo />)} />}
+          nextComponent={<ChatButton title={type === "dm" ? "create" : `next (${state.members && state.members.length})`} onClick={type === "dm" ? () => setChatBody(<ChatroomList />) : () => setChatBody(<NewChatInfo />)} />}
           backAction={() => setChatBody(<ChatroomList />)}
         />
         <div className='w-[95%] h-full mx-auto flex flex-col gap-y-2'>
@@ -60,35 +58,6 @@ function NewChatRoom(props: NewChatRoomProps) {
       dispatch({ type: 'SELECT_MEMBER', payload: intraName });
       return true;
     }
-  }
-
-  async function handleCreateChatroom() {
-
-    // if no friend is selected, do nothing
-    if (state.members.length === 0) return;
-
-    // if chatroom already existed, do nothing
-    const chatroomExisted = chatrooms?.some(chatroom => chatroom.channelName === state.members[0] && chatroom.isRoom === false);
-    if (chatroomExisted) {
-      // TODO: set chatroom as active or just show an error message
-      setChatBody(<ChatroomList />);
-      return;
-    }
-
-    const owner = state.isChannel ? myProfile : (await getProfileOfUser(state.members[0])).data as UserData;
-
-    // currently only consider DM
-    const tempChatRoom: ChatroomData = {
-      channelId: 0,
-      channelName: state.members[0],
-      isPrivate: true,
-      isRoom: false,
-      owner: owner,
-      password: null,
-      newMessage: false,
-    }
-    localStorage.setItem(`${myProfile.intraId.toString()}_tcr_${state.members[0]}`, JSON.stringify(tempChatRoom));
-    setChatBody(<ChatroomList />);
   }
 }
 

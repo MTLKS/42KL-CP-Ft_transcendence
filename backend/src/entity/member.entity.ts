@@ -1,11 +1,12 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { User } from './users.entity';
+import { Channel } from './channel.entity';
 
 @Entity( { name: 'member' } )
 export class Member {
-	constructor(user: User, channelId: number, isAdmin: boolean, isBanned: boolean, isMuted: boolean, lastRead: string) {
+	constructor(user: User, channel: Channel, isAdmin: boolean, isBanned: boolean, isMuted: boolean, lastRead: string) {
 		this.user = user;
-		this.channelId = channelId;
+		this.channel = channel;
 		this.isAdmin = isAdmin;
 		this.isBanned = isBanned;
 		this.isMuted = isMuted;
@@ -18,9 +19,8 @@ export class Member {
 	@ManyToOne(() => User, user => user)
 	user: User;
 
-	// Change this to a ManyToOne channel relationship
-	@Column()
-	channelId: number;
+	@ManyToOne(() => User, user => user)
+	channel: Channel
 
 	@Column()
 	isAdmin: boolean;
