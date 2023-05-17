@@ -137,7 +137,7 @@ export class ChatService {
 	// Creates a new room
 	async createRoom(accessToken: string, channelName: string, isPrivate: boolean, password: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || password === undefined)
-			return { error: "Invalid body - body must include channelName(string), isPrivate(boolean) and password(nullable string)" };
+			return { error: "Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)" };
 		if (password !== null) {
 			if (password.length < 1 || password.length > 16)
 				return { error: "Invalid password - password must be between 1-16 characters" };
@@ -155,7 +155,7 @@ export class ChatService {
 	// Updates room settings
 	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
-			return { error: "Invalid body - body must include channelName(string), isPrivate(boolean) and password(nullable string)" };
+			return { error: "Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)" };
 		if (newPassword !== null) {
 			if (newPassword.length < 1 || newPassword.length > 16)
 				return { error: "Invalid password - password must be between 1-16 characters" };
