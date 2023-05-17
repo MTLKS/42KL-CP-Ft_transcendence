@@ -96,18 +96,18 @@ export class FriendshipService {
 				return { error: "Friendship does not exist - use POST method to create" }
 			RECEIVER.status = status.toUpperCase();
 			const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName}} });
-			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: USER_DATA.intraName}, channelId: MY_CHANNEL.channelId}})
+			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: USER_DATA.intraName}, channel: MY_CHANNEL}})
 			const FRIEND_DATA = await this.userService.getUserDataByIntraName(accessToken, receiverIntraName);
 			if (FRIEND_DATA.error !== undefined)
 				return FRIEND_DATA;
 			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: receiverIntraName}} });
 			if (FRIEND_CHANNEL === null)
 				return { error: "invalid intraName - intraName does not exist" }
-			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: FRIEND_DATA.intraName}, channelId: FRIEND_CHANNEL.channelId}})
+			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: FRIEND_DATA.intraName}, channel: FRIEND_CHANNEL}})
 			if (MY_MEMBER === null)
-				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL.channelId, true, false, false, new Date().toISOString()));
+				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL, true, false, false, new Date().toISOString()));
 			if (FRIEND_MEMBER === null)
-				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL.channelId, true, false, false, new Date().toISOString()));
+				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL, true, false, false, new Date().toISOString()));
 			return await this.friendshipRepository.save(RECEIVER);
 		}
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} });
