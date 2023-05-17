@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer } from '@pixi/react'
-import Paddle from './game_objects/Paddle';
+import Paddle, { PaddleType } from './game_objects/Paddle';
 import { BoxSize, Offset } from '../model/GameModels';
 import Pong from './game_objects/Pong';
 import RippleEffect, { Ring } from './game_objects/RippleEffect';
@@ -14,6 +14,7 @@ import GameEntity, { GameBlackhole, GameBlock, GameTimeZone } from '../model/Gam
 import GameParticle, { GameLightningParticle } from '../model/GameParticle';
 import sleep from '../functions/sleep';
 import * as particles from '@pixi/particle-emitter';
+import { GameData } from './gameData';
 
 interface GameProps {
   scale: number;
@@ -33,27 +34,27 @@ function Game(props: GameProps) {
       centerX: 400,
       centerY: 400,
       paddingX: 15,
-      paddingY: 70,
+      paddingY: 60,
     }),
-    new GameLightningParticle({
-      centerX: 400,
-      centerY: 400,
-      paddingX: 15,
-      paddingY: 70,
-    }),
-    new GameLightningParticle({
-      centerX: 400,
-      centerY: 400,
-      paddingX: 15,
-      paddingY: 70,
-    }),
+    // new GameLightningParticle({
+    //   centerX: 400,
+    //   centerY: 400,
+    //   paddingX: 17,
+    //   paddingY: 62,
+    // }),
+    // new GameLightningParticle({
+    //   centerX: 400,
+    //   centerY: 400,
+    //   paddingX: 15,
+    //   paddingY: 58,
+    // }),
   ]);
   const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
   const [rings, setRings] = useState<Ring[]>([]);
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
-  const app = useApp();
+
   const addRing = useCallback(async () => {
     const newRings: Ring[] = [...rings];
     const hitPosition = gameData.pongPosition;
@@ -77,125 +78,15 @@ function Game(props: GameProps) {
     if (!gameData.displayGame || !mounted) return;
     const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
-    const newParticles: GameParticle[] = [...particles];
-    newParticles.forEach((particle) => {
-      if (particle.opacity <= 0.01) {
-        newParticles.splice(newParticles.indexOf(particle), 1);
-      }
-      let finalTimeFactor = 1;
-      gameData.gameEntities.forEach((entity) => {
-        if (entity instanceof GameBlackhole) {
-          if (!particle.gravity) return;
-          const distance = Math.sqrt(
-            Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
-          );
-          if (distance < 1 || distance > 300) return;
-          if (distance < 10) particle.opacity = 0;
-          particle.setGravityAccel(entity.x, entity.y, entity.magnitude);
-        }
-        if (entity instanceof GameTimeZone) {
-          const distance = Math.sqrt(
-            Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
-          );
-          if (distance < 1 || distance > entity.w / 2) return;
-          finalTimeFactor *= entity.timeFactor;
-        }
-      });
-      gameData.applGlobalEffectToParticle(particle);
-      particle.update(finalTimeFactor);
-    });
-    newParticles.push(
-      new GameParticle({
-        x: newPosition.x - 5 + 20 * Math.random(),
-        y: newPosition.y - 5 + 20 * Math.random(),
-        opacity: 1,
-        opacityDecay: 0.02,
-        vx: newPongSpeed.y * (Math.random() - 0.5) * 0.3,
-        vy: newPongSpeed.x * (Math.random() - 0.5) * 0.3,
-        w: 3,
-        h: 3,
-      })
-    );
-    for (let i = 0; i < 2; i++) {
-      const size = 2 + 3 * Math.random();
-      newParticles.push(
-        new GameParticle({
-          x: newPosition.x + 5 - 10 / 2,
-          y: newPosition.y + 5 - 10 / 2,
-          opacity: 0.8,
-          opacityDecay: 0.02,
-          vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
-          vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
-          w: size,
-          h: size,
-          speedDecayFactor: 0.95,
-        })
-      );
-    }
-    for (let i = 0; i < 2; i++) {
-      const size = 6 + 4 * Math.random();
-      newParticles.push(
-        new GameParticle({
-          x: newPosition.x + 5 - 10 / 2,
-          y: newPosition.y + 5 - 10 / 2,
-          opacity: 1,
-          opacityDecay: 0.02,
-          vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
-          vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
-          w: size,
-          h: size,
-          speedDecayFactor: 0.95,
-          colorIndex: 1,
-        })
-      );
-    }
+    const newParticles: GameParticle[] = updateParticles(particles, gameData, newPosition, newPongSpeed);
 
-    gameData.gameEntities.forEach((entity) => {
-      if (entity.type !== "blackhole") return;
-      const x =
-        entity.x +
-        (Math.random() > 0.2 ? 1 : -1) * 30 +
-        30 * (Math.random() - 0.5);
-      const y =
-        entity.y +
-        (Math.random() > 0.5 ? -1 : -1) * 30 +
-        30 * (Math.random() - 0.5);
-      const size = 2 + 8 * Math.random();
-      newParticles.push(
-        new GameParticle({
-          x: x,
-          y: y,
-          opacity: 1,
-          vx: (entity.x - x) / 10 + 7 + 2,
-          vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1) + 5,
-          opacityDecay: 0.005,
-          w: size,
-          h: size,
-          colorIndex: 2,
-        })
-      );
-    });
-
-    newParticles.push(
-      new GameParticle({
-        x: newPosition.x,
-        y: newPosition.y,
-        opacity: 1,
-        vx: 0.12,
-        vy: 0.12,
-        opacityDecay: 0.03,
-        sizeDecay: 0.3,
-        w: 10,
-        h: 10,
-        colorIndex: 0,
-        gravity: false,
-      })
-    );
 
     const newLightningParticles: GameLightningParticle[] = [
       ...lightningParticles,
     ];
     newLightningParticles.forEach((lightning) => {
+      lightning.centerX = leftPaddlePosition.x + 7.5;
+      lightning.centerY = leftPaddlePosition.y;
       lightning.update();
     });
     setParticles(newParticles);
@@ -219,7 +110,6 @@ function Game(props: GameProps) {
       });
       return newRings;
     });
-    // app.destroy(false, { children: true, texture: true, baseTexture: true });
   }, usingTicker ?? true);
 
   if (!shouldRender) return <></>;
@@ -233,11 +123,129 @@ function Game(props: GameProps) {
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
       <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} />
-      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} />
+      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 150 }} position={leftPaddlePosition} type={PaddleType.Ngeeeaat} />
       <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />
     </Container>
     // <></>
   )
+}
+
+function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset) {
+  const newParticles = [...particles];
+  newParticles.forEach((particle) => {
+    if (particle.opacity <= 0.01) {
+      newParticles.splice(newParticles.indexOf(particle), 1);
+    }
+    let finalTimeFactor = 1;
+    gameData.gameEntities.forEach((entity) => {
+      if (entity instanceof GameBlackhole) {
+        if (!particle.gravity) return;
+        const distance = Math.sqrt(
+          Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
+        );
+        if (distance < 1 || distance > 300) return;
+        if (distance < 10) particle.opacity = 0;
+        particle.setGravityAccel(entity.x, entity.y, entity.magnitude);
+      }
+      if (entity instanceof GameTimeZone) {
+        const distance = Math.sqrt(
+          Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
+        );
+        if (distance < 1 || distance > entity.w / 2) return;
+        finalTimeFactor *= entity.timeFactor;
+      }
+    });
+    gameData.applGlobalEffectToParticle(particle);
+    particle.update(finalTimeFactor);
+  });
+  newParticles.push(
+    new GameParticle({
+      x: newPosition.x - 5 + 20 * Math.random(),
+      y: newPosition.y - 5 + 20 * Math.random(),
+      opacity: 1,
+      opacityDecay: 0.02,
+      vx: newPongSpeed.y * (Math.random() - 0.5) * 0.3,
+      vy: newPongSpeed.x * (Math.random() - 0.5) * 0.3,
+      w: 3,
+      h: 3,
+    })
+  );
+  for (let i = 0; i < 2; i++) {
+    const size = 2 + 3 * Math.random();
+    newParticles.push(
+      new GameParticle({
+        x: newPosition.x + 5 - 10 / 2,
+        y: newPosition.y + 5 - 10 / 2,
+        opacity: 0.8,
+        opacityDecay: 0.02,
+        vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
+        vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
+        w: size,
+        h: size,
+        speedDecayFactor: 0.95,
+      })
+    );
+  }
+  for (let i = 0; i < 2; i++) {
+    const size = 6 + 4 * Math.random();
+    newParticles.push(
+      new GameParticle({
+        x: newPosition.x + 5 - 10 / 2,
+        y: newPosition.y + 5 - 10 / 2,
+        opacity: 1,
+        opacityDecay: 0.02,
+        vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
+        vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
+        w: size,
+        h: size,
+        speedDecayFactor: 0.95,
+        colorIndex: 1,
+      })
+    );
+  }
+
+  gameData.gameEntities.forEach((entity) => {
+    if (entity.type !== "blackhole") return;
+    const x =
+      entity.x +
+      (Math.random() > 0.2 ? 1 : -1) * 30 +
+      30 * (Math.random() - 0.5);
+    const y =
+      entity.y +
+      (Math.random() > 0.5 ? -1 : -1) * 30 +
+      30 * (Math.random() - 0.5);
+    const size = 2 + 8 * Math.random();
+    newParticles.push(
+      new GameParticle({
+        x: x,
+        y: y,
+        opacity: 1,
+        vx: (entity.x - x) / 10 + 7 + 2,
+        vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1) + 5,
+        opacityDecay: 0.005,
+        w: size,
+        h: size,
+        colorIndex: 2,
+      })
+    );
+  });
+
+  newParticles.push(
+    new GameParticle({
+      x: newPosition.x,
+      y: newPosition.y,
+      opacity: 1,
+      vx: 0.12,
+      vy: 0.12,
+      opacityDecay: 0.03,
+      sizeDecay: 0.3,
+      w: 10,
+      h: 10,
+      colorIndex: 0,
+      gravity: false,
+    })
+  );
+  return newParticles;
 }
 
 

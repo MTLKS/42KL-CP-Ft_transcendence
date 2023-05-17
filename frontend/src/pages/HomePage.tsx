@@ -39,7 +39,7 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "sudo" }),
   new CommandOptionData({ command: "display" }),
   new CommandOptionData({ command: "start" }),
-  new CommandOptionData({ command: "queue", options: ["standard", "power", "death"] }),
+  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death"] }),
   new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
   new CommandOptionData({ command: "end" }),

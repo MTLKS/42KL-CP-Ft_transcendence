@@ -1,14 +1,5 @@
 import { createContext } from 'react';
-
-interface UserData {
-  accessToken: string;
-  avatar: string;
-  elo: number;
-  intraId: number;
-  intraName: string;
-  tfaSecret: string | null;
-  userName: string;
-}
+import { UserData } from '../model/UserData';
 
 let myProfile: UserData = {
 	accessToken: "hidden",
@@ -17,7 +8,8 @@ let myProfile: UserData = {
 	intraId: 130305,
 	intraName: "wricky-t",
 	tfaSecret: null,
-	userName: "JOHNDOE"
+	userName: "JOHNDOE",
+	winning: true
 }
 
 interface UserContextProps {
