@@ -114,7 +114,11 @@ export class ChatService {
 	}
 
 	// Retrives all messages from a DM
-	async getMyDMMessages(accessToken: string, channelId: number): Promise<any> {
+	async getMyDMMessages(accessToken: string, channelId: number, perPage: number, page: number): Promise<any> {
+		if (perPage === undefined)
+			perPage = 100;
+		if (page === undefined)
+			page = 1;
 		if (channelId === undefined)
 			return { error: "Invalid body - body must include channelId(number)" };
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
@@ -127,7 +131,7 @@ export class ChatService {
 		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
 			return { error: "Invalid channelId - you are not friends with this user" };
 		const MESSAGES = await this.messageRepository.find({ where: [{receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL}, {receiverChannel: { channelId: channelId}, senderChannel: MY_CHANNEL}], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
-		return this.userService.hideData(MESSAGES);
+		return this.userService.hideData(MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
 	}
 
 	// Creates a new room
