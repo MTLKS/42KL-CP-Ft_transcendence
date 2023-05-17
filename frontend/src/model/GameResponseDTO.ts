@@ -1,4 +1,4 @@
-export interface GameResponse{
+export interface GameResponseDTO {
 	type: 'success' | 'error',
 	message: string
 }

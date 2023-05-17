@@ -14,7 +14,7 @@ export class GameStartDTO {
 
 export class GameEndDTO {
 	winner: string;
-	wonBy: "normal" | "abandon";
+	wonBy: "score" | "abandon";
 	finalScore: Array<number>;
 
 	constructor(player1Score: number, player2Score: number){
@@ -23,14 +23,32 @@ export class GameEndDTO {
 }
 
 export class GamePauseDTO {
-	abandonDate: Date;
+	abandonDate: number;
+
+	constructor(abandonDate: number) {
+		this.abandonDate = abandonDate;
+	}
+}
+
+export class FieldEffectDTO {
+	type: "NORMAL" | "GRAVITY" | "TIME_ZONE" | "BLACK_HOLE" | "BLOCK";
+	xPos: number;
+	yPos: number;
+	magnitude: number;
+	
+	constructor(type: "NORMAL" | "GRAVITY" | "TIME_ZONE" | "BLACK_HOLE" | "BLOCK", xPos: number, yPos: number, magnitude: number) {
+		this.type = type;
+		this.xPos = xPos;
+		this.yPos = yPos;
+		this.magnitude = magnitude;
+	}
 }
 
 export class GameStateDTO {
 	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO;
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect", data : GameStartDTO | GameEndDTO | GamePauseDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect", data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO) {
 		this.type = type;
 		this.data = data;
 	}

@@ -36,10 +36,10 @@ class GameBlackhole extends GameEntity {
 }
 
 class GameTimeZone extends GameEntity {
-  speedFactor: number;
+  timeFactor: number;
   constructor({ x, y, vx, vy, w, h }: GameEntityData, speedFactor: number) {
     super({ x, y, vx, vy, w, h });
-    this.speedFactor = speedFactor ?? 1;
+    this.timeFactor = speedFactor ?? 1;
     this.type = "timezone";
   }
 }

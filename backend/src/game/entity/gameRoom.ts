@@ -3,10 +3,11 @@ import { Rect } from "./rect";
 import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
-import { GameStartDTO, GameEndDTO, GameStateDTO } from "src/dto/gameState.dto";
+import { GameStartDTO, GameEndDTO, GamePauseDTO, GameStateDTO } from "src/dto/gameState.dto";
 import { Player } from "./player";
+import { MatchService } from "src/match/match.service";
 
-class CollisionResult{
+export class CollisionResult{
 	collided: boolean;
 	collideTime : number;
 	normalX: number;
@@ -36,13 +37,17 @@ export class GameRoom{
 	lastWinner: string;
 	player1Score: number;
 	player2Score: number;
+	winScore: number;
 	gameEnded: boolean;
 	gameReset: boolean;
 	gamePaused: boolean;
+	gamePauseDate: number | null;
+	gamePausePlayer: string | null;
 	_players: Array<string>;
 	roomSettings: GameSetting;
+	matchService: MatchService;
 
-	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting){
+	constructor(player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService){
 		this.roomID = player1.intraName + player2.intraName;
 		this.gameType = gameType;
 		this.player1 = player1;
@@ -56,13 +61,15 @@ export class GameRoom{
 		this.leftPaddle = new Rect(setting.paddleOffsetX, this.canvasHeight / 2, setting.paddleWidth, setting.leftPaddleHeight);
 		this.rightPaddle = new Rect(this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth, this.canvasHeight / 2, setting.paddleWidth, setting.rightPaddleHeight);
 		this.interval = null;
-		
 		this._players = [player1.intraName, player2.intraName];
 		this.lastWinner = '';
 		this.player1Score = 0;
 		this.player2Score = 0;
+		this.winScore = setting.scoreToWin;
 		this.gameReset = false;
 		this.gamePaused = false;
+
+		this.matchService = matchService;
 
 		//Check for game mode
 		this.roomSettings = setting;
@@ -70,29 +77,31 @@ export class GameRoom{
 
 	
 	async run(server: Server){
-		this.resetGame();
+		this.resetGame(server);
 		await this.countdown(3);
 		if (this.interval == null){
 			this.interval = setInterval(async () => {
+			
 				if (this.gameReset == true){
-					this.resetGame();
+					this.resetGame(server);
 					server.to(this.roomID).emit('gameLoop',
-					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-						this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+					new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
 					await this.countdown(1);
 					this.gameReset = false;
 				}
 
 				else if (this.gamePaused == true){
-
+					if (Date.now() - this.gamePauseDate > 5000) {
+						this.endGame(server, this.player1.intraName === this.gamePausePlayer ? this.player2.intraName : this.player1.intraName, "abandon");
+					}
 				}
 
 				else{
-					this.gameUpdate();
+					this.gameUpdate(server);
 				}
 
-				if (this.player1Score == this.roomSettings.scoreToWin || this.player2Score == this.roomSettings.scoreToWin){
-					this.endGame(server);
+				if (this.player1Score === this.roomSettings.scoreToWin || this.player2Score === this.roomSettings.scoreToWin){
+					this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score");
 				}
 
 				server.to(this.roomID).emit('gameLoop',
@@ -102,7 +111,7 @@ export class GameRoom{
 		}
 	}
 
-	gameUpdate(){
+	gameUpdate(server: Server){
 		this.Ball.update();
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score!=0){
@@ -115,7 +124,6 @@ export class GameRoom{
 				this.lastWinner = "player2";
 			}
 			this.gameReset = true;
-			// console.log(this.player1Score, ":" , this.player2Score);
 		}
 		this.gameCollisionDetection();
 	}
@@ -210,7 +218,7 @@ export class GameRoom{
 		if (socketId == this.player1.socket.id){
 			this.leftPaddle.posY = value - 50;
 		}
-		else if (socketId == this.player2.socket.id){
+		if (socketId == this.player2.socket.id){
 			this.rightPaddle.posY = value - 50;
 		}
 	}
@@ -229,19 +237,35 @@ export class GameRoom{
 		}
 		player.socket.join(this.roomID);
 		player.socket.emit('gameState', new GameStateDTO("GameStart", new GameStartDTO(opponentIntraName,  this.gameType, player === this.player1, this.roomID)));
+		this.gamePaused = false;
+		this.gamePauseDate = null;
+		this.gamePausePlayer = null;
 		console.log(`${player.intraName} reconnected to ${this.roomID}`);
 	}
 
 	// TODO: wait for reconnect, abandon game after x seconds
-	togglePause() {
+	togglePause(server: Server, pausePlayer: string) {
+		if (this.gamePaused)
+			this.endGameNoMatch();
 		this.gamePaused = true;
+		this.gamePauseDate = Date.now();
+		this.gamePausePlayer = pausePlayer;
+		server.to(this.roomID).emit('gameState', new GameStateDTO("GamePause", new GamePauseDTO(this.gamePauseDate)))
 		console.log(`game ${this.roomID} paused due to player disconnect`);
 	}
 
-	endGame(server: Server) {
+	endGame(server: Server, winner: string, wonBy: string) {
 		clearInterval(this.interval);
 		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
 		console.log(`game ${this.roomID} ended`);
+		this.gameEnded = true;
+		this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
+	}
+
+	endGameNoMatch() {
+		clearInterval(this.interval);
+		this.gameEnded = true;
+		console.log(`game ${this.roomID} ended due to both players disconnect`);
 	}
 
 	/**
@@ -250,7 +274,7 @@ export class GameRoom{
 	 * 	Set the ball velocity to 0
 	 * 	Check which player score and set ball velocity to the opposite side
 	 */
-	resetGame(){
+	resetGame(server: Server){
 		this.Ball.posX = this.canvasWidth / 2;
 		this.Ball.posY = this.canvasHeight / 2;
 		if (this.lastWinner.length == 0){
@@ -265,6 +289,7 @@ export class GameRoom{
 			this.Ball.velX = -this.ballInitSpeedX;
 			this.Ball.velY = this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
 		}
+		server.to(this.roomID).emit('gameLoop', new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
 	}
 
 	async countdown(seconds: number) : Promise<void>{
@@ -273,10 +298,5 @@ export class GameRoom{
 			counter--;
 			await new Promise(resolve => setTimeout(resolve, 1000));
 		}
-	}
-
-	async fieldChange(){
-		await this.countdown(10);
-		console.log("field changed");
 	}
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Param } from "@nestjs/common";
+import { Body, Controller, Get, Headers, Param, Post, Patch, Delete } from "@nestjs/common";
 import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
 import { UseGuards } from "@nestjs/common";
@@ -6,39 +6,40 @@ import { UseGuards } from "@nestjs/common";
 @Controller("chat")
 export class ChatController {
 	constructor (private readonly chatService: ChatService) {}
-
-	@Get('dm/:intraName')
+	
+	@Get('member/:channelID')
 	@UseGuards(AuthGuard)
-	getMyDM(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): any {
-		return this.chatService.getMyDM(accessToken, intraName);
+	getMyMemberData(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
+		return this.chatService.getMyMemberData(accessToken, channelId);
 	}
 
-	// @Post('dm')
-	// @UseGuards(AuthGuard)
-	// createNewDM(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-	// 	return this.chatService.createNewDM(accessToken, body.receiverIntraName);
-	// }
+	@Get('dm/channel')
+	@UseGuards(AuthGuard)
+	getAllDMChannel(@Headers('Authorization') accessToken: string): any {
+		return this.chatService.getAllDMChannel(accessToken);
+	}
 
-	// //Get all chat of a user
-	// @Get(':id')
-	// async getAllChatByID(@Param('id') id: string): any{
-	// 	return await this.chatService.getAllChatByID(id);
-	// }
+	@Get('dm/message/:channelID')
+	@UseGuards(AuthGuard)
+	getMyDMMessages(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number): any {
+		return this.chatService.getMyDMMessages(accessToken, channelId);
+	}
 
-	// @Post()
-	// async newChat(userId: number, @Body() body: any): any{
-	// 	return await this.chatService.newChat(userId, body.visibility, body.password, body.members);
-	// }
+	@Post('room')
+	@UseGuards(AuthGuard)
+	createRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
+	}
 
-	// //Update chat, change password or visibility
-	// @Patch()
-	// async updateChatSetting(userId: number, @Body() body: any){
-	// 	return await this.chatService.updateChatSetting(userId, body.chatId, body.visibility, body.password);
-	// }
+	@Patch('room')
+	@UseGuards(AuthGuard)
+	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
+	}
 
-	// //Kick, ban or mute user
-	// @Patch()
-	// async updateChatMember(userId: number, @Body() body: any){
-	// 	return await this.chatService.updateChatMember(userId, body.chatId, body.memberId, body.action);
-	// }
+	@Delete('room')
+	@UseGuards(AuthGuard)
+	deleteRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+		return this.chatService.deleteRoom(accessToken, body.channelId);
+	}
 }

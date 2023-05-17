@@ -1,11 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Channel } from './channel.entity';
+import { User } from './users.entity';
 
 @Entity( { name: 'message' } )
 export class Message {
-	constructor(intraName: string, channelId: number, channel: boolean, message: string, timeStamp: string) {
-		this.intraName = intraName;
-		this.channelId = channelId;
-		this.channel = channel;
+	constructor(senderChannel: Channel, receiverChannel: Channel, isRoom: boolean, message: string, timeStamp: string) {
+		this.senderChannel = senderChannel;
+		this.receiverChannel = receiverChannel
+		this.isRoom = isRoom;
 		this.message = message;
 		this.timeStamp = timeStamp;
 	}
@@ -13,14 +15,14 @@ export class Message {
 	@PrimaryGeneratedColumn()
 	messageId: number;
 
-	@Column()
-	intraName: string;
+	@ManyToOne(() => Channel, channel => channel)
+	senderChannel: Channel;
+
+	@ManyToOne(() => Channel, channel => channel)
+	receiverChannel: Channel;
 
 	@Column()
-	channelId: number;
-
-	@Column()
-	channel: boolean;
+	isRoom: boolean;
 
 	@Column()
 	message: string;

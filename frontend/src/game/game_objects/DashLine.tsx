@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import * as PIXI from 'pixi.js';
-import { Graphics } from '@pixi/react';
+import { Graphics, Sprite, useApp } from '@pixi/react';
 import { Offset } from '../../model/GameModels';
 
 declare module 'pixi.js' {
@@ -63,14 +63,24 @@ interface DashLineProps {
 
 function DashLine(props: DashLineProps) {
   const { start, end, color, dash, gap, thinkness, opacity } = props;
-  const draw = useCallback((g: PIXI.Graphics) => {
+  const app = useApp();
+  const texture = useMemo(() => {
+    const g = new PIXI.Graphics();
     g.lineStyle(thinkness ?? 2, color ?? 0xffffff, opacity ?? 1);
     g.moveTo(start.x, start.y);
     g.drawDashLine(end.x, end.y, dash, gap);
-
-  }, [start, end, color, dash, gap, thinkness, opacity]);
+    const texture = app.renderer.generateTexture(g);
+    g.destroy();
+    return texture;
+  }, []);
   return (
-    <Graphics draw={draw} />
+    <Sprite
+      x={Math.min(start.x, end.x)}
+      y={Math.min(start.y, end.y)}
+      width={Math.abs(start.x - end.x) + thinkness!}
+      height={Math.abs(start.y - end.y) + thinkness!}
+      texture={texture}
+    />
   )
 }
 

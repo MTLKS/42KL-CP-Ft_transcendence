@@ -1,20 +1,19 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entity/user.entity';
+import { Member } from 'src/entity/member.entity';
+import { User } from 'src/entity/users.entity';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class FriendshipService {
-	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) {}
+	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Channel) private channelRepository: Repository<Channel>, private userService: UserService) {}
 
 	// User connect to friendship socket
 	async userConnect(client: any, server: any): Promise<any> {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
-		client.join(USER_DATA.intraName);
+		client.join((await this.userService.getMyUserData(client.handshake.headers.authorization)).intraName);
 	}
 
 	// User send friend request to friendship room
@@ -22,13 +21,11 @@ export class FriendshipService {
 		if (intraName === undefined)
 			return { error: "Invalid body - body must include intraName(string)" };
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
-			return { error: USER_DATA.error };
 		client.join(intraName);
-		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} });
-		if (FRIENDSHIP.length === 0)
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: intraName} });
+		if (FRIENDSHIP === null)
 			return { error: "Friendship does not exist" };
-		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP[0].status });
+		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP.status });
 	}
 
 	// Check if the JSON body is valid
@@ -49,77 +46,82 @@ export class FriendshipService {
 	// Gets all friendship by intraName
 	async getFriendshipByIntraNAme(intraName: string): Promise<any> {
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiverIntraName: intraName} });
-		for (let i = 0; i < RECEIVER.length; i++) {
-			const USER = await this.userRepository.find({ where: {intraName: RECEIVER[i].senderIntraName} });
-			if (USER.length === 0)
+		for (let receiver of RECEIVER) {
+			const USER = await this.userRepository.findOne({ where: {intraName: receiver.senderIntraName} });
+			if (USER === null)
 				continue;
-			RECEIVER[i]['userName'] = USER[0].userName;
-			RECEIVER[i]['elo'] = USER[0].elo;
-			RECEIVER[i]['avatar'] = USER[0].avatar;
+			receiver['userName'] = USER.userName;
+			receiver['elo'] = USER.elo;
+			receiver['avatar'] = USER.avatar;
 		}
 		const SENDER = await this.friendshipRepository.find({ where: {senderIntraName: intraName} });
-		for (let i = 0; i < SENDER.length; i++) {
-			const USER = await this.userRepository.find({ where: {intraName: SENDER[i].receiverIntraName} });
-			if (USER.length === 0)
+		for (let sender of SENDER) {
+			const USER = await this.userRepository.findOne({ where: {intraName: sender.receiverIntraName} });
+			if (USER === null)
 				continue;
-			SENDER[i]['userName'] = USER[0].userName;
-			SENDER[i]['elo'] = USER[0].elo;
-			SENDER[i]['avatar'] = USER[0].avatar;
+			sender['userName'] = USER.userName;
+			sender['elo'] = USER.elo;
+			sender['avatar'] = USER.avatar;
 		}
 		return [...RECEIVER, ...SENDER];
 	}
 
 	// Creates a new friendship
 	async newFriendship(accessToken: string, receiverIntraName: string, status: string): Promise<any> {
-		let senderIntraName: string;
-		try {
-			senderIntraName = (await this.userService.getMyUserData(accessToken)).intraName;
-		} catch {
-			senderIntraName = null;
-		}
-		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, status);
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
 		if (status.toUpperCase() == "ACCEPTED")
 			return { error: "Friendship status (ACCEPTED) is not supported - use PATCH method to edit an existing PENDING friendship to ACCEPTED friendship instead" }
-		if ((await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} })).length || (await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })).length)
+		if ((await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} })) !== null || (await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName} })) !== null)
 			return { error: "Friendship already exist - use PATCH method to update or DELETE method to delete this existing entry" }
-		const NEW_FRIENDSHIP = new Friendship(senderIntraName, receiverIntraName, status.toUpperCase());
+		const RECEIVER = await this.userRepository.findOne({ where: {intraName: receiverIntraName} });
+		if (RECEIVER === null)
+			return { error: "ReceiverIntraName error - user does not exist" };
+		const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase());
 		await this.friendshipRepository.save(NEW_FRIENDSHIP);
 		return NEW_FRIENDSHIP;
 	}
 
 	// Updates a friendship
 	async updateFriendship(accessToken: string, receiverIntraName: string, status: string): Promise<any> {
-		try {
-			const USER = await this.userService.getMyUserData(accessToken);
-			var senderIntraName = USER.intraName;
-		} catch {
-			var senderIntraName = undefined;
-		}
-		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, status);
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
-		const RECEIVER = await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} });
+		const RECEIVER = await this.friendshipRepository.findOne({ where: {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName} });
 		if (status.toUpperCase() == "ACCEPTED") {
-			if (RECEIVER.length === 0)
+			if (RECEIVER === null)
 				return { error: "Friendship does not exist - use POST method to create" }
-			RECEIVER[0].status = status.toUpperCase();
-			await this.friendshipRepository.save(RECEIVER[0]);
-			return RECEIVER[0];
+			RECEIVER.status = status.toUpperCase();
+			const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName}} });
+			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: USER_DATA.intraName}, channelId: MY_CHANNEL.channelId}})
+			const FRIEND_DATA = await this.userService.getUserDataByIntraName(accessToken, receiverIntraName);
+			if (FRIEND_DATA.error !== undefined)
+				return FRIEND_DATA;
+			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: receiverIntraName}} });
+			if (FRIEND_CHANNEL === null)
+				return { error: "invalid intraName - intraName does not exist" }
+			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: FRIEND_DATA.intraName}, channelId: FRIEND_CHANNEL.channelId}})
+			if (MY_MEMBER === null)
+				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL.channelId, true, false, false, new Date().toISOString()));
+			if (FRIEND_MEMBER === null)
+				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL.channelId, true, false, false, new Date().toISOString()));
+			return await this.friendshipRepository.save(RECEIVER);
 		}
-		const FRIENDSHIP = await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} });
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: {senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName} });
 		if (status.toUpperCase() == "BLOCKED")
 		{
-			if (FRIENDSHIP.length === 0 && RECEIVER.length === 0)
+			if (FRIENDSHIP === null && RECEIVER === null)
 				return { error: "Friendship does not exist - use POST method to create" }
-			if (FRIENDSHIP.length !== 0) {
-				FRIENDSHIP[0].status = status.toUpperCase();
-				await this.friendshipRepository.save(FRIENDSHIP[0]);
-				return FRIENDSHIP[0];
+			if (FRIENDSHIP === null) {
+				FRIENDSHIP.status = status.toUpperCase();
+				await this.friendshipRepository.save(FRIENDSHIP);
+				return FRIENDSHIP;
 			} else {
-				const NEW_FRIENDSHIP = new Friendship(senderIntraName, receiverIntraName, status.toUpperCase());
-				await this.friendshipRepository.delete(RECEIVER[0]);
+				const NEW_FRIENDSHIP = new Friendship(USER_DATA.intraName, receiverIntraName, status.toUpperCase());
+				await this.friendshipRepository.delete(FRIENDSHIP);
 				await this.friendshipRepository.save(NEW_FRIENDSHIP);
 				return NEW_FRIENDSHIP;
 			}
@@ -129,20 +131,27 @@ export class FriendshipService {
 
 	// Deletes a friendship
 	async	deleteFriendship(accessToken: string, receiverIntraName: string): Promise<any> {
-		try {
-			const USER = await this.userService.getMyUserData(accessToken);
-			var senderIntraName = USER.intraName;
-		} catch {
-			var senderIntraName = null;
-		}
-		const ERROR = await this.checkJson(senderIntraName, receiverIntraName, "ACCEPTED");
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, "ACCEPTED");
 		if (ERROR)
 			return ERROR;
-		const FRIENDSHIP = [...await this.friendshipRepository.find({ where: {senderIntraName: senderIntraName, receiverIntraName: receiverIntraName} }), ...await this.friendshipRepository.find({ where: {senderIntraName: receiverIntraName, receiverIntraName: senderIntraName} })];
-		if (FRIENDSHIP.length === 0)
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName}, {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName}] });
+		if (FRIENDSHIP === null)
 			return { error: "Friendship does not exist - use POST method to create" }
-		if (FRIENDSHIP[0].senderIntraName === senderIntraName || (FRIENDSHIP[0].receiverIntraName === senderIntraName && FRIENDSHIP[0].status.toUpperCase() !== "BLOCKED"))
-			await this.friendshipRepository.delete(FRIENDSHIP[0]);
-		return FRIENDSHIP[0];
+		if (FRIENDSHIP.senderIntraName === USER_DATA.intraName || (FRIENDSHIP.receiverIntraName === USER_DATA.intraName && FRIENDSHIP.status.toUpperCase() !== "BLOCKED"))
+			await this.friendshipRepository.delete(FRIENDSHIP);
+		return FRIENDSHIP;
+	}
+
+	// Returns current friendship with a user
+	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<any> {
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, "ACCEPTED");
+		if (ERROR)
+			return ERROR;
+		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: receiverIntraName}, {senderIntraName: receiverIntraName, receiverIntraName: USER_DATA.intraName}] });
+		if (FRIENDSHIP === null)
+			return { error: "Friendship does not exist - use POST method to create" }
+		return FRIENDSHIP;
 	}
 }
