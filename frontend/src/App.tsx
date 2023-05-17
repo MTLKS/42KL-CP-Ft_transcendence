@@ -6,7 +6,6 @@ import HomePage from "./pages/HomePage";
 import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./functions/profile";
 import { UserData } from "./model/UserData";
-import { update } from "lodash";
 
 function App() {
   const [logged, setLogged] = useState(false);
