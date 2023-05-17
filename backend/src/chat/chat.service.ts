@@ -98,7 +98,7 @@ export class ChatService {
 	async getAllDMChannel(accessToken: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIPS = await this.friendshipService.getFriendship(accessToken);
-		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.senderIntraName === USER_DATA.intraName || friendship.receiverIntraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" ).flatMap(friendship => [friendship.senderIntraName, friendship.receiverIntraName]).filter(intraName => intraName !== USER_DATA.intraName);
+		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.sender.intraName === USER_DATA.intraName || friendship.receiver.intraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" ).flatMap(friendship => [friendship.sender.intraName, friendship.receiver.intraName]).filter(intraName => intraName !== USER_DATA.intraName);
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName }}, relations: ['owner'] });
 		let channel = [];
 		for (let friend of FRIENDS) {

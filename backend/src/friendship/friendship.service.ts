@@ -109,6 +109,7 @@ export class FriendshipService {
 				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL, true, false, false, new Date().toISOString()));
 			if (FRIEND_MEMBER === null)
 				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL, true, false, false, new Date().toISOString()));
+			console.log(FRIEND_MEMBER);
 			await this.friendshipRepository.save(RECEIVER)
 			return this.userService.hideData(RECEIVER);
 		}
@@ -122,7 +123,8 @@ export class FriendshipService {
 				if (FRIENDSHIP.status == "BLOCKED")
 					return { error: "Invalid receiverIntraName - friendship already exist" }
 				await this.friendshipRepository.delete(FRIENDSHIP);
-				return this.userService.hideData(await this.friendshipRepository.save(new Friendship(USER_DATA, FRIEND_DATA, status.toUpperCase())));
+				const NEW_FRIENDSHIP = await this.friendshipRepository.save(new Friendship(USER_DATA, FRIEND_DATA, status.toUpperCase()))
+				return this.userService.hideData(NEW_FRIENDSHIP);
 			}
 		}
 		return { error: "Invalid status - friendship status (PENDING) is not supported" }
