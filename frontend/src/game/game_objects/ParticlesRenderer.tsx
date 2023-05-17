@@ -5,6 +5,8 @@ import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } fro
 import { GameDataCtx } from '../../GameApp';
 import { GameBlackhole } from '../../model/GameEntities';
 import Worker from '../../workers/gameGraphic.worker?worker'
+import { DropShadowFilter } from 'pixi-filters';
+import { filter } from 'lodash';
 
 // const gameGraphicWorker = new Worker();
 
@@ -57,23 +59,6 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     return [white, cyan, purple, lightning];
   }, []);
 
-  // useTick((delta) => {
-  //   gameGraphicWorker.postMessage({ type: 'pongPosition', value: gameData.pongPosition });
-  //   gameGraphicWorker.postMessage({ type: 'pongSpeed', value: gameData.pongSpeed });
-  //   gameGraphicWorker.postMessage({ type: 'gameEntities', value: gameData.gameEntities });
-  // }, true);
-
-  // useEffect(() => {
-  //   gameGraphicWorker.onmessage = (e) => {
-  //     const { type, value } = e.data;
-  //     if (type === 'gameParticles') {
-  //       setParticles(value);
-  //     }
-  //   }
-  //   gameGraphicWorker.postMessage({ type: 'start' });
-  //   return () => gameGraphicWorker.postMessage({ type: 'stop' });
-  // }, []);
-
   const trailElementsRef = useRef<JSX.Element[]>([]);
   const whiteElementsRef = useRef<JSX.Element[]>([]);
   const cyanElementsRef = useRef<JSX.Element[]>([]);
@@ -110,9 +95,6 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       });
     });
   }, [particles, lightningParticles]);
-
-
-
 
   return (
     <>

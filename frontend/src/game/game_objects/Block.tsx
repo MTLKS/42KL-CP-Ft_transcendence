@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import * as PIXI from 'pixi.js';
-import { Sprite, useApp } from '@pixi/react';
+import { Container, Sprite, useApp } from '@pixi/react';
+import { DropShadowFilter } from 'pixi-filters';
 
 interface BlockProps {
   x: number;
@@ -23,8 +24,21 @@ function Block(props: BlockProps) {
     return texture;
   }, []);
 
+  const filter = useMemo(() => {
+    const dropShadowFilter = new DropShadowFilter();
+    dropShadowFilter.color = 0xFEF8E2;
+    dropShadowFilter.alpha = 0.7;
+    dropShadowFilter.blur = 4.5;
+    dropShadowFilter.offset = new PIXI.Point(10, 5);
+    dropShadowFilter.distance = 0;
+    dropShadowFilter.padding = 40;
+    dropShadowFilter.quality = 5;
+    return dropShadowFilter;
+  }, []);
+
+
   return (
-    <Sprite anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} />
+    <Sprite anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} filters={[filter]} />
   )
 }
 

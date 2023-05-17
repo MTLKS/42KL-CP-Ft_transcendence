@@ -150,7 +150,7 @@ function HomePage(props: HomePageProps) {
         return;
       case "end":
         gameData.stopDisplayGame();
-        // gameData.endGame(); // TODO: uncomment this
+        gameData.endGame();
         break;
       case "profile":
         handleProfileCommand(command);

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } fro
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
+import { DropShadowFilter } from 'pixi-filters';
 
 
 export enum TimeZoneType {
@@ -44,20 +45,6 @@ function TimeZone(props: TimeZoneProps) {
   }, [size.w, size.h, type]);
 
   const iconTexture = useMemo(() => {
-
-    // const svg = new SVG();
-
-    // svg.width = size.w;
-    // svg.height = size.h;
-    // // svg.lineStyle(8, color, 1);
-    // svg.beginFill(color, 0.1);
-    // console.log(svg.fill);
-    // svg.drawSVG(icon);
-    // console.log(svg.fill);
-    // svg.endFill();
-
-    // return app.renderer.generateTexture(svg);
-
     switch (type) {
       case TimeZoneType.SPEEDUP:
         return PIXI.Texture.from("../../../assets/icons/wheelchair-move-solid.svg");
@@ -66,10 +53,22 @@ function TimeZone(props: TimeZoneProps) {
       default:
         return PIXI.Texture.from("../../../assets/icons/wheelchair-move-solid.svg");
     }
-  }, [, type]);
+  }, [type]);
+
+  const filter = useMemo(() => {
+    const dropShadowFilter = new DropShadowFilter();
+    dropShadowFilter.color = color;
+    dropShadowFilter.alpha = 0.8;
+    dropShadowFilter.blur = 3;
+    dropShadowFilter.offset = new PIXI.Point(10, 5);
+    dropShadowFilter.distance = 0;
+    dropShadowFilter.padding = 40;
+    dropShadowFilter.quality = 5;
+    return dropShadowFilter;
+  }, [type]);
   return (
     <>
-      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} alpha={0.4} />
+      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} alpha={0.4} filters={[filter]} />
       <Sprite
         anchor={0.5}
         x={position.x}
@@ -78,6 +77,7 @@ function TimeZone(props: TimeZoneProps) {
         height={size.h * svgSizeRatio}
         texture={iconTexture}
         alpha={0.4}
+        filters={[filter]}
       />
     </>
   )
