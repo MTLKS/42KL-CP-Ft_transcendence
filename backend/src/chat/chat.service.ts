@@ -90,7 +90,7 @@ export class ChatService {
 	// Retrives user's member data
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const MEMBER_DATA = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName }, channel: { channelId: channelId }}, relations: ['user', 'channel'] });
+		const MEMBER_DATA = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName }, channel: { channelId: channelId }}, relations: ['user', 'channel', 'channel.owner'] });
 		return MEMBER_DATA === null ? { error: "Invalid channelId - member is not found in that channelId" } : this.userService.hideData(MEMBER_DATA);
 	} 
 
