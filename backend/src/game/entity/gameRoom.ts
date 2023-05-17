@@ -7,6 +7,7 @@ import { GameStartDTO, GameEndDTO, GamePauseDTO, GameStateDTO } from "src/dto/ga
 import { Player } from "./player";
 import { MatchService } from "src/match/match.service";
 import { UserService } from "src/user/user.service";
+import { User } from "src/entity/users.entity";
 
 export class CollisionResult{
 	collided: boolean;
@@ -267,13 +268,20 @@ export class GameRoom{
 		this.gameEnded = true;
 		this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
 
+		let WINNER: User;
+		let LOSER: User;
 		let loser: string;
-		if (winner === this.player1.intraName)
+		
+		if (winner === this.player1.intraName){
+			WINNER = await this.userService.getUserDataByIntraName(this.player1.accessToken, this.player1.intraName);
+			LOSER = await this.userService.getUserDataByIntraName(this.player2.accessToken, this.player2.intraName);
 			loser = this.player2.intraName;
-		else
+		}
+		else{
+			WINNER = await this.userService.getUserDataByIntraName(this.player2.accessToken, this.player2.intraName);
+			LOSER = await this.userService.getUserDataByIntraName(this.player1.accessToken, this.player1.intraName);
 			loser = this.player1.intraName;
-		const WINNER = await this.userService.getUserDataByIntraName(winner);
-		const LOSER = await this.userService.getUserDataByIntraName(loser);
+		}
 
 		let winnerElo = WINNER.elo;
 		let loserElo = LOSER.elo;
