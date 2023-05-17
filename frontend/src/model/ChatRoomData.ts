@@ -40,10 +40,10 @@ export interface NewMessageData {
 
 export interface MemberData {
   user: UserData,
-  channelId: number,
-  admin: boolean,
-  banned: boolean,
-  muted: boolean,
+  channel: ChannelData,
+  isAdmin: boolean,
+  isBanned: boolean,
+  isMuted: boolean,
   lastRead: string,
   memberId: number
 }
