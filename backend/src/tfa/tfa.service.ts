@@ -35,20 +35,22 @@ export class TFAService{
 		const USER_DATA = await this.userRepository.findOne({ where: {intraName: INTRA_DATA.name} });
 		if (USER_DATA.tfaSecret === null)
 			return { error: "Invalid request - You don't have a 2FA setup" };
-		const IMAGE_DATA = await qrCode.toDataURL(authenticator.keyuri(USER_DATA.userName, "PONGSH", USER_DATA.tfaSecret));
-		const DECODED = Buffer.from(IMAGE_DATA.split(",")[1], 'base64');
+		await this.deleteSecret(accessToken);
+		const TFA = await this.requestNewSecret(accessToken);
+		const DECODED = Buffer.from(TFA.qr.split(",")[1], 'base64');
 		fs.writeFile(USER_DATA.intraName + "-QR.png", DECODED, {encoding:'base64'}, function(err) {});
 		await this.mailerService.sendMail({
 				to: INTRA_DATA.email,
 				from: process.env.GOOGLE_EMAIL,
 				subject: "2FA Secret Recovery",
-				html: "<h1>DON'T FORGET NEXT TIME!</h1><p>Your 2FA Secret is <b>" + USER_DATA.tfaSecret + "</b></p>",
+				html: "<h1>New 2FA Secret Requested!</h1><p>Your new 2FA secret is <b>" + USER_DATA.tfaSecret + "</b></p>",
 				attachments: [{
 						filename: USER_DATA.intraName + "-QR.png",
 						path: USER_DATA.intraName + "-QR.png",
 					}]
 		});
 		fs.unlink(USER_DATA.intraName + "-QR.png", (err) => {});
+		return { status: "OK" };
 	}
 
 	async validateOTP(accessToken: string, otp: string) : Promise<any> {

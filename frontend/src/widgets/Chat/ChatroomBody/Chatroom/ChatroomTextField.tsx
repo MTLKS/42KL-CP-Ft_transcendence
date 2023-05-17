@@ -71,10 +71,10 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, [someoneIsTyping]);
 
   const listenForMemberTyping = () => {
-    chatSocket.listen("typing", (memberName: string) => {
-      if (memberName === myProfile.intraName) return;
-      if (typingMembers.includes(memberName)) return;
-      setTypingMembers([...typingMembers, memberName]);
+    chatSocket.listen("typing", (data: { intraName: string }) => {
+      if (data.intraName === myProfile.intraName) return;
+      if (typingMembers.includes(data.intraName)) return;
+      setTypingMembers([...typingMembers, data.intraName]);
       setSomeoneIsTyping(true);
     })
   }
