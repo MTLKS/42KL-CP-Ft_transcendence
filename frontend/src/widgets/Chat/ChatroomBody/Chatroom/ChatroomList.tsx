@@ -9,6 +9,7 @@ import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext'
 import { getChatroomList } from '../../../../functions/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
+import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
 
 function ChatroomList() {
 
@@ -17,6 +18,8 @@ function ChatroomList() {
   const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
   const [chatrooms, setChatrooms] = useState<ChatroomData[]>([]);
+  const [chatroomsLength, setChatroomsLength] = useState(0);
+  const [filterKeyword, setFilterKeyword] = useState("");
 
   useEffect(() => {
     const newUnreadChatrooms: number[] = [...unreadChatrooms];
@@ -44,7 +47,7 @@ function ChatroomList() {
   return (
     <div className='flex flex-col border-box h-0 flex-1 relative'>
       {chatrooms.length > 0
-        ? <div className='h-full w-full overflow-y-scroll scrollbar-hide'>{displayChatrooms()}</div>
+        ? displayChatroomListBody()
         : <ChatEmptyState />
       }
       {
@@ -70,7 +73,32 @@ function ChatroomList() {
   }
 
   function displayChatrooms() {
-    return chatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />);
+    let filteredChatrooms: ChatroomData[] = [];
+    if (filterKeyword === "")
+      filteredChatrooms = chatrooms;
+    else {
+      filteredChatrooms = chatrooms.filter(chatroom => {
+        if (chatroom.channelName.toLowerCase().startsWith(filterKeyword.toLowerCase())
+        || chatroom.owner?.intraName.toLowerCase().startsWith(filterKeyword.toLowerCase())
+        || chatroom.owner?.userName.toLowerCase().startsWith(filterKeyword.toLowerCase()))
+          return true;
+        return false;
+      })
+    }
+    return filteredChatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />);
+  }
+
+  function displayChatroomListBody() {
+    return (
+      <div className='h-full w-full'>
+        <div className=' py-3 px-4'>
+          <ChatTableTitle title={`Chatrooms`} searchable={true} setFilterKeyword={setFilterKeyword} />
+        </div>
+        <div className='h-full w-full overflow-y-scroll scrollbar-hide'>
+          {displayChatrooms()}
+        </div>
+      </div>
+    )
   }
 }
 

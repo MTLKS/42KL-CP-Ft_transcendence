@@ -16,7 +16,6 @@ function Chat() {
   const [expanded, setExpanded] = useState(false);
   const [chatroomBody, setChatroomBody] = useState(<ChatroomList />);
   const chatSocket = useMemo(() => new SocketApi(CHAT_SOCKET_NAMESPACE), []);
-  const [canBeSearch, setCanBeSearch] = useState(false);
 
   useEffect(() => {
     // for receive new message
@@ -31,11 +30,6 @@ function Chat() {
   }, []);
 
   useEffect(() => {
-    if (chatroomBody === null) return;
-    setCanBeSearch(chatroomBody.type.name === "ChatroomList");
-  }, [chatroomBody]);
-
-  useEffect(() => {
     if (expanded) getFriendList().then(friends => setFriends(friends.data));
   }, [expanded]);
 
@@ -48,7 +42,7 @@ function Chat() {
     <ChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>
       <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody}}>
         <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
-          <ChatToggle searchable={canBeSearch} toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />
+          <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />
           {chatroomBody}
         </div>
       </ChatContext.Provider>
