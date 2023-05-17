@@ -3,6 +3,7 @@ import sleep from '../../../functions/sleep';
 import StatusIndicator from '../StatusIndicator';
 import { UserData } from '../../../model/UserData';
 import UserContext from '../../../contexts/UserContext';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 
 interface ProfileHeaderProps {
   expanded: boolean;
@@ -11,7 +12,7 @@ interface ProfileHeaderProps {
 }
 
 function ProfileHeader(props: ProfileHeaderProps) {
-  const { myProfile } = useContext(UserContext);
+  const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
   const { expanded, status, onProfileClick } = props;
   const { userName, intraName } = myProfile;
   const maxHeight = 80;

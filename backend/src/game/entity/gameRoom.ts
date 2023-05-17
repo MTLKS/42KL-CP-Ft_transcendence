@@ -97,7 +97,7 @@ export class GameRoom{
 
 				else if (this.gamePaused == true){
 					if (Date.now() - this.gamePauseDate > 5000) {
-						this.endGame(server, this.player1.intraName === this.gamePausePlayer ? this.player2.intraName : this.player1.intraName, "abandon");
+						// this.endGame(server, this.player1.intraName === this.gamePausePlayer ? this.player2.intraName : this.player1.intraName, "abandon"); // TODO: uncomment this
 					}
 				}
 
@@ -106,7 +106,7 @@ export class GameRoom{
 				}
 
 				if (this.player1Score === this.roomSettings.scoreToWin || this.player2Score === this.roomSettings.scoreToWin){
-					this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score");
+					// this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score"); // TODO: uncomment this
 				}
 
 				server.to(this.roomID).emit('gameLoop',
@@ -261,30 +261,34 @@ export class GameRoom{
 	}
 
 	async endGame(server: Server, winner: string, wonBy: string) {
-		clearInterval(this.interval);
-		server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
-		// console.log(`game ${this.roomID} ended`);
-		this.gameEnded = true;
-		this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
+		// TODO: uncomment this
 
-		let loser: string;
-		if (winner === this.player1.intraName)
-			loser = this.player2.intraName;
-		else
-			loser = this.player1.intraName;
-		const WINNER = await this.userService.getUserDataByIntraName(winner);
-		const LOSER = await this.userService.getUserDataByIntraName(loser);
 
-		let winnerElo = WINNER.elo;
-		let loserElo = LOSER.elo;
-		let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
-		let change = Math.round(20 * (1 - expected));
+		// clearInterval(this.interval);
+		// server.to(this.roomID).emit('gameState', new GameStateDTO("GameEnd", new GameEndDTO(this.player1Score, this.player2Score)));
+		// // console.log(`game ${this.roomID} ended`);
+		// this.gameEnded = true;
+		// this.matchService.createNewMatch(this.player1.intraName, this.player2.intraName, this.player1Score, this.player2Score, winner, this.gameType, wonBy);
 
-		winnerElo += change;
-		loserElo -= change;
+		// let loser: string;
+		// if (winner === this.player1.intraName)
+		// 	loser = this.player2.intraName;
+		// else
+		// 	loser = this.player1.intraName;
+		
+		// const WINNER = await this.userService.getUserDataByIntraName(winner);
+		// const LOSER = await this.userService.getUserDataByIntraName(loser);
 
-		this.userService.updateUserElo(winner, winnerElo, true);
-		this.userService.updateUserElo(loser, loserElo, false);
+		// let winnerElo = WINNER.elo;
+		// let loserElo = LOSER.elo;
+		// let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
+		// let change = Math.round(20 * (1 - expected));
+
+		// winnerElo += change;
+		// loserElo -= change;
+
+		// this.userService.updateUserElo(winner, winnerElo, true);
+		// this.userService.updateUserElo(loser, loserElo, false);
 	}
 
 	endGameNoMatch() {

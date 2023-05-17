@@ -1,9 +1,14 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
 import { FriendData } from '../../../model/FriendData'
 import Highlighter from '../../../components/Highlighter';
-import socketApi from '../../../api/socketApi';
+import UserContext from '../../../contexts/UserContext';
+import SocketApi from '../../../api/socketApi';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
+import { getProfileOfUser } from '../../../functions/profile';
+import { UserData } from '../../../model/UserData';
+import Profile from '../../Profile/Profile';
 
 interface FriendInfoProps {
   friend: FriendData,
@@ -13,7 +18,8 @@ interface FriendInfoProps {
 
 function FriendInfo(props: FriendInfoProps) {
 
-  const [onlineStatus, setOnlineStatus] = useState("");
+  const [onlineStatus, setOnlineStatus] = useState("offline");
+  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const { friend, intraName, searchTerm } = props;
   let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
   let friendshipStatus = friend.status.toLowerCase();
@@ -23,37 +29,38 @@ function FriendInfo(props: FriendInfoProps) {
     : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
   )
 
+  useEffect(() => {
+    if (friendshipStatus === "blocked")
+      return;
+    let friendInfoSocket = new SocketApi();
+    friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: true });
+    friendInfoSocket.listen("statusRoom", (data: any) => {
+      if (data !== undefined && data.status !== undefined && data.intraName === friendIntraName)
+        setOnlineStatus((data.status as string).toLowerCase());
+    });
 
-  // Handle user's online/offline status
-  // useEffect(() => {
-  //   if (friend.status.toLowerCase() === "blocked")
-  //     return;
-  //   console.log(`Yo I want to check if ${friendIntraName} is online`);
-  //   socketApi.sendMessages("statusRoom", {});
-  //   socketApi.listen("statusRoom", (data: any) => {
-  //     setOnlineStatus((data.status as string).toLowerCase());
-  //     console.log(data);
-  //   });
-
-  //   return () => {
-  //     console.log("Aight thanks mate. Thanks for letting me know.");
-  //     socketApi.removeListener("statusRoom");
-  //     socketApi.sendMessages("statusRoom", { intraName: friendIntraName, joining: false});
-  //   }
-  // })
+    return () => {
+      friendInfoSocket.removeListener("statusRoom");
+      friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: false });
+    }
+  }, [friend]);
 
   return (
-    <div className='flex flex-row text-highlight'>
-      <div className='w-[16ch] normal-case'>
+    <div className='flex flex-row text-highlight hover:cursor-pointer group hover:bg-highlight hover:text-dimshadow w-fit' onClick={viewFriendProfile}>
+      <div className='group-hover:underline w-[16ch] normal-case'>
         <Highlighter text={friend.userName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
-      <div className='w-[16ch]'>
+      <div className='w-[16ch] group-hover:underline'>
         <Highlighter text={friendIntraName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
       <div className='w-[9ch]'>
-        <Highlighter text={friend.elo.toString()} searchTerm={searchTerm} />
+        {
+          friendshipStatus === "blocked"
+            ? <span className='text-highlight bg-accRed whitespace-pre'> HIDDEN </span>
+            : <Highlighter text={ friend.elo.toString()} searchTerm={searchTerm} />
+        }
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
@@ -71,10 +78,12 @@ function FriendInfo(props: FriendInfoProps) {
       }
     </div>
   )
+
+  async function viewFriendProfile() {
+    let friendData = await getProfileOfUser(friendIntraName);
+    setPreviewProfileFunction(friendData.data as UserData);
+    setTopWidgetFunction(<Profile expanded={true} />)
+  }
 }
 
 export default FriendInfo
-
-function useEffect(arg0: () => void) {
-  throw new Error('Function not implemented.');
-}
