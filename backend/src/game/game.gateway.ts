@@ -27,12 +27,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.gameService.leaveQueue(client);
 	}
 
-	@SubscribeMessage('startGame')
-	async startGame(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket, @MessageBody() body: any){
-		const roomName = await this.gameService.joinGame({ intraName: 'test', socket: player1 }, { intraName: 'test', socket: player2 }, 'standard', this.server);
-		await this.gameService.startGame(roomName, this.server);
-	}
-
 	@SubscribeMessage('gameEnd')
 	async gameEnd(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket){
 		// await this.gameService.gameEnd(player1, player2);

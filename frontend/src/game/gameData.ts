@@ -101,9 +101,9 @@ export class GameData {
     this.gameEntities.push(
       new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.3)
     );
-    // this.gameEntities.push(
-    //   new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
-    // );
+    this.gameEntities.push(
+      new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
+    );
   }
 
   displayGame() {

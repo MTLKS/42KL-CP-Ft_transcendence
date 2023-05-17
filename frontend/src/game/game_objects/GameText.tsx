@@ -2,6 +2,7 @@ import { Sprite, Text, useApp } from '@pixi/react'
 import React, { useMemo } from 'react'
 import * as PIXI from 'pixi.js';
 import { Offset } from '../../model/GameModels';
+import { DropShadowFilter } from 'pixi-filters';
 
 interface GameTextProps {
   position?: Offset;
@@ -31,8 +32,21 @@ function GameText(props: GameTextProps) {
     box.destroy();
     return texture;
   }, [text, fontSize, color, opacity]);
+
+
+  const filter = useMemo(() => {
+    const dropShadowFilter = new DropShadowFilter();
+    dropShadowFilter.color = 0xFEF8E2;
+    dropShadowFilter.alpha = 0.8;
+    dropShadowFilter.blur = 3;
+    dropShadowFilter.offset = new PIXI.Point(10, 5);
+    dropShadowFilter.distance = 0;
+    dropShadowFilter.padding = 40;
+    dropShadowFilter.quality = 5;
+    return dropShadowFilter;
+  }, []);
   return (
-    <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture} />
+    <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture} filters={[filter]} />
   )
 }
 

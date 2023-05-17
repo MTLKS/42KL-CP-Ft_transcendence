@@ -30,7 +30,8 @@ export class GameService {
 
 	//Lobby functions 
 	async handleConnection(client: Socket) {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		const ACCESS_TOKEN = client.handshake.headers.authorization;
+		const USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
 		if (USER_DATA.error !== undefined) {
 			// client.disconnect(true);
 			return;
@@ -44,7 +45,7 @@ export class GameService {
 		}
 
 		// Keeps track of users that are connected
-		let player = new Player(USER_DATA.intraName, client);
+		let player = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
 		this.connected.push(player);
 
 		// Clear any ended game rooms
@@ -84,6 +85,7 @@ export class GameService {
 	}
 
 	async joinQueue(client: Socket, clientQueue: string, server: Server) {
+		const ACESS_TOKEN = client.handshake.headers.authorization;
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA.error !== undefined)
 			return;
@@ -123,7 +125,7 @@ export class GameService {
 		// Puts player in the queue
 		if (LOBBY_LOGGING)
 			console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
-		let player = new Player(USER_DATA.intraName, client);
+		let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
 		this.queues[clientQueue].push(player);
 		client.emit('gameResponse', new GameResponseDTO('success', `joined queue ${clientQueue}`));
 		

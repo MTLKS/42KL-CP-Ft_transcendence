@@ -3,6 +3,7 @@ import { Container, Graphics, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { GameDataCtx } from '../../GameApp';
+import { DropShadowFilter } from 'pixi-filters';
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -97,8 +98,20 @@ function Paddle(props: PaddleProps) {
     return texture;
   }, [type]);
 
+  const filter = useMemo(() => {
+    const dropShadowFilter = new DropShadowFilter();
+    dropShadowFilter.color = 0xFEF8E2;
+    dropShadowFilter.alpha = 0.5;
+    dropShadowFilter.blur = 3;
+    dropShadowFilter.offset = new PIXI.Point(10, 5);
+    dropShadowFilter.distance = 0;
+    dropShadowFilter.padding = 40;
+    dropShadowFilter.quality = 5;
+    return dropShadowFilter;
+  }, []);
+
   return (
-    <Sprite texture={texture} x={position.x + size.w / 2} y={position.y} pivot={new PIXI.Point(size.w / 2, size.h / 2)} rotation={Math.sin(rot) * 0.05} />
+    <Sprite texture={texture} x={position.x + size.w / 2} y={position.y} pivot={new PIXI.Point(size.w / 2, size.h / 2)} rotation={Math.sin(rot) * 0.05} filters={[filter]} />
   )
 }
 
