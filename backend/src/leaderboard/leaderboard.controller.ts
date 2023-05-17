@@ -17,7 +17,7 @@ export class LeaderboardController {
 		return await this.leaderboardService.getLeaderboard(true, body.perPage, body.page);
 	}
 	
-	@ApiOkResponse({ type: LeaderboardResponseDTO })
+	@ApiOkResponse({ type: [LeaderboardResponseDTO] })
 	@Get('hallofshame')
 	@UseGuards(AuthGuard)
 	async getHallOfShame(@Body() body: LeaderboardInputDTO): Promise<LeaderboardResponseDTO[]> {
