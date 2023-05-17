@@ -33,7 +33,6 @@ function FriendInfo(props: FriendInfoProps) {
     if (friendshipStatus === "blocked")
       return;
     let friendInfoSocket = new SocketApi();
-    console.log(friendIntraName);
     friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: true });
     friendInfoSocket.listen("statusRoom", (data: any) => {
       if (data !== undefined && data.status !== undefined && data.intraName === friendIntraName)

@@ -35,10 +35,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, []);
 
   useEffect(() => {
-    console.log(typingMembers);
-  }, [typingMembers]);
-
-  useEffect(() => {
     if (textTooLong) {
       setTimeout(() => {
         setTextTooLong(false);
