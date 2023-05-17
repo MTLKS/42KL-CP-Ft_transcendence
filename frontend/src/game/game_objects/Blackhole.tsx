@@ -2,6 +2,7 @@ import React, { useContext, useLayoutEffect, useMemo } from 'react'
 import * as PIXI from 'pixi.js';
 import { Sprite, useApp } from '@pixi/react';
 import { GameDataCtx } from '../../GameApp';
+import { DropShadowFilter, GlowFilter } from 'pixi-filters';
 
 interface BlackholeProps {
   x: number;
@@ -15,48 +16,34 @@ function Blackhole(props: BlackholeProps) {
   const app = useApp();
   const texture = useMemo(() => {
     const box = new PIXI.Graphics();
-    box.beginFill(0x6B5B85, 1);
-    box.drawCircle(0, 0, 22);
-    box.endFill();
-    box.beginFill(0x6B5B85, 0.5);
-    box.drawCircle(0, 0, 25);
-    box.endFill();
-    box.beginFill(0x6B5B85, 0.3);
-    box.drawCircle(0, 0, 30);
-    box.endFill();
-    box.beginFill(0x6B5B85, 0.2);
-    box.drawCircle(0, 0, 37);
-    box.endFill();
-    box.beginFill(0x6B5B85, 0.1);
-    box.drawCircle(0, 0, 48);
-    box.endFill();
-    box.beginFill(0x6B5B85, 0.05);
-    box.drawCircle(0, 0, 60);
-    box.endFill();
-    box.beginFill(0x6B5B85, 0.01);
-    box.drawCircle(0, 0, 75);
-    box.endFill();
-    box.beginFill(0x6B5B85, 1);
+
+    box.beginFill(0x050505, 1);
     box.drawCircle(0, 0, 20);
-    box.endFill();
-    box.beginFill(0x050505, 0.1);
-    box.drawCircle(0, 0, 20);
-    box.endFill();
-    box.beginFill(0x050505, 0.2);
-    box.drawCircle(0, 0, 16);
-    box.endFill();
-    box.beginFill(0x050505, 0.5);
-    box.drawCircle(0, 0, 14);
-    box.endFill();
-    box.beginFill(0x050505, 0.5);
-    box.drawCircle(0, 0, 13);
     box.endFill();
     const texture = app.renderer.generateTexture(box);
     box.destroy();
     return texture;
   }, []);
+
+  const filters = useMemo(() => {
+    const glowFilter = new GlowFilter();
+    glowFilter.color = 0x6B5B85;
+    glowFilter.alpha = 0.8;
+    glowFilter.outerStrength = 5;
+    glowFilter.innerStrength = 5;
+    glowFilter.padding = 40;
+    const dropShadowFilter = new DropShadowFilter();
+    dropShadowFilter.color = 0x6B5B85;
+    dropShadowFilter.alpha = 1;
+    dropShadowFilter.blur = 10;
+    dropShadowFilter.distance = 0;
+    dropShadowFilter.padding = 40;
+    dropShadowFilter.quality = 5;
+    return [glowFilter, dropShadowFilter];
+  }, []);
+
   return (
-    <Sprite anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} />
+    <Sprite anchor={0.5} x={x} y={y} width={40} height={40} texture={texture} filters={filters} />
   )
 }
 
