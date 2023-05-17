@@ -1,4 +1,4 @@
-import { getTFA, removeTFA, checkTFA } from '../functions/tfa';
+import { getTFA, removeTFA, checkTFA, forgotTFA } from '../functions/tfa';
 import { ITFAData } from '../model/TfaData';
 import React, { useContext, useEffect } from 'react'
 import Card, { CardType } from './Card';
@@ -17,7 +17,10 @@ enum TFACommands {
 	unset,
 	exist,
 	success,
-	fail
+	fail,
+	forgot,
+	sending,
+	notset
 }
 
 function help() {
@@ -25,9 +28,10 @@ function help() {
 		<Card type={CardType.SUCCESS}>
 			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
 			<p>
-				tfa set					: Sets and enables Google tfa<br />
-				tfa unset [OTP code]	: Unsets and disable tfa (requires TFA code)<br />
+				tfa set					: Sets and enables Google 2FA<br />
+				tfa unset [OTP code]	: Unsets and disable 2FA (requires OTP code)<br />
 				tfa [OTP code]			: Checks whether code is valid or not<br />
+				tfa forgot				: Emails new 2FA secret (may require relogin)<br />
 			</p>
 		</Card>
 	)
@@ -67,6 +71,13 @@ function Tfa(props: TFAProps) {
 				setResult(data.boolean ? TFACommands.success : TFACommands.fail)
 			})
 		}, [])
+	} else if (commands.length === 2 && commands[1] === "forgot") {
+		useEffect(() => {
+			setResult(TFACommands.sending)
+			forgotTFA().then((data) => {
+				setResult(data.error !== undefined ? TFACommands.notset : TFACommands.forgot)
+			})
+		}, [])
 	} else {
 		return help();
 	}
@@ -89,6 +100,12 @@ function Tfa(props: TFAProps) {
 		return (<Card type={CardType.SUCCESS}><p>TFA OTP is correct</p></Card>);
 	} else if (result === TFACommands.fail) {
 		return (<Card type={CardType.ERROR}><p>TFA OTP is incorrect</p></Card>);
+	} else if (result === TFACommands.forgot) {
+		return (<Card type={CardType.SUCCESS}><p>Successfully sent New TFA secret to your email</p></Card>);
+	} else if (result === TFACommands.sending) {
+		return (<Card type={CardType.SUCCESS}><p>Sending new TFA secret to your email...</p></Card>);
+	} else if (result === TFACommands.notset) {
+		return (<Card type={CardType.ERROR}><p>TFA is not enabled</p></Card>);
 	}
 	return help();
 }
