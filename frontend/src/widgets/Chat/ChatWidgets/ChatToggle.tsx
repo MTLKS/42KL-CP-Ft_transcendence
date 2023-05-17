@@ -6,6 +6,7 @@ import ChatButton from './ChatButton';
 import { FaArrowLeft, FaPlusSquare } from 'react-icons/fa';
 
 interface ChatToggleProps {
+  searchable: boolean;
   toggleChat: () => void;
   expanded: boolean;
   hasNewMessage: boolean;
@@ -13,7 +14,7 @@ interface ChatToggleProps {
 
 function ChatToggle(props: ChatToggleProps) {
 
-  const { toggleChat, expanded, hasNewMessage } = props;
+  const { searchable, toggleChat, expanded, hasNewMessage } = props;
 
   return (
     <div className='flex flex-row w-full h-fit p-4 uppercase text-dimshadow bg-highlight justify-between items-center cursor-pointer z-50' onClick={toggleChat}>
@@ -22,7 +23,7 @@ function ChatToggle(props: ChatToggleProps) {
         <BsFillChatLeftFill className='ml-3' />
       </div>
       {expanded
-        ? <ChatSearchBar invert={false} />
+        ? (searchable && <ChatSearchBar invert={false} />)
         : <ChatMsgIndicator hasNewMessage={hasNewMessage} />
       }
     </div>
