@@ -29,6 +29,7 @@ function Friendlist(props: FriendlistProps) {
   const [endingIndex, setEndingIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
+  const { myProfile } = useContext(UserContext);
 
   // Filtered Raw data
   const acceptedFriends = useMemo(() => filterFriends(friends, FriendTags.accepted), []);
@@ -66,10 +67,11 @@ function Friendlist(props: FriendlistProps) {
       <input
         className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        onChange={handleInput}
+        // onChange={handleInput}
         value={inputValue}
         ref={inputRef}
       />
+      { userData.intraName !== myProfile.intraName && <p className='bg-highlight text-dimshadow w-fit px-[1ch]'>Currently viewing <span className='bg-accCyan text-highlight'>{userData.userName}</span>'s friend list</p>}
       <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
         {
           friends.length === 0
@@ -206,18 +208,18 @@ function Friendlist(props: FriendlistProps) {
   }
 
   // less: handle input
-  function handleInput(e: React.FormEvent<HTMLInputElement>) {
-    let value = e.currentTarget.value;
+  // function handleInput(e: React.FormEvent<HTMLInputElement>) {
+  //   let value = e.currentTarget.value;
 
-    if (value[value.length - 1] == '\\') value += '\\';
+  //   if (value[value.length - 1] == '\\') value += '\\';
 
-    setInputValue(value.toLowerCase());
-    if (value[0] === '/') {
-      setIsSearching(true);
-      return;
-    }
-    setInputValue("");
-  }
+  //   setInputValue(value.toLowerCase());
+  //   if (value[0] === '/') {
+  //     setIsSearching(true);
+  //     return;
+  //   }
+  //   setInputValue("");
+  // }
 }
 
 export default Friendlist;

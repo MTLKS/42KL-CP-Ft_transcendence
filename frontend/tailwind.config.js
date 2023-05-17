@@ -22,6 +22,7 @@ export default {
         shine: "shine 2s infinite",
         "h-shake": "h-shake 0.5s",
         marquee: "marquee 15s linear infinite",
+        loadingFade: "loadingFade infinite 1s",
       },
       cursor: {
         default: "url(./assets/cursor/smiley.svg), default",

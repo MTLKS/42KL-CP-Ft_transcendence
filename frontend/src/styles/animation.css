@@ -121,3 +121,17 @@
     transform: translateX(0%);
   }
 }
+
+@keyframes loadingFade {
+  0% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.8;
+    width: 8px;
+    height: 8px;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}

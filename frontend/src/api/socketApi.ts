@@ -8,15 +8,16 @@ export type Events =
   | "changeStatus"
   | "statusRoom"
   | "friendshipRoom"
+  | "message"
+  | "typing"
+  | "read"
   | "startGame"
   | "gameLoop"
   | "playerMove"
   | "gameState"
-  | "message"
   | "gameResponse"
   | "joinQueue"
   | "leaveQueue"
-  | "read";
 
 class SocketApi {
   socket: Socket;

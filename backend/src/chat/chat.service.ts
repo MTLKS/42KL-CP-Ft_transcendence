@@ -83,8 +83,8 @@ export class ChatService {
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{senderIntraName: USER_DATA.intraName, receiverIntraName: intraName}, {senderIntraName: intraName, receiverIntraName: USER_DATA.intraName}] });
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return server.to(MY_ROOM.channelId).emit("typing", { error: "Invalid friendhsip - you are not friends with this user" } );
-		await this.friendshipRepository.save(FRIENDSHIP)
-		server.to(CHANNEL.channelId).emit("typing", USER_DATA.intraName + " is typing..." );
+		await this.friendshipRepository.save(FRIENDSHIP);
+		server.to(CHANNEL.channelId).emit("typing", USER_DATA.intraName);
 	}
 
 	// Retrives user's member data

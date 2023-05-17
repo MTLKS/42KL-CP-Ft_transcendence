@@ -36,7 +36,6 @@ function Profile(props: ProfileProps) {
     });
 
     return () => {
-      console.log("remove listener:", myProfile.intraName);
       defaultSocket.removeListener("statusRoom");
       defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
     }

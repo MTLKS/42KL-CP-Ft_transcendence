@@ -5,6 +5,10 @@ import { FriendData } from '../../../model/FriendData'
 import Highlighter from '../../../components/Highlighter';
 import UserContext from '../../../contexts/UserContext';
 import SocketApi from '../../../api/socketApi';
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
+import { getProfileOfUser } from '../../../functions/profile';
+import { UserData } from '../../../model/UserData';
+import Profile from '../../Profile/Profile';
 
 interface FriendInfoProps {
   friend: FriendData,
@@ -14,8 +18,8 @@ interface FriendInfoProps {
 
 function FriendInfo(props: FriendInfoProps) {
 
-  // const { defaultSocket } = useContext(UserContext);
   const [onlineStatus, setOnlineStatus] = useState("offline");
+  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const { friend, intraName, searchTerm } = props;
   let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
   let friendshipStatus = friend.status.toLowerCase();
@@ -37,19 +41,18 @@ function FriendInfo(props: FriendInfoProps) {
     });
 
     return () => {
-      // console.log("remove listener:", friendIntraName);
       friendInfoSocket.removeListener("statusRoom");
       friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: false });
     }
   }, [friend]);
 
   return (
-    <div className='flex flex-row text-highlight'>
-      <div className='w-[16ch] normal-case'>
+    <div className='flex flex-row text-highlight hover:cursor-pointer group hover:bg-highlight hover:text-dimshadow w-fit' onClick={viewFriendProfile}>
+      <div className='group-hover:underline w-[16ch] normal-case'>
         <Highlighter text={friend.userName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
-      <div className='w-[16ch]'>
+      <div className='w-[16ch] group-hover:underline'>
         <Highlighter text={friendIntraName} searchTerm={searchTerm} />
       </div>
       <FriendlistSeparator />
@@ -76,6 +79,12 @@ function FriendInfo(props: FriendInfoProps) {
       }
     </div>
   )
+
+  async function viewFriendProfile() {
+    let friendData = await getProfileOfUser(friendIntraName);
+    setPreviewProfileFunction(friendData.data as UserData);
+    setTopWidgetFunction(<Profile expanded={true} />)
+  }
 }
 
 export default FriendInfo

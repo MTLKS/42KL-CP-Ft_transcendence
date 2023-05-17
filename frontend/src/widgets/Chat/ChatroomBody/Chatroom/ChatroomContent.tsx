@@ -46,7 +46,9 @@ function ChatroomContent(props: ChatroomContentProps) {
     getChatroomMemberData();
     // listen for incoming messages
     listenForIncomingMessages();
-    return () => chatSocket.removeListener("message"); // don't remove this
+    return () => {
+      chatSocket.removeListener("message");
+    }
   }, []);
   
   const messagesComponent = useMemo(() => {
