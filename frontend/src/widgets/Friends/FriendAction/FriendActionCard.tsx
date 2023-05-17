@@ -21,7 +21,6 @@ export const ACTION_TYPE = {
   BLOCK: "block",
   UNFRIEND: "unfriend",
   UNBLOCK: "unblock",
-  VIEW: "view",
 }
 
 function getFriendActionTitle(action: string) {

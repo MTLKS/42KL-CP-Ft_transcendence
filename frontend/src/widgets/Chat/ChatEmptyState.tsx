@@ -15,9 +15,10 @@ function ChatEmptyState() {
     <div className='w-[60%] flex flex-col gap-y-3.5 text-highlight items-center m-auto mt-40'>
       <FaSadTear className='text-accYellow text-7xl' />
       <p className='text-xl font-extrabold'>No messages, yet.</p>
-      <p className='text-center'>Ready to ball out? Add a friend and check with them or join a channel to rally up.</p>
+      <p className='text-center'>Ready to ball out? Chat with friends or join a channel to rally up.</p>
       <ChatButton icon={<HiServer />} title="join channel" onClick={() => setChatBody(<ChannelList />)} />
       <ChatButton icon={<FaUsers />} title="new channel" onClick={() => setChatBody(<NewChatRoom type='channel'/>)} />
+      <ChatButton icon={<FaPlusSquare />} title="new chat" onClick={() => setChatBody(<NewChatRoom type='dm' />)} />
     </div>
   )
 }

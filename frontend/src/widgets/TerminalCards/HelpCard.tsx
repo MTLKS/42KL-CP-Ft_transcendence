@@ -14,7 +14,7 @@ function HelpCard(props: HelpCardProps) {
   const { title, usage, option, commandOptions } = props;
 
   return (
-    <Card type={CardType.SUCCESS}>
+    <Card type={CardType.SUCCESS} key={Math.random().toString(36).slice(2) + Date.now().toString(36)}>
       <p className='text-xl uppercase font-bold'>{title}</p>
       <p className='text-highlight/60 text-sm'>Usage: {usage}</p>
       <br />
@@ -38,10 +38,10 @@ function HelpCard(props: HelpCardProps) {
   function displayAllOptions() {
     const allOptions: JSX.Element[] = [];
     const maxKeyLength = getMaxLengthOfKey(commandOptions);
-    let index = 0;
+    let index: number = 0;
     for (const option of commandOptions) {
       allOptions.push(
-        <CommandOption key={title + `option` + index} options={option} spaces={maxKeyLength} />,
+        <CommandOption key={Math.random().toString(36).slice(2) + Date.now().toString(36)} options={option} spaces={maxKeyLength} index={index} />,
         <br key={"br"+index}/>
       )
       index++;
