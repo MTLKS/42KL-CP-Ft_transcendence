@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
-import GameParticle from '../../model/GameParticle';
+import GameParticle, { GameLightningParticle } from '../../model/GameParticle';
 import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
 import { GameBlackhole } from '../../model/GameEntities';
@@ -10,7 +10,7 @@ import Worker from '../../workers/gameGraphic.worker?worker'
 
 interface ParticlesRendererProps {
   particles: GameParticle[];
-  lightningParticles: GameParticle[][];
+  lightningParticles: GameLightningParticle[];
 }
 function ParticlesRenderer(props: ParticlesRendererProps) {
   // const [particles, setParticles] = useState<GameParticle[]>([]);
@@ -34,27 +34,24 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     box.endFill();
     const purple = app.renderer.generateTexture(box);
     box.clear();
-    box.beginFill(0xffffff, 0);
-    box.drawRect(-5, 0, 10, 30);
-    box.endFill();
-    box.lineStyle(2, 0x5F928F);
-    box.moveTo(-1, 0);
-    box.lineTo(2, 10);
-    box.lineTo(-4, 15);
-    box.lineTo(1, 23);
-    box.lineTo(-1, 30);
-    box.lineStyle(2, 0x5F928F);
-    box.moveTo(1, 0);
-    box.lineTo(4, 10);
-    box.lineTo(-2, 15);
-    box.lineTo(3, 23);
-    box.lineTo(1, 30);
-    box.lineStyle(2, 0xffffff, 0.7);
+    box.lineStyle(6, 0x5F928F);
+    box.moveTo(-2, 0);
+    box.lineTo(4, 20);
+    box.lineTo(-8, 30);
+    box.lineTo(2, 46);
+    box.lineTo(-2, 60);
+    box.lineStyle(6, 0x5F928F);
+    box.moveTo(2, 0);
+    box.lineTo(8, 20);
+    box.lineTo(-4, 30);
+    box.lineTo(6, 46);
+    box.lineTo(2, 60);
+    box.lineStyle(4, 0xffffff, 0.5);
     box.moveTo(0, 0);
-    box.lineTo(3, 10);
-    box.lineTo(-3, 15);
-    box.lineTo(2, 23);
-    box.lineTo(0, 30);
+    box.lineTo(6, 20);
+    box.lineTo(-6, 30);
+    box.lineTo(4, 46);
+    box.lineTo(0, 60);
     const lightning = app.renderer.generateTexture(box);
     box.destroy();
     return [white, cyan, purple, lightning];
@@ -103,13 +100,13 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       } else if (!gravity) {
         trailElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
       } else {
-        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={1} texture={textures[colorIndex]} />);
+        purpleElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
       }
     });
     lightningParticles.forEach((lightning) => {
-      lightning.forEach((p) => {
-        const { id, x, y, w, h, colorIndex, rotRad } = p;
-        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={1} texture={textures[colorIndex]} />);
+      lightning.particles.forEach((p) => {
+        const { id, x, y, w, h, colorIndex, rotRad, opacity } = p;
+        lightningElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} anchor={new PIXI.Point(0.5, 0)} rotation={rotRad} alpha={h > 5 ? opacity : 0} texture={textures[colorIndex]} />);
       });
     });
   }, [particles, lightningParticles]);

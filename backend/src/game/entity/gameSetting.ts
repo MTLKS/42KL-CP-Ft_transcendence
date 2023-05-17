@@ -1,7 +1,7 @@
 export enum GameMode{
+	BORING,
 	STANDARD,
-	POWER,
-	sudden
+	DEATH
 }
 
 export class GameSetting{
@@ -20,7 +20,7 @@ export class GameSetting{
 	scoreToWin: number;
 	gameMode: GameMode;
 
-	constructor(leftPaddleHeight: number, rightPaddleHeight: number, gameMode: GameMode){
+	constructor(leftPaddleHeight: number, rightPaddleHeight: number, gameMode: GameMode, scoreToWin?: number){
 		this.canvasWidth = 1600;
 		this.canvasHeight = 900;
 		this.ballSpeedX = 9;
@@ -31,7 +31,7 @@ export class GameSetting{
 		this.rightPaddleHeight = rightPaddleHeight;
 		this.paddleOffsetX = 30;
 		this.paddleOffsetY = 50;
-		this.scoreToWin = 10;
+		this.scoreToWin = scoreToWin || 10;
 		this.gameMode = gameMode;
 	}
 }

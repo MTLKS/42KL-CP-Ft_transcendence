@@ -181,9 +181,160 @@ class GameParticle {
    * should not be used with setGravityJolt
    */
   public setGravityAccel(x: number, y: number, magnitude: number) {
+    if (!this.gravity) return;
     this.ax = (x - this.x) * magnitude * 0.005;
     this.ay = (y - this.y) * magnitude * 0.005;
   }
 }
 
+interface GameLightningParticleData {
+  centerX: number;
+  centerY: number;
+  paddingX: number;
+  paddingY: number;
+}
+
+class GameLightningParticle {
+  particles: GameParticle[];
+  centerX: number;
+  centerY: number;
+  paddingX: number;
+  paddingY: number;
+  currentTagetX: number;
+  currentTagetY: number;
+  pointIndex: number;
+  constructor({
+    centerX,
+    centerY,
+    paddingX,
+    paddingY,
+  }: GameLightningParticleData) {
+    this.particles = [];
+    this.centerX = centerX;
+    this.centerY = centerY;
+    this.paddingX = paddingX;
+    this.paddingY = paddingY;
+    this.currentTagetX = 0;
+    this.currentTagetY = 0;
+    this.pointIndex = 0;
+  }
+
+  public update() {
+    this.particles.forEach((particle) => {
+      particle.update();
+    });
+    this.particles.forEach((particle) => {
+      if (particle.opacity <= 0.01)
+        this.particles.splice(this.particles.indexOf(particle), 1);
+      particle.update();
+    });
+    if (this.particles.length > 12) {
+      for (let i = 0; i < this.particles.length - 12; i++) {
+        this.particles[i].opacityDecay = 0.05;
+      }
+    }
+    this.addParticle();
+    if (
+      Math.abs(
+        this.currentTagetX - this.particles[this.particles.length - 1].x
+      ) < 10 &&
+      Math.abs(
+        this.currentTagetY - this.particles[this.particles.length - 1].y
+      ) < 10
+    ) {
+      if (this.pointIndex == 0) {
+        this.currentTagetX =
+          this.centerX + this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY + this.paddingY + 5 * (Math.random() - 0.5);
+      } else if (this.pointIndex == 1) {
+        this.currentTagetX =
+          this.centerX - this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY + this.paddingY + 5 * (Math.random() - 0.5);
+      } else if (this.pointIndex == 2) {
+        this.currentTagetX =
+          this.centerX - this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY - this.paddingY + 5 * (Math.random() - 0.5);
+      } else if (this.pointIndex == 3) {
+        this.currentTagetX =
+          this.centerX + this.paddingX + 5 * (Math.random() - 0.5);
+        this.currentTagetY =
+          this.centerY - this.paddingY + 5 * (Math.random() - 0.5);
+      }
+      this.pointIndex++;
+      if (this.pointIndex > 3) this.pointIndex = 0;
+    }
+  }
+
+  private addParticle() {
+    if (this.particles.length == 0)
+      this.particles.push(
+        new GameParticle({
+          x: this.centerX + this.paddingX,
+          y: this.centerY - this.paddingY,
+          opacity: 0.7,
+          w: 10,
+          h: 20 + 30 * Math.random(),
+          colorIndex: 3,
+          rotRad: Math.PI / 2,
+        })
+      );
+    else {
+      for (let i = 0; i < 2; i++) {
+        const lastParticle = this.particles[this.particles.length - 1];
+        const newStartX =
+          lastParticle.x - (lastParticle.h - 3) * Math.sin(lastParticle.rotRad);
+        const newStartY =
+          lastParticle.y + (lastParticle.h - 3) * Math.cos(lastParticle.rotRad);
+        const distance = Math.sqrt(
+          Math.pow(this.currentTagetX - newStartX, 2) +
+            Math.pow(this.currentTagetY - newStartY, 2)
+        );
+        if (distance < 51) {
+          this.particles.push(
+            new GameParticle({
+              x: newStartX,
+              y: newStartY,
+              opacity: 0.7,
+              w: 5 + 10 * Math.random(),
+              h: distance,
+              colorIndex: 3,
+              rotRad:
+                Math.PI +
+                Math.atan2(
+                  this.currentTagetX - lastParticle.x,
+                  lastParticle.y - this.currentTagetY
+                ),
+            })
+          );
+        } else {
+          this.particles.push(
+            new GameParticle({
+              x:
+                lastParticle.x -
+                (lastParticle.h - 3) * Math.sin(lastParticle.rotRad),
+              y:
+                lastParticle.y +
+                (lastParticle.h - 3) * Math.cos(lastParticle.rotRad),
+              opacity: 0.7,
+              w: 5 + 15 * Math.random(),
+              h: 20 + 30 * Math.random(),
+              colorIndex: 3,
+              rotRad:
+                Math.PI +
+                Math.atan2(
+                  this.currentTagetX - lastParticle.x,
+                  lastParticle.y - this.currentTagetY
+                ),
+            })
+          );
+        }
+      }
+    }
+  }
+}
+
+export { GameLightningParticle };
 export default GameParticle;

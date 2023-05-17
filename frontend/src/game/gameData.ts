@@ -9,7 +9,11 @@ import {
 } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { clamp, debounce } from "lodash";
-import GameEntity, { GameBlackhole, GameTimeZone } from "../model/GameEntities";
+import GameEntity, {
+  GameBlackhole,
+  GameBlock,
+  GameTimeZone,
+} from "../model/GameEntities";
 import sleep from "../functions/sleep";
 import * as particles from "@pixi/particle-emitter";
 import GameParticle from "../model/GameParticle";
@@ -52,8 +56,6 @@ export class GameData {
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = debounce((y: number, gameRoom: string) => {
-      // console.log("sending player move");
-      console.log("game room", this.gameRoom);
       this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
     }, 1);
   }
@@ -95,12 +97,13 @@ export class GameData {
     this.gameEntities.push(
       new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
     );
+    this.gameEntities.push(new GameBlock({ x: 400, y: 500, w: 150, h: 150 }));
     this.gameEntities.push(
-      new GameTimeZone({ x: 1200, y: 300, w: 300, h: 300 }, 0.4)
+      new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.3)
     );
-    this.gameEntities.push(
-      new GameTimeZone({ x: 1200, y: 600, w: 300, h: 300 }, 1.5)
-    );
+    // this.gameEntities.push(
+    //   new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
+    // );
   }
 
   displayGame() {
@@ -222,7 +225,7 @@ export class GameData {
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     // console.log(data.ballPosX, data.ballPosY);
-    console.log("isLeft: ", this.isLeft);
+    // console.log("isLeft: ", this.isLeft);
     this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
       this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
@@ -239,7 +242,6 @@ export class GameData {
   };
 
   updatePlayerPosition(y: number) {
-    console.log("gameRoom: ", this.gameRoom);
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
     } else {

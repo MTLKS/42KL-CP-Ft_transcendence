@@ -43,9 +43,9 @@ export class ChatService {
 		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, false, message, new Date().toISOString());
 		await this.messageRepository.save(NEW_MESSAGE);
 
-		let member = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channelId: CHANNEL.channelId} });
+		let member = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channel: CHANNEL} });
 		if (member === null)
-			await this.memberRepository.save(new Member(USER_DATA, CHANNEL.channelId, true, false, false, new Date().toISOString()));
+			await this.memberRepository.save(new Member(USER_DATA, CHANNEL, true, false, false, new Date().toISOString()));
 		else {
 			member.lastRead = new Date().toISOString();
 			await this.memberRepository.save(member);
@@ -64,7 +64,7 @@ export class ChatService {
 			return server.to(MY_CHANNEL.channelId).emit("read", { error: "Invalid channelId - channel is not found" } );
 		if ((await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
 			return server.to(MY_CHANNEL.channelId).emit("read", { error: "Invalid channelId - you are not friends with this user" } );
-		const MY_MEMBER = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channelId: FRIEND_CHANNEL.channelId}, relations: ['user'] });
+		const MY_MEMBER = await this.memberRepository.findOne({ where: {user: { intraName: USER_DATA.intraName }, channel: FRIEND_CHANNEL}, relations: ['user', 'channel'] });
 		MY_MEMBER.lastRead = new Date().toISOString();
 		await this.memberRepository.save(MY_MEMBER);
 		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER) );
@@ -90,7 +90,7 @@ export class ChatService {
 	// Retrives user's member data
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const MEMBER_DATA = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName }, channelId: channelId}, relations: ['user'] });
+		const MEMBER_DATA = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName }, channel: { channelId: channelId }}, relations: ['user', 'channel'] });
 		return MEMBER_DATA === null ? { error: "Invalid channelId - member is not found in that channelId" } : this.userService.hideData(MEMBER_DATA);
 	} 
 
@@ -106,7 +106,7 @@ export class ChatService {
 			if (CHANNEL === null)
 				continue ;
 			const LAST_MESSAGE = await this.messageRepository.findOne({ where: {receiverChannel: MY_CHANNEL, senderChannel: CHANNEL}, order: {timeStamp: "DESC"} });
-			const MEMBER = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName}, channelId: CHANNEL.channelId}, relations: ['user'] });
+			const MEMBER = await this.memberRepository.findOne({ where: {user: {intraName: USER_DATA.intraName}, channel: CHANNEL}, relations: ['user'] });
 			CHANNEL["newMessage"] = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > MEMBER.lastRead;
 			channel.push(CHANNEL);
 		}
@@ -114,7 +114,11 @@ export class ChatService {
 	}
 
 	// Retrives all messages from a DM
-	async getMyDMMessages(accessToken: string, channelId: number): Promise<any> {
+	async getMyDMMessages(accessToken: string, channelId: number, perPage: number, page: number): Promise<any> {
+		if (perPage === undefined)
+			perPage = 100;
+		if (page === undefined)
+			page = 1;
 		if (channelId === undefined)
 			return { error: "Invalid body - body must include channelId(number)" };
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
@@ -127,7 +131,7 @@ export class ChatService {
 		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
 			return { error: "Invalid channelId - you are not friends with this user" };
 		const MESSAGES = await this.messageRepository.find({ where: [{receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL}, {receiverChannel: { channelId: channelId}, senderChannel: MY_CHANNEL}], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
-		return this.userService.hideData(MESSAGES);
+		return this.userService.hideData(MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
 	}
 
 	// Creates a new room
@@ -144,7 +148,7 @@ export class ChatService {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true);
 		await this.channelRepository.save(ROOM);
-		await this.memberRepository.save(new Member(USER_DATA, ROOM.channelId, true, false, false, new Date().toISOString()));
+		await this.memberRepository.save(new Member(USER_DATA, ROOM, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
 	}
 

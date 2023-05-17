@@ -7,6 +7,7 @@ import { MatchService } from "src/match/match.service";
 import { Circle } from "./circle";
 import { Block } from "./block";
 import { simd } from "sharp";
+import { UserService } from "src/user/user.service";
 
 enum FieldEffect{
 	NORMAL = 0,
@@ -58,8 +59,8 @@ export class PowerGameRoom extends GameRoom{
 	blockMass: number;
 
 
-	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService){
-		super(player1, player2, gameType, setting, matchService);
+	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService){
+		super(player1, player2, gameType, setting, matchService, userService);
 
 		//Config Setting
 		this.minTime = 10;
@@ -102,6 +103,7 @@ export class PowerGameRoom extends GameRoom{
 				this.player2Score++;
 				this.lastWinner = "player2";
 			}
+			this.resetTime = Date.now();
 			this.gameReset = true;
 		}
 		

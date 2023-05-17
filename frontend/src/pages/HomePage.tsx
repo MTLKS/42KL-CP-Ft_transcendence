@@ -26,25 +26,26 @@ import Tfa from '../components/tfa';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
 import { ErrorData } from '../contexts/ErrorContext';
 import { gameData } from '../main';
+import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
 
-const availableCommands = [
-  "sudo",
-  "display",
-  "start",
-  "queue",
-  "dequeue",
-  "clear",
-  "help",
-  "end",
-  "profile",
-  "ok",
-  "leaderboard",
-  "cowsay",
-  "friend",
-  "set",
-  "reset",
-  "tfa"
+const availableCommands: CommandOptionData[] = [
+  new CommandOptionData({ command: "help" }),
+  new CommandOptionData({ command: "profile" }),
+  new CommandOptionData({ command: "leaderboard" }),
+  new CommandOptionData({ command: "friend", options: ["add", "list", "block", "unblock", "requests"], parameters: "<username>" }),
+  new CommandOptionData({ command: "cowsay" }),
+  new CommandOptionData({ command: "tfa", options: ["set", "unset", "forgot"] }),
+  new CommandOptionData({ command: "sudo" }),
+  new CommandOptionData({ command: "display" }),
+  new CommandOptionData({ command: "start" }),
+  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death"] }),
+  new CommandOptionData({ command: "dequeue" }),
+  new CommandOptionData({ command: "clear" }),
+  new CommandOptionData({ command: "end" }),
+  new CommandOptionData({ command: "ok" }),
+  new CommandOptionData({ command: "set" }),
+  new CommandOptionData({ command: "reset" }),
 ];
 
 interface HomePageProps {
@@ -372,7 +373,6 @@ function HomePage(props: HomePageProps) {
       id: user.intraId,
       senderIntraName: userData.intraName,
       receiverIntraName: user.intraName,
-      chatted: false,
       elo: 0,
       status: "STRANGER",
       userName: user.userName,

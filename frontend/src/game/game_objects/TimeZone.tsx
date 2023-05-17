@@ -34,7 +34,7 @@ function TimeZone(props: TimeZoneProps) {
 
   const texture = useMemo(() => {
     const box = new PIXI.Graphics();
-    box.beginFill(color, 0.1);
+    box.beginFill(color, 0.2);
     box.lineStyle(12, color, 1);
     box.drawCircle(0, 0, size.w / 2);
     box.endFill();
@@ -69,7 +69,7 @@ function TimeZone(props: TimeZoneProps) {
   }, [, type]);
   return (
     <>
-      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
+      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} alpha={0.4} />
       <Sprite
         anchor={0.5}
         x={position.x}
@@ -77,6 +77,7 @@ function TimeZone(props: TimeZoneProps) {
         width={size.w * svgSizeRatio}
         height={size.h * svgSizeRatio}
         texture={iconTexture}
+        alpha={0.4}
       />
     </>
   )

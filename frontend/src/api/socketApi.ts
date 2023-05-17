@@ -17,7 +17,7 @@ export type Events =
   | "gameState"
   | "gameResponse"
   | "joinQueue"
-  | "leaveQueue"
+  | "leaveQueue";
 
 class SocketApi {
   socket: Socket;

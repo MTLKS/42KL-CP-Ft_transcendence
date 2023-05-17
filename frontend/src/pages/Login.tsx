@@ -1,6 +1,6 @@
 import Title from '../components/Title';
 import login from '../functions/login';
-import PromptField from '../components/PromptField';
+import PromptField, { CommandOptionData } from '../components/PromptField';
 import sleep from '../functions/sleep';
 import { useEffect, useRef, useState } from 'react';
 
@@ -46,7 +46,7 @@ function Login() {
 
   useEffect(() => {
     if (errorCount === 0)
-      return ;
+      return;
     setTimeout(() => {
       setErrorStyle("animate-h-shake");
     }, 5);
@@ -65,7 +65,7 @@ function Login() {
       <div className={`${errorStyle} duration-[0.1s]`}>
         <PromptField
           handleCommands={handleCommands}
-          availableCommands={["LOGIN"]}
+          availableCommands={[new CommandOptionData({ command: "LOGIN" })]}
           center={true}
           capitalize={true}
           ref={promptFieldRef}

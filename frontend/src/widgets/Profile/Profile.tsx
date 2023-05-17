@@ -21,9 +21,7 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
-    else {
-      setExpanded(false);
-    }
+    else setExpanded(false);
   }, [props.expanded]);
 
   useEffect(() => {
@@ -41,13 +39,11 @@ function Profile(props: ProfileProps) {
     }
   }, [myProfile.intraName]);
 
-  return (
-    <div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
-      <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
-      <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} onProfileClick={onProfileClick} />
-      <RecentMatches expanded={expanded} />
-    </div>
-  );
+  return (<div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
+    <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
+    <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} onProfileClick={onProfileClick} />
+    <RecentMatches expanded={expanded} />
+  </div>);
 
   async function pixelatedToSmooth(start: number = 200) {
     let tmp = start;

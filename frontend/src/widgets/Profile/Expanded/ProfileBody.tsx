@@ -17,7 +17,7 @@ interface ProfileBodyProps {
 function ProfileBody(props: ProfileBodyProps) {
   const { currentPreviewProfile: myProfile } = useContext(PreviewProfileContext);
   const { pixelSize, expanded, status, onProfileClick } = props;
-  const { avatar, elo } = myProfile;
+  const { avatar, elo, winning } = myProfile;
   return (
     <div className={` flex flex-row w-full box-border transition-all duration-300 ease-in-out ${!expanded ? "h-20" : "mb-1 mt-1"}  cursor-pointer`}
       onClick={onProfileClick}
@@ -27,7 +27,7 @@ function ProfileBody(props: ProfileBodyProps) {
       </div>
       <ProfileSmall expanded={!expanded} status={status} />
       <div className={expanded ? 'mr-1 bg-dimshadow flex-1 transition-all duration-1000 ease-in-out' : 'h-20 transition-all duration-1000 ease-in-out'}>
-        <ProfileElo expanded={expanded} elo={elo} />
+        <ProfileElo expanded={expanded} elo={elo} winning={winning}/>
       </div>
       <ProfileStat expanded={expanded} />
     </div>
