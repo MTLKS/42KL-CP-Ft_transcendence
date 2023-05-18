@@ -49,14 +49,14 @@ export class UserService {
 	// Use intraName to get user info
 	async getUserDataByIntraName(accessToken: string, intraName: string): Promise<any> {
 		if (intraName === undefined)
-			return { error: "Invalid body - body must include intraName(string)" };
+			return new ErrorDTO("Invalid body - body must include intraName(string)");
 		const USER_DATA = await this.getMyUserData(accessToken);
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
-			return { error: "Invalid intraName - user does not exist" };
+			return new ErrorDTO("Invalid intraName - user does not exist");
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{sender: {intraName: USER_DATA.intraName}, receiver: {intraName: FRIEND_DATA.intraName}}, {sender: {intraName: FRIEND_DATA.intraName}, receiver: {intraName: USER_DATA.intraName}}] });
 		if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
-			return { error: "Invalid friendship - you are blocked by this user" };
+			return new ErrorDTO("Invalid friendship - you are blocked by this user");
 		return this.hideData(FRIEND_DATA);
 	}
 
@@ -74,9 +74,9 @@ export class UserService {
 		});
 		let userData = await response.json();
 		if (userData.error !== undefined)
-			return { error: userData.error };
+			return new ErrorDTO(userData.error);
 		if (response.status !== 200 || userData.length === 0)
-			return { error: userData.error };
+			return new ErrorDTO(userData.error);
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
@@ -105,7 +105,7 @@ export class UserService {
 	// Updates existing user by saving their userName and avatar
 	async updateUserInfo(accessToken: string, userName: string, image: any): Promise<any> {
 		if (image === undefined)
-			return { error: "Invalid image path - no avatar image given" }
+			return new ErrorDTO("Invalid image path - no avatar image given");
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
