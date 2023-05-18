@@ -1,9 +1,8 @@
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
-import { Injectable } from "@nestjs/common";
-import { PostCodeResponseDTO } from "src/dto/auth.dto";
-import { AppDTO } from "src/dto/app.dto";
+import { Get, Injectable } from "@nestjs/common";
+import { GetRedirectDTO, PostCodeResponseDTO } from "src/dto/auth.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as dotenv from 'dotenv';
@@ -13,12 +12,12 @@ export class AuthService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) { dotenv.config(); }
 
 	// Starts the login process
-	async startLogin(accessToken: string): Promise<AppDTO> {
+	async startLogin(accessToken: string): Promise<GetRedirectDTO> {
 		try {
-			return { redirectUrl: ((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? process.env.CLIENT_DOMAIN + ":" + process.env.FE_PORT : process.env.APP_REDIRECT };
+			return new GetRedirectDTO(((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? process.env.CLIENT_DOMAIN + ":" + process.env.FE_PORT : process.env.APP_REDIRECT );
 		}
 		catch {
-			return { redirectUrl: process.env.APP_REDIRECT};
+			return new GetRedirectDTO(process.env.APP_REDIRECT);
 		}
 	}
 
@@ -43,7 +42,7 @@ export class AuthService {
 		});
 		const RETURN_DATA = await API_RESPONSE.json();
 		if (RETURN_DATA.access_token == null)
-			return { accessToken: null, newUser: false };
+			return new PostCodeResponseDTO(null, false);
 		let accessToken = CryptoJS.AES.encrypt(RETURN_DATA.access_token, process.env.ENCRYPT_KEY).toString()
 		const INTRA_DTO = await this.userService.getMyIntraData(accessToken);
 		const ENTITY_USER = await this.userRepository.findOne({ where: {intraId: INTRA_DTO.id} });
@@ -53,8 +52,8 @@ export class AuthService {
 			await this.userRepository.save(ENTITY_USER);
 		} else {
 			await this.userRepository.save(new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, 400, RETURN_DATA.access_token, INTRA_DTO.imageLarge, null));
-			return { accessToken, newUser: true };
+			return new PostCodeResponseDTO(accessToken, true);
 		}
-		return { accessToken, newUser: false };
+		return new PostCodeResponseDTO(accessToken, false);
 	}
 }
