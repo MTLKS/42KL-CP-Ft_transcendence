@@ -1,9 +1,11 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { FriendshipDTO } from 'src/dto/friendship.dto';
 import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Member } from 'src/entity/member.entity';
 import { User } from 'src/entity/users.entity';
+import { ErrorDTO } from 'src/dto/error.dto';
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 
@@ -29,22 +31,24 @@ export class FriendshipService {
 	}
 
 	// Check if the JSON body is valid
-	async checkJson(senderIntraName: string, receiverIntraName: string, status:string): Promise<any> {
+	async checkJson(senderIntraName: string, receiverIntraName: string, status:string): Promise<ErrorDTO> {
 		if (receiverIntraName == undefined || status == undefined)
-			return { error: "Invalid body - body must include receiverIntraName(string) and status(stirng)" }
+			return new ErrorDTO("Invalid body - body must include receiverIntraName(string) and status(string)");
 		if (senderIntraName == receiverIntraName)
-			return { error: "Invalid intraName - no friends so you friend yourself?" }
+			return new ErrorDTO("Invalid intraName - no friends so you friend yourself?");
 		if (status.toUpperCase() != "PENDING" && status.toUpperCase() != "ACCEPTED" && status.toUpperCase() != "BLOCKED")
-			return { error: "Invalid status - status must be PENDING, ACCEPTED or BLOCKED"}
+			return new ErrorDTO("Invalid status - status must be PENDING, ACCEPTED or BLOCKED");
 	}
-
 	// Get all friendship by accessToken
 	async getFriendship(accessToken: string): Promise<any> {
-		return await this.getFriendshipByIntraNAme((await this.userService.getMyUserData(accessToken)).intraName);
+		return await this.getFriendshipByIntraNAme(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
 	}
 
 	// Gets all friendship by intraName
-	async getFriendshipByIntraNAme(intraName: string): Promise<any> {
+	async getFriendshipByIntraNAme(accessToken: string, intraName: string): Promise<any> {
+		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, intraName);
+		if (FRIENDSHIP.status === "BLOCKED")
+			return new ErrorDTO("Invalid friendship - you are blocked by this user");
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiver: {intraName: intraName}}, relations: ['sender', 'receiver'] });
 		for (let receiver of RECEIVER) {
 			const USER = await this.userRepository.findOne({ where: {intraName: receiver.receiver.intraName} });
@@ -73,12 +77,12 @@ export class FriendshipService {
 		if (ERROR)
 			return ERROR;
 		if (status.toUpperCase() == "ACCEPTED")
-			return { error: "Invalid status - friendship status (ACCEPTED) is not supported" }
+			return new ErrorDTO("Invalid status - friendship status (ACCEPTED) is not supported");
 		if (await this.getFriendshipStatus(accessToken, receiverIntraName) !== null)
-			return { error: "Invalid receiverIntraName - friendship already exist" }
+			return new ErrorDTO("Invalid receiverIntraName - friendship already exist");
 		const RECEIVER = await this.userRepository.findOne({ where: {intraName: receiverIntraName} });
 		if (RECEIVER === null)
-			return { error: "Invalid receiverIntraName - user does not exist" };
+			return new ErrorDTO("Invalid receiverIntraName - user does not exist");
 		const NEW_FRIENDSHIP = new Friendship(USER_DATA, RECEIVER, status.toUpperCase());
 		await this.friendshipRepository.save(NEW_FRIENDSHIP);
 		return this.userService.hideData(NEW_FRIENDSHIP);
@@ -90,20 +94,19 @@ export class FriendshipService {
 		const ERROR = await this.checkJson(USER_DATA.intraName, receiverIntraName, status);
 		if (ERROR)
 			return ERROR;
-
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName: receiverIntraName} });
 		if (FRIEND_DATA === null)
-			return { error: "Invalid receiverIntraName - friendship does not exist"};
+			return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
 		const RECEIVER = await this.friendshipRepository.findOne({ where: {sender: {intraName: receiverIntraName}, receiver: {intraName: USER_DATA.intraName}} });
 		if (status.toUpperCase() == "ACCEPTED") {
 			if (RECEIVER === null)
-				return { error: "Invalid receiverIntraName - friendship does not exist" }
+				return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
 			RECEIVER.status = "ACCEPTED";
 			const MY_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: USER_DATA.intraName}, isRoom: true} });
 			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: USER_DATA.intraName}, channel: MY_CHANNEL}})
 			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: {owner: {intraName: receiverIntraName}} });
 			if (FRIEND_CHANNEL === null)
-				return { error: "Invalid receiverIntraName - friendship does not exist" }
+				return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
 			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: {intraName: FRIEND_DATA.intraName}, channel: FRIEND_CHANNEL}})
 			if (MY_MEMBER === null)
 				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL, true, false, false, new Date().toISOString()));
@@ -121,13 +124,13 @@ export class FriendshipService {
 				return this.userService.hideData(await this.friendshipRepository.save(new Friendship(USER_DATA, FRIEND_DATA, "BLOCKED")));
 			} else {
 				if (FRIENDSHIP.status == "BLOCKED")
-					return { error: "Invalid receiverIntraName - friendship already exist" }
+					return new ErrorDTO("Invalid receiverIntraName - friendship already exist");
 				await this.friendshipRepository.delete(FRIENDSHIP);
 				const NEW_FRIENDSHIP = await this.friendshipRepository.save(new Friendship(USER_DATA, FRIEND_DATA, status.toUpperCase()))
 				return this.userService.hideData(NEW_FRIENDSHIP);
 			}
 		}
-		return { error: "Invalid status - friendship status (PENDING) is not supported" }
+		return new ErrorDTO("Invalid status - friendship status (PENDING) is not supported");
 	}
 
 	// Deletes a friendship
@@ -138,9 +141,9 @@ export class FriendshipService {
 			return ERROR;
 		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, receiverIntraName);
 		if (FRIENDSHIP === null)
-			return { error: "Friendship does not exist - use POST method to create" }
+			return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
 		if (FRIENDSHIP.status === "BLOCKED" && FRIENDSHIP.receiver.intraName === USER_DATA.intraName)
-			return { error: "Invalid receiverIntraName - you really thought you can unblock yourself like this?"}
+			return new ErrorDTO( "Invalid receiverIntraName - you really thought you can unblock yourself like this?");
 		await this.friendshipRepository.delete(FRIENDSHIP);
 		return this.userService.hideData(FRIENDSHIP);
 	}

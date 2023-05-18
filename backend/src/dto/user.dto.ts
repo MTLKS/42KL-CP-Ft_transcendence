@@ -12,7 +12,7 @@ export class UserDataDTO {
 		this.winning = winning;
 	}
 
-	@ApiProperty({ example: 123456 })
+	@ApiProperty({ example: 111856 })
 	intraId: number;
 
 	@ApiProperty({ example: "Doughnuts" })
