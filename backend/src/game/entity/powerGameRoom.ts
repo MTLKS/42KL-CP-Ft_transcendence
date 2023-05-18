@@ -6,8 +6,8 @@ import { GameStateDTO, FieldEffectDTO } from "src/dto/gameState.dto";
 import { MatchService } from "src/match/match.service";
 import { Circle } from "./circle";
 import { Block } from "./block";
-import { simd } from "sharp";
 import { UserService } from "src/user/user.service";
+import { GameDTO } from "src/dto/game.dto";
 
 enum FieldEffect{
 	NORMAL = 0,
@@ -25,10 +25,12 @@ enum FieldEffect{
  * @param maxTime Maximum time to change field effect
  * @param fieldEffectTimer Time to change field effect. Will be in range of minTime and maxTime
  * @param effectContinuousTimer Time where the field effect present, will be 2 sec less than next change timer
+ * @param needReset Boolean to check if the field need to be reset
  * @param currentEffect Current field effect
  * @param effectMagnitude Magnitude of the field effect, either 1 or -1. Only used for Gravity and TimeZone
  * @param circleObject Object that represent the field effect(for Timezone, Black Hole)
  * @param blockObject Object that represent the field effect(for Block)
+ * @param insideField Boolean to check if the ball is inside the field effect(for time zone and black hole)
  * @param paddleTimer Time where the ball last hit the paddle
  * @param paddleElapseTime Time elapsed since the ball last hit the paddle
  * @param paddleResetTimer Maximum time where the ball will be reset if not touching paddle
@@ -40,10 +42,12 @@ export class PowerGameRoom extends GameRoom{
 	maxTime: number;
 	fieldEffectTimer: number;
 	effectContinuousTimer: number;
+	needReset: boolean = false;
 	currentEffect: FieldEffect;
 	effectMagnitude: number = 0;
 	circleObject: Circle = null;
 	blockObject: Block = null;
+	insideField: boolean = false;
 	paddleTimer: number;
 	paddleElapseTime: number = 0;
 	paddleResetTimer: number;
@@ -51,7 +55,8 @@ export class PowerGameRoom extends GameRoom{
 	//Config Setting for Power Ups
 	gravityPower: number;
 	timeZoneRadius: number;
-	timeZonefactor: number;
+	timeZoneSpeedUp: number;
+	timeZoneSlowDown: number;
 	blackHoleRadius: number;
 	blackHoleEffectRadius: number;
 	blackHoleForce: number;
@@ -62,6 +67,7 @@ export class PowerGameRoom extends GameRoom{
 	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService){
 		super(player1, player2, gameType, setting, matchService, userService);
 
+		console.log("power game room created");
 		//Config Setting
 		this.minTime = 10;
 		this.maxTime = 20;
@@ -71,13 +77,14 @@ export class PowerGameRoom extends GameRoom{
 		this.gravityPower = 10;
 
 		//TIMEZONE
-		this.timeZoneRadius = 300;
-		this.timeZonefactor = 0.5;
+		this.timeZoneRadius = 250;
+		this.timeZoneSpeedUp = 1.5;
+		this.timeZoneSlowDown = 0.5;
 
 		//BLACKHOLE
-		this.blackHoleRadius = 10;
-		this.blackHoleEffectRadius = 10;
-		this.blackHoleForce = 60;
+		this.blackHoleRadius = 20;
+		this.blackHoleEffectRadius = 15;
+		this.blackHoleForce = 500;
 
 		//BLOCK
 		this.blockSize = 100;
@@ -111,21 +118,36 @@ export class PowerGameRoom extends GameRoom{
 			this.fieldChange(server);
 			this.startTime = Date.now();
 			this.fieldEffectTimer = Math.random() * (this.maxTime - this.minTime) + this.minTime;
+			this.needReset = true;
 			this.effectContinuousTimer = this.fieldEffectTimer - 2;
+		}
+		else if (this.elapseTime >= this.effectContinuousTimer && this.needReset == true){
+			this.needReset = false;
+			this.fieldReset(server);
 		}
 		
 		if (this.paddleElapseTime >= this.paddleResetTimer){
+			console.log("paddle reset");
 			this.paddleTimer = Date.now();
 			this.resetGame(server);
 		}
 
-		if (this.elapseTime >= this.effectContinuousTimer){
-			this.fieldReset(server);
-		}
 		if (this.circleObject != null){
 			this.fieldEffect();
 		}
+
 		this.gameCollisionDetection();
+		if (this.blockObject != null){
+			this.blockObject.update();
+			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
+			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score, this.blockObject.posX, this.blockObject.posY));
+		}
+		else{
+			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+		}
+
 	}
 
 	gameCollisionDetection(){
@@ -155,9 +177,16 @@ export class PowerGameRoom extends GameRoom{
 		const BALL_CENTER_X = this.Ball.posX + this.Ball.width / 2;
 		const BALL_CENTER_Y = this.Ball.posY + this.Ball.height / 2;
 		if (this.currentEffect == FieldEffect.TIME_ZONE && this.circleObject != null){
-			if (this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y)){
-				this.Ball.velX *= (this.effectMagnitude + this.timeZonefactor);
-				this.Ball.velY *= (this.effectMagnitude + this.timeZonefactor);
+			if ((this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y)== true) && this.insideField == false){
+				this.insideField = true;
+				this.Ball.velX *= this.effectMagnitude;
+				this.Ball.velY *= this.effectMagnitude;
+				console.log(this.Ball.velX, this.Ball.velY)
+			}
+			if((this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y) == false) && this.insideField == true){
+				this.insideField = false;
+				this.Ball.velX /= this.effectMagnitude;
+				this.Ball.velY /= this.effectMagnitude;
 			}
 		}
 		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
@@ -167,7 +196,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = Math.floor(Math.random() * 5);
+		// let effect = Math.floor(Math.random() * 5);
+		let effect = 0;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
@@ -175,7 +205,6 @@ export class PowerGameRoom extends GameRoom{
 				server.emit("gameState", new FieldEffectDTO("NORMAL", 0,0,0));
 				break;
 			case FieldEffect.GRAVITY:
-				console.log("gravity");
 				let direction = Math.random();
 				if (direction < 0.5){
 					this.Ball.initAcceleration(0, this.gravityPower);
@@ -194,19 +223,18 @@ export class PowerGameRoom extends GameRoom{
 				this.circleObject = new Circle(spawnPos.x, spawnPos.y, this.timeZoneRadius);
 				let magnitude = Math.random();
 				if (magnitude < 0.5){
-					this.effectMagnitude = 1;
-					server.emit("gameState", new FieldEffectDTO("TIME_ZONE", spawnPos.x, spawnPos.y, 1));
+					this.effectMagnitude = this.timeZoneSpeedUp;
 				}
 				else{
-					this.effectMagnitude = -1;
-					server.emit("gameState", new FieldEffectDTO("TIME_ZONE", spawnPos.x, spawnPos.y, -1));
+					this.effectMagnitude = this.timeZoneSlowDown
 				}
+				server.emit("gameState", new FieldEffectDTO("TIME_ZONE", spawnPos.x, spawnPos.y, this.effectMagnitude));
 				this.currentEffect = FieldEffect.TIME_ZONE;
 				break;
 			case FieldEffect.BLACK_HOLE:
 				spawnPos = this.getRandomSpawnPosition(this.blackHoleRadius);
 				this.circleObject = new Circle(spawnPos.x, spawnPos.y, this.blackHoleRadius);
-				server.emit("gameState", new FieldEffectDTO("BLACK_HOLE", spawnPos.x, spawnPos.y, 0));
+				server.emit("gameState", new FieldEffectDTO("BLACK_HOLE", spawnPos.x, spawnPos.y, this.blackHoleForce));
 				this.currentEffect = FieldEffect.BLACK_HOLE;
 				break;
 			case FieldEffect.BLOCK:
@@ -227,6 +255,7 @@ export class PowerGameRoom extends GameRoom{
 		}
 		this.currentEffect = FieldEffect.NORMAL;
 		this.Ball.initAcceleration(0,0);
+		this.effectMagnitude = 0;
 		server.emit("gameState", new FieldEffectDTO("NORMAL", 0,0,0));
 	}
 
