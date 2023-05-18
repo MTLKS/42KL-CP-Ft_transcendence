@@ -1,3 +1,4 @@
+import { GameData } from "../game/gameData";
 import GameParticle from "./GameParticle";
 import { update } from "lodash";
 

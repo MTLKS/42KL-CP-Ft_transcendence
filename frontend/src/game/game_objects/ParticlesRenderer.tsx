@@ -1,11 +1,11 @@
 import * as PIXI from 'pixi.js';
-import { Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
+import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import GameParticle, { GameLightningParticle } from '../../model/GameParticle';
 import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { GameDataCtx } from '../../GameApp';
 import { GameBlackhole } from '../../model/GameEntities';
 import Worker from '../../workers/gameGraphic.worker?worker'
-import { DropShadowFilter } from 'pixi-filters';
+import { BloomFilter, DropShadowFilter } from 'pixi-filters';
 import { filter } from 'lodash';
 import { GameGravityArrow } from '../../model/GameGravityArrow';
 
@@ -43,6 +43,12 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     box.destroy();
     return arrow;
   }, [gameGravityArrow]);
+
+  const bloomFilter = useMemo(() => {
+    const bloomFilter = new BloomFilter();
+    bloomFilter.blur = 3;
+    return bloomFilter;
+  }, []);
 
   const trailElementsRef = useRef<JSX.Element[]>([]);
   const whiteElementsRef = useRef<JSX.Element[]>([]);
@@ -90,7 +96,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   }, [particles, lightningParticles]);
 
   return (
-    <>
+    <Container filterArea={new PIXI.Rectangle(0, 0, 1600, 900)} filters={[bloomFilter]}>
       <ParticleContainer key={"arrowParticles"} properties={{ position: true, scale: true, alpha: true }}>
         {arrowElementsRef.current}
       </ParticleContainer>
@@ -109,7 +115,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       <ParticleContainer key={"lightningParticles"} properties={{ position: true, scale: true, alpha: true, rotation: true }}>
         {lightningElementsRef.current}
       </ParticleContainer>
-    </>
+    </Container>
   )
 }
 
