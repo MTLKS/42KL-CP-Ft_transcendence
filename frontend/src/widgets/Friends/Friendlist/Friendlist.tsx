@@ -41,7 +41,8 @@ function Friendlist(props: FriendlistProps) {
   const lines: JSX.Element[] = useMemo(() => createFriendlistComponents(sortedFriends), [sortedFriends]);
 
   // this should run when the component is mounted
-  useEffect(() => { 
+  useEffect(() => {
+    console.log(friends);
     handleResize();
     focusOnInput();
     observerSetup();
