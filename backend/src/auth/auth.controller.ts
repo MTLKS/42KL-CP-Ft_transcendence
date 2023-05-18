@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Headers, UseGuards, Req } from '@nestjs/common';
-import { ApiCreatedResponse, ApiHeader, ApiOkResponse } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetRedirectDTO, PostCodeBodyDTO, PostCodeResponseDTO } from 'src/dto/auth.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
