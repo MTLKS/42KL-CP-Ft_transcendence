@@ -18,7 +18,7 @@ export class ChatService {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		let dmRoom = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false } });
 		if (dmRoom === null)
-			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, new Date().toISOString()));
+			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false));
 		client.join(dmRoom.channelId);
 	}
 
@@ -147,7 +147,7 @@ export class ChatService {
 		if (channelName.length < 1 || channelName.length > 16)
 			return { error: "Invalid channelName - channelName must be between 1-16 characters" };
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, new Date().toISOString());
+		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true);
 		await this.channelRepository.save(ROOM);
 		await this.memberRepository.save(new Member(USER_DATA, ROOM, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
