@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from "typeorm";
 import { User } from "../entity/users.entity";
-import { LeaderboardResponseDTO } from 'src/dto/leaderboardResponse.dto';
+import { LeaderboardResponseDTO } from 'src/dto/leaderboard.dto';
 
 @Injectable()
 export class LeaderboardService {

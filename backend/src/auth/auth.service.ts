@@ -2,6 +2,7 @@ import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
 import { Injectable } from "@nestjs/common";
+import { PostCodeResponseDTO } from "src/dto/auth.dto";
 import { AppDTO } from "src/dto/app.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
@@ -27,7 +28,7 @@ export class AuthService {
 	}
 
 	// Use the code from query to get token info
-	async postCode(code: string): Promise<any> {
+	async postCode(code: string): Promise<PostCodeResponseDTO> {
 		const DATA = {
 			"grant_type": "authorization_code",
 			"client_id": process.env.APP_UID,
