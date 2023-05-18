@@ -196,25 +196,25 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		// let effect = Math.floor(Math.random() * 5);
-		let effect = 0;
+		let effect = Math.floor(Math.random() * 5);
+		// let effect = 0;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
 				this.currentEffect = FieldEffect.NORMAL;
-				server.emit("gameState", new FieldEffectDTO("NORMAL", 0,0,0));
+				server.emit("gameState", new GameStateDTO("FieldEffect", new FieldEffectDTO("NORMAL", 0,0,0)));
 				break;
 			case FieldEffect.GRAVITY:
 				let direction = Math.random();
 				if (direction < 0.5){
 					this.Ball.initAcceleration(0, this.gravityPower);
 					this.effectMagnitude = 1;
-					server.emit("gameState", new FieldEffectDTO("GRAVITY", 0,0,1));
+					server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("GRAVITY", 0,0,1)));
 				}
 				else{
 					this.Ball.initAcceleration(0, -this.gravityPower);
 					this.effectMagnitude = -1;
-					server.emit("gameState", new FieldEffectDTO("GRAVITY", 0,0,-1));
+					server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("GRAVITY", 0,0,-1)));
 				}
 				this.currentEffect = FieldEffect.GRAVITY;
 				break;
@@ -228,19 +228,19 @@ export class PowerGameRoom extends GameRoom{
 				else{
 					this.effectMagnitude = this.timeZoneSlowDown
 				}
-				server.emit("gameState", new FieldEffectDTO("TIME_ZONE", spawnPos.x, spawnPos.y, this.effectMagnitude));
+				server.emit("gameState", new GameStateDTO("FieldEffect", new FieldEffectDTO("TIME_ZONE", spawnPos.x, spawnPos.y, this.effectMagnitude)));
 				this.currentEffect = FieldEffect.TIME_ZONE;
 				break;
 			case FieldEffect.BLACK_HOLE:
 				spawnPos = this.getRandomSpawnPosition(this.blackHoleRadius);
 				this.circleObject = new Circle(spawnPos.x, spawnPos.y, this.blackHoleRadius);
-				server.emit("gameState", new FieldEffectDTO("BLACK_HOLE", spawnPos.x, spawnPos.y, this.blackHoleForce));
+				server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("BLACK_HOLE", spawnPos.x, spawnPos.y, this.blackHoleForce)));
 				this.currentEffect = FieldEffect.BLACK_HOLE;
 				break;
 			case FieldEffect.BLOCK:
 				spawnPos = this.getRandomSpawnPosition(this.blockSize);
 				this.blockObject = new Block(spawnPos.x, spawnPos.y, this.blockSize, this.blockSize, this.blockMass);
-				server.emit("gameState", new FieldEffectDTO("BLOCK", spawnPos.x, spawnPos.y, 0));
+				server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("BLOCK", spawnPos.x, spawnPos.y, 0)));
 				this.currentEffect = FieldEffect.BLOCK;
 				break;
 		}

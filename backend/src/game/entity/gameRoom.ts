@@ -115,7 +115,7 @@ export class GameRoom {
 			
 				if (this.gameReset == true){
 					this.resetGame(server);
-					let timer = 5;
+					let timer = 2;
 					let elapsedTime = (Date.now() - this.resetTime) / 1000;
 					if (elapsedTime >= timer){
 						this.gameReset = false;
@@ -136,7 +136,7 @@ export class GameRoom {
           this.player1Score === this.roomSettings.scoreToWin ||
           this.player2Score === this.roomSettings.scoreToWin
         ) {
-          // this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score"); // TODO: uncomment this
+          this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score"); // TODO: uncomment this
         }
 
 				// server.to(this.roomID).emit('gameLoop',
