@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
 import { FriendData } from '../../../model/FriendData'
@@ -13,58 +13,57 @@ import Profile from '../../Profile/Profile';
 interface FriendInfoProps {
   friend: FriendData,
   intraName: string,
-  searchTerm?: string,
 }
 
 function FriendInfo(props: FriendInfoProps) {
 
   const [onlineStatus, setOnlineStatus] = useState("offline");
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
-  const { friend, intraName, searchTerm } = props;
-  let friendIntraName = (friend.receiverIntraName === intraName ? friend.senderIntraName : friend.receiverIntraName);
+  const { friend, intraName } = props;
+  let friendInfo: UserData = useMemo(() => (friend.receiver.intraName === intraName ? friend.sender : friend.receiver), []);
   let friendshipStatus = friend.status.toLowerCase();
 
   friendshipStatus = (friendshipStatus !== "pending"
     ? friendshipStatus
-    : (friend.receiverIntraName === intraName ? "incoming" : "outgoing")
+    : (friend.receiver.intraName === intraName ? "incoming" : "outgoing")
   )
 
   useEffect(() => {
     if (friendshipStatus === "blocked")
       return;
     let friendInfoSocket = new SocketApi();
-    friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: true });
+    friendInfoSocket.sendMessages("statusRoom", { intraName: friendInfo.intraName, joining: true });
     friendInfoSocket.listen("statusRoom", (data: any) => {
-      if (data !== undefined && data.status !== undefined && data.intraName === friendIntraName)
+      if (data !== undefined && data.status !== undefined && data.intraName === friendInfo.intraName)
         setOnlineStatus((data.status as string).toLowerCase());
     });
 
     return () => {
       friendInfoSocket.removeListener("statusRoom");
-      friendInfoSocket.sendMessages("statusRoom", { intraName: friendIntraName, joining: false });
+      friendInfoSocket.sendMessages("statusRoom", { intraName: friendInfo.intraName, joining: false });
     }
   }, [friend]);
 
   return (
     <div className='flex flex-row text-highlight hover:cursor-pointer group hover:bg-highlight hover:text-dimshadow w-fit' onClick={viewFriendProfile}>
       <div className='group-hover:underline w-[16ch] normal-case'>
-        <Highlighter text={friend.userName} searchTerm={searchTerm} />
+        {friendInfo.userName}
       </div>
       <FriendlistSeparator />
       <div className='w-[16ch] group-hover:underline'>
-        <Highlighter text={friendIntraName} searchTerm={searchTerm} />
+        {friendInfo.intraName}
       </div>
       <FriendlistSeparator />
       <div className='w-[9ch]'>
         {
           friendshipStatus === "blocked"
             ? <span className='text-highlight bg-accRed whitespace-pre'> HIDDEN </span>
-            : <Highlighter text={ friend.elo.toString()} searchTerm={searchTerm} />
+            : friendInfo.elo
         }
       </div>
       <FriendlistSeparator />
       <div className={`w-[12ch]`}>
-        <FriendlistTag type={friendshipStatus} searchTerm={searchTerm} />
+        <FriendlistTag type={friendshipStatus} />
       </div>
       {
         <>
@@ -72,7 +71,7 @@ function FriendInfo(props: FriendInfoProps) {
             <FriendlistSeparator />
           </div>
           <div className={`w-[9ch] ${friend.status.toLowerCase() === "blocked" ? 'invisible' : ''}`}>
-            <Highlighter text={onlineStatus.toLowerCase()} searchTerm={searchTerm} />
+            {onlineStatus.toLowerCase()}
           </div>
         </>
       }
@@ -80,7 +79,7 @@ function FriendInfo(props: FriendInfoProps) {
   )
 
   async function viewFriendProfile() {
-    let friendData = await getProfileOfUser(friendIntraName);
+    let friendData = await getProfileOfUser(friendInfo.intraName);
     setPreviewProfileFunction(friendData.data as UserData);
     setTopWidgetFunction(<Profile expanded={true} />)
   }

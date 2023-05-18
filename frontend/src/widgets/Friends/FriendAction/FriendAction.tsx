@@ -290,7 +290,7 @@ function FriendAction(props: FriendActionProps) {
 
     if (command === "y") {
       const friend = filteredFriends[selectedIndex];
-      const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+      const friendIntraName = (user.intraName === friend.receiver.intraName ? friend.sender.intraName : friend.receiver.intraName);
       if (friend.status === "STRANGER")
         blockStrangerAction(friendIntraName, true);
       else
@@ -298,7 +298,7 @@ function FriendAction(props: FriendActionProps) {
     } else if (command === "Y") {
       const friendList = useSelectedFriends ? selectedFriends : filteredFriends;
       for (const friend of friendList) {
-        const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+        const friendIntraName = (user.intraName === friend.receiver.intraName ? friend.sender.intraName : friend.receiver.intraName);
         if (friend.status === "STRANGER")
           blockStrangerAction(friendIntraName, false);
         else
@@ -309,7 +309,7 @@ function FriendAction(props: FriendActionProps) {
         ignoreAction();
       } else {
         const friend = filteredFriends[selectedIndex];
-        const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+        const friendIntraName = (user.intraName === friend.receiver.intraName ? friend.sender.intraName : friend.receiver.intraName);
         handleNoAction(friendIntraName, true);
       }
     } else if (command === "N") {
@@ -318,7 +318,7 @@ function FriendAction(props: FriendActionProps) {
       } else {
         const friendList = useSelectedFriends ? selectedFriends : filteredFriends;
         for (const friend of friendList) {
-          const friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+          const friendIntraName = (user.intraName === friend.receiver.intraName ? friend.sender.intraName : friend.receiver.intraName);
           handleNoAction(friendIntraName, false);
         }
       }
@@ -335,15 +335,15 @@ function FriendAction(props: FriendActionProps) {
   function filterFriends() {
     switch (action) {
       case ACTION_TYPE.ACCEPT:
-        return friends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName != user.intraName);
+        return friends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.sender.intraName != user.intraName);
       case ACTION_TYPE.BLOCK:
         return friends.filter(friend => ((friend.status.toLowerCase() === "accepted") || (friend.status.toLowerCase() === "pending")));
       case ACTION_TYPE.UNBLOCK:
-        return friends.filter(friend => (friend.status.toLowerCase() === "blocked") && friend.senderIntraName === user.intraName);
+        return friends.filter(friend => (friend.status.toLowerCase() === "blocked") && friend.sender.intraName === user.intraName);
       case ACTION_TYPE.UNFRIEND:
         return friends.filter(friend => (friend.status.toLowerCase() === "accepted"
-          || (friend.status.toLowerCase() === "blocked" && friend.senderIntraName === user.intraName)
-          || (friend.status.toLowerCase() === "pending" && friend.senderIntraName === user.intraName)));
+          || (friend.status.toLowerCase() === "blocked" && friend.sender.intraName === user.intraName)
+          || (friend.status.toLowerCase() === "pending" && friend.sender.intraName === user.intraName)));
       default:
         return [];
     }

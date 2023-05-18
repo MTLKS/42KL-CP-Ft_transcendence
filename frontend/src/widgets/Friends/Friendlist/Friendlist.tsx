@@ -114,7 +114,7 @@ function Friendlist(props: FriendlistProps) {
   // friendlist: filter friend based on status
   function filterFriends(friends: FriendData[], status: string) {
     if (status === "blocked")
-      return friends.filter(friend => (friend.status.toLowerCase() === status) && friend.senderIntraName === userData.intraName);
+      return friends.filter(friend => (friend.status.toLowerCase() === status) && friend.sender.intraName === userData.intraName);
     return friends.filter((friend) => friend.status.toLowerCase() === status);
   }
 
@@ -126,9 +126,11 @@ function Friendlist(props: FriendlistProps) {
 
     if (sortedFriends.length === 0) return [<EmptyFriendlist userData={userData} />];
 
+    console.log(sortedFriends);
+
     components.push(
       <FriendlistEmptyLine key="el0" />,
-      <FriendlistTitle key="friendlist_title" searchTerm={searchTerm} />
+      <FriendlistTitle key="friendlist_title" />
     );
 
     sortedFriends.map((friend) => {
@@ -150,7 +152,7 @@ function Friendlist(props: FriendlistProps) {
 
         components.push(
           <FriendlistEmptyLine key={friend.status + `_el1`} />,
-          <FriendlistTag key={friend.id + friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm} />,
+          <FriendlistTag key={friend.id + friend.status} type={friend.status} total={targetCategory.length} />,
           <FriendlistEmptyLine key={friend.status + `_el2`} />
         );
         prevCategory = friend.status;
@@ -160,7 +162,6 @@ function Friendlist(props: FriendlistProps) {
           key={friend.id}
           friend={friend}
           intraName={userData.intraName}
-          searchTerm={searchTerm}
         />)
     })
     return (components);

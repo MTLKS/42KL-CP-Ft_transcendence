@@ -1,9 +1,6 @@
-import { useContext, useRef } from "react";
+import { useContext } from "react";
 import { ActionFunctionsContext, FriendActionContext } from "../../../contexts/FriendContext";
 import { ACTION_TYPE } from "./FriendActionCard";
-import { blockStranger } from "../../../functions/friendactions";
-import { getFriendList } from "../../../functions/friendlist";
-import { FriendsContext } from "../../../contexts/FriendContext";
 
 interface FriendActionConfirmationButtonsProps {
   friendIntraName: string;

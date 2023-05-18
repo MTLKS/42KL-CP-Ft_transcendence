@@ -71,7 +71,7 @@ function HomePage(props: HomePageProps) {
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
 
   let incomingRequests: FriendData[] = useMemo(
-    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.senderIntraName !== userData.intraName),
+    () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.sender.intraName !== userData.intraName),
     [myFriends]
   );
 
@@ -232,7 +232,7 @@ function HomePage(props: HomePageProps) {
       }
 
       // should not able to view someone's profile if that person blocked you. treat as user not found
-      if (myFriends.find((friend) => friend.senderIntraName === wantToView || friend.receiverIntraName === wantToView)?.status.toLowerCase() === "blocked") {
+      if (myFriends.find((friend) => friend.sender.intraName === wantToView || friend.receiver.intraName === wantToView)?.status.toLowerCase() === "blocked") {
         errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
         newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
         setElements(appendNewCard(newList));
@@ -293,14 +293,14 @@ function HomePage(props: HomePageProps) {
             break;
           case friendErrors.FRIENDSHIP_EXISTED:
             friend = (errAttempt.data as FriendData);
-            friendName = friend.receiverIntraName === userData.intraName ? friend.senderIntraName : friend.receiverIntraName;
+            friendName = friend.receiver.intraName === userData.intraName ? friend.sender.intraName : friend.receiver.intraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
               <p>Friendship with <span className="bg-accRed font-extrabold">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
             break;
           case friendErrors.INVALID_RELATIONSHIP:
             friend = (errAttempt.data as FriendData);
-            friendName = friend.receiverIntraName === userData.intraName ? friend.senderIntraName : friend.receiverIntraName;
+            friendName = friend.receiver.intraName === userData.intraName ? friend.sender.intraName : friend.receiver.intraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
               <p>Unable to {action} <span className="bg-accRed font-extrabold">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
@@ -344,7 +344,7 @@ function HomePage(props: HomePageProps) {
       if (result.data.error) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
-          data: (myFriends.find((friend) => friend.receiverIntraName === friendName || friend.senderIntraName === friendName) as FriendData)
+          data: (myFriends.find((friend) => friend.receiver.intraName === friendName || friend.sender.intraName === friendName) as FriendData)
         });
       } else {
         successes.push(friendName);
@@ -371,24 +371,21 @@ function HomePage(props: HomePageProps) {
   function userDataToFriendData(user: UserData): FriendData {
     const friend: FriendData = {
       id: user.intraId,
-      senderIntraName: userData.intraName,
-      receiverIntraName: user.intraName,
-      elo: 0,
+      sender: userData,
+      receiver: userData, // TODO: FIX ME
       status: "STRANGER",
-      userName: user.userName,
-      avatar: user.avatar,
     };
     return friend;
   }
 
-  function checkIfFriendPresent(friends: FriendData[], friendIntraName: string) {
-    for (const friend of friends) {
-      if (friend.receiverIntraName === friendIntraName || friend.senderIntraName === friendIntraName) {
-        return true;
-      }
-    }
-    return false;
-  }
+  // function checkIfFriendPresent(friends: FriendData[], friendIntraName: string) {
+  //   for (const friend of friends) {
+  //     if (friend.receiver.intraNa === friendIntraName || friend.senderIntraName === friendIntraName) {
+  //       return true;
+  //     }
+  //   }
+  //   return false;
+  // }
 
   function belongsTotheDesireCategory(action: string, status: string) {
     if (action === ACTION_TYPE.BLOCK && (status === "ACCEPTED" || status === "PENDING")) return true;
@@ -414,7 +411,7 @@ function HomePage(props: HomePageProps) {
     let strangersNames: string[] = [];
     // for unblock and unfriend, need to get data from friend list
     userIntraNames.forEach((intraName) => {
-      const friend = myFriends.find((friend) => friend.receiverIntraName === intraName || friend.senderIntraName === intraName);
+      const friend = myFriends.find((friend) => friend.receiver.intraName === intraName || friend.sender.intraName === intraName);
       if (friend) {
         if (belongsTotheDesireCategory(action, friend.status))
           newSelectedFriends.push(friend);
@@ -460,6 +457,29 @@ function HomePage(props: HomePageProps) {
       setLeftWidget(<FriendAction user={userData} useSelectedFriends={true} action={action} onQuit={() => setLeftWidget(null)} />);
   }
 
+  async function showFriendList(intraName: string | null) {
+    
+    const errors: errorType[] = [];
+    let newCards: JSX.Element[] = [];
+    const friendProfile: UserData | ErrorData = (intraName === null ? userData : (await getProfileOfUser(intraName)).data);
+ 
+    // to handle if the user is not found & if the friendship status is blocked
+    if ((friendProfile as ErrorData).error) {
+      errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
+    } else {
+      // if the user profile is found, get the friendlist
+      let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data;
+      // meaning the user is trying to someone's friendlist. if that's the case, filter out all the friends except those who are accepted
+      if (intraName !== null) {
+        friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
+      }
+      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)}/>);
+    }
+    newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
+    setElements(appendNewCard(newCards));
+  }
+
+
   // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
   // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
   async function handleFriendCommand(command: string[]) {
@@ -469,12 +489,10 @@ function HomePage(props: HomePageProps) {
     setMyFriends(updatedFriendlist.data);
 
     if (command[0] === "list") {
-      if (command.length === 1)
-        setLeftWidget(<Friendlist userData={userData} friends={myFriends} onQuit={() => setLeftWidget(null)} />);
-      else if (command.length == 2) {
-        const friendProfile = await getProfileOfUser(command[1]);
-        const friendlistOfFriend = (await friendListOf(command[1])).data.filter((friend: FriendData) => friend.status === "ACCEPTED");
-        setLeftWidget(<Friendlist userData={friendProfile.data as UserData} friends={friendlistOfFriend as FriendData[]} onQuit={() => setLeftWidget(null)} />);
+      if (command.length === 1) {
+        showFriendList(null);
+      } else if (command.length === 2) {
+        showFriendList(command[1]);
       }
       newList = elements;
     } else if (command[0] === "requests" && command.length === 1) {
