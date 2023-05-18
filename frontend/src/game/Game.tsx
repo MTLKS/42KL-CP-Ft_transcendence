@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer } from '@pixi/react'
+import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer, Sprite } from '@pixi/react'
 import Paddle, { PaddleType } from './game_objects/Paddle';
 import { BoxSize, Offset } from '../model/GameModels';
 import Pong from './game_objects/Pong';
@@ -16,6 +16,8 @@ import sleep from '../functions/sleep';
 import * as particles from '@pixi/particle-emitter';
 import { GameData } from './gameData';
 import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravityArrow';
+import colorLerp from './functions/colorInterpolation';
+import ColorTween from './functions/colorInterpolation';
 
 interface GameProps {
   scale: number;
@@ -44,6 +46,9 @@ function Game(props: GameProps) {
   const [rings, setRings] = useState<Ring[]>([]);
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
+  const [bgColor, setBgColor] = useState(0x242424);
+  const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(new ColorTween({ start: 0xd2b24f, end: 0xc5a1ff }));
+  const app = useApp();
 
   const addRing = useCallback(async () => {
     const newRings: Ring[] = [...rings];
@@ -80,6 +85,11 @@ function Game(props: GameProps) {
       lightning.update();
     });
     gameGravityArrow?.update();
+    if (bgColorTween) {
+      if (bgColorTween.done) setBgColorTween(undefined);
+      bgColorTween.update(0.05 * delta)
+      setBgColor(bgColorTween.colorSlerp);
+    }
     setGameGravityArrow(gameGravityArrow);
     setParticles(newParticles);
     setLightningParticles(newLightningParticles);
@@ -104,9 +114,22 @@ function Game(props: GameProps) {
     });
   }, usingTicker ?? true);
 
+  const backgoundTexture = useMemo(() => {
+    const graphics = new PIXI.Graphics();
+    graphics.beginFill(bgColor, 0.1);
+    graphics.drawRect(0, 0, 16, 9);
+    graphics.endFill();
+    return app.renderer.generateTexture(graphics);
+  }, [bgColor]);
+
   if (!shouldRender) return <></>;
   return (
-    <Container width={1600} height={900} scale={scale}>
+    <Container width={1600} height={900} scale={scale} interactive={true} pointerdown={() => {
+      console.log('click');
+      setBgColorTween(new ColorTween({ start: bgColor, end: Math.random() * 0xffffff }));
+    }}
+    >
+      <Sprite width={1600} height={900} texture={backgoundTexture} />
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
