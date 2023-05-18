@@ -4,7 +4,6 @@ import React, { useContext, useEffect } from 'react'
 import Card, { CardType } from './Card';
 import UserContext from '../contexts/UserContext';
 import { getMyProfile } from '../functions/profile';
-import { set, update } from 'lodash';
 import { UserData } from '../model/UserData';
 
 interface TFAProps {
@@ -20,7 +19,8 @@ enum TFACommands {
 	fail,
 	forgot,
 	sending,
-	notset
+	notset,
+	refresh
 }
 
 function help() {
@@ -53,7 +53,7 @@ function Tfa(props: TFAProps) {
 		useEffect(() => {
 			getTFA().then((data) => {
 				setTfa(data);
-				setResult(data.qr === null && data.secretKey === null ? TFACommands.exist : TFACommands.set)
+				setResult(data.qr === null && data.secret === null ? TFACommands.exist : TFACommands.set)
 				updateMyProfile(setMyProfile);
 			})
 		}, [])
@@ -68,14 +68,21 @@ function Tfa(props: TFAProps) {
 	} else if (commands.length === 2 && commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
 			checkTFA(commands[1]).then((data) => {
-				setResult(data.boolean ? TFACommands.success : TFACommands.fail)
+				setResult(data.success ? TFACommands.success : TFACommands.fail)
 			})
 		}, [])
 	} else if (commands.length === 2 && commands[1] === "forgot") {
 		useEffect(() => {
 			setResult(TFACommands.sending)
 			forgotTFA().then((data) => {
-				setResult(data.error !== undefined ? TFACommands.notset : TFACommands.forgot)
+				console.log(data);
+				if (data.error === "Not authorized") {
+					document.cookie = "Authorization=;";
+					setResult(TFACommands.refresh);
+				}
+				else {
+					setResult(data.error !== undefined ? TFACommands.notset : TFACommands.forgot)
+				}
 			})
 		}, [])
 	} else {
@@ -88,7 +95,7 @@ function Tfa(props: TFAProps) {
 				<figure>
 					<p className='text-center'>Scan QR code with your Google Authenticator app</p>
 					<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
-					<p className='text-center'> SECRET: {tfa.secretKey}</p>
+					<p className='text-center'> SECRET: {tfa.secret}</p>
 				</figure>
 			</Card>
 		);
@@ -106,6 +113,8 @@ function Tfa(props: TFAProps) {
 		return (<Card type={CardType.SUCCESS}><p>Sending new TFA secret to your email...</p></Card>);
 	} else if (result === TFACommands.notset) {
 		return (<Card type={CardType.ERROR}><p>TFA is not enabled</p></Card>);
+	} else if (result === TFACommands.refresh) {
+		return (<Card type={CardType.ERROR}><p>Please refresh your page and try again...</p></Card>);
 	}
 	return help();
 }

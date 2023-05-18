@@ -16,6 +16,6 @@ export function ApiCommonHeader(errorTypes: string[] = []): MethodDecorator {
   return (target: object, key?, descriptor?: TypedPropertyDescriptor<any>) => {
     ApiHeader({ name: 'Authorization', description: 'The encrypted access token of the user', required: true })(target, key, descriptor);
     ApiBadRequestResponse({ description: BAD_REQUEST_RESPONSE, type: ErrorDTO })(target, key, descriptor);
-    ApiForbiddenResponse({ description: "AccessToken in header is invalid" })(target, key, descriptor);
+    ApiForbiddenResponse({ description: "AccessToken in header is invalid or TFA in header is incorrect (if enabled)" })(target, key, descriptor);
   };
 }
