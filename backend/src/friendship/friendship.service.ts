@@ -39,6 +39,7 @@ export class FriendshipService {
 		if (status.toUpperCase() != "PENDING" && status.toUpperCase() != "ACCEPTED" && status.toUpperCase() != "BLOCKED")
 			return new ErrorDTO("Invalid status - status must be PENDING, ACCEPTED or BLOCKED");
 	}
+
 	// Get all friendship by accessToken
 	async getFriendship(accessToken: string): Promise<any> {
 		return await this.getFriendshipByIntraNAme(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
@@ -116,7 +117,6 @@ export class FriendshipService {
 			await this.friendshipRepository.save(RECEIVER)
 			return this.userService.hideData(RECEIVER);
 		}
-
 		if (status.toUpperCase() == "BLOCKED")
 		{
 			const FRIENDSHIP = await this.getFriendshipStatus(accessToken, receiverIntraName);
