@@ -10,16 +10,16 @@ export class MatchController {
 	constructor(private readonly matchService: MatchService) {}
 
 	@ApiOkResponse({ type: [MatchResponseDTO] })
-	@Get(':intraName')
+	@Get(':userName')
 	@UseGuards(AuthGuard)
-	getMatchesByIntraName(@Param('intraName') intraName: string, @Body() body: MatchInputDTO): any {
-		return this.matchService.getMatchesByIntraName(intraName, body.perPage, body.page);
+	getMatchesByUsername(@Param('userName') userName: string, @Body() body: MatchInputDTO): any {
+		return this.matchService.getMatchesByUserName(userName, body.perPage, body.page);
 	}
 
 	@ApiOkResponse({ type: MatchStatsResponseDTO })
-	@Get('stats/:intraName')
+	@Get('stats/:userName')
 	@UseGuards(AuthGuard)
-	getStatsByIntraName(@Param('intraName') intraName: string): any {
-		return this.matchService.getStatsByIntraName(intraName);
+	getStatsByUsername(@Param('userName') userName: string): any {
+		return this.matchService.getStatsByUserName(userName);
 	}
 }

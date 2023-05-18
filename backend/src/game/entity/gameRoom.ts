@@ -322,8 +322,8 @@ export class GameRoom {
     // console.log(`game ${this.roomID} ended`);
     this.gameEnded = true;
     this.matchService.createNewMatch(
-      this.player1.intraName,
-      this.player2.intraName,
+      await this.userService.getUserDataByIntraName(this.player1.accessToken, this.player1.intraName),
+      await this.userService.getUserDataByIntraName(this.player2.accessToken, this.player2.intraName),
       this.player1Score,
       this.player2Score,
       winner,
