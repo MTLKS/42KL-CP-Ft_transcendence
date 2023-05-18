@@ -23,7 +23,7 @@ function Entities() {
         return <Block key={index} x={x} y={y} w={w} h={h} />
       }
     });
-  }, [gameData.gameEntities]);
+  }, [gameData.gameEntities, gameData.gameEntities.length]);
 
   return (
     <>

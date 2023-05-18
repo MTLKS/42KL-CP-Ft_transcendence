@@ -6,6 +6,7 @@ import {
   GameStartDTO,
   GameEndDTO,
   GamePauseDTO,
+  FieldEffectDTO,
 } from "../model/GameStateDTO";
 import { BoxSize, Offset } from "../model/GameModels";
 import { clamp, debounce } from "lodash";
@@ -17,6 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import * as particles from "@pixi/particle-emitter";
 import GameParticle from "../model/GameParticle";
+import Entities from "./game_objects/Entities";
 
 export class GameData {
   socketApi: SocketApi;
@@ -94,16 +96,16 @@ export class GameData {
     console.log("start game");
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender?.(true);
-    this.gameEntities.push(
-      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
-    );
-    this.gameEntities.push(new GameBlock({ x: 400, y: 500, w: 150, h: 150 }));
-    this.gameEntities.push(
-      new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.3)
-    );
-    this.gameEntities.push(
-      new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
-    );
+    // this.gameEntities.push(
+    //   new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
+    // );
+    // this.gameEntities.push(new GameBlock({ x: 400, y: 500, w: 150, h: 150 }));
+    // this.gameEntities.push(
+    //   new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.3)
+    // );
+    // this.gameEntities.push(
+    //   new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
+    // );
   }
 
   displayGame() {
@@ -218,6 +220,46 @@ export class GameData {
       case "GameEnd":
         this.endGame();
         this.stopDisplayGame();
+        break;
+      case "FieldEffect":
+        const fieldEffect = <FieldEffectDTO>state.data;
+        console.log(state.data);
+        switch (fieldEffect.type) {
+          case "NORMAL":
+            this.gameEntities.length = 0;
+            break;
+          case "GRAVITY":
+            break;
+          case "TIME_ZONE":
+            this.gameEntities = this.gameEntities.concat([
+              new GameTimeZone(
+                { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 500, h: 500 },
+                fieldEffect.magnitude
+              ),
+            ]);
+            break;
+          case "BLACK_HOLE":
+            this.gameEntities = this.gameEntities.concat([
+              new GameBlackhole(
+                { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 100, h: 100 },
+                fieldEffect.magnitude
+              ),
+            ]);
+            break;
+          case "BLOCK":
+            this.gameEntities = this.gameEntities.concat([
+              new GameBlock({
+                x: fieldEffect.xPos,
+                y: fieldEffect.yPos,
+                w: 100,
+                h: 100,
+              }),
+            ]);
+            break;
+          default:
+            break;
+        }
+        break;
       default:
         break;
     }
@@ -235,6 +277,13 @@ export class GameData {
     this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
     this.player1Score = data.player1Score;
     this.player2Score = data.player2Score;
+
+    this.gameEntities.forEach((entity) => {
+      if (entity instanceof GameBlock && data.blockX && data.blockY) {
+        entity.x = data.blockX;
+        entity.y = data.blockY;
+      }
+    });
   };
 
   listenToGameResponse = (data: GameResponseDTO) => {

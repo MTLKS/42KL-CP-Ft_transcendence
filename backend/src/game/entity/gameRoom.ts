@@ -103,68 +103,86 @@ export class GameRoom {
     this.matchService = matchService;
     this.userService = userService;
 
-		this.roomSettings = setting;
-	}
+    this.roomSettings = setting;
+  }
 
-	
-	async run(server: Server){
-		this.resetGame(server);
-		await this.countdown(3);
-		if (this.interval == null){
-			this.interval = setInterval(async () => {
-			
-				if (this.gameReset == true){
-					this.resetGame(server);
-					let timer = 2;
-					let elapsedTime = (Date.now() - this.resetTime) / 1000;
-					if (elapsedTime >= timer){
-						this.gameReset = false;
-					}
-				}
-
-				else if (this.gamePaused == true){
-					if (Date.now() - this.gamePauseDate > 5000) {
-						this.endGame(server, this.player1.intraName === this.gamePausePlayer ? this.player2.intraName : this.player1.intraName, "abandon");
-					}
-				}
-
-				else{
-					this.gameUpdate(server);
-				}
+  async run(server: Server) {
+    this.resetGame(server);
+    await this.countdown(3);
+    if (this.interval == null) {
+      this.interval = setInterval(async () => {
+        if (this.gameReset == true) {
+          this.resetGame(server);
+          let timer = 2;
+          let elapsedTime = (Date.now() - this.resetTime) / 1000;
+          if (elapsedTime >= timer) {
+            this.gameReset = false;
+          }
+        } else if (this.gamePaused == true) {
+          if (Date.now() - this.gamePauseDate > 5000) {
+            this.endGame(
+              server,
+              this.player1.intraName === this.gamePausePlayer
+                ? this.player2.intraName
+                : this.player1.intraName,
+              'abandon',
+            );
+          }
+        } else {
+          this.gameUpdate(server);
+        }
 
         if (
           this.player1Score === this.roomSettings.scoreToWin ||
           this.player2Score === this.roomSettings.scoreToWin
         ) {
-          this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score"); // TODO: uncomment this
+          this.endGame(
+            server,
+            this.player1Score === this.roomSettings.scoreToWin
+              ? this.player1.intraName
+              : this.player2.intraName,
+            'score',
+          ); // TODO: uncomment this
         }
 
-				// server.to(this.roomID).emit('gameLoop',
-				// 	new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				// 		this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
-			},1000/60);
-		}
-	}
+        // server.to(this.roomID).emit('gameLoop',
+        // 	new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX,
+        // 		this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+      }, 1000 / 60);
+    }
+  }
 
-	gameUpdate(server: Server){
-		this.Ball.update();
-		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-		if (score!=0){
-			if (score == 1){
-				this.player1Score++;
-				this.lastWinner = "player1";
-			}
-			else{
-				this.player2Score++;
-				this.lastWinner = "player2";
-			}
-			this.resetTime = Date.now();
-			this.gameReset = true;
-		}
-		this.gameCollisionDetection();
-		server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-			this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
-	}
+  gameUpdate(server: Server) {
+    this.Ball.update();
+    let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+    if (score != 0) {
+      if (score == 1) {
+        this.player1Score++;
+        this.lastWinner = 'player1';
+      } else {
+        this.player2Score++;
+        this.lastWinner = 'player2';
+      }
+      this.resetTime = Date.now();
+      this.gameReset = true;
+    }
+    this.gameCollisionDetection();
+    server
+      .to(this.roomID)
+      .emit(
+        'gameLoop',
+        new GameDTO(
+          this.Ball.posX,
+          this.Ball.posY,
+          this.Ball.velX,
+          this.Ball.velY,
+          this.leftPaddle.posY + 50,
+          this.rightPaddle.posY + 50,
+          this.player1Score,
+          this.player2Score,
+        ),
+      );
+  }
 
   objectCollision(ball: Ball, paddle: Rect): CollisionResult {
     let xInvEntry, yInvEntry;
