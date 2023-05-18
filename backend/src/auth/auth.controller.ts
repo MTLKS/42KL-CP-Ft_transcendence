@@ -10,8 +10,8 @@ export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	@Get()
-	@ApiOkResponse({ description: "Used to initiate the login process for a user", type: GetRedirectDTO })
 	@ApiHeader({ name: 'Authorization', description: 'The encrypted access token of the user', required: false })
+	@ApiOkResponse({ description: "Used to initiate the login process for a user", type: GetRedirectDTO })
 	startLogin(@Headers('Authorization') accessToken: string): Promise<GetRedirectDTO> {
 		return this.authService.startLogin(accessToken);
 	}

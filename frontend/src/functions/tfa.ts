@@ -6,7 +6,7 @@ export async function getTFA(): Promise<ITFAData> {
 }
 
 export async function removeTFA(tfa: string): Promise<ITFAData> {
-  Api.updateToken("TFA", tfa);
+  Api.updateToken("OTP", tfa);
   return (await Api.delete("/2fa")).data as ITFAData;
 }
 
