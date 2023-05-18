@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class UserDataDTO {
+export class UserDTO {
 	constructor(intraId: number, userName: string, intraName: string, elo: number, accessToken: string, avatar: string, tfaSecret: string, winning: boolean) {
 		this.intraId = intraId;
 		this.userName = userName;

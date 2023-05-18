@@ -5,6 +5,8 @@ import { Message } from "src/entity/message.entity";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Member } from "src/entity/member.entity";
+import { ChannelDTO } from "src/dto/chat.dto";
+import { ErrorDTO } from "src/dto/error.dto";
 import { Injectable } from "@nestjs/common";
 import { Repository } from "typeorm";
 import * as bcrypt from 'bcrypt';
@@ -93,11 +95,11 @@ export class ChatService {
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
-		return MEMBER_DATA === null ? { error: "Invalid channelId - member is not found in that channelId" } : this.userService.hideData(MEMBER_DATA);
+		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - member is not found in that channelId") : this.userService.hideData(MEMBER_DATA);
 	}
 
 	// Retrives all DM of the user
-	async getAllDMChannel(accessToken: string): Promise<any> {
+	async getAllDMChannel(accessToken: string): Promise<[ChannelDTO]> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIPS = await this.friendshipService.getFriendship(accessToken);
 		const FRIENDS = FRIENDSHIPS.filter(friendship => (friendship.sender.intraName === USER_DATA.intraName || friendship.receiver.intraName === USER_DATA.intraName) && friendship.status === "ACCEPTED" ).flatMap(friendship => [friendship.sender.intraName, friendship.receiver.intraName]).filter(intraName => intraName !== USER_DATA.intraName);
@@ -123,16 +125,14 @@ export class ChatService {
 		if (page === undefined)
 			page = 1;
 		if (channelId === undefined)
-			return { error: "Invalid body - body must include channelId(number)" };
+			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const MY_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: USER_DATA.intraName } }, relations: ['owner'] });
-		if (MY_CHANNEL === null)
-			return { error: "Invalid intraname - No Member found for user" };
+		const MY_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: USER_DATA.intraName }, isRoom: true }, relations: ['owner'] });
 		const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (FRIEND_CHANNEL === null)
-			return { error: "Invalid channelId - channel is not found" };
+			return new ErrorDTO("Invalid channelId - channel is not found");
 		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
-			return { error: "Invalid channelId - you are not friends with this user" };
+			return new ErrorDTO("Invalid channelId - you are not friends with this user");
 		const MESSAGES = await this.messageRepository.find({ where: [{ receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL }, { receiverChannel: { channelId: channelId }, senderChannel: MY_CHANNEL }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
 		return this.userService.hideData(MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
 	}

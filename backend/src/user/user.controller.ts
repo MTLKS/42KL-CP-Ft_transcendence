@@ -1,6 +1,6 @@
 import { Controller, Get, Headers, UseGuards, Param, Body, UseInterceptors, UploadedFile, Res, Patch } from '@nestjs/common';
 import { ApiCommonHeader } from 'src/ApiCommonHeader/ApiCommonHeader.decorator';
-import { UserDataDTO, PatchUserBodyDTO, IntraDTO } from 'src/dto/user.dto';
+import { UserDTO, PatchUserBodyDTO, IntraDTO } from 'src/dto/user.dto';
 import { ApiOkResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
 import { INTERCEPTOR_CONFIG } from 'src/config/multer.config';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -16,7 +16,7 @@ export class UserController {
 	@Get()
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid access token - access token decryption failed"])
-	@ApiOkResponse({ description: "Retrieves the user's data from the database", type: UserDataDTO})
+	@ApiOkResponse({ description: "Retrieves the user's data from the database", type: UserDTO})
 	getMyUserData(@Headers('Authorization') accessToken: string): any {
 		return this.userService.getMyUserData(accessToken);
 	}
@@ -64,7 +64,7 @@ export class UserController {
 	@UseGuards(TFAGuard)
 	@ApiCommonHeader()
 	@ApiConsumes('multipart/form-data')
-	@ApiOkResponse({ description: "Updates the user's userName and avatar", type: UserDataDTO})
+	@ApiOkResponse({ description: "Updates the user's userName and avatar", type: UserDTO})
 	@UseInterceptors(FileInterceptor('image', INTERCEPTOR_CONFIG))
 	updateUserInfo(@Headers('Authorization') accessToken: string, @Body() body: PatchUserBodyDTO, @UploadedFile() image: object): any {
 		return this.userService.updateUserInfo(accessToken, body.userName, image);
