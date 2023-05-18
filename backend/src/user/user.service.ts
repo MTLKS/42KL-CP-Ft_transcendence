@@ -1,8 +1,9 @@
 import { Friendship } from "src/entity/friendship.entity";
+import { IntraDTO } from "../dto/user.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../entity/users.entity";
+import { ErrorDTO } from "src/dto/error.dto";
 import { Injectable } from "@nestjs/common";
-import { IntraDTO } from "../dto/intra.dto";
 import * as CryptoJS from 'crypto-js';
 import { Repository } from "typeorm";
 import * as sharp from 'sharp';
@@ -17,7 +18,7 @@ export class UserService {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
-			return { error: "Invalid access token - access token is invalid" };
+			return new ErrorDTO("Invalid access token - access token decryption failed");
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
 		if (USER_DATA === null)
@@ -40,17 +41,9 @@ export class UserService {
 			headers : { 'Authorization': HEADER }
 		});
 		if (RESPONSE.status !== 200)
-			return { error: (await RESPONSE.json()).error };
+			return new ErrorDTO((await RESPONSE.json()).error);
 		const USER_DATA = await RESPONSE.json();
-		return new IntraDTO({
-			id: USER_DATA.id,
-			url: USER_DATA.url,
-			name: USER_DATA.login,
-			email: USER_DATA.email,
-			imageMedium: USER_DATA.image.versions.medium,
-			imageLarge: USER_DATA.image.versions.large,
-			blackhole: USER_DATA.cursus_users[1].blackholed_at
-		});
+		return new IntraDTO(USER_DATA.id, USER_DATA.url, USER_DATA.login, USER_DATA.email, USER_DATA.image.versions.medium, USER_DATA.image.versions.large, USER_DATA.cursus_users[1].blackholed_at);
 	}
 
 	// Use intraName to get user info
@@ -60,13 +53,11 @@ export class UserService {
 		const USER_DATA = await this.getMyUserData(accessToken);
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
-			return { error: "Invalid intraName - intraName does not exist" };
+			return { error: "Invalid intraName - user does not exist" };
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{sender: {intraName: USER_DATA.intraName}, receiver: {intraName: FRIEND_DATA.intraName}}, {sender: {intraName: FRIEND_DATA.intraName}, receiver: {intraName: USER_DATA.intraName}}] });
 		if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
-			return { error: "Invalid friendship - You are blocked by this user" };
-		FRIEND_DATA.accessToken = "hidden";
-		FRIEND_DATA.tfaSecret = "hidden";
-		return FRIEND_DATA;
+			return { error: "Invalid friendship - you are blocked by this user" };
+		return this.hideData(FRIEND_DATA);
 	}
 
 	// Use intraName to get intra user info
@@ -91,15 +82,7 @@ export class UserService {
 			headers : { 'Authorization': HEADER }
 		});
 		userData = await response.json();
-		return new IntraDTO({
-			id: userData.id,
-			url: userData.url,
-			name: userData.login,
-			email: userData.email,
-			imageMedium: userData.image.versions.medium,
-			imageLarge: userData.image.versions.large,
-			blackhole: userData.cursus_users[1].blackholed_at
-		});;
+		return new IntraDTO(userData.id, userData.url, userData.login, userData.email, userData.image.versions.medium, userData.image.versions.large, userData.cursus_users[1].blackholed_at);
 	}
 
 	// Gets user avatar by intraName
@@ -131,18 +114,16 @@ export class UserService {
 		const NEW_USER = await this.userRepository.findOne({ where: {accessToken} });
 		const EXISTING = await this.userRepository.findOne({ where: {userName} });
 		if (EXISTING !== null && accessToken !== EXISTING.accessToken)
-			return { error: "Invalid username - username already exists or invalid" };
+			return new ErrorDTO("Invalid username - username already exists or invalid");
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
-			return { error: "Invalid username - username must be 1-16 between alphanumeric characters (Including '-' and '_') only" };
+			return new ErrorDTO("Invalid username - username must be 1-16 between alphanumeric characters (Including '-' and '_') only");
 		fs.rename(image.path, "avatar/" + NEW_USER.intraName, () => {});
 		image.path = "avatar/" + NEW_USER.intraName;
 		NEW_USER.avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
 		NEW_USER.userName = userName;
 		fs.writeFile(image.path, await sharp(image.path).resize({ width: 500, height: 500}).toBuffer(), () => {});
 		await this.userRepository.save(NEW_USER);
-		NEW_USER.accessToken = "hidden";
-		NEW_USER.tfaSecret = "hidden";
-		return NEW_USER;
+		return this.hideData(NEW_USER);
 	}
 
 	// Helper function to hides sensitive data
@@ -163,9 +144,9 @@ export class UserService {
 			for (const [key, value] of Object.entries(body)) {
 				OBJ[key] = this.hideData(value);
 				if (key === "accessToken") {
-					OBJ[key] = "hidden";
+					OBJ[key] = "HIDDEN";
 				} else if (key === "tfaSecret") {
-					OBJ[key] = "hidden";
+					OBJ[key] = "HIDDEN";
 				}
 			}
 			return OBJ;
@@ -173,10 +154,10 @@ export class UserService {
 		return body;
 	}
 
-	// Update user elo and winning
+	// Helper function to Update user elo and winning
 	async updateUserElo(intraName: string, elo: number, winning: boolean) {
 		const USER = await this.userRepository.findOne({ where: { intraName: intraName } });
-		if (USER === undefined)
+		if (USER === null)
 			return;
 		USER.elo = elo;
 		USER.winning = winning;

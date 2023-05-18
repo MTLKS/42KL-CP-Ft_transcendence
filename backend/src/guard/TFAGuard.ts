@@ -27,7 +27,7 @@ export class TFAGuard implements CanActivate {
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken: CryptoJS.AES.decrypt(authCode, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} });
 		const RET = USER_DATA.tfaSecret === null ? true : (await this.tfaService.validateOTP(REQUEST.header('Authorization'), REQUEST.header('TFA'))).boolean;
-		console.log(RET === true ? GREEN + "Authorization is valid: correct TFA " + RESET : RED + "Authorization is invalid: incorrect TFA" + RESET);
+		console.log(RET === true ? GREEN + "TFA is valid" + RESET : RED + "TFA is invalid" + RESET);
 		return RET;
 	}
 }
