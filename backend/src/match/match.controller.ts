@@ -1,17 +1,22 @@
 import { Controller, Get, Param, Body, UseGuards } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
+import { ApiTags, ApiOkResponse } from '@nestjs/swagger'
+import { MatchInputDTO, MatchResponseDTO, MatchStatsResponseDTO } from 'src/dto/match.dto';
 
+@ApiTags('Match')
 @Controller('match')
 export class MatchController {
 	constructor(private readonly matchService: MatchService) {}
 
+	@ApiOkResponse({ type: [MatchResponseDTO] })
 	@Get(':intraName')
 	@UseGuards(AuthGuard)
-	getMatchesByIntraName(@Param('intraName') intraName: string, @Body('perPage') perPage?: number, @Body('page') page?: number): any {
-		return this.matchService.getMatchesByIntraName(intraName, perPage, page);
+	getMatchesByIntraName(@Param('intraName') intraName: string, @Body() body: MatchInputDTO): any {
+		return this.matchService.getMatchesByIntraName(intraName, body.perPage, body.page);
 	}
 
+	@ApiOkResponse({ type: MatchStatsResponseDTO })
 	@Get('stats/:intraName')
 	@UseGuards(AuthGuard)
 	getStatsByIntraName(@Param('intraName') intraName: string): any {
