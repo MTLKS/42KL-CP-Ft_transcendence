@@ -125,7 +125,6 @@ function Game(props: GameProps) {
   if (!shouldRender) return <></>;
   return (
     <Container width={1600} height={900} scale={scale} interactive={true} pointerdown={() => {
-      console.log('click');
       setBgColorTween(new ColorTween({ start: bgColor, end: Math.random() * 0xffffff }));
     }}
     >

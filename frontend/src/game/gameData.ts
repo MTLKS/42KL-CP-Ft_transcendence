@@ -242,7 +242,7 @@ export class GameData {
             this.gameEntities = this.gameEntities.concat([
               new GameBlackhole(
                 { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 100, h: 100 },
-                fieldEffect.magnitude
+                2
               ),
             ]);
             break;
