@@ -172,16 +172,20 @@ export class GameService {
     );
 
     // Run queue logic
-    // TODO: right now it is FIFO, may want to change to be based on ELO.
-    if (this.queues[clientQueue].length >= 2) {
-      var player1 = this.queues[clientQueue].pop();
-      var player2 = this.queues[clientQueue].pop();
+    for (let i = 0; i < this.queues[clientQueue].length; i++) {
+      const OTHER_USER_DATA = await this.userService.getUserDataByIntraName(player.accessToken, this.queues[clientQueue][i].intraName);
+      console.log(OTHER_USER_DATA.intraName, OTHER_USER_DATA.elo);
+      if (OTHER_USER_DATA.error !== undefined || Math.abs(OTHER_USER_DATA.elo - USER_DATA.elo) > 100)
+        continue;
 
-      // this.startGame(player1, player2, server);
+      let otherPlayer = this.queues[clientQueue][i];
+      this.queues[clientQueue].splice(i, 1);
       if (LOBBY_LOGGING)
-        console.log(`Game start ${player1.intraName} ${player2.intraName}`);
-      this.joinGame(player1, player2, clientQueue, server);
+        console.log(`Game start ${otherPlayer.intraName} ${player.intraName}`);
+      this.joinGame(otherPlayer, player, clientQueue, server);
+      return;
     }
+    this.queues[clientQueue].push(player);
 
     //TESTING
     // var player1 = this.queues[clientQueue].pop();
