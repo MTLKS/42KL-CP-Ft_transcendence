@@ -66,7 +66,7 @@ export class ChatService {
 		const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: false }, relations: ['owner'] });
 		if (FRIEND_CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - channel is not found"));
-		if ((await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
+		if ((await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, FRIEND_CHANNEL.owner.userName)).status !== "ACCEPTED")
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not friends with this user"));
 		const MY_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: FRIEND_CHANNEL }, relations: ['user', 'channel'] });
 		MY_MEMBER.lastRead = new Date().toISOString();
@@ -131,7 +131,7 @@ export class ChatService {
 		const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (FRIEND_CHANNEL === null)
 			return new ErrorDTO("Invalid channelId - channel is not found");
-		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.intraName)).status !== "ACCEPTED")
+		if ((await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_CHANNEL.owner.userName)).status !== "ACCEPTED")
 			return new ErrorDTO("Invalid channelId - you are not friends with this user");
 		const MESSAGES = await this.messageRepository.find({ where: [{ receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL }, { receiverChannel: { channelId: channelId }, senderChannel: MY_CHANNEL }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
 		return this.userService.hideData(MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));

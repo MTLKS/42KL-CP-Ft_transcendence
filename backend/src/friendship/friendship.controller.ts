@@ -19,39 +19,39 @@ export class FriendshipController {
 		return this.friendshipService.getFriendship(accessToken);
 	}
 
-	// Get all friendship by intraName
-	@Get(":intraName")
+	// Get all friendship by userName
+	@Get(":userName")
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid friendship - you are blocked by this user"])
 	@ApiOkResponse({ description: "Returns all the user's friendships", type: [FriendshipDTO]})
-	getFriendshipByIntraNAme(@Headers('Authorization') accessToken: string, @Param('intraName') intraName: string): Promise<any> {
-		return this.friendshipService.getFriendshipByIntraNAme(accessToken, intraName);
+	getFriendshipByUserName(@Headers('Authorization') accessToken: string, @Param('userName') userName: string): Promise<any> {
+		return this.friendshipService.getFriendshipByUserName(accessToken, userName);
 	}
 
 	// Create friendship
 	@Post()
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid body - body must include receiverIntraName(string) and status(string)", "Invalid intraName - no friends so you friend yourself?", "Invalid status - status must be PENDING, ACCEPTED or BLOCKED", "Invalid status - friendship status (ACCEPTED) is not supported", "Invalid receiverIntraName - friendship already exist", "Invalid receiverIntraName - user does not exist"], )
+	@ApiCommonHeader(["Invalid body - body must include receiverUserName(string) and status(string)", "Invalid userName - no friends so you friend yourself?", "Invalid status - status must be PENDING, ACCEPTED or BLOCKED", "Invalid status - friendship status (ACCEPTED) is not supported", "Invalid receiverUserName - friendship already exist", "Invalid receiverUserName - user does not exist"], )
 	@ApiCreatedResponse({ description: "Creates a new friendship. ACCEPTED status is not allowed", type: FriendshipDTO})
 	newFriendship(@Headers('Authorization') accessToken: string, @Body() body: PostFriendshipBodyDTO): Promise<any> {
-		return this.friendshipService.newFriendship(accessToken, body.receiverIntraName, body.status);
+		return this.friendshipService.newFriendship(accessToken, body.receiverUserName, body.status);
 	}
 
 	// Update friendship by ID
 	@Patch()
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid body - body must include receiverIntraName(string) and status(string)", "Invalid intraName - no friends so you friend yourself?", "Invalid status - status must be PENDING, ACCEPTED or BLOCKED", "Invalid receiverIntraName - friendship does not exist", "Invalid receiverIntraName - friendship already exist"])
+	@ApiCommonHeader(["Invalid body - body must include receiverUserName(string) and status(string)", "Invalid userName - no friends so you friend yourself?", "Invalid status - status must be PENDING, ACCEPTED or BLOCKED", "Invalid receiverUserName - friendship does not exist", "Invalid receiverUserName - friendship already exist"])
 	@ApiOkResponse({ description: "Updates a friendship, PENDING status is not allowed, ACCEPTED status can only be used on a PENDING status", type: FriendshipDTO})
 	updateFriendship(@Headers('Authorization') accessToken: string, @Body() body: PostFriendshipBodyDTO): Promise<any> {
-		return this.friendshipService.updateFriendship(accessToken, body.receiverIntraName, body.status);
+		return this.friendshipService.updateFriendship(accessToken, body.receiverUserName, body.status);
 	}
 	
 	//Delete friendship by ID
-	@Delete(":receiverIntraName")
+	@Delete(":receiverUserName")
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid friendship - friendship does not exist", "Invalid receiverIntraName - you really thought you can unblock yourself like this?"])
+	@ApiCommonHeader(["Invalid friendship - friendship does not exist", "Invalid receiverUserName - you really thought you can unblock yourself like this?"])
 	@ApiOkResponse({ description: "Deletes a friendship", type: FriendshipDTO})
-	deleteFriendship(@Headers('Authorization') accessToken: string, @Param('receiverIntraName') receiverIntraName: string): Promise<any> {
-		return this.friendshipService.deleteFriendship(accessToken, receiverIntraName);
+	deleteFriendship(@Headers('Authorization') accessToken: string, @Param('receiverUserName') receiverUserName: string): Promise<any> {
+		return this.friendshipService.deleteFriendship(accessToken, receiverUserName);
 	}
 }
