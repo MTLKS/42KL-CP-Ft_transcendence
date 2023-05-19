@@ -41,33 +41,17 @@ export class FriendshipService {
 
 	// Get all friendship by accessToken
 	async getFriendship(accessToken: string): Promise<any> {
-		return await this.getFriendshipByIntraNAme(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
+		return await this.getFriendshipByIntraName(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
 	}
 
 	// Gets all friendship by intraName
-	async getFriendshipByIntraNAme(accessToken: string, intraName: string): Promise<any> {
+	async getFriendshipByIntraName(accessToken: string, intraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, intraName);
 		if (intraName !== USER_DATA.intraName && FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 			return new ErrorDTO("Invalid friendship - you are blocked by this user");
 		const RECEIVER = await this.friendshipRepository.find({ where: { receiver: { intraName: intraName } }, relations: ['sender', 'receiver'] });
-		for (let receiver of RECEIVER) {
-			const USER = await this.userRepository.findOne({ where: { intraName: receiver.receiver.intraName } });
-			if (USER === null)
-				continue;
-			receiver['userName'] = USER.userName;
-			receiver['elo'] = USER.elo;
-			receiver['avatar'] = USER.avatar;
-		}
 		const SENDER = await this.friendshipRepository.find({ where: { sender: { intraName: intraName } }, relations: ['sender', 'receiver'] });
-		for (let sender of SENDER) {
-			const USER = await this.userRepository.findOne({ where: { intraName: sender.receiver.intraName } });
-			if (USER === null)
-				continue;
-			sender['userName'] = USER.userName;
-			sender['elo'] = USER.elo;
-			sender['avatar'] = USER.avatar;
-		}
 		return this.userService.hideData([...RECEIVER, ...SENDER]);
 	}
 
