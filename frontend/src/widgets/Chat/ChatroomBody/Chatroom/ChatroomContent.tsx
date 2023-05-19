@@ -44,7 +44,6 @@ function ChatroomContent(props: ChatroomContentProps) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     }
-    console.log("useffect []");
     // fetch message history
     fetchMessageHistory();
     // get chatroom member data
