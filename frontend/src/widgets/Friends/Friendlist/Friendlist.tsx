@@ -41,7 +41,6 @@ function Friendlist(props: FriendlistProps) {
 
   // this should run when the component is mounted
   useEffect(() => {
-    console.log(friends);
     handleResize();
     focusOnInput();
     return observerSetup();

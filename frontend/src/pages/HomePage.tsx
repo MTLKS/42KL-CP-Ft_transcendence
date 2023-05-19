@@ -283,7 +283,7 @@ function HomePage(props: HomePageProps) {
         switch (errAttempt.error) {
           case friendErrors.CANNOT_PERFORM_ON_SELF:
             newErrorCards.push(<Card key={"CANNOT_ADD_SELF" + errIndex + index}>
-              <p>Looks like you're trying to {action} yourself. You can't do that.</p>
+              <p className='whitespace-pre'>I see... Trying to <span className='bg-accRed'>{action}</span> yourself huh? You can't do that.<br />Maybe consider to pay a visit to the nearest psychiatrist?</p>
             </Card>)
             break;
           case friendErrors.USER_NOT_FOUND:
@@ -368,24 +368,15 @@ function HomePage(props: HomePageProps) {
     setElements(appendNewCard(newCards));
   }
 
-  function userDataToFriendData(user: UserData): FriendData {
+  function userDataToFriendData(receiverData: UserData): FriendData {
     const friend: FriendData = {
-      id: user.intraId,
+      id: receiverData.intraId,
       sender: userData,
-      receiver: userData, // TODO: FIX ME
+      receiver: receiverData,
       status: "STRANGER",
     };
     return friend;
   }
-
-  // function checkIfFriendPresent(friends: FriendData[], friendIntraName: string) {
-  //   for (const friend of friends) {
-  //     if (friend.receiver.intraNa === friendIntraName || friend.senderIntraName === friendIntraName) {
-  //       return true;
-  //     }
-  //   }
-  //   return false;
-  // }
 
   function belongsTotheDesireCategory(action: string, status: string) {
     if (action === ACTION_TYPE.BLOCK && (status === "ACCEPTED" || status === "PENDING")) return true;
