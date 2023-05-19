@@ -6,7 +6,6 @@ import { FriendData, FriendTags } from '../../../model/FriendData';
 import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
-import { FriendsContext } from '../../../contexts/FriendContext';
 import UserContext from '../../../contexts/UserContext';
 
 interface FriendlistProps {
@@ -41,10 +40,10 @@ function Friendlist(props: FriendlistProps) {
   const lines: JSX.Element[] = useMemo(() => createFriendlistComponents(sortedFriends), [sortedFriends]);
 
   // this should run when the component is mounted
-  useEffect(() => { 
+  useEffect(() => {
     handleResize();
     focusOnInput();
-    observerSetup();
+    return observerSetup();
   }, []);
 
   useEffect(() => {
@@ -67,7 +66,7 @@ function Friendlist(props: FriendlistProps) {
       <input
         className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        // onChange={handleInput}
+        onChange={handleInput}
         value={inputValue}
         ref={inputRef}
       />
@@ -114,7 +113,7 @@ function Friendlist(props: FriendlistProps) {
   // friendlist: filter friend based on status
   function filterFriends(friends: FriendData[], status: string) {
     if (status === "blocked")
-      return friends.filter(friend => (friend.status.toLowerCase() === status) && friend.senderIntraName === userData.intraName);
+      return friends.filter(friend => (friend.status.toLowerCase() === status) && friend.sender.intraName === userData.intraName);
     return friends.filter((friend) => friend.status.toLowerCase() === status);
   }
 
@@ -128,7 +127,7 @@ function Friendlist(props: FriendlistProps) {
 
     components.push(
       <FriendlistEmptyLine key="el0" />,
-      <FriendlistTitle key="friendlist_title" searchTerm={searchTerm} />
+      <FriendlistTitle key="friendlist_title" />
     );
 
     sortedFriends.map((friend) => {
@@ -150,7 +149,7 @@ function Friendlist(props: FriendlistProps) {
 
         components.push(
           <FriendlistEmptyLine key={friend.status + `_el1`} />,
-          <FriendlistTag key={friend.id + friend.status} type={friend.status} total={targetCategory.length} searchTerm={searchTerm} />,
+          <FriendlistTag key={friend.id + friend.status} type={friend.status} total={targetCategory.length} />,
           <FriendlistEmptyLine key={friend.status + `_el2`} />
         );
         prevCategory = friend.status;
@@ -160,7 +159,6 @@ function Friendlist(props: FriendlistProps) {
           key={friend.id}
           friend={friend}
           intraName={userData.intraName}
-          searchTerm={searchTerm}
         />)
     })
     return (components);
@@ -208,18 +206,17 @@ function Friendlist(props: FriendlistProps) {
   }
 
   // less: handle input
-  // function handleInput(e: React.FormEvent<HTMLInputElement>) {
-  //   let value = e.currentTarget.value;
+  function handleInput(e: React.FormEvent<HTMLInputElement>) {
+    let value = e.currentTarget.value;
 
-  //   if (value[value.length - 1] == '\\') value += '\\';
+    if (value[value.length - 1] == '\\') value += '\\';
 
-  //   setInputValue(value.toLowerCase());
-  //   if (value[0] === '/') {
-  //     setIsSearching(true);
-  //     return;
-  //   }
-  //   setInputValue("");
-  // }
+    setInputValue(value.toLowerCase());
+    if (value[0] === '/') {
+      return;
+    }
+    setInputValue("");
+  }
 }
 
 export default Friendlist;

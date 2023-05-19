@@ -7,7 +7,7 @@ api.md
 *.jpg
 avatar
 *.env
-dto
 placeholder.json
 socket.md
 ft_transcendence.pdf
+friendApi.md

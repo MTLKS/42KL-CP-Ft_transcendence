@@ -6,10 +6,8 @@ import { getChatroomMessages, getMemberData } from '../../../../functions/chatAP
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
 import { ChatContext, ChatroomMessagesContext, ChatroomsContext } from '../../../../contexts/ChatContext';
-import { UserData } from '../../../../model/UserData';
 import { playNewMessageSound } from '../../../../functions/audio';
 import ChatUnreadSeparator from './ChatUnreadSeparator';
-import { set } from 'lodash';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;

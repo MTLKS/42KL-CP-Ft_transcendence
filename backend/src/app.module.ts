@@ -1,4 +1,6 @@
+import { LeaderboardController } from "./leaderboard/leaderboard.controller"
 import { FriendshipController } from './friendship/friendship.controller';
+import { LeaderboardService } from "./leaderboard/leaderboard.service"
 import { FriendshipService } from './friendship/friendship.service';
 import { FriendshipGateway } from './friendship/friendship.gateway';
 import { MatchController } from './match/match.controller';
@@ -36,7 +38,7 @@ import { Match } from './entity/match.entity';
 
 @Module({
   imports: [TypeOrmModule.forRoot(TYPEORM_CONFIG), TypeOrmModule.forFeature([User, Friendship, Status, Channel, Member, Message, Match]), MulterModule.register(MULTER_CONFIG), MailerModule.forRoot(MAILER_CONFIG)],
-  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController, MatchController],
-  providers: [AppService, AuthService, UserService, GoogleStrategy, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService, MatchService],
+  controllers: [AppController, AuthController, UserController, TFAController, FriendshipController, ChatController, MatchController, LeaderboardController],
+  providers: [AppService, AuthService, UserService, GoogleStrategy, TFAService, FriendshipGateway, FriendshipService, StatusGateway, StatusService, ChatGateway, ChatService, GameGateway, GameService, MatchService, LeaderboardService],
 })
 export class AppModule {}
