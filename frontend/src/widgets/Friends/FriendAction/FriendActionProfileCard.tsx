@@ -5,29 +5,38 @@ import { UserData } from "../../../model/UserData";
 import Profile from "../../Profile/Profile";
 import { useContext } from "react";
 
-function FriendActionProfileCard(props: { isCurrentIndex: boolean, friend: FriendData, friendIntraName: string }) {
-  const { isCurrentIndex, friend, friendIntraName } = props;
+interface FriendActionProfileCardProps {
+  isCurrentIndex: boolean;
+  friendInfo: UserData;
+  friendshipStatus: string;
+}
+
+function FriendActionProfileCard(props: FriendActionProfileCardProps) {
+  const { isCurrentIndex, friendInfo, friendshipStatus } = props;
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
 
   return (
     <button
-      className={`flex flex-row ${isCurrentIndex && friend.status.toLowerCase() !== "blocked" ? 'group cursor-pointer' : ''} group-hover:bg-highlight items-center h-12 w-fit select-none`}
+      className={`flex flex-row ${isCurrentIndex && friendshipStatus.toLowerCase() !== "blocked" ? 'group cursor-pointer' : ''} group-hover:bg-highlight items-center h-12 w-fit select-none`}
       onClick={replaceProfile}
-      disabled={friend.status.toLowerCase() === "blocked"}
+      disabled={friendshipStatus.toLowerCase() === "blocked"}
     >
       <img
         className="aspect-square h-full object-cover"
-        src={friend.avatar}
-        alt={friend.userName + "'s avatar"}
+        src={friendInfo.avatar}
+        alt={friendInfo.userName + "'s avatar"}
       />
       <div className='group-hover:bg-highlight h-full p-3.5'>
-        <p className='text-highlight group-hover:text-dimshadow font-extrabold text-base w-full h-full select-none'>{friend.userName} ({friendIntraName})</p>
+        <p className='text-highlight group-hover:text-dimshadow font-extrabold text-base w-full h-full select-none'>{friendInfo.userName} ({friendInfo.intraName})</p>
       </div>
     </button>
   )
 
   async function replaceProfile() {
-    let friendData = await getProfileOfUser(friendIntraName);
+
+    if (friendshipStatus.toLowerCase() === "blocked") return;
+
+    let friendData = await getProfileOfUser(friendInfo.intraName);
     setPreviewProfileFunction(friendData.data as UserData);
     setTopWidgetFunction(<Profile expanded={true} />)
   }

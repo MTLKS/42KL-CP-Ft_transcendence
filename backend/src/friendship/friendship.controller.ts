@@ -24,8 +24,8 @@ export class FriendshipController {
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid friendship - you are blocked by this user"])
 	@ApiOkResponse({ description: "Returns all the user's friendships", type: [FriendshipDTO]})
-	getFriendshipByUserName(@Headers('Authorization') accessToken: string, @Param('userName') userName: string): Promise<any> {
-		return this.friendshipService.getFriendshipByUserName(accessToken, userName);
+	getFriendshipByIntraname(@Headers('Authorization') accessToken: string, @Param('userName') userName: string): Promise<any> {
+		return this.friendshipService.getFriendshipByIntraname(accessToken, userName);
 	}
 
 	// Create friendship

@@ -1,5 +1,3 @@
-import { FriendData } from "../model/FriendData";
-import { UserData } from "../model/UserData";
 import api from "../api/api";
 import { AxiosResponse } from "axios";
 
