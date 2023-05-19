@@ -77,15 +77,6 @@ function HomePage(props: HomePageProps) {
 
   const pageRef = useRef<HTMLDivElement>(null);
 
-  const initFriendshipSocket = () => {
-    friendshipSocket.listen("friendshipRoom", (data: any) => {
-      getFriendList().then((friends) => {
-        const newFriendsData = friends.data as FriendData[];
-        setMyFriends(newFriendsData);
-      });
-    })
-  }
-
   useEffect(() => {
     initFriendshipSocket();
     gameData.setSetShouldDisplayGame = setShouldDisplayGame;
@@ -126,6 +117,15 @@ function HomePage(props: HomePageProps) {
       </UserContext.Provider>
     </PreviewProfileContext.Provider>
   )
+
+  function initFriendshipSocket() {
+    friendshipSocket.listen("friendshipRoom", (data: any) => {
+      getFriendList().then((friends) => {
+        const newFriendsData = friends.data as FriendData[];
+        setMyFriends(newFriendsData);
+      });
+    })
+  }
 
   function handleCommands(command: string[]) {
     let newList: JSX.Element[] = [];
