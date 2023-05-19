@@ -6,7 +6,6 @@ import { FriendData, FriendTags } from '../../../model/FriendData';
 import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
-import { FriendsContext } from '../../../contexts/FriendContext';
 import UserContext from '../../../contexts/UserContext';
 
 interface FriendlistProps {

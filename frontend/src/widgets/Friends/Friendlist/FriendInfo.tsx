@@ -2,8 +2,6 @@ import React, { useContext, useEffect, useMemo, useState } from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
 import FriendlistTag from './FriendlistTag'
 import { FriendData } from '../../../model/FriendData'
-import Highlighter from '../../../components/Highlighter';
-import UserContext from '../../../contexts/UserContext';
 import SocketApi from '../../../api/socketApi';
 import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 import { getProfileOfUser } from '../../../functions/profile';
