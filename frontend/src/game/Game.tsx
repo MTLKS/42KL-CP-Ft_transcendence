@@ -13,10 +13,8 @@ import Entities from './game_objects/Entities';
 import GameEntity, { GameBlackhole, GameBlock, GameTimeZone } from '../model/GameEntities';
 import GameParticle, { GameLightningParticle } from '../model/GameParticle';
 import sleep from '../functions/sleep';
-import * as particles from '@pixi/particle-emitter';
 import { GameData } from './gameData';
 import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravityArrow';
-import colorLerp from './functions/colorInterpolation';
 import ColorTween from './functions/colorInterpolation';
 
 interface GameProps {
@@ -32,7 +30,7 @@ function Game(props: GameProps) {
   const [mounted, setMounted] = useState(false);
   const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
   const [particles, setParticles] = useState<GameParticle[]>([]);
-  const [gameGravityArrow, setGameGravityArrow] = useState<GameGravityArrow | null>(new GameGravityArrow({ arrowsParticles: [], diraction: GameGravityArrowDiraction.UP }));
+  const [gameGravityArrow, setGameGravityArrow] = useState<GameGravityArrow | null>(null);
   const [lightningParticles, setLightningParticles] = useState<GameLightningParticle[]>([
     new GameLightningParticle({
       centerX: 400,
@@ -47,7 +45,7 @@ function Game(props: GameProps) {
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
   const [bgColor, setBgColor] = useState(0x242424);
-  const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(new ColorTween({ start: 0xd2b24f, end: 0xc5a1ff }));
+  const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(undefined);
   const app = useApp();
 
   const ballhit = useCallback(async (gameData: GameData, rings: Ring[]) => {
@@ -75,10 +73,22 @@ function Game(props: GameProps) {
     const newPongSpeed = gameData.pongSpeed;
     const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);
     const newParticles: GameParticle[] = updateParticles(particles, gameData, newPosition, newPongSpeed, pongSpeedMagnitude);
+    let newGameGravityArrow = gameGravityArrow;
 
-    if (gameData.globalGravityY !== 0)
-      gameData.globalGravityY = Math.sign(gameData.globalGravityY) * 2 / pongSpeedMagnitude;
-
+    if (gameData.globalGravityY !== 0) {
+      gameData.globalGravityY = Math.sign(gameData.globalGravityY) * 2 / pongSpeedMagnitude
+      if (!bgColorTween && bgColor !== (gameData.globalGravityY > 0 ? 0xc5a1ff : 0xd2b24f)) {
+        setBgColorTween(new ColorTween({ start: bgColor, end: gameData.globalGravityY > 0 ? 0xc5a1ff : 0xff0000 }));
+      }
+      if (!gameGravityArrow) {
+        console.log("new gameGravityArrow")
+        newGameGravityArrow = new GameGravityArrow({ arrowsParticles: [], diraction: gameData.globalGravityY > 0 ? GameGravityArrowDiraction.DOWN : GameGravityArrowDiraction.UP });
+      }
+    }
+    else if (bgColor !== 0x242424 && !bgColorTween) {
+      setBgColorTween(new ColorTween({ start: bgColor, end: 0x242424 }));
+      newGameGravityArrow = null;
+    }
     const newLightningParticles: GameLightningParticle[] = [
       ...lightningParticles,
     ];
@@ -93,7 +103,7 @@ function Game(props: GameProps) {
       bgColorTween.update(0.05 * delta)
       setBgColor(bgColorTween.colorSlerp);
     }
-    setGameGravityArrow(gameGravityArrow);
+    setGameGravityArrow(newGameGravityArrow);
     setParticles(newParticles);
     setLightningParticles(newLightningParticles);
     setPosition(newPosition);
@@ -128,13 +138,11 @@ function Game(props: GameProps) {
   if (!shouldRender) return <></>;
   return (
     <Container width={1600} height={900} scale={scale} eventMode='auto' >
-      <Sprite width={1600} height={900} texture={backgoundTexture} eventMode='static' pointerdown={() => {
-        setBgColorTween(new ColorTween({ start: bgColor, end: Math.random() * 0xffffff }));
-      }} />
+      <Sprite width={1600} height={900} texture={backgoundTexture} />
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} />
+      {/* <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} /> */}
       <RippleEffect rings={rings} />
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
