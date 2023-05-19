@@ -13,7 +13,7 @@ interface ChatroomContentProps {
   chatroomData: ChatroomData;
 }
 
-const MESSAGE_FETCH_LIMIT = 10;
+const MESSAGE_FETCH_LIMIT = 50;
 
 // append new message but to the top of the list (index 0)
 export function appendNewMessage(newMessage: ChatroomMessageData, messages: ChatroomMessageData[]) {
@@ -36,6 +36,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [hasNewMessage, setHasNewMessage] = useState<boolean>(false);
   const [page, setPage] = useState<number>(1);
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
+  const [isAtTop, setIsAtTop] = useState<boolean>(false);
 
   useEffect(() => {
     // pop off this channel id from the list of unread channels
@@ -50,7 +51,6 @@ function ChatroomContent(props: ChatroomContentProps) {
     getChatroomMemberData();
     // listen for incoming messages
     listenForIncomingMessages();
-
     // use to listen if the user scrolls up to the top of the chat
     const scrollableDiv = scrollableDivRef.current;
     scrollableDiv?.addEventListener('scroll', handleScrollToTop);
@@ -67,6 +67,10 @@ function ChatroomContent(props: ChatroomContentProps) {
       setHasNewMessage(false);
     }
   }, [hasNewMessage]);
+
+  useEffect(() => {
+    fetchMessageHistory();
+  }, [isAtTop]);
 
   const messagesComponent = useMemo(() => {
     if (!chatMemberLastRead) return;
@@ -88,20 +92,17 @@ function ChatroomContent(props: ChatroomContentProps) {
   function handleScrollToTop() {
     const scrollableDiv = scrollableDivRef.current;
     if (scrollableDiv) {
-      // this condition may not always evaluate to true due to rounding errors or differences in browser implementations
       const isAtTop = (scrollableDiv.scrollHeight - scrollableDiv.clientHeight + scrollableDiv.scrollTop) === 0;
-      if (isAtTop && canBeFetched) {
-        console.log("want to fetch more");
-        // fetchMessageHistory();
-      }
+      setIsAtTop(isAtTop);
     }
   }
 
   async function fetchMessageHistory() {
-    console.log("fetching page ", page);
+    
+    if (!canBeFetched) return;
+
     const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
     if (fetchResult.length < MESSAGE_FETCH_LIMIT) {
-      console.log("cannot be fetched anymore");
       setCanBeFetched(false);
     }
     const allMessagesArray = [...fetchResult, ...allMessages];
