@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import * as PIXI from 'pixi.js';
 import { Container, Sprite, useApp } from '@pixi/react';
 import { DropShadowFilter } from 'pixi-filters';
@@ -35,9 +35,31 @@ function Block(props: BlockProps) {
     return dropShadowFilter;
   }, []);
 
+  const ref = useRef<PIXI.Sprite>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const ticker = app.ticker;
+    ref.current!.alpha = 0;
+    filter.alpha = 0;
+    const tick = () => {
+      ref.current!.alpha += 0.02;
+      if (filter.alpha < 0.7) filter.alpha += 0.02;
+      if (ref.current!.alpha >= 1) {
+        ticker.remove(tick);
+      }
+    };
+    ticker.add(tick);
+
+    return () => {
+      ticker.remove(tick);
+      ref.current?.destroy();
+    };
+  }, []);
+
 
   return (
-    <Sprite anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} filters={[filter]} />
+    <Sprite ref={ref} anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} filters={[filter]} />
   )
 }
 

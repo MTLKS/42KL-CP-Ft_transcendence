@@ -23,7 +23,7 @@ export class GameSetting{
 	constructor(leftPaddleHeight: number, rightPaddleHeight: number, gameMode: GameMode, scoreToWin?: number){
 		this.canvasWidth = 1600;
 		this.canvasHeight = 900;
-		this.ballSpeedX = 20;
+		this.ballSpeedX = 15;
 		this.ballSpeedY = 6;
 		this.ballSize = 10;
 		this.paddleWidth = 15;

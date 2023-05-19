@@ -17,7 +17,7 @@
  * @param {number} speedDecayFactor
  * @param {number} sizeDecay
  * @param {number} colorIndex
- * @param {boolean} gravity
+ * @param {boolean} affectedByGravity
  */
 interface GameParticleData {
   id?: string;
@@ -37,7 +37,8 @@ interface GameParticleData {
   sizeDecay?: number;
   speedDecayFactor?: number;
   colorIndex?: number;
-  gravity?: boolean;
+  affectedByGravity?: boolean;
+  affectedByTimeZone?: boolean;
 }
 
 /**
@@ -77,7 +78,8 @@ class GameParticle {
   public speedDecayFactor: number;
   public sizeDecay: number;
   public colorIndex: number;
-  public gravity: boolean;
+  public affectedByGravity: boolean;
+  public affectedByTimeZone: boolean;
 
   constructor({
     id,
@@ -97,7 +99,8 @@ class GameParticle {
     speedDecayFactor,
     colorIndex,
     sizeDecay,
-    gravity,
+    affectedByGravity,
+    affectedByTimeZone,
   }: GameParticleData) {
     this.id =
       id ?? `${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
@@ -117,7 +120,8 @@ class GameParticle {
     this.speedDecayFactor = speedDecayFactor ?? 1;
     this.sizeDecay = sizeDecay ?? 0;
     this.colorIndex = colorIndex ?? 0;
-    this.gravity = gravity ?? true;
+    this.affectedByGravity = affectedByGravity ?? true;
+    this.affectedByTimeZone = affectedByTimeZone ?? true;
   }
 
   get data(): GameParticleData {
@@ -142,6 +146,7 @@ class GameParticle {
     globalGravityX: number = 0,
     globalGravityY: number = 0
   ) {
+    if (!this.affectedByTimeZone) timeFactor = 1;
     if (this.opacity <= 0) return;
     this.x += this.vx * timeFactor;
     this.y += this.vy * timeFactor;
@@ -168,7 +173,7 @@ class GameParticle {
    * should not be used with setGravityAccel
    */
   public setGravityJolt(x: number, y: number, magnitude: number) {
-    if (!this.gravity) return;
+    if (!this.affectedByGravity) return;
     this.jx = (this.x - x) * magnitude;
     this.jy = (this.y - y) * magnitude;
   }
@@ -181,7 +186,7 @@ class GameParticle {
    * should not be used with setGravityJolt
    */
   public setGravityAccel(x: number, y: number, magnitude: number) {
-    if (!this.gravity) return;
+    if (!this.affectedByGravity) return;
     this.ax = (x - this.x) * magnitude * 0.005;
     this.ay = (y - this.y) * magnitude * 0.005;
   }

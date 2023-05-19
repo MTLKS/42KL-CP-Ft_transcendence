@@ -73,8 +73,11 @@ function Game(props: GameProps) {
     if (!gameData.displayGame || !mounted) return;
     const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
-    const newParticles: GameParticle[] = updateParticles(particles, gameData, newPosition, newPongSpeed);
+    const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);
+    const newParticles: GameParticle[] = updateParticles(particles, gameData, newPosition, newPongSpeed, pongSpeedMagnitude);
 
+    if (gameData.globalGravityY !== 0)
+      gameData.globalGravityY = Math.sign(gameData.globalGravityY) * 2 / pongSpeedMagnitude;
 
     const newLightningParticles: GameLightningParticle[] = [
       ...lightningParticles,
@@ -124,11 +127,10 @@ function Game(props: GameProps) {
 
   if (!shouldRender) return <></>;
   return (
-    <Container width={1600} height={900} scale={scale} eventMode='auto' pointerdown={() => {
-      setBgColorTween(new ColorTween({ start: bgColor, end: Math.random() * 0xffffff }));
-    }}
-    >
-      <Sprite width={1600} height={900} texture={backgoundTexture} />
+    <Container width={1600} height={900} scale={scale} eventMode='auto' >
+      <Sprite width={1600} height={900} texture={backgoundTexture} eventMode='static' pointerdown={() => {
+        setBgColorTween(new ColorTween({ start: bgColor, end: Math.random() * 0xffffff }));
+      }} />
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
@@ -145,7 +147,7 @@ function Game(props: GameProps) {
 
 export default Game
 
-function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset) {
+function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset, pongSpeedMagnitude: number) {
   const newParticles = [...particles];
   newParticles.forEach((particle) => {
     if (particle.opacity <= 0.01) {
@@ -154,7 +156,7 @@ function updateParticles(particles: GameParticle[], gameData: GameData, newPosit
     let finalTimeFactor = 1;
     gameData.gameEntities.forEach((entity) => {
       if (entity instanceof GameBlackhole) {
-        if (!particle.gravity) return;
+        if (!particle.affectedByGravity) return;
         const distance = Math.sqrt(
           Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
         );
@@ -171,12 +173,14 @@ function updateParticles(particles: GameParticle[], gameData: GameData, newPosit
       }
     });
     gameData.applGlobalEffectToParticle(particle);
-    particle.update(finalTimeFactor);
+    particle.update(finalTimeFactor, gameData.globalGravityX, gameData.globalGravityY);
   });
   // add particles functions
   trailingSpit(newParticles, newPosition, newPongSpeed);
-  spit1(newParticles, newPosition, newPongSpeed);
-  spit2(newParticles, newPosition, newPongSpeed);
+  if (pongSpeedMagnitude > 1) {
+    spit1(newParticles, newPosition, newPongSpeed);
+    spit2(newParticles, newPosition, newPongSpeed);
+  }
   trailParticles(newParticles, newPosition);
 
   blackholeParticle(gameData, newParticles);
@@ -197,7 +201,7 @@ function trailParticles(newParticles: GameParticle[], newPosition: Offset) {
       w: 10,
       h: 10,
       colorIndex: 0,
-      gravity: false,
+      affectedByGravity: false,
     })
   );
 }
@@ -243,6 +247,7 @@ function spit2(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: 
         h: size,
         speedDecayFactor: 0.95,
         colorIndex: 1,
+        affectedByTimeZone: false,
       })
     );
   }
@@ -262,6 +267,7 @@ function spit1(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: 
         w: size,
         h: size,
         speedDecayFactor: 0.95,
+        affectedByTimeZone: false,
       })
     );
   }

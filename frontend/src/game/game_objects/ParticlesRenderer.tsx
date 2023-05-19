@@ -71,7 +71,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     arrowElements.length = 0;
 
     particles.forEach((p) => {
-      const { id, x, y, w, h, opacity, colorIndex, gravity } = p;
+      const { id, x, y, w, h, opacity, colorIndex, affectedByGravity: gravity } = p;
       if (colorIndex === 0 && gravity) {
         whiteElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} alpha={opacity} texture={textures[colorIndex]} />);
       } else if (colorIndex === 1) {

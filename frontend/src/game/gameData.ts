@@ -223,38 +223,43 @@ export class GameData {
         break;
       case "FieldEffect":
         const fieldEffect = <FieldEffectDTO>state.data;
-        console.log(state.data);
+        this.gameEntities.length = 0;
+        this.globalGravityX = 0;
+        this.globalGravityY = 0;
         switch (fieldEffect.type) {
           case "NORMAL":
-            this.gameEntities.length = 0;
             break;
           case "GRAVITY":
+            this.globalGravityX = 0;
+            this.globalGravityY =
+              (fieldEffect.magnitude * 2) /
+              Math.sqrt(this.pongSpeed.x ** 2 + this.pongSpeed.y ** 2);
             break;
           case "TIME_ZONE":
-            this.gameEntities = this.gameEntities.concat([
+            this.gameEntities = [
               new GameTimeZone(
                 { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 500, h: 500 },
                 fieldEffect.magnitude
               ),
-            ]);
+            ];
             break;
           case "BLACK_HOLE":
-            this.gameEntities = this.gameEntities.concat([
+            this.gameEntities = [
               new GameBlackhole(
                 { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 100, h: 100 },
                 2
               ),
-            ]);
+            ];
             break;
           case "BLOCK":
-            this.gameEntities = this.gameEntities.concat([
+            this.gameEntities = [
               new GameBlock({
                 x: fieldEffect.xPos,
                 y: fieldEffect.yPos,
                 w: 100,
                 h: 100,
               }),
-            ]);
+            ];
             break;
           default:
             break;
@@ -302,6 +307,15 @@ export class GameData {
   useLocalTick() {
     this.usingLocalTick = true;
     this._pongSpeed = { x: 20, y: 5 };
+    this.gameEntities = [
+      new GameTimeZone({ x: 1000, y: 300, w: 500, h: 500 }, 2),
+      new GameBlock({
+        x: 300,
+        y: 400,
+        w: 100,
+        h: 100,
+      }),
+    ];
     this._localTick();
   }
 

@@ -65,7 +65,7 @@ export class GameGravityArrow {
           opacity: 1,
           w: 3 * size,
           h: 8 * size,
-          gravity: false,
+          affectedByGravity: false,
         })
       );
     }

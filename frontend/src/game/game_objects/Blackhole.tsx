@@ -1,6 +1,6 @@
-import React, { useContext, useLayoutEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import * as PIXI from 'pixi.js';
-import { Sprite, useApp } from '@pixi/react';
+import { Sprite, useApp, useTick } from '@pixi/react';
 import { GameDataCtx } from '../../GameApp';
 import { DropShadowFilter, GlowFilter } from 'pixi-filters';
 
@@ -42,8 +42,36 @@ function Blackhole(props: BlackholeProps) {
     return [glowFilter, dropShadowFilter];
   }, []);
 
+  const ref = useRef<PIXI.Sprite>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const ticker = app.ticker;
+    ref.current!.alpha = 0;
+    filters.forEach(filter => {
+      filter.alpha = 0;
+    });
+    const tick = () => {
+      ref.current!.alpha += 0.02;
+      filters.forEach(filter => {
+        if (filter.alpha >= 0.8 && filter instanceof GlowFilter) return;
+        if (filter.alpha >= 1) return;
+        filter.alpha += 0.02;
+      });
+      if (ref.current!.alpha >= 1) {
+        ticker.remove(tick);
+      }
+    };
+    ticker.add(tick);
+
+    return () => {
+      ticker.remove(tick);
+      ref.current?.destroy();
+    };
+  }, []);
+
   return (
-    <Sprite anchor={0.5} x={x} y={y} width={40} height={40} texture={texture} filters={filters} />
+    <Sprite ref={ref} anchor={0.5} x={x} y={y} width={40} height={40} texture={texture} filters={filters} />
   )
 }
 

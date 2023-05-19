@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
@@ -65,20 +65,39 @@ function TimeZone(props: TimeZoneProps) {
     dropShadowFilter.quality = 5;
     return dropShadowFilter;
   }, [type]);
+
+  const ref = useRef<PIXI.Container>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const ticker = app.ticker;
+    ref.current!.alpha = 0;
+
+    const tick = () => {
+      ref.current!.alpha += 0.02;
+      if (ref.current!.alpha >= 1) {
+        ticker.remove(tick);
+      }
+    };
+    ticker.add(tick);
+
+    return () => {
+      ticker.remove(tick);
+      ref.current?.destroy();
+    };
+  }, []);
   return (
-    <>
-      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} alpha={0.4} filters={[filter]} />
+    <Container x={position.x} y={position.y} ref={ref}>
+      <Sprite anchor={0.5} width={size.w} height={size.h} texture={texture} alpha={0.4} filters={[filter]} />
       <Sprite
         anchor={0.5}
-        x={position.x}
-        y={position.y}
         width={size.w * svgSizeRatio}
         height={size.h * svgSizeRatio}
         texture={iconTexture}
         alpha={0.4}
         filters={[filter]}
       />
-    </>
+    </Container>
   )
 }
 
