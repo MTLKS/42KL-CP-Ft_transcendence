@@ -16,6 +16,7 @@ import sleep from '../functions/sleep';
 import { GameData } from './gameData';
 import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravityArrow';
 import ColorTween from './functions/colorInterpolation';
+import { RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
 
 interface GameProps {
   scale: number;
@@ -48,18 +49,45 @@ function Game(props: GameProps) {
   const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(undefined);
   const app = useApp();
 
-  const ballhit = useCallback(async (gameData: GameData, rings: Ring[]) => {
-    const newRings: Ring[] = [...rings];
+  const ballhit = useCallback(async (gameData: GameData) => {
     const hitPosition = gameData.pongPosition;
-    for (let i = 0; i < 3; i++) {
-      newRings.push({
-        position: hitPosition,
-        r: 10,
-        opacity: 0.8
-      });
-      setRings(newRings);
-      await sleep(100);
-    }
+    const shorkwaveFilter = new ShockwaveFilter();
+    shorkwaveFilter.center = [hitPosition.x, hitPosition.y];
+    shorkwaveFilter.time = 0;
+    shorkwaveFilter.amplitude = 100;
+    shorkwaveFilter.wavelength = 5;
+    shorkwaveFilter.radius = 1900;
+    const rgbSplitFilter = new RGBSplitFilter();
+    rgbSplitFilter.red = [5, 0];
+    rgbSplitFilter.green = [3, -2];
+    rgbSplitFilter.blue = [0, 0];
+
+    const ticker = new PIXI.Ticker();
+    const tickerCallback = (delta: number) => {
+      shorkwaveFilter.time += 0.01;
+      shorkwaveFilter.wavelength += 2;
+      shorkwaveFilter.amplitude *= 0.95;
+      // rgbSplitFilter.red = [(rgbSplitFilter.red as PIXI.Point).x - 1, (rgbSplitFilter.red as PIXI.Point).y];
+      // rgbSplitFilter.green = [(rgbSplitFilter.green as PIXI.Point).x - 1, (rgbSplitFilter.green as PIXI.Point).y + 1];
+      // rgbSplitFilter.blue = [(rgbSplitFilter.blue as PIXI.Point).x * -1, (rgbSplitFilter.blue as PIXI.Point).y - 1];
+      if (shorkwaveFilter.time >= 1) {
+        ticker.remove(tickerCallback);
+        ticker.stop();
+        app.stage.filters = app.stage.filters ? app.stage.filters.filter((filter) => filter !== shorkwaveFilter || filter !== rgbSplitFilter) : null;
+      }
+    };
+    ticker.add(tickerCallback);
+    ticker.start();
+    app.stage.filters = app.stage.filters ? app.stage.filters.concat(shorkwaveFilter) : [shorkwaveFilter, rgbSplitFilter];
+    // for (let i = 0; i < 3; i++) {
+    //   newRings.push({
+    //     position: hitPosition,
+    //     r: 10,
+    //     opacity: 0.8
+    //   });
+    //   setRings(newRings);
+    //   await sleep(100);
+    // }
   }, []);
 
   useEffect(() => {
@@ -111,8 +139,8 @@ function Game(props: GameProps) {
     setRightPaddlePosition(gameData.rightPaddlePosition);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    if (newPosition.x <= 0 || newPosition.y <= 0) ballhit(gameData, rings);
-    if (newPosition.x >= 1600 - 10 || newPosition.y >= 900 - 10) ballhit(gameData, rings);
+    if (newPosition.x <= 0 || newPosition.x >= 1600 - 10) ballhit(gameData);
+    if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(gameData);
     if (rings.length === 0) return;
     setRings((rings) => {
       const newRings = [...rings];
@@ -135,9 +163,15 @@ function Game(props: GameProps) {
     return app.renderer.generateTexture(graphics);
   }, [bgColor]);
 
+  // const filters = useMemo(() => {
+  //   const bevelFilter = new BevelFilter();
+  //   bevelFilter.thickness = 4;
+  //   return [bevelFilter];
+  // }, []);
+
   if (!shouldRender) return <></>;
   return (
-    <Container width={1600} height={900} scale={scale} eventMode='auto' >
+    <Container width={1600} height={900} scale={scale} eventMode='auto'>
       <Sprite width={1600} height={900} texture={backgoundTexture} />
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />

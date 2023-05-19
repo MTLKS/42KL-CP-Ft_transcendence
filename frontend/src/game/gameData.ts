@@ -306,7 +306,7 @@ export class GameData {
 
   useLocalTick() {
     this.usingLocalTick = true;
-    this._pongSpeed = { x: 20, y: 5 };
+    this._pongSpeed = { x: 15, y: 5 };
     this.gameEntities = [
       new GameTimeZone({ x: 1000, y: 300, w: 500, h: 500 }, 2),
       new GameBlock({
@@ -325,9 +325,9 @@ export class GameData {
 
   private _localTick() {
     if (!this.usingLocalTick) return;
-    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1600)
+    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1600 - 10)
       this._pongSpeed.x *= -1;
-    if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900)
+    if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this._pongSpeed.y *= -1;
 
     this._pongPosition.x += this.pongSpeed.x;
