@@ -50,7 +50,7 @@ function Game(props: GameProps) {
   const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(new ColorTween({ start: 0xd2b24f, end: 0xc5a1ff }));
   const app = useApp();
 
-  const addRing = useCallback(async () => {
+  const ballhit = useCallback(async (gameData: GameData, rings: Ring[]) => {
     const newRings: Ring[] = [...rings];
     const hitPosition = gameData.pongPosition;
     for (let i = 0; i < 3; i++) {
@@ -62,7 +62,7 @@ function Game(props: GameProps) {
       setRings(newRings);
       await sleep(100);
     }
-  }, [gameData.pongPosition]);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -98,8 +98,8 @@ function Game(props: GameProps) {
     setRightPaddlePosition(gameData.rightPaddlePosition);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    if (newPosition.x <= 0 || newPosition.y <= 0) addRing();
-    if (newPosition.x >= 1600 - 10 || newPosition.y >= 900 - 10) addRing();
+    if (newPosition.x <= 0 || newPosition.y <= 0) ballhit(gameData, rings);
+    if (newPosition.x >= 1600 - 10 || newPosition.y >= 900 - 10) ballhit(gameData, rings);
     if (rings.length === 0) return;
     setRings((rings) => {
       const newRings = [...rings];

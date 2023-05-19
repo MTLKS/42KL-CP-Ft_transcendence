@@ -301,7 +301,7 @@ export class GameData {
 
   useLocalTick() {
     this.usingLocalTick = true;
-    this._pongSpeed = { x: 5, y: 5 };
+    this._pongSpeed = { x: 20, y: 5 };
     this._localTick();
   }
 
@@ -310,15 +310,15 @@ export class GameData {
   }
 
   private _localTick() {
-    if (!this.useLocalTick) return;
-    if (this._pongPosition.x < 0 || this._pongPosition.x > 1600 - 46)
+    if (!this.usingLocalTick) return;
+    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1600)
       this._pongSpeed.x *= -1;
-    if (this._pongPosition.y < 0 || this._pongPosition.y > 900 - 46)
+    if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900)
       this._pongSpeed.y *= -1;
 
     this._pongPosition.x += this.pongSpeed.x;
     this._pongPosition.y += this.pongSpeed.y;
-    requestAnimationFrame(this.useLocalTick);
+    requestAnimationFrame(this._localTick.bind(this));
   }
 
   applGlobalEffectToParticle(particle: GameParticle) {

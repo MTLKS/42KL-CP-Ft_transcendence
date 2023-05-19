@@ -141,6 +141,7 @@ function HomePage(props: HomePageProps) {
         break;
       case "start":
         gameData.startGame();
+        gameData.useLocalTick();
         break;
       case "queue":
         handleQueueCommand(command[1], newList);
@@ -151,6 +152,7 @@ function HomePage(props: HomePageProps) {
       case "end":
         gameData.stopDisplayGame();
         gameData.endGame();
+        gameData.disableLocalTick();
         break;
       case "profile":
         handleProfileCommand(command);
