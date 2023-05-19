@@ -125,8 +125,8 @@ function UserFormTfa(props: UserFormTfaProps) {
 
   async function verifyTfaCode() {
     const result = await checkTFA(tfaCode);
-    setTFAVerified(result.boolean);
-    if (!result.boolean) setTfaCode('');
+    setTFAVerified(result.success);
+    if (!result.success) setTfaCode('');
     if (!hasResult) setHasResult(true);
   }
 }
