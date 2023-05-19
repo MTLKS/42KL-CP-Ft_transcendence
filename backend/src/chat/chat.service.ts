@@ -119,11 +119,7 @@ export class ChatService {
 	}
 
 	// Retrives all messages from a DM
-	async getMyDMMessages(accessToken: string, channelId: number, perPage: number, page: number): Promise<any> {
-		if (perPage === undefined)
-			perPage = 100;
-		if (page === undefined)
-			page = 1;
+	async getMyDMMessages(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
 		perPage = Number(perPage);
 		page = Number(page);
 		if (channelId === undefined)
