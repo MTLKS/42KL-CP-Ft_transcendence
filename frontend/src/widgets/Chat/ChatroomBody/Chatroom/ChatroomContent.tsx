@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomTextField from './ChatroomTextField'
 import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '../../../../model/ChatRoomData';
@@ -12,6 +12,8 @@ import ChatUnreadSeparator from './ChatUnreadSeparator';
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
 }
+
+const MESSAGE_FETCH_LIMIT = 10;
 
 // append new message but to the top of the list (index 0)
 export function appendNewMessage(newMessage: ChatroomMessageData, messages: ChatroomMessageData[]) {
@@ -29,7 +31,11 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isMessagesSet, setIsMessagesSet] = useState<boolean>(false);
   const [chatMemberLastRead, setChatMemberLastRead] = useState<string>('');
   const scrollToHereRef = useRef<HTMLDivElement>(null);
+  const scrollableDivRef = useRef<HTMLDivElement>(null);
   const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
+  const [hasNewMessage, setHasNewMessage] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(1);
+  const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
 
   useEffect(() => {
     // pop off this channel id from the list of unread channels
@@ -37,42 +43,72 @@ function ChatroomContent(props: ChatroomContentProps) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     }
-
+    console.log("useffect []");
     // fetch message history
     fetchMessageHistory();
     // get chatroom member data
     getChatroomMemberData();
     // listen for incoming messages
     listenForIncomingMessages();
+
+    // use to listen if the user scrolls up to the top of the chat
+    const scrollableDiv = scrollableDivRef.current;
+    scrollableDiv?.addEventListener('scroll', handleScrollToTop);
+
     return () => {
       chatSocket.removeListener("message");
+      scrollableDiv?.removeEventListener('scroll', handleScrollToTop);
     }
   }, []);
-  
+
+  useEffect(() => {
+    if (hasNewMessage) {
+      scrollToHereRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      setHasNewMessage(false);
+    }
+  }, [hasNewMessage]);
+
   const messagesComponent = useMemo(() => {
     if (!chatMemberLastRead) return;
     return displayAllMessages();
   }, [allMessages.length, chatMemberLastRead]);
 
-  if (!chatMemberLastRead || !isMessagesSet) return <></>;
-
   return (
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
         <ChatroomHeader chatroomData={chatroomData} />
-        <div className='h-full overflow-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth'>
+        <div className='h-full overflow-y-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth box-border' ref={scrollableDivRef}>
           { messagesComponent }
         </div>
-          <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
+        <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
       </div>
     </ChatroomMessagesContext.Provider>
   )
 
+  function handleScrollToTop() {
+    const scrollableDiv = scrollableDivRef.current;
+    if (scrollableDiv) {
+      // this condition may not always evaluate to true due to rounding errors or differences in browser implementations
+      const isAtTop = (scrollableDiv.scrollHeight - scrollableDiv.clientHeight + scrollableDiv.scrollTop) === 0;
+      if (isAtTop && canBeFetched) {
+        console.log("want to fetch more");
+        // fetchMessageHistory();
+      }
+    }
+  }
+
   async function fetchMessageHistory() {
-    const allMsgs: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId)).data;
-    const sortedMsgs = allMsgs.sort((b, a) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime());
+    console.log("fetching page ", page);
+    const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
+    if (fetchResult.length < MESSAGE_FETCH_LIMIT) {
+      console.log("cannot be fetched anymore");
+      setCanBeFetched(false);
+    }
+    const allMessagesArray = [...fetchResult, ...allMessages];
+    const sortedMsgs = allMessagesArray.sort((b, a) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime());
     setAllMessages(sortedMsgs);
     setIsMessagesSet(true);
+    setPage(page + 1);
   }
 
   async function getChatroomMemberData() {
@@ -114,6 +150,7 @@ function ChatroomContent(props: ChatroomContentProps) {
     messageToDisplay.forEach((message) => {
       if (typeof message === "string" && message === "new") {
         messagesComponent.push(<div ref={scrollToHereRef} key={"separator_div" + new Date().toDateString()}><ChatUnreadSeparator key={"separator" + new Date().toISOString()}/></div>);
+        setHasNewMessage(true);
       } else if (typeof message === "object")
         messagesComponent.push(<ChatroomMessage key={message.messageId + new Date().toDateString()} messageData={message} isMyMessage={myProfile.intraName === message.senderChannel.owner.intraName} />);
       }
