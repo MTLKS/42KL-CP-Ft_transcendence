@@ -7,6 +7,9 @@ import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, Friend
 import { acceptFriend, addFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../functions/friendactions'
 import { AxiosResponse } from 'axios'
 import { getFriendList } from '../../../functions/friendlist'
+import PreviewProfileContext from '../../../contexts/PreviewProfileContext'
+import UserContext from '../../../contexts/UserContext'
+import Profile from '../../Profile/Profile'
 
 interface FriendActionProps {
   user: UserData;

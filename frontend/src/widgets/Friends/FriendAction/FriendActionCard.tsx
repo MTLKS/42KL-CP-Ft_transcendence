@@ -37,23 +37,24 @@ function FriendActionCard(props: FriendActionCardProps) {
   const { index, user, friend, ignoreAction } = props;
   const fakeSHAkeyStr = useMemo(() => `+${getRandomString(10)}/${getRandomString(10)}`, []);
   const isCurrentIndex = selectedIndex === index;
-  let friendIntraName = (user.intraName === friend.receiverIntraName ? friend.senderIntraName : friend.receiverIntraName);
+  const friendInfo = (user.intraName === friend.receiver.intraName ? friend.sender : friend.receiver);
+  // let friendIntraName = (user.intraName === friend.receiver.intraName ? friend.sender.intraName : friend.receiver.intraName);
 
   return (
     <div className={`flex flex-row gap-x-2 ${!isCurrentIndex && 'opacity-20'}`}>
       <p className='w-[3ch] text-right font-extrabold text-highlight/50 overflow-hidden text-sm'>{index}</p>
       <div className='flex flex-col'>
-        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} friend={friend} friendIntraName={friendIntraName} />
+        <FriendActionProfileCard isCurrentIndex={isCurrentIndex} friendInfo={friendInfo} friendshipStatus={friend.status} />
         <FriendlistEmptyLine />
         <div className='flex flex-col text-base w-full text-highlight'>
-          <p>{getFriendActionTitle(action)}'<span className='bg-accCyan select-all'>{friend.userName}</span>'</p>
+          <p>{getFriendActionTitle(action)}'<span className='bg-accCyan select-all'>{friendInfo.userName}</span>'</p>
           <p>PONGSH key fingerprint is SHA256: {fakeSHAkeyStr}</p>
           <div className='flex flex-row whitespace-pre'>
             <FriendActionConfirmation />
             <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
               [<FriendActionConfirmationButtons
-                friendUserName={friend.userName}
-                friendIntraName={friendIntraName}
+                friendUserName={friendInfo.userName}
+                friendIntraName={friendInfo.intraName}
                 ignoreAction={ignoreAction}
                 useAlternativeAction={action === ACTION_TYPE.BLOCK && friend.status === "STRANGER"}
               />]
