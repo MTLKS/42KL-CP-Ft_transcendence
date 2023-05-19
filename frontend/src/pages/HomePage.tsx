@@ -24,7 +24,7 @@ import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
 import PreviewProfileContext from '../contexts/PreviewProfileContext';
-import { ErrorData } from '../contexts/ErrorContext';
+import { ErrorData } from '../model/ErrorData';
 import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
