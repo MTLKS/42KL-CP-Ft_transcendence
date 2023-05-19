@@ -1,4 +1,5 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { FriendshipDTO } from 'src/dto/friendship.dto';
 import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,19 +14,19 @@ export class FriendshipService {
 	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Channel) private channelRepository: Repository<Channel>, private userService: UserService) { }
 
 	// User connect to friendship socket
-	async userConnect(client: any): Promise<any> {
+	async userConnect(client: any, server: any): Promise<any> {
 		client.join((await this.userService.getMyUserData(client.handshake.headers.authorization)).intraName);
 	}
 
 	// User send friend request to friendship room
 	async friendshipRoom(client: any, server: any, intraName: string): Promise<any> {
 		if (intraName === undefined)
-			return new ErrorDTO("Invalid body - body must include intraName(string)");
+			return { error: "Invalid body - body must include intraName(string)" };
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		client.join(intraName);
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: { sender: { intraName: USER_DATA.intraName }, receiver: { intraName: intraName } } });
 		if (FRIENDSHIP === null)
-			return new ErrorDTO("Friendship does not exist");
+			return { error: "Friendship does not exist" };
 		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP.status });
 	}
 
