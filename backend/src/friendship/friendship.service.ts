@@ -41,11 +41,11 @@ export class FriendshipService {
 
 	// Get all friendship by accessToken
 	async getFriendship(accessToken: string): Promise<any> {
-		return await this.getFriendshipByIntraNAme(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
+		return await this.getFriendshipByIntraName(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
 	}
 
 	// Gets all friendship by intraName
-	async getFriendshipByIntraNAme(accessToken: string, intraName: string): Promise<any> {
+	async getFriendshipByIntraName(accessToken: string, intraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, intraName);
 		if (intraName !== USER_DATA.intraName && FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
