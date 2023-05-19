@@ -1,5 +1,4 @@
 import { Friendship } from 'src/entity/friendship.entity';
-import { FriendshipDTO } from 'src/dto/friendship.dto';
 import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,19 +13,19 @@ export class FriendshipService {
 	constructor(@InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, @InjectRepository(User) private userRepository: Repository<User>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Channel) private channelRepository: Repository<Channel>, private userService: UserService) { }
 
 	// User connect to friendship socket
-	async userConnect(client: any, server: any): Promise<any> {
+	async userConnect(client: any): Promise<any> {
 		client.join((await this.userService.getMyUserData(client.handshake.headers.authorization)).intraName);
 	}
 
 	// User send friend request to friendship room
 	async friendshipRoom(client: any, server: any, intraName: string): Promise<any> {
 		if (intraName === undefined)
-			return { error: "Invalid body - body must include intraName(string)" };
+			return new ErrorDTO("Invalid body - body must include intraName(string)");
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		client.join(intraName);
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: { sender: { intraName: USER_DATA.intraName }, receiver: { intraName: intraName } } });
 		if (FRIENDSHIP === null)
-			return { error: "Friendship does not exist" };
+			return new ErrorDTO("Friendship does not exist");
 		server.to(intraName).emit('friendshipRoom', { "intraName": USER_DATA.intraName, "status": FRIENDSHIP.status });
 	}
 
@@ -49,7 +48,7 @@ export class FriendshipService {
 	async getFriendshipByIntraNAme(accessToken: string, intraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, intraName);
-		if (FRIENDSHIP !== null && intraName != USER_DATA.intraName && FRIENDSHIP.status === "BLOCKED")
+		if (intraName !== USER_DATA.intraName && FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 			return new ErrorDTO("Invalid friendship - you are blocked by this user");
 		const RECEIVER = await this.friendshipRepository.find({ where: { receiver: { intraName: intraName } }, relations: ['sender', 'receiver'] });
 		for (let receiver of RECEIVER) {

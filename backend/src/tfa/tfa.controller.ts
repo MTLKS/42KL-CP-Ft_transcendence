@@ -3,7 +3,7 @@ import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
 import { TfaDTO, TfaPostDTO, TfaValidateDTO } from "src/dto/tfa.dto";
 import { ApiOkResponse, ApiTags, ApiHeader } from "@nestjs/swagger";
 import { AuthGuard } from 'src/guard/AuthGuard';
-import { UserDataDTO } from "src/dto/user.dto";
+import { UserDTO } from "src/dto/user.dto";
 import { TFAGuard } from "src/guard/TFAGuard";
 import { ErrorDTO } from "src/dto/error.dto";
 import { TFAService } from "./tfa.service";
@@ -41,8 +41,8 @@ export class TFAController{
 	@UseGuards(TFAGuard)
 	@ApiCommonHeader()
 	@ApiHeader({ name: 'OTP', description: 'OTP 6 digit code (eg. 123456)', required: true })
-	@ApiOkResponse({ description: "Deletes the user's 2FA secret", type: UserDataDTO})
-	async deleteSecret(@Headers('Authorization') accessToken: string): Promise<UserDataDTO> {
+	@ApiOkResponse({ description: "Deletes the user's 2FA secret", type: UserDTO})
+	async deleteSecret(@Headers('Authorization') accessToken: string): Promise<UserDTO> {
 		return await this.tfaService.deleteSecret(accessToken);
 	}
 }

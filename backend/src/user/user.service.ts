@@ -22,7 +22,7 @@ export class UserService {
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
 		if (USER_DATA === null)
-			return { error: "Invalid access token - access token does not exist" };
+			return new ErrorDTO("Invalid access token - access token does not exist");
 		USER_DATA.accessToken = "hidden";
 		USER_DATA.tfaSecret = USER_DATA.tfaSecret === null ? "DISABLED" : "ENABLED";
 		return USER_DATA;
@@ -99,7 +99,7 @@ export class UserService {
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.findOne({ where: {intraName} });
-		return USER_DATA === null ? { error: "Invalid intraName - user does not exist" } : USER_DATA.avatar.startsWith("https://") ? res.redirect(USER_DATA.avatar) : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
+		return USER_DATA === null ? new ErrorDTO("Invalid intraName - user does not exist") : USER_DATA.avatar.startsWith("https://") ? res.redirect(USER_DATA.avatar) : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Updates existing user by saving their userName and avatar

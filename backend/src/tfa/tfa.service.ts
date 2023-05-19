@@ -3,7 +3,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "src/entity/users.entity";
-import { UserDataDTO } from "src/dto/user.dto";
+import { UserDTO } from "src/dto/user.dto";
 import { ErrorDTO } from "src/dto/error.dto";
 import { Injectable } from "@nestjs/common";
 import { authenticator } from "otplib";
@@ -65,7 +65,7 @@ export class TFAService{
 		}
 	}
 
-	async deleteSecret(accessToken: string) : Promise<UserDataDTO> {
+	async deleteSecret(accessToken: string) : Promise<UserDTO> {
 		const DATA = await this.userRepository.findOne({ where: {intraName: (await this.userService.getMyUserData(accessToken)).intraName} });
 		DATA.tfaSecret = null;
 		return this.userService.hideData(await this.userRepository.save(DATA));
