@@ -21,11 +21,10 @@ const getFriendTagStyle = (type: string) => {
 
 function FriendlistTag(props: FriendlistTagType) {
 
-  let style, width;
+  let style;
   const { type, total } = props;
 
   style = getFriendTagStyle(type);
-  width = type.length;
   return (
     <div className='flex flex-row gap-x-[1ch]'>
       <div className={`${style} text-center w-fit uppercase px-[1ch]`}>

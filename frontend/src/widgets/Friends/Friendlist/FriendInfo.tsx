@@ -45,7 +45,7 @@ function FriendInfo(props: FriendInfoProps) {
   }, [friend]);
 
   return (
-    <div className='flex flex-row text-highlight hover:cursor-pointer group hover:bg-highlight hover:text-dimshadow w-fit' onClick={viewFriendProfile}>
+    <div className={`flex flex-row w-fit text-highlight ${friendshipStatus !== "blocked" ? 'hover:cursor-pointer group hover:bg-highlight hover:text-dimshadow' : ''}`} onClick={viewFriendProfile}>
       <div className='group-hover:underline w-[16ch] normal-case'>
         {friendInfo.userName}
       </div>
@@ -79,6 +79,9 @@ function FriendInfo(props: FriendInfoProps) {
   )
 
   async function viewFriendProfile() {
+
+    if (friendshipStatus === "blocked") return;
+
     let friendData = await getProfileOfUser(friendInfo.intraName);
     setPreviewProfileFunction(friendData.data as UserData);
     setTopWidgetFunction(<Profile expanded={true} />)

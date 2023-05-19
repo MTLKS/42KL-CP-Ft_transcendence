@@ -45,7 +45,7 @@ function Friendlist(props: FriendlistProps) {
     console.log(friends);
     handleResize();
     focusOnInput();
-    observerSetup();
+    return observerSetup();
   }, []);
 
   useEffect(() => {
@@ -126,8 +126,6 @@ function Friendlist(props: FriendlistProps) {
     let components: JSX.Element[] = [];
 
     if (sortedFriends.length === 0) return [<EmptyFriendlist userData={userData} />];
-
-    console.log(sortedFriends);
 
     components.push(
       <FriendlistEmptyLine key="el0" />,
