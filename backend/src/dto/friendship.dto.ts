@@ -20,7 +20,7 @@ export class FriendshipDTO {
 
 export class PostFriendshipBodyDTO {
 	@ApiProperty({ example: "schuah" })
-	receiverUserName: string;
+	receiverIntraName: string;
 
 	@ApiProperty({ example: "PENDING | ACCEPTED | BLOCKED" })
 	status: string;
