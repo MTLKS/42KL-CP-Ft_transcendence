@@ -1,11 +1,10 @@
+import { UserData } from "./UserData";
+
 export interface FriendData {
-  senderIntraName: string;
-  receiverIntraName: string;
+  sender: UserData;
+  receiver: UserData;
   status: string;
   id: number;
-  userName: string
-  elo: number;
-  avatar: string;
 }
 
 export interface FriendRequestType {

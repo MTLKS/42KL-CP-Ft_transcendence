@@ -1,36 +1,36 @@
 import React from 'react'
 import FriendlistSeparator from './FriendlistSeparator'
-import { TabWidth } from './FriendlistConfig'
-import Highlighter from '../../../components/Highlighter';
 
-interface FriendlistTitleProp {
-  searchTerm?: string;
+const TabWidth = {
+  nickname: 16,
+  intraName: 16,
+  eloScore: 9,
+  relationship: 12,
+  status: 9,
 }
 
-function FriendlistTitle(props: FriendlistTitleProp) {
-
-  const { searchTerm } = props;
+function FriendlistTitle() {
 
   return (
     <div className='flex flex-row text-highlight'>
       <div className={`w-[${TabWidth.nickname}ch]`}>
-        <Highlighter key="nickname" text={"nickname"} searchTerm={searchTerm}/>
+        nickname
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.intraName}ch]`}>
-        <Highlighter key="intraname" text={"intra name"} searchTerm={searchTerm}/>
+        intra name
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.eloScore}ch] flex flex-row`}>
-        <Highlighter key="elo" text={"elo"} searchTerm={searchTerm}/>
+        elo
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.relationship}ch]`}>
-        <Highlighter key="relationship" text={"relationship"} searchTerm={searchTerm}/>
+        relationship
       </div>
       <FriendlistSeparator />
       <div className={`w-[${TabWidth.status}ch]`}>
-        <Highlighter key="status" text={"status"} searchTerm={searchTerm}/>
+        status
       </div>
     </div>
   )
