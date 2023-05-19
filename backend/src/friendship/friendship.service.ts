@@ -49,7 +49,7 @@ export class FriendshipService {
 	async getFriendshipByIntraNAme(accessToken: string, intraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, intraName);
-		if (intraName !== USER_DATA.intraName && FRIENDSHIP.status === "BLOCKED")
+		if (intraName !== USER_DATA.intraName && FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 			return new ErrorDTO("Invalid friendship - you are blocked by this user");
 		const RECEIVER = await this.friendshipRepository.find({ where: {receiver: {intraName: intraName}}, relations: ['sender', 'receiver'] });
 		for (let receiver of RECEIVER) {
