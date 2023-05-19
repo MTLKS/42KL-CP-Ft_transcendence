@@ -15,14 +15,14 @@ function ChatMember(props: ChatMemberProps) {
   const { members } = useContext(NewChatContext);
   const { myProfile } = useContext(UserContext);
   const [isSelected, setIsSelected] = useState(false);
-  const intraName = friend.receiverIntraName !== myProfile.intraName ? friend.receiverIntraName : friend.senderIntraName;
+  const friendInfo = friend.receiver.intraName !== myProfile.intraName ? friend.receiver : friend.sender;
 
   useEffect(() => {
-    (members.includes(intraName)) ? setIsSelected(true) : setIsSelected(false);
+    (members.includes(friendInfo.intraName)) ? setIsSelected(true) : setIsSelected(false);
   }, [members])
 
   const handleSelectUser = () => {
-    const selected: boolean = toggleMember(intraName);
+    const selected: boolean = toggleMember(friendInfo.intraName);
     setIsSelected(selected);
   }
 
@@ -34,14 +34,14 @@ function ChatMember(props: ChatMemberProps) {
       <div className='aspect-square object-cover w-12 relative'>
         <img
           className='aspect-square object-cover w-full'
-          src={friend.avatar}
-          alt={friend.userName + ' avatar'}
+          src={friendInfo.avatar}
+          alt={friendInfo.userName + ' avatar'}
         />
         <div className={`absolute w-full h-full bg-dimshadow/80 top-0 ${isSelected ? 'block' : 'hidden group-hover:block'} transition-all duration-150 ease-in-out p-3 group`}>
           <FaCheck className={`text-2xl text-highlight ${!isSelected && 'group-hover:invisible'}`} />
         </div>
       </div>
-      <p className={`'text-base font-extrabold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre`}>{friend.userName} ({friend.receiverIntraName !== myProfile.intraName ? friend.receiverIntraName : friend.senderIntraName})</p>
+      <p className={`'text-base font-extrabold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre`}>{friendInfo.userName} ({friendInfo.intraName})</p>
     </div>
   )
 }

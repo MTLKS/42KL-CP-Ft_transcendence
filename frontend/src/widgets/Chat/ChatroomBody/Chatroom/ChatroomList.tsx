@@ -4,7 +4,7 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
-import NewChatRoom from '../CreateChat/NewChatRoom';
+import NewChannel from '../CreateChat/NewChannel';
 import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../functions/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
@@ -54,7 +54,7 @@ function ChatroomList() {
         chatrooms.length > 0 &&
         <div className='absolute bottom-0 right-0 flex flex-row gap-x-3.5 mb-5 mr-5 bg-transparent'>
           <ChatButton icon={<HiServer />} title="join channel" />
-          <ChatButton icon={<FaPlusSquare />} title="new channel" onClick={() => setChatBody(<NewChatRoom type='channel' />)} />
+          <ChatButton icon={<FaPlusSquare />} title="new channel" onClick={() => setChatBody(<NewChannel />)} />
         </div>
       }
     </div>
@@ -79,8 +79,8 @@ function ChatroomList() {
     else {
       filteredChatrooms = chatrooms.filter(chatroom => {
         if (chatroom.channelName.toLowerCase().startsWith(filterKeyword.toLowerCase())
-        || chatroom.owner?.intraName.toLowerCase().startsWith(filterKeyword.toLowerCase())
-        || chatroom.owner?.userName.toLowerCase().startsWith(filterKeyword.toLowerCase()))
+          || chatroom.owner?.intraName.toLowerCase().startsWith(filterKeyword.toLowerCase())
+          || chatroom.owner?.userName.toLowerCase().startsWith(filterKeyword.toLowerCase()))
           return true;
         return false;
       })
