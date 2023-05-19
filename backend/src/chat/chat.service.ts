@@ -124,6 +124,8 @@ export class ChatService {
 			perPage = 100;
 		if (page === undefined)
 			page = 1;
+		perPage = Number(perPage);
+		page = Number(page);
 		if (channelId === undefined)
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
@@ -135,7 +137,7 @@ export class ChatService {
 		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 			return new ErrorDTO("Invalid channelId - you are not friends with this user");
 		const MESSAGES = await this.messageRepository.find({ where: [{ receiverChannel: MY_CHANNEL, senderChannel: FRIEND_CHANNEL }, { receiverChannel: { channelId: channelId }, senderChannel: MY_CHANNEL }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
-		return this.userService.hideData(MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
+		return this.userService.hideData(MESSAGES.length - (page * perPage) < 0 ? MESSAGES.slice(0, Math.max(0, perPage + MESSAGES.length - (page * perPage))) : MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
 	}
 
 	// Creates a new room
