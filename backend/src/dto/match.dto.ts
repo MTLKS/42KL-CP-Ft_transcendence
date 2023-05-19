@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { User } from 'src/entity/users.entity'
+import { UserDTO } from './user.dto';
 
 export class MatchInputDTO {
 	@ApiPropertyOptional({ example: 3 })
@@ -10,11 +10,11 @@ export class MatchInputDTO {
 }
 
 export class MatchResponseDTO {
-	@ApiProperty({ type: User }) //TODO: Change to UserDTO
-	player1: User;
+	@ApiProperty({ type: UserDTO })
+	player1: UserDTO;
 
-	@ApiProperty({ type: User }) //TODO: Change to UserDTO
-	player2: User;
+	@ApiProperty({ type: UserDTO })
+	player2: UserDTO;
 
 	@ApiProperty({ example: 5 })
 	player1Score: number;
@@ -45,9 +45,9 @@ export class MatchStatsResponseDTO {
 	@ApiProperty({ example: "42" })
 	lose: number;
 
-	@ApiProperty({ type: User }) //TODO: Change to UserDTO
-	worst_nightmare: User;
+	@ApiProperty({ type: UserDTO })
+	worst_nightmare: UserDTO;
 
-	@ApiProperty({ type: User }) //TODO: Change to UserDTO
-	punching_bag: User;
+	@ApiProperty({ type: UserDTO })
+	punching_bag: UserDTO;
 }
