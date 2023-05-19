@@ -1,5 +1,5 @@
 import api from "../api/api";
-import { ErrorData } from "../contexts/ErrorContext";
+import { ErrorData } from "../model/ErrorData";
 import { UserData } from "../model/UserData";
 
 export function getMyProfile() {
