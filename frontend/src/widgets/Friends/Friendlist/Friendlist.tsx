@@ -67,7 +67,7 @@ function Friendlist(props: FriendlistProps) {
       <input
         className='w-0 h-0 absolute'
         onKeyDown={handleKeyDown}
-        // onChange={handleInput}
+        onChange={handleInput}
         value={inputValue}
         ref={inputRef}
       />
@@ -208,18 +208,17 @@ function Friendlist(props: FriendlistProps) {
   }
 
   // less: handle input
-  // function handleInput(e: React.FormEvent<HTMLInputElement>) {
-  //   let value = e.currentTarget.value;
+  function handleInput(e: React.FormEvent<HTMLInputElement>) {
+    let value = e.currentTarget.value;
 
-  //   if (value[value.length - 1] == '\\') value += '\\';
+    if (value[value.length - 1] == '\\') value += '\\';
 
-  //   setInputValue(value.toLowerCase());
-  //   if (value[0] === '/') {
-  //     setIsSearching(true);
-  //     return;
-  //   }
-  //   setInputValue("");
-  // }
+    setInputValue(value.toLowerCase());
+    if (value[0] === '/') {
+      return;
+    }
+    setInputValue("");
+  }
 }
 
 export default Friendlist;

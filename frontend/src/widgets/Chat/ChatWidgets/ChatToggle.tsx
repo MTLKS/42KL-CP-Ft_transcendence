@@ -21,9 +21,7 @@ function ChatToggle(props: ChatToggleProps) {
         <p className='font-extrabold'>chat</p>
         <BsFillChatLeftFill className='ml-3' />
       </div>
-      {expanded
-        ? <ChatSearchBar invert={false} />
-        : <ChatMsgIndicator hasNewMessage={hasNewMessage} />
+      {!expanded && <ChatMsgIndicator hasNewMessage={hasNewMessage} />
       }
     </div>
   )
