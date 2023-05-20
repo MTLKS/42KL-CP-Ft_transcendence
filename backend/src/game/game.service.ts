@@ -165,7 +165,6 @@ export class GameService {
     if (LOBBY_LOGGING)
       console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
     let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
-    this.queues[clientQueue].push(player);
     client.emit(
       'gameResponse',
       new GameResponseDTO('success', `joined queue ${clientQueue}`),
@@ -188,9 +187,9 @@ export class GameService {
     this.queues[clientQueue].push(player);
 
     //TESTING
-    var player1 = this.queues[clientQueue].pop();
+    // var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server);
+    // this.joinGame(player1, player1, clientQueue, server);
   }
 
   async leaveQueue(client: Socket) {
