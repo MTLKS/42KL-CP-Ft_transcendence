@@ -24,8 +24,8 @@ export class GameData {
   socketApi: SocketApi;
   useParticlesFilter: boolean = false;
   tickPerParticlesSpawn: number = 0;
-  gameMaxWidth: number = 1280;
-  gameMaxHeight: number = 720;
+  gameMaxWidth: number = 1600;
+  gameMaxHeight: number = 900;
   private _pongPosition: Offset = { x: 800, y: 450 };
   private _pongSpeed: Offset = { x: 12, y: 8 };
   leftPaddlePosition: Offset = { x: 0, y: 0 };
