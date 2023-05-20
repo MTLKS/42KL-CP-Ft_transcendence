@@ -2,7 +2,7 @@ import React, { useContext } from 'react'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { ChatContext } from '../../../../contexts/ChatContext';
-import NewChatRoom from './NewChatRoom';
+import NewChannel from './NewChannel';
 
 function NewChatInfo() {
 
@@ -10,7 +10,7 @@ function NewChatInfo() {
 
   return (
     <div className='flex flex-col'>
-      <ChatNavbar title='channel info' backAction={() => setChatBody(<NewChatRoom type='channel' />)} nextComponent={<ChatButton title='create' />} />
+      <ChatNavbar title='channel info' backAction={() => setChatBody(<NewChannel />)} nextComponent={<ChatButton title='create' />} />
     </div>
   )
 }

@@ -151,8 +151,8 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   return (
-    <div className='w-full flex flex-row bg-dimshadow/0 items-end'>
-      <div className='w-[80%] flex flex-row relative'>
+    <div className='w-full h-[60px] flex flex-row bg-dimshadow/0 items-end'>
+      <div className='w-[80%] h-full flex flex-row relative'>
         { isFocusing && <span className={`text-xs ${message.length === 1024 || textTooLong ? 'bg-accRed text-highlight' : 'bg-highlight text-dimshadow'} h-fit px-[1ch] font-bold absolute -top-3 right-16`}>{textTooLong ? "TEXT TOO LONG!" : `${message.length}/1024`}</span> }
         {
           someoneIsTyping &&
