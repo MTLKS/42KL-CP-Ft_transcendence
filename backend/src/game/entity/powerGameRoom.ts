@@ -170,6 +170,10 @@ export class PowerGameRoom extends GameRoom{
 				return;
 			}
 		}
+
+		if (this.currentEffect == FieldEffect.BLOCK && this.blockObject == null){
+			console.log("block is null");
+		}
 		
 		if (result && result.collided){
 			this.paddleTimer = Date.now();
@@ -246,7 +250,6 @@ export class PowerGameRoom extends GameRoom{
 			case FieldEffect.BLOCK:
 				spawnPos = this.getRandomSpawnPosition(this.blockSize);
 				this.blockObject = new Block(spawnPos.x, spawnPos.y, this.blockSize, this.blockSize, this.blockMass);
-				console.log(spawnPos.x, spawnPos.y);
 				server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("BLOCK", spawnPos.x, spawnPos.y, 0)));
 				this.currentEffect = FieldEffect.BLOCK;
 				break;
@@ -263,14 +266,14 @@ export class PowerGameRoom extends GameRoom{
 		this.currentEffect = FieldEffect.NORMAL;
 		this.Ball.initAcceleration(0,0);
 		this.effectMagnitude = 0;
-		server.emit("gameState", new FieldEffectDTO("NORMAL", 0,0,0));
+		server.emit("gameState", new GameStateDTO("FieldEffect", new FieldEffectDTO("NORMAL", 0,0,0)));
 	}
 
 	getBallQuadrant(){
 		const xQuadrant = this.Ball.posX < this.canvasWidth / 2 ? 0 : 1;
 		const yQuadrant = this.Ball.posY < this.canvasHeight / 2 ? 0 : 1;
 
-		return xQuadrant + yQuadrant * 2;
+		return xQuadrant + (yQuadrant * 2);
 	}
 
 	/**
