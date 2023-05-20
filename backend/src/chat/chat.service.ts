@@ -166,6 +166,30 @@ export class ChatService {
 		return this.userService.hideData(ROOM);
 	}
 
+	// Adds a user to a room
+	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean ): Promise<any> {
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
+		if (CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - this channel is not a room");
+		
+		if (MY_MEMBER.isAdmin === false)
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+		const USER_DATA = await this.userService.getUserDataByIntraName(accessToken, intraName);
+		if (USER_DATA.error !== undefined)
+			return new ErrorDTO(USER_DATA.error);
+		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, USER_DATA.intraName);
+		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
+			return new ErrorDTO("Invalid intraName - you are not friends with this user");
+
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		if (MEMBER !== undefined)
+			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
+		return this.userService.hideData(await this.memberRepository.save(new Member(USER_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
+	}
+
 	// Updates room settings
 	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
@@ -179,6 +203,7 @@ export class ChatService {
 			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const ROOM = await this.channelRepository.findOne({ where: {channelId: channelId, isRoom: true, owner: {userName: USER_DATA.userName}}, relations: ['owner'] });
+		// TBC
 	}
 
 	// Deletes a room

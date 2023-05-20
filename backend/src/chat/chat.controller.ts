@@ -1,5 +1,5 @@
-import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PostRoomBodyDTO } from "src/dto/chat.dto";
-import { Body, Controller, Get, Headers, Param, Post, Patch, Delete, Query } from "@nestjs/common";
+import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
+import { Body, Controller, Get, Headers, Param, Post, Patch, Delete, Query, Head } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "src/guard/AuthGuard";
@@ -41,6 +41,14 @@ export class ChatController {
 	@ApiOkResponse({ description: "Returns the newly created room", type: ChannelDTO})
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: PostRoomBodyDTO): any {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
+	}
+
+	@Post('room/member')
+	@UseGuards(AuthGuard)
+	@ApiCommonHeader(["Invalid channelId - this channel is not a room", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
+	
+	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
+		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
 	}
 
 	@Patch('room')
