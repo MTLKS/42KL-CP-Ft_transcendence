@@ -37,6 +37,8 @@ export class ChatController {
 
 	@Post('room')
 	@UseGuards(AuthGuard)
+	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid password - password must be between 1-16 characters", "Invalid channelName - channelName must be between 1-16 characters"])
+	@ApiOkResponse({ description: "Returns the newly created room", type: ChannelDTO})
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
 	}
