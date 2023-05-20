@@ -174,6 +174,37 @@ export class ChatService {
 		return this.userService.hideData(ROOM);
 	}
 
+	// Updates room settings
+	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
+		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
+			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
+		if (isPrivate === true && newPassword !== null)
+			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
+		if (channelName.length < 1 || channelName.length > 16)
+			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		if (CHANNEL.password !== null && (oldPassword === null || await bcrypt.compare(oldPassword, CHANNEL.password) === false))
+			return new ErrorDTO("Invalid password - password does not match");
+		if (newPassword !== null) {
+			if (newPassword.length < 1 || newPassword.length > 16)
+				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
+			newPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
+		}
+
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (CHANNEL.owner.intraName !== MY_MEMBER.intraName)
+			return new ErrorDTO("Invalid channelId - requires owner privileges");
+		
+		CHANNEL.channelName = channelName;
+		CHANNEL.isPrivate = isPrivate;
+		CHANNEL.password = newPassword;
+		return this.userService.hideData(await this.channelRepository.save(CHANNEL));
+	}
+
 	// Adds a user to a room
 	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean, password: string): Promise<any> {
 		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined || password === undefined)
@@ -209,34 +240,26 @@ export class ChatService {
 		return this.userService.hideData(await this.memberRepository.save(new Member(FRIEND_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
 	}
 
-	// Updates room settings
-	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
-		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
-			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
-		if (isPrivate === true && newPassword !== null)
-			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
-		if (channelName.length < 1 || channelName.length > 16)
-			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
-		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
-		if (CHANNEL === null || CHANNEL.isRoom === false)
-			return new ErrorDTO("Invalid channelId - channel is not found");
-		if (CHANNEL.password !== null && (oldPassword === null || await bcrypt.compare(oldPassword, CHANNEL.password) === false))
-			return new ErrorDTO("Invalid password - password does not match");
-		if (newPassword !== null) {
-			if (newPassword.length < 1 || newPassword.length > 16)
-				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
-			newPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
-		}
-
+	// Updates a user's member settings
+	async updateMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean): Promise<any> {
+		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean) and isMuted(boolean)");
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
-		if (CHANNEL.owner.intraName !== MY_MEMBER.intraName)
-			return new ErrorDTO("Invalid channelId - requires owner privileges");
+		if (MY_MEMBER.isAdmin === false)
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
 		
-		CHANNEL.channelName = channelName;
-		CHANNEL.isPrivate = isPrivate;
-		CHANNEL.password = newPassword;
-		return this.userService.hideData(await this.channelRepository.save(CHANNEL));
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		if (MEMBER === null)
+			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+		MEMBER.isAdmin = isAdmin;
+		MEMBER.isBanned = isBanned;
+		MEMBER.isMuted = isMuted;
+		return this.userService.hideData(await this.memberRepository.save(MEMBER));
 	}
 }

@@ -1,4 +1,4 @@
-import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
+import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
 import { Body, Controller, Get, Headers, Param, Post, Patch, Query } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
@@ -57,5 +57,13 @@ export class ChatController {
 	@ApiOkResponse({ description: "Returns the updated room", type: ChannelDTO})
 	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomBodyDTO): any {
 		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
+	}
+
+	@Patch('room/member')
+	@UseGuards(AuthGuard)
+	@ApiCommonHeader(["Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean) and isMuted(boolean)", "Invalid channelId - requires admin privileges", "Invalid channelId - channel is not found", "Invalid intraName - user is not a member of this channel"])
+	@ApiOkResponse({ description: "Returns the updated member", type: MemberDTO})
+	updateMember(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomMemberBodyDTO): any {
+		return this.chatService.updateMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
 	}
 }

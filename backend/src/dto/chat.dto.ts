@@ -151,3 +151,20 @@ export class PostRoomMemberBodyDTO {
 	@ApiProperty({ example: "password123" })
 	password: null | string;
 }
+
+export class PatchRoomMemberBodyDTO {
+	@ApiProperty({ example: 123 })
+	channelId: number;
+
+	@ApiProperty({ example: "schuah" })
+	intraName: string;
+
+	@ApiProperty({ example: true })
+	isAdmin: boolean;
+
+	@ApiProperty({ example: true })
+	isBanned: boolean;
+
+	@ApiProperty({ example: true })
+	isMuted: boolean;
+}
