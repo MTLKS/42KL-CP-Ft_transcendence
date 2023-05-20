@@ -103,3 +103,14 @@ export class GetMessageBodyDTO {
 	@ApiProperty({ description: "Defaults to 1" })
 	page: number;
 }
+
+export class PostRoomBodyDTO {
+	@ApiProperty({ example: "Doughnuts' Room" })
+	channelName: string;
+
+	@ApiProperty({ example: true })
+	isPrivate: boolean;
+
+	@ApiProperty({ example: "password123" })
+	password: null | string;
+}
