@@ -41,6 +41,7 @@ export class ChatService {
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - channel is not found"));
+		
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
@@ -68,18 +69,17 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - channel is not found"));
 		
+		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId)
+		if (MY_MEMBER.error !== undefined)
+			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName);
-			const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId)
-			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED" || MY_MEMBER.error !== undefined)
+			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
-			
-			MY_MEMBER.lastRead = new Date().toISOString();
-			await this.memberRepository.save(MY_MEMBER);
-			server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER));
-		} else {
-
 		}
+		MY_MEMBER.lastRead = new Date().toISOString();
+		await this.memberRepository.save(MY_MEMBER);
+		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER));
 	}
 
 	// Ping the channel that the user is typing to that channel
@@ -92,14 +92,15 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - channel is not found" ));
 		
+		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName);
-			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED" || (await this.getMyMemberData(client.handshake.headers.authorization, channelId)).error !== undefined)
+			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
-			server.to(CHANNEL.channelId).emit("typing", { channelId: MY_CHANNEL.channelId });
-		} else {
-
 		}
+		server.to(CHANNEL.channelId).emit("typing", { channelId: MY_CHANNEL.channelId });
 	}
 
 	// Retrives user's member data of that channel
@@ -164,7 +165,7 @@ export class ChatService {
 		await this.memberRepository.save(new Member(USER_DATA, ROOM, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
 	}
-	
+
 	// Updates room settings
 	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
