@@ -36,11 +36,11 @@ export class AuthService {
 		QUERY.select("MIN(user.intraId)", "intraId");
 		const LAST_USER = await QUERY.getRawOne();
 		const ID = Math.min(LAST_USER.intraId, 0) - 1;
-		let intraName = '#' + req.user.email.substring(0, 5);
+		let intraName = '@' + req.user.email.substring(0, 5);
 		if (req.user.email.split('@')[0].length < 5)
-			intraName = '#' + req.user.email;
+			intraName = '@' + req.user.email;
 		for (let i = 5; i <= req.user.email.length && i < 8; i++) {
-			intraName = '#' + req.user.email.substring(0, i);
+			intraName = '@' + req.user.email.substring(0, i);
 			if (await this.userRepository.findOne({ where: { intraName: intraName } }) === null) {
 				await this.userRepository.save(new User(ID, intraName, intraName, req.user.email, 400, accessToken, req.user.picture, null, true));
 				return new AuthResponseDTO(accessToken, true);
