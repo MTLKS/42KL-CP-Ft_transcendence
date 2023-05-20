@@ -14,7 +14,7 @@ export class PostCodeBodyDTO {
 	code: string;
 }
 
-export class PostCodeResponseDTO {
+export class AuthResponseDTO {
 	constructor(accessToken: string, newUser: boolean) {
 		this.accessToken = accessToken;
 		this.newUser = newUser;

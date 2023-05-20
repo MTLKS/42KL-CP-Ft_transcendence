@@ -1,4 +1,5 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { FriendshipDTO } from 'src/dto/friendship.dto';
 import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -132,7 +133,7 @@ export class FriendshipService {
 	}
 
 	// Helper function that returns current friendship with a user
-	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<any> {
+	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<FriendshipDTO> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		if (USER_DATA === null || USER_DATA.intraName === receiverIntraName)
 			return null;
