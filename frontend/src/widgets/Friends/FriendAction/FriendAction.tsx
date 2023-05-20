@@ -4,9 +4,9 @@ import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../model/FriendData'
 import { UserData } from '../../../model/UserData'
 import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, FriendsContext, SelectedFriendContext } from '../../../contexts/FriendContext'
-import { acceptFriend, addFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../functions/friendactions'
+import { acceptFriend, addFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../api/friendActionAPI'
 import { AxiosResponse } from 'axios'
-import { getFriendList } from '../../../functions/friendlist'
+import { getFriendList } from '../../../api/friendListAPI'
 import PreviewProfileContext from '../../../contexts/PreviewProfileContext'
 import UserContext from '../../../contexts/UserContext'
 import Profile from '../../Profile/Profile'
@@ -79,7 +79,7 @@ function FriendAction(props: FriendActionProps) {
               ref={inputRef}
             />
             <div className='px-[2ch] flex flex-col-reverse'>
-              { actionCards.length === 0 ? <></> : actionCards.slice(selectedIndex) }
+              {actionCards.length === 0 ? <></> : actionCards.slice(selectedIndex)}
             </div>
             <p className={`px-[2ch] text-highlight ${outputStyle} w-fit ${commandNotFound || showOutput ? 'visible' : 'invisible'}`}>{outputStr}</p>
             <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
@@ -93,13 +93,13 @@ function FriendAction(props: FriendActionProps) {
               <p className='flex-row flex justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:N</span> No to all</span>
-                { action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span> : <></> }
+                {action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span> : <></>}
                 <span></span>
               </p>
               <p className='flex-row flex justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:y</span> yes to current</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:n</span> no to current</span>
-                { action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span> : <></> }
+                {action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span> : <></>}
                 <span></span>
               </p>
             </div>

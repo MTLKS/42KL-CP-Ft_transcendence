@@ -1,6 +1,6 @@
 // assign is better than replace because it doesn't reset the history
 
-import Api from "../api/api";
+import Api from "./api";
 
 interface IResponse {
   redirectUrl: string;

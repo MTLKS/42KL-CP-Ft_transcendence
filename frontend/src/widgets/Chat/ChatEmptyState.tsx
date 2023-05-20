@@ -3,7 +3,7 @@ import { FaSadTear, FaUsers } from 'react-icons/fa'
 import ChatButton from './ChatWidgets/ChatButton'
 import { HiServer } from 'react-icons/hi'
 import { ChatContext } from '../../contexts/ChatContext';
-import NewChannel from './ChatroomBody/CreateChat/NewChannel';
+import NewChannel from './ChatroomBody/Channel/NewChannel';
 import ChannelList from './ChatroomBody/Channel/ChannelList';
 
 function ChatEmptyState() {

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
-import login, { checkAuth } from "./functions/login";
+import login, { checkAuth } from "./api/loginAPI";
 import HomePage from "./pages/HomePage";
 import UserForm from "./pages/UserForm/UserForm";
-import { getMyProfile } from "./functions/profile";
+import { getMyProfile } from "./api/profileAPI";
 import { UserData } from "./model/UserData";
 
 function App() {

@@ -4,7 +4,7 @@ import FriendlistTag from './FriendlistTag'
 import { FriendData } from '../../../model/FriendData'
 import SocketApi from '../../../api/socketApi';
 import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
-import { getProfileOfUser } from '../../../functions/profile';
+import { getProfileOfUser } from '../../../api/profileAPI';
 import { UserData } from '../../../model/UserData';
 import Profile from '../../Profile/Profile';
 
