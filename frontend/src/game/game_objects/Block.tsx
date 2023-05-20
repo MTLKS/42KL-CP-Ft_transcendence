@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useContext, useEffect, useMemo, useRef } from 'react'
 import * as PIXI from 'pixi.js';
 import { Container, Sprite, useApp } from '@pixi/react';
 import { DropShadowFilter } from 'pixi-filters';
+import { GameDataCtx } from '../../GameApp';
 
 interface BlockProps {
   x: number;
@@ -13,6 +14,7 @@ interface BlockProps {
 function Block(props: BlockProps) {
   const { x, y, w, h } = props;
   const app = useApp();
+  const gameData = useContext(GameDataCtx);
 
   const texture = useMemo(() => {
     const box = new PIXI.Graphics();
@@ -36,6 +38,10 @@ function Block(props: BlockProps) {
   }, []);
 
   const ref = useRef<PIXI.Sprite>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+  }, [ref.current]);
 
   useEffect(() => {
     if (!ref.current) return;

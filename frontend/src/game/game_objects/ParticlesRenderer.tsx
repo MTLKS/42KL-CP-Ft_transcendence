@@ -96,7 +96,10 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   }, [particles, lightningParticles]);
 
   return (
-    <Container filterArea={new PIXI.Rectangle(0, 0, 1600, 900)} filters={[bloomFilter]}>
+    <Container
+      filterArea={new PIXI.Rectangle(0, 0, 1600, 900)}
+      filters={[bloomFilter]}
+    >
       <ParticleContainer key={"arrowParticles"} properties={{ position: true, scale: true, alpha: true }}>
         {arrowElementsRef.current}
       </ParticleContainer>
