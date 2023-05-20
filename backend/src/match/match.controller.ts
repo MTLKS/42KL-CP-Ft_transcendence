@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { AuthGuard } from 'src/guard/AuthGuard';
 import { ApiTags, ApiOkResponse } from '@nestjs/swagger'
@@ -12,8 +12,8 @@ export class MatchController {
 	@ApiOkResponse({ type: [MatchResponseDTO] })
 	@Get(':userName')
 	@UseGuards(AuthGuard)
-	getMatchesByUsername(@Param('userName') userName: string, @Body() body: MatchInputDTO): any {
-		return this.matchService.getMatchesByUserName(userName, body.perPage, body.page);
+	getMatchesByUsername(@Param('userName') userName: string, @Query() query: MatchInputDTO): any {
+		return this.matchService.getMatchesByUserName(userName, query.perPage, query.page);
 	}
 
 	@ApiOkResponse({ type: MatchStatsResponseDTO })
