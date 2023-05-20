@@ -42,22 +42,23 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - channel is not found"));
 		
-		if (CHANNEL.isRoom === false) {
+		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, CHANNEL.isRoom, message, new Date().toISOString());
+		if (CHANNEL.isRoom === true) {
+			await this.messageRepository.save(NEW_MESSAGE);
+			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
+			for (let member of MEMBERS) {
+				const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+				server.to(MEMBER_CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
+			}
+		} else {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid friendhsip - you are not friends with this user"));
-			const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, false, message, new Date().toISOString());
 			await this.messageRepository.save(NEW_MESSAGE);
 			const MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
-			if (MEMBER.error !== undefined)
-				await this.memberRepository.save(new Member(USER_DATA, CHANNEL, true, false, false, new Date().toISOString()));
-			else {
-				MEMBER.lastRead = new Date().toISOString();
-				await this.memberRepository.save(MEMBER);
-			}
+			MEMBER.lastRead = new Date().toISOString();
+			await this.memberRepository.save(MEMBER);
 			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
-		} else {
-		
 		}
 	}
 
@@ -100,7 +101,12 @@ export class ChatService {
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		}
-		server.to(CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
+		
+		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
+		for (let member of MEMBERS) {
+			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+			server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
+		}
 	}
 
 	// Retrives user's member data of that channel
