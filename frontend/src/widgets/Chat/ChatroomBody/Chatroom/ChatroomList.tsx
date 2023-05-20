@@ -10,6 +10,7 @@ import { getChatroomList } from '../../../../api/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
+import ChannelList from '../Channel/ChannelList';
 
 function ChatroomList() {
 
@@ -53,7 +54,7 @@ function ChatroomList() {
       {
         chatrooms.length > 0 &&
         <div className='absolute bottom-0 right-0 flex flex-row gap-x-3.5 mb-5 mr-5 bg-transparent'>
-          <ChatButton icon={<HiServer />} title="join channel" />
+          <ChatButton icon={<HiServer />} title="join channel" onClick={() => setChatBody(<ChannelList />)} />
           <ChatButton icon={<FaPlusSquare />} title="new channel" onClick={() => setChatBody(<NewChannel />)} />
         </div>
       }

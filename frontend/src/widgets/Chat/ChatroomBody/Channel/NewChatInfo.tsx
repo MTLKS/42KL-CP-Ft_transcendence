@@ -19,7 +19,11 @@ function NewChatInfo(props: NewChatInfoProps) {
 
   return (
     <div className='flex flex-col'>
-      <ChatNavbar title='channel info' backAction={() => setChatBody(<NewChannel />)} nextComponent={<ChatButton title='create' />} />
+      <ChatNavbar
+        title='channel info'
+        backAction={() => setChatBody(<NewChannel oldState={state} oldDispatch={dispatch}/>)}
+        nextComponent={<ChatButton title='create' />}
+      />
       <ChannelInfo modifying={true} state={state} dispatch={dispatch} />
       <div className='w-full h-full mt-6'>
         <ChannelMemberList title="members" state={state} dispatch={dispatch} />

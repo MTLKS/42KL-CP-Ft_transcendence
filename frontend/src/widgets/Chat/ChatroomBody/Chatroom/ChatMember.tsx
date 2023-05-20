@@ -5,6 +5,7 @@ import UserContext from '../../../../contexts/UserContext';
 import { UserData } from '../../../../model/UserData';
 
 interface ChatMemberProps {
+  isSelected?: boolean;
   selectable: boolean;
   userData: UserData,
   memberRole?: 'owner' | 'admin' | 'member';
@@ -41,7 +42,7 @@ function ChatMember(props: ChatMemberProps) {
 
   const { selectable, userData, toggleMember, memberRole } = props;
   const { myProfile } = useContext(UserContext);
-  const [isSelected, setIsSelected] = useState(false);
+  const [isSelected, setIsSelected] = useState(props.isSelected || false);
 
   const handleSelectUser = () => {
     if (!selectable) return;

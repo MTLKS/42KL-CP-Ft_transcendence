@@ -10,11 +10,12 @@ interface ChannelMemberListProps {
   state: NewChannelState,
   dispatch: React.Dispatch<NewChannelAction>,
   friendList?: UserData[],
+  isUsingOldState: boolean,
 }
 
 function ChannelMemberList(props: ChannelMemberListProps) {
 
-  const { title, state, dispatch, friendList } = props;
+  const { isUsingOldState, title, state, dispatch, friendList } = props;
   const [filterKeyword, setFilterKeyword] = useState("");
 
   return (
@@ -27,10 +28,14 @@ function ChannelMemberList(props: ChannelMemberListProps) {
   )
 
   function displayMemberList() {
-    if (friendList !== undefined) {
-      return (friendList.map(friend => <ChatMember selectable={true} userData={friend} toggleMember={handleToggleMember}/>));
+    if (friendList !== undefined && !isUsingOldState) {
+      return (friendList.map(friend => <ChatMember key={friend.intraId} selectable={true} userData={friend} toggleMember={handleToggleMember}/>));
+    } else if (friendList !== undefined && isUsingOldState) {
+      return (friendList.map(friend =>
+        <ChatMember key={friend.intraId} selectable={true} userData={friend} toggleMember={handleToggleMember} isSelected={state.members.find(member => member.memberInfo.intraName === friend.intraName) !== undefined}/>
+      ));
     }
-    return (state.members.map(member => <ChatMember selectable={false} userData={member.memberInfo} toggleMember={handleToggleMember} memberRole={member.role} />));
+    return (state.members.map(member => <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} toggleMember={handleToggleMember} memberRole={member.role} />));
   }
 
   function handleToggleMember(userData: UserData): boolean {

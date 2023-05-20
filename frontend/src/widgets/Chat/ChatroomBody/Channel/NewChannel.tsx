@@ -4,16 +4,21 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { FriendsContext } from '../../../../contexts/FriendContext'
 import { ChatContext } from '../../../../contexts/ChatContext'
 import ChatroomList from '../Chatroom/ChatroomList'
-import newChannelReducer, { newChannelInitialState } from './newChannelReducer'
+import newChannelReducer, { NewChannelAction, NewChannelState, newChannelInitialState } from './newChannelReducer'
 import NewChatInfo from './NewChatInfo'
 import UserContext from '../../../../contexts/UserContext'
 import { UserData } from '../../../../model/UserData'
 import { FriendData } from '../../../../model/FriendData'
 import ChannelMemberList from './ChannelMemberList'
 
-function NewChannel() {
+interface NewChannelProps {
+  oldState?: NewChannelState,
+}
 
-  const [state, dispatch] = useReducer(newChannelReducer, newChannelInitialState);
+function NewChannel(props: NewChannelProps) {
+
+  const { oldState } = props;
+  const [state, dispatch] = useReducer(newChannelReducer, oldState || newChannelInitialState);
   const { setChatBody } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
   const { friends } = useContext(FriendsContext);
@@ -48,7 +53,7 @@ function NewChannel() {
         }
         backAction={() => setChatBody(<ChatroomList />)}
       />
-      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList title='friends' state={state} dispatch={dispatch} friendList={acceptedFriendsUserData}/> : displayNoFriends()}
+      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList title='friends' state={state} dispatch={dispatch} friendList={acceptedFriendsUserData} isUsingOldState={oldState !== undefined} /> : displayNoFriends()}
     </div>
   )
 
@@ -62,7 +67,9 @@ function NewChannel() {
   }
 
   function goToNextStep() {
-    dispatch({ type: 'ASSIGN_AS_OWNER', userInfo: myProfile });
+    if (state.members.find(member => member.memberInfo.intraName === myProfile.intraName) === undefined) {
+      dispatch({ type: 'ASSIGN_AS_OWNER', userInfo: myProfile });
+    }
     setToNextStep(true);
   }
 }
