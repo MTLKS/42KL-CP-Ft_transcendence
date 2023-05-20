@@ -14,6 +14,8 @@ export class MatchService {
 	}
 
 	async getMatchesByUserName(userName: string, perPage?: number, page?: number) {
+		perPage = Number(perPage);
+		page = Number(page);
 		let take = (perPage !== undefined && perPage > 0) ? (perPage >= 100 ? 100 : perPage) : 100;
 		let skip = (page !== undefined && page >= 0) ? (page * take) : 0;
 
