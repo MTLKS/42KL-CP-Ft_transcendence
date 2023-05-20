@@ -61,9 +61,9 @@ export class GameData {
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
-    this.sendPlayerMove = debounce((y: number, gameRoom: string) => {
+    this.sendPlayerMove = (y: number, gameRoom: string) => {
       this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
-    }, 1);
+    };
   }
 
   get pongPosition() {

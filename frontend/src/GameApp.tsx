@@ -3,8 +3,6 @@ import { GameData } from './game/gameData'
 import { AppProvider, Container } from '@pixi/react';
 import { Application, ICanvas } from 'pixi.js';
 import Game from './game/Game';
-import * as PIXI from 'pixi.js';
-import { clamp } from 'lodash';
 
 interface GameAppProps {
   pixiApp: Application<ICanvas>;
@@ -25,12 +23,11 @@ function GameApp(props: GameAppProps) {
     gameData.setSetShouldRender = setShouldRender;
     gameData.setSetScale = setScale;
     gameData.setSetUsingTicker = setUsingTicker;
-    pixiApp.stage.eventMode = "static";
-    pixiApp.stage.hitArea = new PIXI.Rectangle(0, 0, 1600, 900);
-    pixiApp.stage.on('mousemove', onmousemove);
+    const canvas = document.getElementById('pixi') as HTMLCanvasElement
+    canvas.addEventListener('mousemove', onmousemove);
     return () => {
       gameData.endGame();
-      pixiApp.stage.off('mousemove', onmousemove);
+      canvas.removeEventListener('mousemove', onmousemove);
     }
   }, []);
   return (
@@ -45,12 +42,7 @@ function GameApp(props: GameAppProps) {
     const currentTime = Date.now();
     if (currentTime - mouseLastMoveTime < 14) return;
     mouseLastMoveTime = currentTime;
-    const aspectRatio = 16 / 9;
-    const clampedWidth = clamp(window.innerWidth, 0, 1600);
-    const clampedHeight = clamp(window.innerHeight, 0, 900);
-    const newHeight = Math.min(clampedHeight, clampedWidth / aspectRatio);
-    const top = (window.innerHeight - newHeight) / 2;
-    gameData.updatePlayerPosition(e.clientY - top);
+    gameData.updatePlayerPosition(e.offsetY / gameData.gameMaxHeight * 900);
   }
 }
 
