@@ -31,9 +31,9 @@ export class StatusService {
       STATUS.status = 'ONLINE';
       await this.statusRepository.save(STATUS);
     } else {
-      // await this.statusRepository.save(
-      //   new Status(USER_DATA.intraName, client.id, 'ONLINE'),
-      // );
+      await this.statusRepository.save(
+        new Status(USER_DATA.intraName, client.id, 'ONLINE'),
+      );
     }
     server
       .to(USER_DATA.intraName)
