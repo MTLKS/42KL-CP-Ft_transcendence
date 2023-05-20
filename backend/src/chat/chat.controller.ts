@@ -46,7 +46,7 @@ export class ChatController {
 	@Post('room/member')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid channelId - this channel is not a room", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
-	
+	@ApiOkResponse({ description: "Returns the newly added member", type: MemberDTO})
 	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
 		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
 	}

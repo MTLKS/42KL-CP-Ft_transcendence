@@ -185,7 +185,7 @@ export class ChatService {
 			return new ErrorDTO("Invalid intraName - you are not friends with this user");
 
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
-		if (MEMBER !== undefined)
+		if (MEMBER !== null)
 			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
 		return this.userService.hideData(await this.memberRepository.save(new Member(USER_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
 	}
