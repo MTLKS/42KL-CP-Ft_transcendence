@@ -23,16 +23,16 @@ export class ChatController {
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader()
 	@ApiOkResponse({ description: "Returns all the DM channels of the user", type: [ChannelDTO]})
-	getAllDMChannel(@Headers('Authorization') accessToken: string): Promise<[ChannelDTO]> {
-		return this.chatService.getAllDMChannel(accessToken);
+	getAllChannel(@Headers('Authorization') accessToken: string): Promise<[ChannelDTO]> {
+		return this.chatService.getAllChannel(accessToken);
 	}
 
 	@Get('message/:channelID')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelId(number)", "Invalid channelId - channel is not found", "Invalid channelId - you are not friends with this user"])
 	@ApiOkResponse({ description: "Returns all the messages of the user in the channel", type: [MessageDTO]})
-	getMyDMMessages(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number, @Query() body: GetMessageBodyDTO): Promise<any> {
-		return this.chatService.getMyDMMessages(accessToken, channelId, body.perPage, body.page);
+	getAllMessageFromChannel(@Headers('Authorization') accessToken: string, @Param('channelID') channelId: number, @Query() body: GetMessageBodyDTO): Promise<any> {
+		return this.chatService.getAllMessageFromChannel(accessToken, channelId, body.perPage, body.page);
 	}
 
 	@Post('room')
