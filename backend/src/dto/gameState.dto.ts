@@ -44,11 +44,21 @@ export class FieldEffectDTO {
 	}
 }
 
-export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO;
+export class LobbyStartDTO {
+	player1IntraName: string;
+	player2IntraName: string;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect", data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO) {
+	constructor(player1IntraName: string, player2IntraName: string) {
+		this.player1IntraName = player1IntraName;
+		this.player2IntraName = player2IntraName;
+	}
+}
+
+export class GameStateDTO {
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO;
+
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart", data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO) {
 		this.type = type;
 		this.data = data;
 	}

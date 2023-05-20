@@ -11,9 +11,11 @@ import {
   GameStartDTO,
   GameEndDTO,
   GamePauseDTO,
+  LobbyStartDTO,
 } from 'src/dto/gameState.dto';
 import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
+import { Lobby } from './entity/lobby';
 
 //TODO : "gameState" event-> game start, game end, field effect
 
@@ -35,6 +37,7 @@ export class GameService {
   private connected = [];
 
   private gameRooms = new Map<string, GameRoom>();
+  private gameLobbies = new Map<string, Lobby>();
 
   //Lobby functions
   async handleConnection(client: Socket) {
@@ -111,9 +114,7 @@ export class GameService {
 
   async joinQueue(client: Socket, clientQueue: string, server: Server) {
     const ACESS_TOKEN = client.handshake.headers.authorization;
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
+    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
 
     // Check if queue is known
@@ -181,7 +182,10 @@ export class GameService {
       this.queues[clientQueue].splice(i, 1);
       if (LOBBY_LOGGING)
         console.log(`Game start ${otherPlayer.intraName} ${player.intraName}`);
-      this.joinGame(otherPlayer, player, clientQueue, server);
+      if (clientQueue === "standard")
+        this.joinLobby(otherPlayer, player, clientQueue);
+      else
+        this.joinGame(otherPlayer, player, clientQueue, server);
       return;
     }
     this.queues[clientQueue].push(player);
@@ -215,60 +219,53 @@ export class GameService {
     });
   }
 
-  async joinGame(
-    player1: Player,
-    player2: Player,
-    gameType: string,
-    server: Server,
-  ): Promise<string> {
+  joinLobby(player1: Player, player2: Player, gameType: string) {
+    let lobby = new Lobby(player1, player2, gameType);
+    this.gameLobbies.set(player1.intraName + player2.intraName, lobby);
+    player1.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName)));
+    player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName)));
+  }
+
+  async handleReady(client: Socket, powerUp: string, server: Server) {
+    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    if (USER_DATA.error !== undefined) return;
+
+    this.gameLobbies.forEach((gameLobby, key) => {
+      if (gameLobby.player1.intraName === USER_DATA.intraName) {
+        gameLobby.player1Ready = true;
+        gameLobby.player1PowerUp = powerUp;
+        if (LOBBY_LOGGING)
+          console.log(`${USER_DATA.intraName} is ready.`);
+      } else {
+        gameLobby.player2Ready = true;
+        gameLobby.player2PowerUp = powerUp;
+        if (LOBBY_LOGGING)
+        console.log(`${USER_DATA.intraName} is ready.`);
+      }
+      if (gameLobby.player1Ready && gameLobby.player2Ready)
+      {
+        this.joinGame(gameLobby.player1, gameLobby.player2, "standard", server, gameLobby.player1PowerUp, gameLobby.player2PowerUp);
+        this.gameLobbies.delete(key);
+      }
+    });
+  }
+
+  async joinGame(player1: Player, player2: Player, gameType: string, server: Server, player1PowerUp?: string, player2PowerUp?: string): Promise<string> {
     let room;
     if (gameType === 'boring') {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.BORING);
-      room = new GameRoom(
-        player1,
-        player2,
-        gameType,
-        ROOM_SETTING,
-        this.matchService,
-        this.userService,
-      );
+      room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     } else if (gameType === 'standard') {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.STANDARD);
-      room = new PowerGameRoom(
-        player1,
-        player2,
-        gameType,
-        ROOM_SETTING,
-        this.matchService,
-        this.userService,
-      );
+      room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
-      room = new DeathGameRoom(
-        player1,
-        player2,
-        gameType,
-        ROOM_SETTING,
-        this.matchService,
-        this.userService,
-      );
+      room = new DeathGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     }
     player1.socket.join(room.roomID);
     player2.socket.join(room.roomID);
-    player1.socket.emit(
-      'gameState',
-      new GameStateDTO(
-        'GameStart',
-        new GameStartDTO(player2.intraName, gameType, true, room.roomID),
-      ),
-    );
-    player2.socket.emit(
-      'gameState',
-      new GameStateDTO(
-        'GameStart',
-        new GameStartDTO(player1.intraName, gameType, false, room.roomID),
-      ),
-    );
+    player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID)));
+    player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID)));
     this.gameRooms.set(room.roomID, room);
     await room.run(server);
     return room.roomID;
@@ -281,9 +278,7 @@ export class GameService {
   }
 
   async playerUpdate(client: Socket, roomID: string, value: number) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
+    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
