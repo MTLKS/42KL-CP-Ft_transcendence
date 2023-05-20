@@ -88,7 +88,8 @@ export class PowerGameRoom extends GameRoom{
 		this.blackHoleForce = 500;
 
 		//BLOCK
-		this.blockSize = 100;
+		this.blockSize = 200;
+		this.blockMass = 10;
 		
 		this.startTime = Date.now();
 		this.fieldEffectTimer = Math.random() * (this.maxTime - this.minTime) + this.minTime;
@@ -141,7 +142,7 @@ export class PowerGameRoom extends GameRoom{
 			this.blockObject.update();
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score, this.blockObject.posX, this.blockObject.posY));
+				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
 		}
 		else{
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
@@ -152,6 +153,7 @@ export class PowerGameRoom extends GameRoom{
 
 	gameCollisionDetection(){
 		let result = null;
+
 		if (this.Ball.posX > this.canvasWidth * 0.85){
 			result = this.objectCollision(this.Ball, this.rightPaddle);
 		}
@@ -160,8 +162,13 @@ export class PowerGameRoom extends GameRoom{
 		}
 
 		if (this.currentEffect == FieldEffect.BLOCK && this.blockObject != null){
-			result = this.objectCollision(this.Ball, this.blockObject);
-			this.Ball.impulsCollisionResponse(this.blockObject, result.normalX, result.normalY);
+			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject);
+			
+			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
+				// this.Ball.impulsCollisionResponse(this.blockObject, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
+				this.Ball.collisionResponse(BLOCK_COLLISION.collideTime, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
+				return;
+			}
 		}
 		
 		if (result && result.collided){
@@ -195,8 +202,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
-		// let effect = 0;
+		// let effect = this.getRandomNum();
+		let effect = 4;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
@@ -239,6 +246,7 @@ export class PowerGameRoom extends GameRoom{
 			case FieldEffect.BLOCK:
 				spawnPos = this.getRandomSpawnPosition(this.blockSize);
 				this.blockObject = new Block(spawnPos.x, spawnPos.y, this.blockSize, this.blockSize, this.blockMass);
+				console.log(spawnPos.x, spawnPos.y);
 				server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("BLOCK", spawnPos.x, spawnPos.y, 0)));
 				this.currentEffect = FieldEffect.BLOCK;
 				break;
