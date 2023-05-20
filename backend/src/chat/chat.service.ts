@@ -100,7 +100,7 @@ export class ChatService {
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		}
-		server.to(CHANNEL.channelId).emit("typing", { intraName: USER_DATA.intraName });
+		server.to(CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
 	}
 
 	// Retrives user's member data of that channel
