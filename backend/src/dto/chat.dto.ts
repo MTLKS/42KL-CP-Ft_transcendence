@@ -130,4 +130,7 @@ export class PostRoomMemberBodyDTO {
 
 	@ApiProperty({ example: true })
 	isMuted: boolean;
+
+	@ApiProperty({ example: "password" })
+	password: null | string;
 }

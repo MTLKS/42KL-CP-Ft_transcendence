@@ -37,7 +37,7 @@ export class ChatController {
 
 	@Post('room')
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid password - password must be between 1-16 characters", "Invalid channelName - channelName must be between 1-16 characters"])
+	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid password - password must be between 1-16 characters", "Invalid channelName - channelName must be between 1-16 characters"])
 	@ApiOkResponse({ description: "Returns the newly created room", type: ChannelDTO})
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: PostRoomBodyDTO): any {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
@@ -46,20 +46,14 @@ export class ChatController {
 	@Post('room/member')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid channelId - this channel is not a room", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
-	@ApiOkResponse({ description: "Returns the newly added member", type: MemberDTO})
+	@ApiOkResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
 	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
-		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
+		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted, body.password);
 	}
 
 	@Patch('room')
 	@UseGuards(AuthGuard)
 	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
 		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
-	}
-
-	@Delete('room')
-	@UseGuards(AuthGuard)
-	deleteRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
-		return this.chatService.deleteRoom(accessToken, body.channelId);
 	}
 }

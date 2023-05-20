@@ -152,6 +152,8 @@ export class ChatService {
 	async createRoom(accessToken: string, channelName: string, isPrivate: boolean, password: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || password === undefined)
 			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
+		if (isPrivate === true && password !== null)
+			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
 		if (password !== null) {
 			if (password.length < 1 || password.length >= 16)
 				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
@@ -167,27 +169,38 @@ export class ChatService {
 	}
 
 	// Adds a user to a room
-	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean ): Promise<any> {
+	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean, password: string): Promise<any> {
+		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined || password === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean), isMuted(boolean) and password(null | string)");
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(MY_MEMBER.error);
+		if (MY_MEMBER.error !== undefined) {
+			const USER_DATA = await this.userService.getMyUserData(accessToken);
+			if (USER_DATA.intraName != intraName)
+				return new ErrorDTO("Invalid channelId - requires admin privileges");
+			MY_MEMBER["isAdmin"] = false;
+		}
+
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL.isRoom === false)
-			return new ErrorDTO("Invalid channelId - this channel is not a room");
-		
-		if (MY_MEMBER.isAdmin === false)
-			return new ErrorDTO("Invalid channelId - requires admin privileges");
-		const USER_DATA = await this.userService.getUserDataByIntraName(accessToken, intraName);
-		if (USER_DATA.error !== undefined)
-			return new ErrorDTO(USER_DATA.error);
-		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, USER_DATA.intraName);
-		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
+			return new ErrorDTO("Invalid channelId - this channel is not a room");			
+		const FRIEND_DATA = await this.userService.getUserDataByIntraName(accessToken, intraName);
+		if (FRIEND_DATA.error !== undefined)
+			return new ErrorDTO(FRIEND_DATA.error);
+		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_DATA.intraName);
+		if (FRIEND_DATA.intraName !== intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
 			return new ErrorDTO("Invalid intraName - you are not friends with this user");
-
+		if (MY_MEMBER.isAdmin === false && (isAdmin === true || isBanned === true || isMuted === true || FRIEND_DATA.intraName !== intraName))
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+		
+		if (CHANNEL.isPrivate === true && MY_MEMBER.isAdmin === false)
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+		else if (CHANNEL.password !== null && MY_MEMBER.isAdmin === false && (password === null || await bcrypt.compare(password, CHANNEL.password) === false))
+			return new ErrorDTO("Invalid password - password does not match");
+		
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
 		if (MEMBER !== null)
 			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
-		return this.userService.hideData(await this.memberRepository.save(new Member(USER_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
+		return this.userService.hideData(await this.memberRepository.save(new Member(FRIEND_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
 	}
 
 	// Updates room settings
@@ -204,9 +217,5 @@ export class ChatService {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const ROOM = await this.channelRepository.findOne({ where: {channelId: channelId, isRoom: true, owner: {userName: USER_DATA.userName}}, relations: ['owner'] });
 		// TBC
-	}
-
-	// Deletes a room
-	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
 	}
 }
