@@ -19,7 +19,7 @@ export class ChatGateway implements OnGatewayConnection {
 	@UseGuards(AuthGuard)
 	@SubscribeMessage('message')
 	async message(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
-		await this.chatService.message(client, this.server, body.intraName, body.message);
+		await this.chatService.message(client, this.server, body.channelId, body.message);
 	}
 
 	@UseGuards(AuthGuard)
@@ -31,6 +31,6 @@ export class ChatGateway implements OnGatewayConnection {
 	@UseGuards(AuthGuard)
 	@SubscribeMessage('typing')
 	async typing(@MessageBody() body: any, @ConnectedSocket() client: Socket) {
-		await this.chatService.typing(client, this.server, body.intraName);
+		await this.chatService.typing(client, this.server, body.channelId);
 	}
 }
