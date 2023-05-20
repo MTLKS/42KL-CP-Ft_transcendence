@@ -165,7 +165,7 @@ export class ChatService {
 		}
 		if (channelName.length < 1 || channelName.length > 16)
 			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
-		// const USER_DATA = await this.userService.getMyUserData(accessToken);
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		// const ROOM = await this.channelRepository.findOne({ where: {channelId: channelId, owner: {userName: USER_DATA.intraName}}, relations: ['owner'] });
 	}
 
