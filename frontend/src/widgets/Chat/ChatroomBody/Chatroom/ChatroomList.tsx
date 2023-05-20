@@ -4,7 +4,7 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
-import NewChannel from '../CreateChat/NewChannel';
+import NewChannel from '../Channel/NewChannel';
 import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../functions/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
