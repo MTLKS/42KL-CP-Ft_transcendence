@@ -84,7 +84,7 @@ export class PowerGameRoom extends GameRoom{
 
 		//BLACKHOLE
 		this.blackHoleRadius = 20;
-		this.blackHoleEffectRadius = 15;
+		this.blackHoleEffectRadius = 20;
 		this.blackHoleForce = 500;
 
 		//BLOCK
@@ -113,6 +113,7 @@ export class PowerGameRoom extends GameRoom{
 				this.lastWinner = "player2";
 			}
 			this.resetTime = Date.now();
+			this.paddleTimer = Date.now();
 			this.gameReset = true;
 		}
 		
@@ -140,6 +141,7 @@ export class PowerGameRoom extends GameRoom{
 		this.gameCollisionDetection();
 		if (this.blockObject != null){
 			this.blockObject.update();
+			console.log(this.blockObject.posX, this.blockObject.posY);
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
@@ -165,14 +167,9 @@ export class PowerGameRoom extends GameRoom{
 			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject);
 			
 			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
-				// this.Ball.impulsCollisionResponse(this.blockObject, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
-				this.Ball.collisionResponse(BLOCK_COLLISION.collideTime, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
+				this.Ball.impulsCollisionResponse(this.blockObject, -BLOCK_COLLISION.normalX, -BLOCK_COLLISION.normalY);
 				return;
 			}
-		}
-
-		if (this.currentEffect == FieldEffect.BLOCK && this.blockObject == null){
-			console.log("block is null");
 		}
 		
 		if (result && result.collided){
@@ -207,7 +204,6 @@ export class PowerGameRoom extends GameRoom{
 
 	fieldChange(server: Server){
 		let effect = this.getRandomNum();
-		// let effect = 4;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
