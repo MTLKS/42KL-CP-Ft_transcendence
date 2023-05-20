@@ -142,12 +142,12 @@ export class GameRoom {
               ? this.player1.intraName
               : this.player2.intraName,
             'score',
-          ); // TODO: uncomment this
+          );
         }
 
-        // server.to(this.roomID).emit('gameLoop',
-        // 	new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX,
-        // 		this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+        server.to(this.roomID).emit('gameLoop',
+        	new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX,
+        		this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
       }, 1000 / 60);
     }
   }
@@ -371,16 +371,16 @@ export class GameRoom {
       loser = this.player1.intraName;
     }
 
-    // let winnerElo = WINNER.elo;
-    // let loserElo = LOSER.elo;
-    // let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
-    // let change = Math.round(20 * (1 - expected));
+    let winnerElo = WINNER.elo;
+    let loserElo = LOSER.elo;
+    let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
+    let change = Math.round(20 * (1 - expected));
 
-    // winnerElo += change;
-    // loserElo -= change;
+    winnerElo += change;
+    loserElo -= change;
 
-    // this.userService.updateUserElo(winner, winnerElo, true);
-    // this.userService.updateUserElo(loser, loserElo, false);
+    this.userService.updateUserElo(winner, winnerElo, true);
+    this.userService.updateUserElo(loser, loserElo, false);
   }
 
   endGameNoMatch() {
