@@ -1,5 +1,5 @@
-import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
-import { Body, Controller, Get, Headers, Param, Post, Patch, Delete, Query, Head } from "@nestjs/common";
+import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
+import { Body, Controller, Get, Headers, Param, Post, Patch, Query } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "src/guard/AuthGuard";
@@ -45,7 +45,7 @@ export class ChatController {
 
 	@Post('room/member')
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid channelId - this channel is not a room", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
+	@ApiCommonHeader(["Invalid channelId - channel is not found", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
 	@ApiOkResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
 	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
 		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted, body.password);
@@ -53,7 +53,9 @@ export class ChatController {
 
 	@Patch('room')
 	@UseGuards(AuthGuard)
-	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: any): any {
+	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid channelName - channelName must be between 1-16 characters", "Invalid channelId - channel is not found", "Invalid password - password does not match", "Invalid password - password must be between 1-16 characters", "Invalid channelId - requires owner privileges"])
+	@ApiOkResponse({ description: "Returns the updated room", type: ChannelDTO})
+	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomBodyDTO): any {
 		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
 	}
 }

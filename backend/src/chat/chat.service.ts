@@ -187,8 +187,8 @@ export class ChatService {
 		}
 
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
-		if (CHANNEL.isRoom === false)
-			return new ErrorDTO("Invalid channelId - this channel is not a room");			
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");			
 		const FRIEND_DATA = await this.userService.getUserDataByIntraName(accessToken, intraName);
 		if (FRIEND_DATA.error !== undefined)
 			return new ErrorDTO(FRIEND_DATA.error);
@@ -213,15 +213,30 @@ export class ChatService {
 	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
 			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
+		if (isPrivate === true && newPassword !== null)
+			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
+		if (channelName.length < 1 || channelName.length > 16)
+			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		if (CHANNEL.password !== null && (oldPassword === null || await bcrypt.compare(oldPassword, CHANNEL.password) === false))
+			return new ErrorDTO("Invalid password - password does not match");
 		if (newPassword !== null) {
 			if (newPassword.length < 1 || newPassword.length > 16)
 				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
 			newPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
 		}
-		if (channelName.length < 1 || channelName.length > 16)
-			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
-		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const ROOM = await this.channelRepository.findOne({ where: {channelId: channelId, isRoom: true, owner: {userName: USER_DATA.userName}}, relations: ['owner'] });
-		// TBC
+
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (CHANNEL.owner.intraName !== MY_MEMBER.intraName)
+			return new ErrorDTO("Invalid channelId - requires owner privileges");
+		
+		CHANNEL.channelName = channelName;
+		CHANNEL.isPrivate = isPrivate;
+		CHANNEL.password = newPassword;
+		return this.userService.hideData(await this.channelRepository.save(CHANNEL));
 	}
 }
