@@ -143,11 +143,12 @@ export class UserService {
 			const OBJ = {};
 			for (const [key, value] of Object.entries(body)) {
 				OBJ[key] = this.hideData(value);
-				if (key === "accessToken") {
+				if (key === "accessToken")
 					OBJ[key] = "HIDDEN";
-				} else if (key === "tfaSecret") {
+				else if (key === "tfaSecret")
 					OBJ[key] = "HIDDEN";
-				}
+				else if (key === "password")
+					OBJ[key] = "HIDDEN";
 			}
 			return OBJ;
 		}
