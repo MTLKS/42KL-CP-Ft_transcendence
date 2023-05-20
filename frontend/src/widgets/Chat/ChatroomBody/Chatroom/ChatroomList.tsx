@@ -1,16 +1,17 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useReducer, useState } from 'react'
 import Chatroom from './Chatroom'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChannel from '../Channel/NewChannel';
-import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomsContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../api/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
 import ChannelList from '../Channel/ChannelList';
+import newChannelReducer, { newChannelInitialState } from '../Channel/newChannelReducer';
 
 function ChatroomList() {
 

@@ -17,7 +17,7 @@ export interface NewChannelState {
   members: ChannelMemberRole[],
   channelName: string,
   isPrivate: boolean,
-  password: string,
+  password: string | null,
   errors: NewChannelError[],
 }
 
@@ -30,23 +30,24 @@ export const newChannelInitialState: NewChannelState = {
 }
 
 export type NewChannelAction =
+  | { type: 'SET_CHANNEL_VISIBILITY', isPrivate: boolean }
   | { type: 'SELECT_MEMBER', userInfo: UserData }
   | { type: 'DESELECT_MEMBER', userInfo: UserData }
-  | { type: 'ASSIGN_AS_OWNER', userInfo: UserData }
-  | { type: 'ASSIGN_AS_ADMIN', userInfo: UserData }
-  | { type: 'ASSIGN_AS_MEMBER', userInfo: UserData}
+  | { type: 'ASSIGN_AS_OWNER', intraName: string }
+  | { type: 'ASSIGN_AS_ADMIN', intraName: string }
+  | { type: 'ASSIGN_AS_MEMBER', intraName: string}
   | { type: 'SET_CHANNEL_NAME', channelName: string }
   | { type: 'SET_CHANNEL_PRIVACY', isPrivate: boolean }
   | { type: 'SET_CHANNEL_PASSWORD', password: string }
   | { type: 'CREATE_CHANNEL' }
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
+  console.log("action:", action.type);
   switch (action.type) {
     case 'SELECT_MEMBER': {
       if (state.members.find(member => member.memberInfo.intraName === action.userInfo.intraName)) {
         return state;
       }
-      // by default select member as a member
       const memberRole: ChannelMemberRole = {
         memberInfo: action.userInfo,
         role: 'member',
@@ -66,13 +67,10 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'ASSIGN_AS_OWNER': {
-      if (!state.members.find(member => member.memberInfo.intraName === action.userInfo.intraName && member.role === 'owner')) {
-        return state;
-      }
       return {
         ...state,
         members: state.members.map(member => {
-          if (member.memberInfo.intraName === action.userInfo.intraName) {
+          if (member.memberInfo.intraName === action.intraName) {
             return {
               ...member,
               role: 'owner',
@@ -83,13 +81,10 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'ASSIGN_AS_ADMIN': {
-      if (!state.members.find(member => member.memberInfo.intraName === action.userInfo.intraName && member.role === 'admin')) {
-        return state;
-      }
       return {
         ...state,
         members: state.members.map(member => {
-          if (member.memberInfo.intraName === action.userInfo.intraName) {
+          if (member.memberInfo.intraName === action.intraName) {
             return {
               ...member,
               role: 'admin',
@@ -100,13 +95,10 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'ASSIGN_AS_MEMBER': {
-      if (!state.members.find(member => member.memberInfo.intraName === action.userInfo.intraName && member.role === 'member')) {
-        return state;
-      }
       return {
         ...state,
         members: state.members.map(member => {
-          if (member.memberInfo.intraName === action.userInfo.intraName) {
+          if (member.memberInfo.intraName === action.intraName) {
             return {
               ...member,
               role: 'member',
@@ -129,6 +121,7 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'SET_CHANNEL_PRIVACY': {
+      console.log("set channel privacy");
       return {
         ...state,
         isPrivate: action.isPrivate,
@@ -145,16 +138,17 @@ export default function newChannelReducer(state = newChannelInitialState, action
       if (state.channelName.length < 1) {
         newState.errors.push(NewChannelError.CHANNEL_NAME_TOO_SHORT)
       }
-      if (state.password.length > 16) {
+      if (state.password && state.password.length > 16) {
         newState.errors.push(NewChannelError.CHANNEL_PASSWORD_TOO_LONG)
       }
-      if (state.password.length < 1) {
+      if (state.password && state.password.length < 1) {
         newState.errors.push(NewChannelError.CHANNEL_PASSWORD_TOO_SHORT)
       }
       if (newState.errors.length === 0) {
         console.log("Create channel");
         return state;
       }
+      console.log(state.errors);
       return newState;
     }
     default:

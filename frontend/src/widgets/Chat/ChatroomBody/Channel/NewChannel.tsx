@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useReducer, useState } from 'rea
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { FriendsContext } from '../../../../contexts/FriendContext'
-import { ChatContext } from '../../../../contexts/ChatContext'
+import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext'
 import ChatroomList from '../Chatroom/ChatroomList'
 import newChannelReducer, { NewChannelAction, NewChannelState, newChannelInitialState } from './newChannelReducer'
 import NewChatInfo from './NewChatInfo'
@@ -37,7 +37,11 @@ function NewChannel(props: NewChannelProps) {
 
   useEffect(() => {
     if (toNextStep) {
-      setChatBody(<NewChatInfo state={state} dispatch={dispatch} />);
+      setChatBody(
+        <NewChannelContext.Provider value={{ state, dispatch }}>
+          <NewChatInfo />
+        </NewChannelContext.Provider>
+      );
     }
   }, [toNextStep]);
 
@@ -53,7 +57,7 @@ function NewChannel(props: NewChannelProps) {
         }
         backAction={() => setChatBody(<ChatroomList />)}
       />
-      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList title='friends' state={state} dispatch={dispatch} friendList={acceptedFriendsUserData} isUsingOldState={oldState !== undefined} /> : displayNoFriends()}
+      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList state={state} dispatch={dispatch} title='friends' friendList={acceptedFriendsUserData} isUsingOldState={oldState !== undefined} /> : displayNoFriends()}
     </div>
   )
 
@@ -67,9 +71,7 @@ function NewChannel(props: NewChannelProps) {
   }
 
   function goToNextStep() {
-    if (state.members.find(member => member.memberInfo.intraName === myProfile.intraName) === undefined) {
-      dispatch({ type: 'ASSIGN_AS_OWNER', userInfo: myProfile });
-    }
+    dispatch({ type: 'ASSIGN_AS_OWNER', intraName: myProfile.intraName });
     setToNextStep(true);
   }
 }

@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle'
 import ChatMember from '../Chatroom/ChatMember'
 import { NewChannelAction, NewChannelState } from './newChannelReducer'
 import { FriendData } from '../../../../model/FriendData'
 import { UserData } from '../../../../model/UserData'
+import { NewChannelContext } from '../../../../contexts/ChatContext'
 
 interface ChannelMemberListProps {
   title: string,
@@ -15,8 +16,9 @@ interface ChannelMemberListProps {
 
 function ChannelMemberList(props: ChannelMemberListProps) {
 
-  const { isUsingOldState, title, state, dispatch, friendList } = props;
+  const { state, dispatch, isUsingOldState, title, friendList } = props;
   const [filterKeyword, setFilterKeyword] = useState("");
+
 
   return (
     <div className='w-[95%] h-full mx-auto flex flex-col gap-y-2'>

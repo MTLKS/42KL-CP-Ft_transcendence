@@ -22,7 +22,7 @@ interface NewChannelContextType {
 
 export const NewChannelContext = createContext<NewChannelContextType>({
   state: newChannelInitialState,
-  dispatch: any => { },
+  dispatch: () => { },
 });
 
 interface ChatroomContentContextType {

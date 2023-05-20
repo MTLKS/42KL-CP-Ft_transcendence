@@ -43,6 +43,7 @@ function Chat() {
       <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody }}>
         <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
           <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />
+          {/** move newchannelcontext here maybe? */}
           {chatroomBody}
         </div>
       </ChatContext.Provider>
