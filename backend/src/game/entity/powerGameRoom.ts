@@ -51,6 +51,7 @@ export class PowerGameRoom extends GameRoom{
 	paddleTimer: number;
 	paddleElapseTime: number = 0;
 	paddleResetTimer: number;
+	fieldEffectArray: number[] = [0,1,2,3,4];
 	
 	//Config Setting for Power Ups
 	gravityPower: number;
@@ -127,7 +128,6 @@ export class PowerGameRoom extends GameRoom{
 		}
 		
 		if (this.paddleElapseTime >= this.paddleResetTimer){
-			console.log("paddle reset");
 			this.paddleTimer = Date.now();
 			this.resetGame(server);
 		}
@@ -181,7 +181,6 @@ export class PowerGameRoom extends GameRoom{
 				this.insideField = true;
 				this.Ball.velX *= this.effectMagnitude;
 				this.Ball.velY *= this.effectMagnitude;
-				console.log(this.Ball.velX, this.Ball.velY)
 			}
 			if((this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y) == false) && this.insideField == true){
 				this.insideField = false;
@@ -196,7 +195,7 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = Math.floor(Math.random() * 5);
+		let effect = this.getRandomNum();
 		// let effect = 0;
 		let spawnPos;
 		switch (effect){
@@ -219,7 +218,7 @@ export class PowerGameRoom extends GameRoom{
 				this.currentEffect = FieldEffect.GRAVITY;
 				break;
 			case FieldEffect.TIME_ZONE:
-				spawnPos = this.getRandomSpawnPosition(this.timeZoneRadius);
+				spawnPos = this.getRandomSpawnPosition(this.timeZoneRadius * 2);
 				this.circleObject = new Circle(spawnPos.x, spawnPos.y, this.timeZoneRadius);
 				let magnitude = Math.random();
 				if (magnitude < 0.5){
@@ -304,6 +303,18 @@ export class PowerGameRoom extends GameRoom{
 		let posY = Math.floor(Math.random() * (maxY - minY) + minY);
 
 		return {x: posX, y: posY};
+	}
+
+	getRandomNum(): number{
+		let index = Math.floor(Math.random() * this.fieldEffectArray.length);
+		const SELECTED = this.fieldEffectArray[index];
+		this.fieldEffectArray.splice(index, 1);
+
+		if (this.fieldEffectArray.length < 2){
+			this.fieldEffectArray = [0,1,2,3,4];
+		}
+
+		return SELECTED;
 	}
 
 }

@@ -271,6 +271,7 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
+    // console.log(data);
     // console.log(data.ballPosX, data.ballPosY);
     // console.log("isLeft: ", this.isLeft);
     this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
