@@ -40,8 +40,6 @@ export class Ball extends DynamicRect{
 		let relVelocityX = object.velX - this.velX;
 		let relVelocityY = object.velY - this.velY;		
 		let velAlongNormal = relVelocityX * normalX + relVelocityY * normalY;
-
-		console.log (object.velX, object.velY, this.velX, this.velY, normalX, normalY, velAlongNormal);
 		
 		if (velAlongNormal > 0) {
 		  return;

@@ -17,7 +17,12 @@ import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
 
-//TODO : "gameState" event-> game start, game end, field effect
+export enum PowerUp{
+  SPEED = 0,
+  SIZE,
+  PRECISION,
+  SPIN
+}
 
 const LOBBY_LOGGING = false;
 
@@ -257,7 +262,16 @@ export class GameService {
       room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     } else if (gameType === 'standard') {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.STANDARD);
-      room = new PowerGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
+      room = new PowerGameRoom(
+        player1,
+        player2,
+        gameType,
+        ROOM_SETTING,
+        this.matchService,
+        this.userService,
+        PowerUp.PRECISION,//To change
+        PowerUp.PRECISION,//To change
+      );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
       room = new DeathGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);

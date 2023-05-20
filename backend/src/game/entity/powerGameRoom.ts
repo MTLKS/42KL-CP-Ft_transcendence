@@ -8,6 +8,7 @@ import { Circle } from "./circle";
 import { Block } from "./block";
 import { UserService } from "src/user/user.service";
 import { GameDTO } from "src/dto/game.dto";
+import { PowerUp } from "../game.service";
 
 enum FieldEffect{
 	NORMAL = 0,
@@ -36,6 +37,8 @@ enum FieldEffect{
  * @param paddleResetTimer Maximum time where the ball will be reset if not touching paddle
  */
 export class PowerGameRoom extends GameRoom{
+	player1PowerUp: PowerUp;
+	player2PowerUp: PowerUp;
 	startTime: number;
 	elapseTime: number = 0;
 	minTime: number;
@@ -65,10 +68,12 @@ export class PowerGameRoom extends GameRoom{
 	blockMass: number;
 
 
-	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService){
+	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService,
+		Player1PowerUp: PowerUp, Player2PowerUp: PowerUp){
 		super(player1, player2, gameType, setting, matchService, userService);
+		this.player1PowerUp = Player1PowerUp;
+		this.player2PowerUp = Player2PowerUp;
 
-		console.log("power game room created");
 		//Config Setting
 		this.minTime = 10;
 		this.maxTime = 20;
@@ -96,6 +101,14 @@ export class PowerGameRoom extends GameRoom{
 		this.effectContinuousTimer = Infinity;
 		this.paddleTimer = Date.now();
 		this.currentEffect = FieldEffect.NORMAL;
+
+		//Size Power Up
+		if (this.player1PowerUp == PowerUp.SIZE){
+			this.leftPaddle.height = 120;
+		}
+		if (this.player2PowerUp == PowerUp.SIZE){
+			this.rightPaddle.height = 120;
+		}
 	}
 
 	gameUpdate(server: Server){
@@ -141,14 +154,16 @@ export class PowerGameRoom extends GameRoom{
 		this.gameCollisionDetection();
 		if (this.blockObject != null){
 			this.blockObject.update();
-			console.log(this.blockObject.posX, this.blockObject.posY);
+			// console.log(this.blockObject.posX, this.blockObject.posY);
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
+				this.Ball.velY,
+				this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), 
+				this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
 		}
 		else{
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
+				this.Ball.velY,this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), this.player1Score, this.player2Score));
 		}
 
 	}
@@ -288,7 +303,7 @@ export class PowerGameRoom extends GameRoom{
 
 		let spawnQuadrant = arr[Math.floor(Math.random() * arr.length)];
 		let minX, maxX, minY, maxY;
-
+		
 		if (spawnQuadrant %2 == 0){
 			minX = this.canvasWidth * 0.15;
 			maxX = this.canvasWidth * 0.5;
@@ -305,7 +320,9 @@ export class PowerGameRoom extends GameRoom{
 			minY = this.canvasHeight * 0.5;
 			maxY = this.canvasHeight - size;
 		}
-
+		
+		console.log("Ball: ", ballQuadrant, "Spawn:", spawnQuadrant);
+		console.log("minX: ", minX, "maxX: ", maxX, "minY: ", minY, "maxY: ", maxY);
 		let posX = Math.floor(Math.random() * (maxX - minX) + minX);
 		let posY = Math.floor(Math.random() * (maxY - minY) + minY);
 

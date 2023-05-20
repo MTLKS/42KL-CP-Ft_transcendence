@@ -256,8 +256,8 @@ export class GameData {
               new GameBlock({
                 x: fieldEffect.xPos,
                 y: fieldEffect.yPos,
-                w: 100,
-                h: 100,
+                w: 200,
+                h: 200,
               }),
             ];
             break;
