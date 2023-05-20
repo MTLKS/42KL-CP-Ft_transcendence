@@ -19,7 +19,7 @@ export class ChatController {
 		return this.chatService.getMyMemberData(accessToken, channelId);
 	}
 
-	@Get('dm/channel')
+	@Get('channel')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader()
 	@ApiOkResponse({ description: "Returns all the DM channels of the user", type: [ChannelDTO]})
@@ -27,7 +27,7 @@ export class ChatController {
 		return this.chatService.getAllDMChannel(accessToken);
 	}
 
-	@Get('dm/message/:channelID')
+	@Get('message/:channelID')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelId(number)", "Invalid channelId - channel is not found", "Invalid channelId - you are not friends with this user"])
 	@ApiOkResponse({ description: "Returns all the messages of the user in the channel", type: [MessageDTO]})
