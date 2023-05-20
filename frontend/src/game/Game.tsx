@@ -52,20 +52,21 @@ function Game(props: GameProps) {
   const containerRef = useRef<PIXI.Container>(null);
 
   const ballhit = useCallback((pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
+
     if (containerRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
-    const shorkwaveSpeed = pongSpeedMagnitude / 5;
+    const shorkwaveSpeed = pongSpeedMagnitude / 10;
     const rgbSplitMagnitude = 0.5;
     const shorkwaveFilter = new ShockwaveFilter();
     shorkwaveFilter.center = [hitPosition.x * scale, hitPosition.y * scale];
     shorkwaveFilter.time = 0;
     shorkwaveFilter.amplitude = 100;
     shorkwaveFilter.wavelength = 5;
-    shorkwaveFilter.radius = 1900;
+    shorkwaveFilter.radius = 1900 * scale;
     const rgbSplitFilter = new RGBSplitFilter();
-    rgbSplitFilter.red = new PIXI.Point(pongSpeed.x * rgbSplitMagnitude, pongSpeed.y * rgbSplitMagnitude);
+    rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
     rgbSplitFilter.green = new PIXI.Point(0, 0);
-    rgbSplitFilter.blue = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
+    rgbSplitFilter.blue = new PIXI.Point(pongSpeed.x * rgbSplitMagnitude, pongSpeed.y * rgbSplitMagnitude);
 
 
     const ticker = new PIXI.Ticker();
@@ -74,10 +75,10 @@ function Game(props: GameProps) {
       shorkwaveFilter.time += 0.01 * shorkwaveSpeed;
       shorkwaveFilter.wavelength += 2 * shorkwaveSpeed;
       shorkwaveFilter.amplitude *= 0.95 ** shorkwaveSpeed;
-      (rgbSplitFilter.red as PIXI.Point).x *= 0.8;
-      (rgbSplitFilter.red as PIXI.Point).y *= 0.8;
-      (rgbSplitFilter.blue as PIXI.Point).x *= 0.8;
-      (rgbSplitFilter.blue as PIXI.Point).y *= 0.8;
+      (rgbSplitFilter.red as PIXI.Point).x *= 0.9;
+      (rgbSplitFilter.red as PIXI.Point).y *= 0.9;
+      (rgbSplitFilter.blue as PIXI.Point).x *= 0.9;
+      (rgbSplitFilter.blue as PIXI.Point).y *= 0.9;
       if (shorkwaveFilter.time >= 1) {
         ticker.remove(tickerCallback);
         ticker.stop();
@@ -96,7 +97,7 @@ function Game(props: GameProps) {
     //   setRings(newRings);
     //   await sleep(100);
     // }
-  }, []);
+  }, [scale]);
 
   useEffect(() => {
     setMounted(true);
@@ -150,14 +151,14 @@ function Game(props: GameProps) {
     if (newPosition.x <= 0 || newPosition.x >= 1600 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (
-      newPosition.x <= leftPaddlePosition.x + 20
-      && newPosition.x >= leftPaddlePosition.x - 20
+      newPosition.x <= leftPaddlePosition.x + 30
+      && newPosition.x >= leftPaddlePosition.x - 30
       && newPosition.y >= leftPaddlePosition.y - 60
       && newPosition.y <= leftPaddlePosition.y + 60
     ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (
-      newPosition.x <= rightPaddlePosition.x + 20
-      && newPosition.x >= rightPaddlePosition.x - 20
+      newPosition.x <= rightPaddlePosition.x + 30
+      && newPosition.x >= rightPaddlePosition.x - 30
       && newPosition.y >= rightPaddlePosition.y - 60
       && newPosition.y <= rightPaddlePosition.y + 60
     ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
@@ -197,7 +198,7 @@ function Game(props: GameProps) {
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       {/* <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} /> */}
-      <RippleEffect rings={rings} />
+      {/* <RippleEffect rings={rings} /> */}
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
       <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} gameGravityArrow={gameGravityArrow} />
@@ -208,8 +209,9 @@ function Game(props: GameProps) {
 }
 
 export default Game
-
+let particleCycle = 0;
 function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset, pongSpeedMagnitude: number) {
+
   const newParticles = [...particles];
   newParticles.forEach((particle) => {
     if (particle.opacity <= 0.01) {
@@ -237,13 +239,16 @@ function updateParticles(particles: GameParticle[], gameData: GameData, newPosit
     gameData.applGlobalEffectToParticle(particle);
     particle.update(finalTimeFactor, gameData.globalGravityX, gameData.globalGravityY);
   });
+  trailParticles(newParticles, newPosition);
+  if (particleCycle === gameData.tickPerParticlesSpawn) particleCycle = 0;
+  else particleCycle++;
+  if (particleCycle !== 0) return newParticles;
   // add particles functions
   trailingSpit(newParticles, newPosition, newPongSpeed);
   if (pongSpeedMagnitude > 1) {
     spit1(newParticles, newPosition, newPongSpeed);
     spit2(newParticles, newPosition, newPongSpeed);
   }
-  trailParticles(newParticles, newPosition);
 
   blackholeParticle(gameData, newParticles);
 

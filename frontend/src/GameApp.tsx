@@ -19,7 +19,6 @@ function GameApp(props: GameAppProps) {
   const [scale, setScale] = useState<number>(1);
   const [shouldRender, setShouldRender] = useState<boolean>(false);
   const [usingTicker, setUsingTicker] = useState<boolean>(true);
-  const canvas = document.createElement('canvas');
 
   const { pixiApp, gameData } = props;
   useEffect(() => {

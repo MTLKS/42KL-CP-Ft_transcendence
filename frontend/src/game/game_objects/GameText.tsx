@@ -45,7 +45,9 @@ function GameText(props: GameTextProps) {
     return dropShadowFilter;
   }, []);
   return (
-    <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture} filters={[filter]} />
+    <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture}
+    // filters={[filter]} 
+    />
   )
 }
 

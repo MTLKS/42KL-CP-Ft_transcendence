@@ -65,7 +65,9 @@ function Block(props: BlockProps) {
 
 
   return (
-    <Sprite ref={ref} anchor={0.5} x={x} y={y} width={w} height={h} texture={texture} filters={[filter]} />
+    <Sprite ref={ref} anchor={0.5} x={x} y={y} width={w} height={h} texture={texture}
+    // filters={[filter]} 
+    />
   )
 }
 

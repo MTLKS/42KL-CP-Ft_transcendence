@@ -17,9 +17,9 @@ interface ParticlesRendererProps {
   gameGravityArrow: GameGravityArrow | null;
 }
 function ParticlesRenderer(props: ParticlesRendererProps) {
-  // const [particles, setParticles] = useState<GameParticle[]>([]);
   const { particles, lightningParticles, gameGravityArrow } = props;
   const app = useApp();
+  const gameData = useContext(GameDataCtx);
 
   const textures = useMemo(() => {
     const box = new PIXI.Graphics();
@@ -90,15 +90,16 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     });
     if (!gameGravityArrow || !arrowTexture) return;
     gameGravityArrow.arrowsParticles.forEach((p) => {
-      const { id, x, y, w, h, rotRad, opacity } = p;
+      const { id, x, y, w, h, rotRad } = p;
       arrowElements.push(<Sprite key={id} x={x} y={y} width={w} height={h} rotation={rotRad} alpha={0.2} texture={arrowTexture} />);
     });
   }, [particles, lightningParticles]);
 
   return (
     <Container
-      filterArea={new PIXI.Rectangle(0, 0, 1600, 900)}
-      filters={[bloomFilter]}
+      interactiveChildren={false}
+      filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
+      filters={gameData.useParticlesFilter ? [bloomFilter] : null}
     >
       <ParticleContainer key={"arrowParticles"} properties={{ position: true, scale: true, alpha: true }}>
         {arrowElementsRef.current}

@@ -20,7 +20,6 @@ const pixiApp = new Application({
   width: 1600,
   height: 900,
   sharedTicker: true,
-  resolution: window.devicePixelRatio,
   backgroundColor: 0x242424,
   view: document.getElementById('pixi') as HTMLCanvasElement,
 });

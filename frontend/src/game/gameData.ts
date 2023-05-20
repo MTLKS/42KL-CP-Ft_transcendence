@@ -22,6 +22,10 @@ import Entities from "./game_objects/Entities";
 
 export class GameData {
   socketApi: SocketApi;
+  useParticlesFilter: boolean = false;
+  tickPerParticlesSpawn: number = 0;
+  gameMaxWidth: number = 1280;
+  gameMaxHeight: number = 720;
   private _pongPosition: Offset = { x: 800, y: 450 };
   private _pongSpeed: Offset = { x: 12, y: 8 };
   leftPaddlePosition: Offset = { x: 0, y: 0 };
@@ -117,8 +121,8 @@ export class GameData {
     canvas.style.display = "block";
     this.resize = () => {
       const aspectRatio = 16 / 9;
-      const clampedWidth = clamp(window.innerWidth, 0, 1600);
-      const clampedHeight = clamp(window.innerHeight, 0, 900);
+      const clampedWidth = clamp(window.innerWidth, 0, this.gameMaxWidth);
+      const clampedHeight = clamp(window.innerHeight, 0, this.gameMaxHeight);
       const newWidth = Math.min(clampedWidth, clampedHeight * aspectRatio);
       const newHeight = Math.min(clampedHeight, clampedWidth / aspectRatio);
       const newTop = (window.innerHeight - newHeight) / 2;

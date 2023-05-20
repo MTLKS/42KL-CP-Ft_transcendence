@@ -71,7 +71,9 @@ function Blackhole(props: BlackholeProps) {
   }, []);
 
   return (
-    <Sprite ref={ref} anchor={0.5} x={x} y={y} width={40} height={40} texture={texture} filters={filters} />
+    <Sprite ref={ref} anchor={0.5} x={x} y={y} width={40} height={40} texture={texture}
+      filters={filters}
+    />
   )
 }
 
