@@ -82,23 +82,20 @@ export class FriendshipService {
 			return ERROR;
 		const FRIEND_DATA = await this.userRepository.findOne({ where: { intraName: receiverIntraName } });
 		if (FRIEND_DATA === null)
-			return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
+			return new ErrorDTO("Invalid receiverIntraName - user does not exist");
 		const RECEIVER = await this.friendshipRepository.findOne({ where: { sender: { intraName: receiverIntraName }, receiver: { intraName: USER_DATA.intraName } } });
 		if (status.toUpperCase() == "ACCEPTED") {
 			if (RECEIVER === null)
 				return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
 			RECEIVER.status = "ACCEPTED";
-			const MY_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: USER_DATA.intraName }, isRoom: true } });
-			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: MY_CHANNEL } })
-			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: receiverIntraName } } });
-			if (FRIEND_CHANNEL === null)
-				return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
-			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: FRIEND_DATA.intraName }, channel: FRIEND_CHANNEL } })
+			const MY_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: USER_DATA.intraName }, isRoom: false }, relations: ['owner'] });
+			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: receiverIntraName } }, relations: ['owner'] });
+			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: FRIEND_CHANNEL.channelId } } })
+			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: FRIEND_DATA.intraName }, channel: { channelId: MY_CHANNEL.channelId } } })
 			if (MY_MEMBER === null)
 				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL, true, false, false, new Date().toISOString()));
 			if (FRIEND_MEMBER === null)
 				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL, true, false, false, new Date().toISOString()));
-			console.log(FRIEND_MEMBER);
 			await this.friendshipRepository.save(RECEIVER)
 			return this.userService.hideData(RECEIVER);
 		}

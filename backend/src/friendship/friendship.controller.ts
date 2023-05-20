@@ -40,7 +40,7 @@ export class FriendshipController {
 	// Update friendship by ID
 	@Patch()
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid body - body must include receiverIntraName(string) and status(string)", "Invalid intraName - no friends so you friend yourself?", "Invalid status - status must be PENDING, ACCEPTED or BLOCKED", "Invalid receiverIntraName - friendship does not exist", "Invalid receiverIntraName - friendship already exist"])
+	@ApiCommonHeader(["Invalid body - body must include receiverIntraName(string) and status(string)", "Invalid intraName - no friends so you friend yourself?", "Invalid status - status must be PENDING, ACCEPTED or BLOCKED", "Invalid receiverIntraName - user does not exist", "Invalid receiverIntraName - friendship does not exist", "Invalid receiverIntraName - friendship already exist"])
 	@ApiOkResponse({ description: "Updates a friendship, PENDING status is not allowed, ACCEPTED status can only be used on a PENDING status", type: FriendshipDTO})
 	updateFriendship(@Headers('Authorization') accessToken: string, @Body() body: PostFriendshipBodyDTO): Promise<any> {
 		return this.friendshipService.updateFriendship(accessToken, body.receiverIntraName, body.status);
