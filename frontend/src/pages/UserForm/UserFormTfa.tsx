@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { checkTFA } from '../../functions/tfa';
+import { checkTFA } from '../../api/tfaAPI';
 import { set } from 'lodash';
 
 interface UserFormTfaProps {
@@ -10,7 +10,7 @@ interface UserFormTfaProps {
   handleSubmit: () => void;
 }
 
-function UserFormTFAStatus(props: {tfaVerified: boolean}) {
+function UserFormTFAStatus(props: { tfaVerified: boolean }) {
 
   // Props
   const { tfaVerified } = props;
@@ -37,7 +37,7 @@ function UserFormTfa(props: UserFormTfaProps) {
   useEffect(() => {
     if (tfaCode.length === 0) {
       setCurrentDigit(0);
-      return ;
+      return;
     }
     setCurrentDigit(tfaCode.length - 1);
 
@@ -67,7 +67,7 @@ function UserFormTfa(props: UserFormTfaProps) {
           <div className='flex flex-row gap-x-1 w-fit text-2xl'>
             {showTypedCode()}
           </div>
-          {hasResult && <UserFormTFAStatus tfaVerified={tfaVerified}/>}
+          {hasResult && <UserFormTFAStatus tfaVerified={tfaVerified} />}
         </div>
       </div>
       <input
@@ -112,10 +112,10 @@ function UserFormTfa(props: UserFormTfaProps) {
   }
 
   function handleOnchange(e: React.ChangeEvent<HTMLInputElement>) {
-    
+
     if (hasResult) setHasResult(false);
 
-    if (tfaCode.length >= 6) return ;
+    if (tfaCode.length >= 6) return;
 
     // check if the value only contains numbers
     if (e.target.value.match(/^[0-9]*$/)) {

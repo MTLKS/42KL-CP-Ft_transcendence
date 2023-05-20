@@ -4,7 +4,7 @@ import ChatroomList from './ChatroomBody/Chatroom/ChatroomList';
 import { ChatContext, ChatroomsContext } from '../../contexts/ChatContext';
 import SocketApi from '../../api/socketApi';
 import { ChatroomMessageData } from '../../model/ChatRoomData';
-import { getFriendList } from '../../functions/friendlist';
+import { getFriendList } from '../../api/friendListAPI';
 import { FriendsContext } from '../../contexts/FriendContext';
 
 const CHAT_SOCKET_NAMESPACE = "chat";
@@ -40,7 +40,7 @@ function Chat() {
 
   return (
     <ChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>
-      <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody}}>
+      <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody }}>
         <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
           <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />
           {chatroomBody}

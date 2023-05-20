@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomTextField from './ChatroomTextField'
 import { ChatroomData, ChatroomMessageData, MemberData } from '../../../../model/ChatRoomData';
-import { getChatroomMessages, getMemberData } from '../../../../functions/chatAPIs';
+import { getChatroomMessages, getMemberData } from '../../../../api/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
 import { ChatContext, ChatroomMessagesContext, ChatroomsContext } from '../../../../contexts/ChatContext';
@@ -82,7 +82,7 @@ function ChatroomContent(props: ChatroomContentProps) {
       <div className='w-full h-0 flex-1 flex flex-col box-border'>
         <ChatroomHeader chatroomData={chatroomData} />
         <div className='h-full overflow-y-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth box-border' ref={scrollableDivRef}>
-          { messagesComponent }
+          {messagesComponent}
         </div>
         <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
       </div>
@@ -98,7 +98,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   }
 
   async function fetchMessageHistory() {
-    
+
     if (!canBeFetched) return;
 
     const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
@@ -128,7 +128,7 @@ function ChatroomContent(props: ChatroomContentProps) {
     });
   }
 
-  function displayAllMessages(){
+  function displayAllMessages() {
 
     if (chatMemberLastRead === '' || !isMessagesSet) return [];
 
@@ -150,11 +150,11 @@ function ChatroomContent(props: ChatroomContentProps) {
 
     messageToDisplay.forEach((message) => {
       if (typeof message === "string" && message === "new") {
-        messagesComponent.push(<div ref={scrollToHereRef} key={"separator_div" + new Date().toDateString()}><ChatUnreadSeparator key={"separator" + new Date().toISOString()}/></div>);
+        messagesComponent.push(<div ref={scrollToHereRef} key={"separator_div" + new Date().toDateString()}><ChatUnreadSeparator key={"separator" + new Date().toISOString()} /></div>);
         setHasNewMessage(true);
       } else if (typeof message === "object")
         messagesComponent.push(<ChatroomMessage key={message.messageId + new Date().toDateString()} messageData={message} isMyMessage={myProfile.intraName === message.senderChannel.owner.intraName} />);
-      }
+    }
     );
     pingServerToUpdateLastRead();
     return messagesComponent;

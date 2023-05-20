@@ -6,7 +6,7 @@ import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChannel from '../Channel/NewChannel';
 import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
-import { getChatroomList } from '../../../../functions/chatAPIs';
+import { getChatroomList } from '../../../../api/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
