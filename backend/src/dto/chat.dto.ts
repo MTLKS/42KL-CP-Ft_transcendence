@@ -103,3 +103,31 @@ export class GetMessageBodyDTO {
 	@ApiProperty({ description: "Defaults to 1" })
 	page: number;
 }
+
+export class PostRoomBodyDTO {
+	@ApiProperty({ example: "Doughnuts' Room" })
+	channelName: string;
+
+	@ApiProperty({ example: true })
+	isPrivate: boolean;
+
+	@ApiProperty({ example: "password123" })
+	password: null | string;
+}
+
+export class PostRoomMemberBodyDTO {
+	@ApiProperty({ example: 123 })
+	channelId: number;
+
+	@ApiProperty({ example: "schuah" })
+	intraName: string;
+
+	@ApiProperty({ example: true })
+	isAdmin: boolean;
+
+	@ApiProperty({ example: true })
+	isBanned: boolean;
+
+	@ApiProperty({ example: true })
+	isMuted: boolean;
+}
