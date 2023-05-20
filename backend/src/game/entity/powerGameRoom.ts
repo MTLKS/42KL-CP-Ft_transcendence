@@ -202,8 +202,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		// let effect = this.getRandomNum();
-		let effect = 4;
+		let effect = this.getRandomNum();
+		// let effect = 4;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
