@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomTextField from './ChatroomTextField'
-import { ChatroomData, ChatroomMessageData, MemberData, NewMessageData } from '../../../../model/ChatRoomData';
+import { ChatroomData, ChatroomMessageData, MemberData } from '../../../../model/ChatRoomData';
 import { getChatroomMessages, getMemberData } from '../../../../functions/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
@@ -39,6 +39,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log(chatroomData);
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
