@@ -46,7 +46,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     if (isTyping || message.length === 0) return ;
 
     if (!isTyping) setIsTyping(true);
-    chatSocket.sendMessages("typing", { intraName: chatroomData.owner!.intraName });
+    chatSocket.sendMessages("typing", { channelId: chatroomData.channelId });
   }, [message]);
 
   useEffect(() => {
