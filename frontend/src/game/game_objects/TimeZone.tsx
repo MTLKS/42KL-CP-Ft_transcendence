@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { DropShadowFilter } from 'pixi-filters';
+import { GameDataCtx } from '../../GameApp';
 
 
 export enum TimeZoneType {
@@ -21,6 +22,7 @@ const svgSizeRatio = 0.5;
 function TimeZone(props: TimeZoneProps) {
   const { position, size, type } = props;
   const app = useApp();
+  const gameData = useContext(GameDataCtx);
 
   const color = useMemo(() => {
     switch (type) {
@@ -95,7 +97,7 @@ function TimeZone(props: TimeZoneProps) {
         height={size.h * svgSizeRatio}
         texture={iconTexture}
         alpha={0.4}
-        filters={[filter]}
+        filters={gameData.useEntitiesFilter ? [filter] : undefined}
       />
     </Container>
   )

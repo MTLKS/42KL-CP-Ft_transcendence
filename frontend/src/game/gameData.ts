@@ -8,48 +8,65 @@ import {
   GamePauseDTO,
   FieldEffectDTO,
 } from "../model/GameStateDTO";
-import { BoxSize, Offset } from "../model/GameModels";
-import { clamp, debounce } from "lodash";
+import { Offset } from "../model/GameModels";
+import { clamp } from "lodash";
 import GameEntity, {
   GameBlackhole,
   GameBlock,
   GameTimeZone,
 } from "../model/GameEntities";
 import sleep from "../functions/sleep";
-import * as particles from "@pixi/particle-emitter";
 import GameParticle from "../model/GameParticle";
-import Entities from "./game_objects/Entities";
+
+export enum PaddleType {
+  "Vzzzzzzt",
+  "Piiuuuuu",
+  "Ngeeeaat",
+  "Vrooooom",
+}
 
 export class GameData {
   socketApi: SocketApi;
-  useParticlesFilter: boolean = false;
+
+  // game display settings
+  useParticlesFilter: boolean = true;
+  useEntitiesFilter: boolean = true;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;
+
+  // pong variables
   private _pongPosition: Offset = { x: 800, y: 450 };
   private _pongSpeed: Offset = { x: 12, y: 8 };
-  leftPaddlePosition: Offset = { x: 0, y: 0 };
-  rightPaddlePosition: Offset = { x: 0, y: 0 };
+
+  // player related variables
+  leftPaddlePosition: Offset = { x: -50, y: 450 };
+  rightPaddlePosition: Offset = { x: 1650, y: 450 };
+  leftPaddleType: PaddleType = PaddleType.Vzzzzzzt;
+  rightPaddleType: PaddleType = PaddleType.Vzzzzzzt;
+  isLeft: boolean = true;
   player1Score: number = 0;
   player2Score: number = 0;
+
+  // game state related variables
   usingLocalTick: boolean = false;
-  isLeft: boolean = true;
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
   gameEntities: GameEntity[] = [];
+  inFocus: boolean = true;
 
+  // global effects
   globalSpeedFactor: number = 1;
   globalScaleFactor: number = 1;
   globalGravityX: number = 0;
   globalGravityY: number = 0;
 
-  inFocus: boolean = true;
-
   setScale?: (scale: number) => void;
   setUsingTicker?: (usingTicker: boolean) => void;
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
+  setEntities?: (entities: GameEntity[]) => void;
   private sendPlayerMove?: (y: number, gameRoom: string) => void;
 
   resize?: () => void;
@@ -99,17 +116,8 @@ export class GameData {
     }
     console.log("start game");
     this.gameStarted = true;
+    this.disableLocalTick();
     if (this.setShouldRender) this.setShouldRender?.(true);
-    // this.gameEntities.push(
-    //   new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2)
-    // );
-    // this.gameEntities.push(new GameBlock({ x: 400, y: 500, w: 150, h: 150 }));
-    // this.gameEntities.push(
-    //   new GameTimeZone({ x: 1000, y: 300, w: 300, h: 300 }, 0.3)
-    // );
-    // this.gameEntities.push(
-    //   new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5)
-    // );
   }
 
   displayGame() {
@@ -212,6 +220,10 @@ export class GameData {
     this.setUsingTicker = setUsingTicker;
   }
 
+  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
+    this.setEntities = setEntities;
+  }
+
   listenToGameState = (state: GameStateDTO) => {
     console.log(state);
     switch (state.type) {
@@ -232,6 +244,7 @@ export class GameData {
         this.globalGravityY = 0;
         switch (fieldEffect.type) {
           case "NORMAL":
+            this.gameEntities = [];
             break;
           case "GRAVITY":
             this.globalGravityX = 0;
@@ -268,6 +281,7 @@ export class GameData {
           default:
             break;
         }
+        this.setEntities?.(this.gameEntities);
         break;
       default:
         break;
@@ -309,7 +323,7 @@ export class GameData {
     this.sendPlayerMove?.(y, this.gameRoom);
   }
 
-  useLocalTick() {
+  async useLocalTick() {
     this.usingLocalTick = true;
     this._pongSpeed = { x: 15, y: 5 };
     this.gameEntities = [
@@ -320,7 +334,11 @@ export class GameData {
         w: 100,
         h: 100,
       }),
+      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2),
+      new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5),
     ];
+    await sleep(1000);
+    this.setEntities?.(this.gameEntities);
     this._localTick();
   }
 

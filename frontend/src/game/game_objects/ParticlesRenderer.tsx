@@ -9,18 +9,19 @@ import { BloomFilter, DropShadowFilter } from 'pixi-filters';
 import { filter } from 'lodash';
 import { GameGravityArrow } from '../../model/GameGravityArrow';
 import GameParticleDelegate from '../../model/GameParticleDelegate';
+import { PaddleType } from '../gameData';
 
 // const gameGraphicWorker = new Worker();
 
 interface ParticlesRendererProps {
-  particles: GameParticle[];
-  lightningParticles: GameLightningParticle[];
   gameGravityArrow: GameGravityArrow | null;
 }
 function ParticlesRenderer(props: ParticlesRendererProps) {
-  const { particles, lightningParticles, gameGravityArrow } = props;
+  const { gameGravityArrow } = props;
   const app = useApp();
   const gameData = useContext(GameDataCtx);
+  const [leftLightningParticles, setLeftLightningParticles] = useState<GameLightningParticle>();
+  const [rightLightningParticles, setRightLightningParticles] = useState<GameLightningParticle>();
 
   const textures = useMemo(() => {
     const box = new PIXI.Graphics();
@@ -70,11 +71,36 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   }, [gameGravityArrow]);
 
   useTick((delta) => {
+    if (gameData.leftPaddleType === PaddleType.Vzzzzzzt) {
+      if (leftLightningParticles) {
+        leftLightningParticles.centerX = gameData.leftPaddlePosition.x + 7.5;
+        leftLightningParticles.centerY = gameData.leftPaddlePosition.y;
+        leftLightningParticles.update(addLightningParticle, removeLightningParticle);
+      } else {
+        setLeftLightningParticles(new GameLightningParticle({
+          centerX: 400,
+          centerY: 400,
+          paddingX: 15,
+          paddingY: 60,
+        }),);
+      }
+    }
+    if (gameData.rightPaddleType === PaddleType.Vzzzzzzt) {
+      if (rightLightningParticles) {
+        rightLightningParticles.centerX = gameData.rightPaddlePosition.x + 7.5;
+        rightLightningParticles.centerY = gameData.rightPaddlePosition.y;
+        rightLightningParticles.update(addLightningParticle, removeLightningParticle);
+      } else {
+        setRightLightningParticles(new GameLightningParticle({
+          centerX: 400,
+          centerY: 400,
+          paddingX: 15,
+          paddingY: 60,
+        }),);
+      }
+    }
     gameParticleDelegate.update(addParticle, removeParticle);
     gameGravityArrow?.update(addArrowParticle, removeArrowParticle);
-    lightningParticles.forEach((lightningParticle) => {
-      lightningParticle.update(addLightningParticle, removeLightningParticle);
-    })
   });
 
   // const trailElementsRef = useRef<JSX.Element[]>([]);
@@ -128,23 +154,36 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
       filters={gameData.useParticlesFilter ? [bloomFilter] : null}
     >
-      <ParticleContainer ref={arrowContainerRef} key={"arrowParticles"} properties={{ position: true, scale: true, alpha: true }}>
-      </ParticleContainer>
-      <ParticleContainer ref={trailContainerRef} key={"trailParticles"} properties={{ position: true, scale: true, alpha: true }}>
-        {/* {trailElementsRef.current} */}
-      </ParticleContainer>
-      <ParticleContainer ref={cyanContainerRef} key={"cyanParticles"} properties={{ position: true, alpha: true }}>
-        {/* {cyanElementsRef.current} */}
-      </ParticleContainer>
-      <ParticleContainer ref={whiteContainerRef} key={"whiteParticles"} properties={{ position: true, alpha: true }}>
-        {/* {whiteElementsRef.current} */}
-      </ParticleContainer>
-      <ParticleContainer ref={purpleContainerRef} key={"purpleParticles"} properties={{ position: true, alpha: true }}>
-        {/* {purpleElementsRef.current} */}
-      </ParticleContainer>
-      <ParticleContainer ref={lightningContainerRef} key={"lightningParticles"} properties={{ position: true, scale: true, alpha: true, rotation: true }}>
-        {/* {lightningElementsRef.current} */}
-      </ParticleContainer>
+      <ParticleContainer
+        ref={arrowContainerRef}
+        key={"arrowParticles"}
+        properties={{ position: true, scale: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={trailContainerRef}
+        key={"trailParticles"}
+        properties={{ position: true, scale: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={cyanContainerRef}
+        key={"cyanParticles"}
+        properties={{ position: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={whiteContainerRef}
+        key={"whiteParticles"}
+        properties={{ position: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={purpleContainerRef}
+        key={"purpleParticles"}
+        properties={{ position: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={lightningContainerRef}
+        key={"lightningParticles"}
+        properties={{ position: true, scale: true, alpha: true, rotation: true }}
+      />
     </Container>
   )
 

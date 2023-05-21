@@ -4,12 +4,23 @@ import GameEntity, { GameBlackhole, GameBlock, GameTimeZone } from '../../model/
 import Blackhole from './Blackhole';
 import TimeZone, { TimeZoneType } from './TimeZone';
 import Block from './Block';
+import { useTick } from '@pixi/react';
 
 function Entities() {
   const gameData = useContext(GameDataCtx);
+  const [entities, setEntities] = useState<GameEntity[]>([]);
 
-  const entityElements = useMemo(() => {
-    return gameData.gameEntities.map((entity, index) => {
+  useEffect(() => {
+    gameData.setSetEntities = setEntities;
+  }, []);
+
+  return (
+    <>
+      {getEntityElements()}
+    </>
+  )
+  function getEntityElements() {
+    return entities.map((entity, index) => {
       if (entity instanceof GameBlackhole) {
         const { x, y, w, h } = entity;
         return <Blackhole key={index} x={x} y={y} w={w} h={h} />
@@ -23,13 +34,7 @@ function Entities() {
         return <Block key={index} x={x} y={y} w={w} h={h} />
       }
     });
-  }, [gameData.gameEntities, gameData.gameEntities.length]);
-
-  return (
-    <>
-      {entityElements}
-    </>
-  )
+  }
 }
 
 export default Entities

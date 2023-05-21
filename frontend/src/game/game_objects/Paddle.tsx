@@ -1,33 +1,54 @@
-import React, { useCallback, useContext, useEffect, useMemo } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Container, Graphics, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { GameDataCtx } from '../../GameApp';
 import { DropShadowFilter } from 'pixi-filters';
-
-export enum PaddleType {
-  "Vzzzzzzt",
-  "Piiuuuuu",
-  "Ngeeeaat",
-  "Vrooooom",
-}
+import { PaddleType } from '../gameData';
 
 interface PaddleProps {
   left: boolean;
-  stageSize: BoxSize;
-  size: BoxSize;
-  position: Offset;
-  type?: PaddleType;
 }
 
 function Paddle(props: PaddleProps) {
-  const { left, stageSize, size, position, type } = props;
-  const [rot, setRot] = React.useState(0);
+  const { left } = props;
   const app = useApp();
+  const gameData = useContext(GameDataCtx);
+  const rotRef = useRef<number>(0);
+  const paddleRef = useRef<PIXI.Sprite>(null);
+  const [type, setType] = useState<PaddleType>(PaddleType.Vzzzzzzt);
+
+  const size: BoxSize = useMemo(() => {
+    if (type === PaddleType.Ngeeeaat) {
+      return { w: 15, h: 150 };
+    }
+    return { w: 15, h: 100 };
+  }, [type]);
 
   useTick((delta) => {
-    setRot(rot + 0.8);
+    if (paddleRef.current == null) return;
+    paddleRef.current.rotation = Math.sin(rotRef.current) * 0.05;
+    rotRef.current += 0.8 * delta;
   }, false);
+
+  useTick((delta) => {
+    if (paddleRef.current == null) return;
+    const paddle = paddleRef.current;
+    let position: Offset;
+    if (left) {
+      position = gameData.leftPaddlePosition;
+      if (gameData.leftPaddleType !== type) {
+        setType(gameData.leftPaddleType);
+      }
+    } else {
+      position = gameData.rightPaddlePosition;
+      if (gameData.rightPaddleType !== type) {
+        setType(gameData.rightPaddleType);
+      }
+    }
+    paddle.x = position.x + size.w / 2;
+    paddle.y = position.y;
+  }, true);
 
   const texture = useMemo(() => {
     const g = new PIXI.Graphics();
@@ -45,7 +66,8 @@ function Paddle(props: PaddleProps) {
         g.endFill();
 
         g.beginFill(0x5F928F);
-        g.drawRect(0, size.h - 30, size.w, 30);
+        if (left) g.drawRect(0, size.h - 30, size.w, 30);
+        else g.drawRect(0, 0, size.w, 30);
         g.endFill();
 
         t1.text = "M";
@@ -105,12 +127,17 @@ function Paddle(props: PaddleProps) {
     dropShadowFilter.blur = 3;
     dropShadowFilter.offset = new PIXI.Point(0, 0);
     dropShadowFilter.padding = 40;
-    dropShadowFilter.quality = 5;
+    dropShadowFilter.quality = 4;
     return dropShadowFilter;
   }, []);
 
   return (
-    <Sprite texture={texture} x={position.x + size.w / 2} y={position.y} pivot={new PIXI.Point(size.w / 2, size.h / 2)} rotation={Math.sin(rot) * 0.05} filters={[filter]} />
+    <Sprite
+      ref={paddleRef}
+      texture={texture}
+      pivot={new PIXI.Point(size.w / 2, size.h / 2)}
+      filters={[filter]}
+    />
   )
 }
 

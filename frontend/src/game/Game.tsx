@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer, Sprite } from '@pixi/react'
-import Paddle, { PaddleType } from './game_objects/Paddle';
+import Paddle from './game_objects/Paddle';
 import { BoxSize, Offset } from '../model/GameModels';
 import Pong from './game_objects/Pong';
 import RippleEffect, { Ring } from './game_objects/RippleEffect';
@@ -13,7 +13,7 @@ import Entities from './game_objects/Entities';
 import GameEntity, { GameBlackhole, GameBlock, GameTimeZone } from '../model/GameEntities';
 import GameParticle, { GameLightningParticle } from '../model/GameParticle';
 import sleep from '../functions/sleep';
-import { GameData } from './gameData';
+import { GameData, PaddleType } from './gameData';
 import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravityArrow';
 import ColorTween from './functions/colorInterpolation';
 import { RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
@@ -23,26 +23,12 @@ interface GameProps {
   shouldRender: boolean;
   usingTicker?: boolean;
 }
-const boxSize: BoxSize = { w: 1600, h: 900 };
 
 function Game(props: GameProps) {
   const { scale, shouldRender, usingTicker } = props;
   const gameData = useContext(GameDataCtx);
   const [mounted, setMounted] = useState(false);
-  const [position, setPosition] = useState<Offset>({ x: 0, y: 0 });
-  const [particles, setParticles] = useState<GameParticle[]>([]);
   const [gameGravityArrow, setGameGravityArrow] = useState<GameGravityArrow | null>(null);
-  const [lightningParticles, setLightningParticles] = useState<GameLightningParticle[]>([
-    new GameLightningParticle({
-      centerX: 400,
-      centerY: 400,
-      paddingX: 15,
-      paddingY: 60,
-    }),
-  ]);
-  const [leftPaddlePosition, setLeftPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
-  const [rightPaddlePosition, setRightPaddlePosition] = useState<Offset>({ x: 0, y: 0 });
-  const [rings, setRings] = useState<Ring[]>([]);
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
   const [bgColor, setBgColor] = useState(0x242424);
@@ -87,15 +73,6 @@ function Game(props: GameProps) {
     ticker.add(tickerCallback);
     ticker.start();
     containerRef.current.filters = [shorkwaveFilter, rgbSplitFilter];
-    // for (let i = 0; i < 3; i++) {
-    //   newRings.push({
-    //     position: hitPosition,
-    //     r: 10,
-    //     opacity: 0.8
-    //   });
-    //   setRings(newRings);
-    //   await sleep(100);
-    // }
   }, [scale]);
 
   useEffect(() => {
@@ -108,6 +85,8 @@ function Game(props: GameProps) {
     const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
     const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);
+    const leftPaddlePosition = gameData.leftPaddlePosition;
+    const rightPaddlePosition = gameData.rightPaddlePosition;
     let newGameGravityArrow = gameGravityArrow;
 
     if (gameData.globalGravityY !== 0) {
@@ -123,23 +102,12 @@ function Game(props: GameProps) {
       setBgColorTween(new ColorTween({ start: bgColor, end: 0x242424 }));
       newGameGravityArrow = null;
     }
-    const newLightningParticles: GameLightningParticle[] = [
-      ...lightningParticles,
-    ];
-    newLightningParticles.forEach((lightning) => {
-      lightning.centerX = leftPaddlePosition.x + 7.5;
-      lightning.centerY = leftPaddlePosition.y;
-    });
     if (bgColorTween) {
       if (bgColorTween.done) setBgColorTween(undefined);
       bgColorTween.update(0.05 * delta)
       setBgColor(bgColorTween.colorSlerp);
     }
     setGameGravityArrow(newGameGravityArrow);
-    setLightningParticles(newLightningParticles);
-    setPosition(newPosition);
-    setLeftPaddlePosition(gameData.leftPaddlePosition);
-    setRightPaddlePosition(gameData.rightPaddlePosition);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
     if (newPosition.x <= 0 || newPosition.x >= 1600 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
@@ -173,11 +141,11 @@ function Game(props: GameProps) {
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      <Pong position={position} size={{ w: 10, h: 10 }} />
+      <Pong size={{ w: 10, h: 10 }} />
       <Entities />
-      <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} gameGravityArrow={gameGravityArrow} />
-      <Paddle left={true} stageSize={boxSize} size={{ w: 15, h: 100 }} position={leftPaddlePosition} type={PaddleType.Piiuuuuu} />
-      <Paddle left={false} stageSize={boxSize} size={{ w: 15, h: 100 }} position={rightPaddlePosition} />
+      <ParticlesRenderer key={"particle renderer"} gameGravityArrow={gameGravityArrow} />
+      <Paddle left={true} />
+      <Paddle left={false} />
     </Container>
   )
 }
