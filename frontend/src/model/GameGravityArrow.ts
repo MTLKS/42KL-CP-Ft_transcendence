@@ -41,13 +41,17 @@ export class GameGravityArrow {
     }
   }
 
-  update() {
+  update(
+    addSprite: (sprite: GameParticle) => void,
+    removeSprite: (sprite: GameParticle) => void
+  ) {
     this.arrowsParticles.forEach((arrowParticle) => {
       if (arrowParticle.y > 1200 || arrowParticle.y < -300) {
         this.arrowsParticles.splice(
           this.arrowsParticles.indexOf(arrowParticle),
           1
         );
+        removeSprite(arrowParticle);
         return;
       }
       arrowParticle.update();
@@ -56,18 +60,19 @@ export class GameGravityArrow {
     const size = 10 + 30 * closeness;
     const speed = 2 + 3 * closeness;
     if (this.cycle === 0) {
-      this.arrowsParticles.push(
-        new GameParticle({
-          x: (1600 / 12) * this.posCycle,
-          y: this.isDown ? -300 : 1200,
-          vx: 0,
-          vy: speed * (this.isDown ? 1 : -1),
-          opacity: 1,
-          w: 3 * size,
-          h: 8 * size,
-          affectedByGravity: false,
-        })
-      );
+      const newParticle = new GameParticle({
+        x: (1600 / 12) * this.posCycle,
+        y: this.isDown ? -300 : 1200,
+        vx: 0,
+        vy: speed * (this.isDown ? 1 : -1),
+        opacity: 0.1 + 0.1 * closeness,
+        w: 3 * size,
+        h: 8 * size,
+        affectedByGravity: false,
+        affectedByTimeZone: false,
+      });
+      this.arrowsParticles.push(newParticle);
+      addSprite(newParticle);
     }
     this.cycle++;
     this.posCycle++;

@@ -23,13 +23,18 @@ function GameApp(props: GameAppProps) {
     gameData.setSetShouldRender = setShouldRender;
     gameData.setSetScale = setScale;
     gameData.setSetUsingTicker = setUsingTicker;
+    return () => {
+      gameData.endGame()
+    }
+  }, []);
+
+  useEffect(() => {
     const canvas = document.getElementById('pixi') as HTMLCanvasElement
     canvas.addEventListener('mousemove', onmousemove);
     return () => {
-      gameData.endGame();
       canvas.removeEventListener('mousemove', onmousemove);
     }
-  }, []);
+  }, [scale]);
   return (
     <AppProvider value={pixiApp}>
       <GameDataCtx.Provider value={gameData}>
@@ -40,9 +45,9 @@ function GameApp(props: GameAppProps) {
 
   function onmousemove(e: MouseEvent) {
     const currentTime = Date.now();
-    if (currentTime - mouseLastMoveTime < 14) return;
+    if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
-    gameData.updatePlayerPosition(e.offsetY / gameData.gameMaxHeight * 900);
+    gameData.updatePlayerPosition(e.offsetY / gameData.gameMaxHeight * 900 / scale);
   }
 }
 

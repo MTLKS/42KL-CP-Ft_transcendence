@@ -1,3 +1,6 @@
+import { Ref, RefObject, useRef } from "react";
+import * as PIXI from "pixi.js";
+
 /**
  * GameParticleData
  * @interface GameParticleData
@@ -62,6 +65,7 @@ interface GameParticleData {
  */
 class GameParticle {
   public id: string;
+  public sprite: PIXI.Sprite | null;
   public x: number;
   public y: number;
   public vx: number;
@@ -122,6 +126,7 @@ class GameParticle {
     this.colorIndex = colorIndex ?? 0;
     this.affectedByGravity = affectedByGravity ?? true;
     this.affectedByTimeZone = affectedByTimeZone ?? true;
+    this.sprite = null;
   }
 
   get data(): GameParticleData {
@@ -163,6 +168,13 @@ class GameParticle {
       this.vx *= this.speedDecayFactor;
       this.vy *= this.speedDecayFactor;
     }
+    if (this.sprite == null) return;
+    this.sprite.x = this.x;
+    this.sprite.y = this.y;
+    this.sprite.rotation = this.rotRad;
+    this.sprite.alpha = this.opacity;
+    this.sprite.width = this.w;
+    this.sprite.height = this.h;
   }
 
   /**
@@ -224,13 +236,16 @@ class GameLightningParticle {
     this.pointIndex = 0;
   }
 
-  public update() {
+  public update(
+    addSprite: (sprite: GameParticle) => void,
+    removeSprite: (sprite: GameParticle) => void
+  ) {
     this.particles.forEach((particle) => {
-      particle.update();
-    });
-    this.particles.forEach((particle) => {
-      if (particle.opacity <= 0.01)
+      if (particle.opacity <= 0.01) {
         this.particles.splice(this.particles.indexOf(particle), 1);
+        removeSprite(particle);
+        return;
+      }
       particle.update();
     });
     if (this.particles.length > 12) {
@@ -238,7 +253,7 @@ class GameLightningParticle {
         this.particles[i].opacityDecay = 0.05;
       }
     }
-    this.addParticle();
+    this.addParticle(addSprite);
     if (
       Math.abs(
         this.currentTagetX - this.particles[this.particles.length - 1].x
@@ -273,20 +288,20 @@ class GameLightningParticle {
     }
   }
 
-  private addParticle() {
-    if (this.particles.length == 0)
-      this.particles.push(
-        new GameParticle({
-          x: this.centerX + this.paddingX,
-          y: this.centerY - this.paddingY,
-          opacity: 0.7,
-          w: 10,
-          h: 20 + 30 * Math.random(),
-          colorIndex: 3,
-          rotRad: Math.PI / 2,
-        })
-      );
-    else {
+  private addParticle(addSprite: (sprite: GameParticle) => void) {
+    if (this.particles.length == 0) {
+      const newParticle = new GameParticle({
+        x: this.centerX + this.paddingX,
+        y: this.centerY - this.paddingY,
+        opacity: 0.7,
+        w: 10,
+        h: 20 + 30 * Math.random(),
+        colorIndex: 3,
+        rotRad: Math.PI / 2,
+      });
+      this.particles.push(newParticle);
+      addSprite(newParticle);
+    } else {
       for (let i = 0; i < 2; i++) {
         const lastParticle = this.particles[this.particles.length - 1];
         const newStartX =
@@ -297,45 +312,45 @@ class GameLightningParticle {
           Math.pow(this.currentTagetX - newStartX, 2) +
             Math.pow(this.currentTagetY - newStartY, 2)
         );
+        let newParticle: GameParticle;
         if (distance < 51) {
-          this.particles.push(
-            new GameParticle({
-              x: newStartX,
-              y: newStartY,
-              opacity: 0.7,
-              w: 5 + 10 * Math.random(),
-              h: distance,
-              colorIndex: 3,
-              rotRad:
-                Math.PI +
-                Math.atan2(
-                  this.currentTagetX - lastParticle.x,
-                  lastParticle.y - this.currentTagetY
-                ),
-            })
-          );
+          newParticle = new GameParticle({
+            x: newStartX,
+            y: newStartY,
+            opacity: 0.7,
+            w: 5 + 10 * Math.random(),
+            h: distance,
+            colorIndex: 3,
+            rotRad:
+              Math.PI +
+              Math.atan2(
+                this.currentTagetX - lastParticle.x,
+                lastParticle.y - this.currentTagetY
+              ),
+          });
         } else {
-          this.particles.push(
-            new GameParticle({
-              x:
-                lastParticle.x -
-                (lastParticle.h - 3) * Math.sin(lastParticle.rotRad),
-              y:
-                lastParticle.y +
-                (lastParticle.h - 3) * Math.cos(lastParticle.rotRad),
-              opacity: 0.7,
-              w: 5 + 15 * Math.random(),
-              h: 20 + 30 * Math.random(),
-              colorIndex: 3,
-              rotRad:
-                Math.PI +
-                Math.atan2(
-                  this.currentTagetX - lastParticle.x,
-                  lastParticle.y - this.currentTagetY
-                ),
-            })
-          );
+          newParticle = new GameParticle({
+            x:
+              lastParticle.x -
+              (lastParticle.h - 3) * Math.sin(lastParticle.rotRad),
+            y:
+              lastParticle.y +
+              (lastParticle.h - 3) * Math.cos(lastParticle.rotRad),
+            opacity: 0.7,
+            w: 5 + 15 * Math.random(),
+            h: 20 + 30 * Math.random(),
+            colorIndex: 3,
+            rotRad:
+              Math.PI +
+              Math.atan2(
+                this.currentTagetX - lastParticle.x,
+                lastParticle.y - this.currentTagetY
+              ),
+          });
+          this.particles.push();
         }
+        this.particles.push(newParticle);
+        addSprite(newParticle);
       }
     }
   }

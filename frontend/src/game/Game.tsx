@@ -55,13 +55,13 @@ function Game(props: GameProps) {
 
     if (containerRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
-    const shorkwaveSpeed = pongSpeedMagnitude / 10;
+    const shorkwaveSpeed = pongSpeedMagnitude / 10 * scale;
     const rgbSplitMagnitude = 0.5;
     const shorkwaveFilter = new ShockwaveFilter();
     shorkwaveFilter.center = [hitPosition.x * scale, hitPosition.y * scale];
     shorkwaveFilter.time = 0;
-    shorkwaveFilter.amplitude = 100;
-    shorkwaveFilter.wavelength = 5;
+    shorkwaveFilter.amplitude = 100 * scale;
+    shorkwaveFilter.wavelength = 5 / scale;
     shorkwaveFilter.radius = 1900 * scale;
     const rgbSplitFilter = new RGBSplitFilter();
     rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
@@ -75,14 +75,13 @@ function Game(props: GameProps) {
       shorkwaveFilter.time += 0.01 * shorkwaveSpeed;
       shorkwaveFilter.wavelength += 2 * shorkwaveSpeed;
       shorkwaveFilter.amplitude *= 0.95 ** shorkwaveSpeed;
-      (rgbSplitFilter.red as PIXI.Point).x *= 0.9;
-      (rgbSplitFilter.red as PIXI.Point).y *= 0.9;
-      (rgbSplitFilter.blue as PIXI.Point).x *= 0.9;
-      (rgbSplitFilter.blue as PIXI.Point).y *= 0.9;
-      if (shorkwaveFilter.time >= 1) {
+      (rgbSplitFilter.red as PIXI.Point).x *= 0.95;
+      (rgbSplitFilter.red as PIXI.Point).y *= 0.95;
+      (rgbSplitFilter.blue as PIXI.Point).x *= 0.95;
+      (rgbSplitFilter.blue as PIXI.Point).y *= 0.95;
+      if (shorkwaveFilter.time >= 0.8) {
         ticker.remove(tickerCallback);
         ticker.stop();
-        containerRef.current.filters = null;
       }
     };
     ticker.add(tickerCallback);
@@ -109,7 +108,6 @@ function Game(props: GameProps) {
     const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
     const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);
-    const newParticles: GameParticle[] = updateParticles(particles, gameData, newPosition, newPongSpeed, pongSpeedMagnitude);
     let newGameGravityArrow = gameGravityArrow;
 
     if (gameData.globalGravityY !== 0) {
@@ -118,7 +116,6 @@ function Game(props: GameProps) {
         setBgColorTween(new ColorTween({ start: bgColor, end: gameData.globalGravityY > 0 ? 0xc5a1ff : 0xd2b24f }));
       }
       if (!gameGravityArrow) {
-        console.log("new gameGravityArrow")
         newGameGravityArrow = new GameGravityArrow({ arrowsParticles: [], diraction: gameData.globalGravityY > 0 ? GameGravityArrowDiraction.DOWN : GameGravityArrowDiraction.UP });
       }
     }
@@ -132,16 +129,13 @@ function Game(props: GameProps) {
     newLightningParticles.forEach((lightning) => {
       lightning.centerX = leftPaddlePosition.x + 7.5;
       lightning.centerY = leftPaddlePosition.y;
-      lightning.update();
     });
-    gameGravityArrow?.update();
     if (bgColorTween) {
       if (bgColorTween.done) setBgColorTween(undefined);
       bgColorTween.update(0.05 * delta)
       setBgColor(bgColorTween.colorSlerp);
     }
     setGameGravityArrow(newGameGravityArrow);
-    setParticles(newParticles);
     setLightningParticles(newLightningParticles);
     setPosition(newPosition);
     setLeftPaddlePosition(gameData.leftPaddlePosition);
@@ -162,18 +156,6 @@ function Game(props: GameProps) {
       && newPosition.y >= rightPaddlePosition.y - 60
       && newPosition.y <= rightPaddlePosition.y + 60
     ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
-    if (rings.length === 0) return;
-    setRings((rings) => {
-      const newRings = [...rings];
-      newRings.forEach((item) => {
-        if (item.opacity <= 0) {
-          newRings.shift();
-        }
-        item.r += 3 * delta;
-        item.opacity -= 0.01 * delta;
-      });
-      return newRings;
-    });
   }, usingTicker ?? true);
 
   const backgoundTexture = useMemo(() => {
@@ -184,12 +166,6 @@ function Game(props: GameProps) {
     return app.renderer.generateTexture(graphics);
   }, [bgColor]);
 
-  // const filters = useMemo(() => {
-  //   const bevelFilter = new BevelFilter();
-  //   bevelFilter.thickness = 4;
-  //   return [bevelFilter];
-  // }, []);
-
   if (!shouldRender) return <></>;
   return (
     <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto'>
@@ -197,8 +173,6 @@ function Game(props: GameProps) {
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      {/* <DashLine start={{ x: 800, y: 0 }} end={{ x: 800, y: 900 }} thinkness={5} color={0xFEF8E2} dash={10} gap={10} /> */}
-      {/* <RippleEffect rings={rings} /> */}
       <Pong position={position} size={{ w: 10, h: 10 }} />
       <Entities />
       <ParticlesRenderer key={"particle renderer"} particles={particles} lightningParticles={lightningParticles} gameGravityArrow={gameGravityArrow} />
@@ -209,148 +183,148 @@ function Game(props: GameProps) {
 }
 
 export default Game
-let particleCycle = 0;
-function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset, pongSpeedMagnitude: number) {
+// let particleCycle = 0;
+// function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset, pongSpeedMagnitude: number) {
 
-  const newParticles = [...particles];
-  newParticles.forEach((particle) => {
-    if (particle.opacity <= 0.01) {
-      newParticles.splice(newParticles.indexOf(particle), 1);
-    }
-    let finalTimeFactor = 1;
-    gameData.gameEntities.forEach((entity) => {
-      if (entity instanceof GameBlackhole) {
-        if (!particle.affectedByGravity) return;
-        const distance = Math.sqrt(
-          Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
-        );
-        if (distance < 1 || distance > 300) return;
-        if (distance < 10) particle.opacity = 0;
-        particle.setGravityAccel(entity.x, entity.y, entity.magnitude);
-      }
-      if (entity instanceof GameTimeZone) {
-        const distance = Math.sqrt(
-          Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
-        );
-        if (distance < 1 || distance > entity.w / 2) return;
-        finalTimeFactor *= entity.timeFactor;
-      }
-    });
-    gameData.applGlobalEffectToParticle(particle);
-    particle.update(finalTimeFactor, gameData.globalGravityX, gameData.globalGravityY);
-  });
-  trailParticles(newParticles, newPosition);
-  if (particleCycle === gameData.tickPerParticlesSpawn) particleCycle = 0;
-  else particleCycle++;
-  if (particleCycle !== 0) return newParticles;
-  // add particles functions
-  trailingSpit(newParticles, newPosition, newPongSpeed);
-  if (pongSpeedMagnitude > 1) {
-    spit1(newParticles, newPosition, newPongSpeed);
-    spit2(newParticles, newPosition, newPongSpeed);
-  }
+//   const newParticles = [...particles];
+//   newParticles.forEach((particle) => {
+//     if (particle.opacity <= 0.01) {
+//       newParticles.splice(newParticles.indexOf(particle), 1);
+//     }
+//     let finalTimeFactor = 1;
+//     gameData.gameEntities.forEach((entity) => {
+//       if (entity instanceof GameBlackhole) {
+//         if (!particle.affectedByGravity) return;
+//         const distance = Math.sqrt(
+//           Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
+//         );
+//         if (distance < 1 || distance > 300) return;
+//         if (distance < 10) particle.opacity = 0;
+//         particle.setGravityAccel(entity.x, entity.y, entity.magnitude);
+//       }
+//       if (entity instanceof GameTimeZone) {
+//         const distance = Math.sqrt(
+//           Math.pow(particle.x - entity.x, 2) + Math.pow(particle.y - entity.y, 2)
+//         );
+//         if (distance < 1 || distance > entity.w / 2) return;
+//         finalTimeFactor *= entity.timeFactor;
+//       }
+//     });
+//     gameData.applGlobalEffectToParticle(particle);
+//     particle.update(finalTimeFactor, gameData.globalGravityX, gameData.globalGravityY);
+//   });
+//   trailParticles(newParticles, newPosition);
+//   if (particleCycle === gameData.tickPerParticlesSpawn) particleCycle = 0;
+//   else particleCycle++;
+//   if (particleCycle !== 0) return newParticles;
+//   // add particles functions
+//   trailingSpit(newParticles, newPosition, newPongSpeed);
+//   if (pongSpeedMagnitude > 1) {
+//     spit1(newParticles, newPosition, newPongSpeed);
+//     spit2(newParticles, newPosition, newPongSpeed);
+//   }
 
-  blackholeParticle(gameData, newParticles);
+//   blackholeParticle(gameData, newParticles);
 
-  return newParticles;
-}
+//   return newParticles;
+// }
 
-function trailParticles(newParticles: GameParticle[], newPosition: Offset) {
-  newParticles.push(
-    new GameParticle({
-      x: newPosition.x,
-      y: newPosition.y,
-      opacity: 1,
-      vx: 0.12,
-      vy: 0.12,
-      opacityDecay: 0.03,
-      sizeDecay: 0.3,
-      w: 10,
-      h: 10,
-      colorIndex: 0,
-      affectedByGravity: false,
-    })
-  );
-}
+// function trailParticles(newParticles: GameParticle[], newPosition: Offset) {
+//   newParticles.push(
+//     new GameParticle({
+//       x: newPosition.x,
+//       y: newPosition.y,
+//       opacity: 1,
+//       vx: 0.12,
+//       vy: 0.12,
+//       opacityDecay: 0.03,
+//       sizeDecay: 0.3,
+//       w: 10,
+//       h: 10,
+//       colorIndex: 0,
+//       affectedByGravity: false,
+//     })
+//   );
+// }
 
-function blackholeParticle(gameData: GameData, newParticles: GameParticle[]) {
-  gameData.gameEntities.forEach((entity) => {
-    if (entity.type !== "blackhole") return;
-    const x = entity.x +
-      (Math.random() > 0.2 ? 1 : -1) * 30 +
-      30 * (Math.random() - 0.5);
-    const y = entity.y +
-      (Math.random() > 0.5 ? -1 : -1) * 30 +
-      30 * (Math.random() - 0.5);
-    const size = 2 + 8 * Math.random();
-    newParticles.push(
-      new GameParticle({
-        x: x,
-        y: y,
-        opacity: 1,
-        vx: (entity.x - x) / 10 + 7 + 2,
-        vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1) + 5,
-        opacityDecay: 0.005,
-        w: size,
-        h: size,
-        colorIndex: 2,
-      })
-    );
-  });
-}
+// function blackholeParticle(gameData: GameData, newParticles: GameParticle[]) {
+//   gameData.gameEntities.forEach((entity) => {
+//     if (entity.type !== "blackhole") return;
+//     const x = entity.x +
+//       (Math.random() > 0.2 ? 1 : -1) * 30 +
+//       30 * (Math.random() - 0.5);
+//     const y = entity.y +
+//       (Math.random() > 0.5 ? -1 : -1) * 30 +
+//       30 * (Math.random() - 0.5);
+//     const size = 2 + 8 * Math.random();
+//     newParticles.push(
+//       new GameParticle({
+//         x: x,
+//         y: y,
+//         opacity: 1,
+//         vx: (entity.x - x) / 10 + 7 + 2,
+//         vy: (y - entity.y) / 10 + (Math.random() > 0.5 ? 1 : -1) + 5,
+//         opacityDecay: 0.005,
+//         w: size,
+//         h: size,
+//         colorIndex: 2,
+//       })
+//     );
+//   });
+// }
 
-function spit2(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: Offset) {
-  for (let i = 0; i < 2; i++) {
-    const size = 6 + 4 * Math.random();
-    newParticles.push(
-      new GameParticle({
-        x: newPosition.x + 5 - 10 / 2,
-        y: newPosition.y + 5 - 10 / 2,
-        opacity: 1,
-        opacityDecay: 0.02,
-        vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
-        vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
-        w: size,
-        h: size,
-        speedDecayFactor: 0.95,
-        colorIndex: 1,
-        affectedByTimeZone: false,
-      })
-    );
-  }
-}
+// function spit2(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: Offset) {
+//   for (let i = 0; i < 2; i++) {
+//     const size = 6 + 4 * Math.random();
+//     newParticles.push(
+//       new GameParticle({
+//         x: newPosition.x + 5 - 10 / 2,
+//         y: newPosition.y + 5 - 10 / 2,
+//         opacity: 1,
+//         opacityDecay: 0.02,
+//         vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
+//         vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
+//         w: size,
+//         h: size,
+//         speedDecayFactor: 0.95,
+//         colorIndex: 1,
+//         affectedByTimeZone: false,
+//       })
+//     );
+//   }
+// }
 
-function spit1(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: Offset) {
-  for (let i = 0; i < 2; i++) {
-    const size = 2 + 3 * Math.random();
-    newParticles.push(
-      new GameParticle({
-        x: newPosition.x + 5 - 10 / 2,
-        y: newPosition.y + 5 - 10 / 2,
-        opacity: 0.8,
-        opacityDecay: 0.02,
-        vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
-        vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
-        w: size,
-        h: size,
-        speedDecayFactor: 0.95,
-        affectedByTimeZone: false,
-      })
-    );
-  }
-}
+// function spit1(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: Offset) {
+//   for (let i = 0; i < 2; i++) {
+//     const size = 2 + 3 * Math.random();
+//     newParticles.push(
+//       new GameParticle({
+//         x: newPosition.x + 5 - 10 / 2,
+//         y: newPosition.y + 5 - 10 / 2,
+//         opacity: 0.8,
+//         opacityDecay: 0.02,
+//         vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
+//         vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
+//         w: size,
+//         h: size,
+//         speedDecayFactor: 0.95,
+//         affectedByTimeZone: false,
+//       })
+//     );
+//   }
+// }
 
-function trailingSpit(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: Offset) {
-  newParticles.push(
-    new GameParticle({
-      x: newPosition.x - 5 + 20 * Math.random(),
-      y: newPosition.y - 5 + 20 * Math.random(),
-      opacity: 1,
-      opacityDecay: 0.02,
-      vx: newPongSpeed.y * (Math.random() - 0.5) * 0.3,
-      vy: newPongSpeed.x * (Math.random() - 0.5) * 0.3,
-      w: 3,
-      h: 3,
-    })
-  );
-}
+// function trailingSpit(newParticles: GameParticle[], newPosition: Offset, newPongSpeed: Offset) {
+//   newParticles.push(
+//     new GameParticle({
+//       x: newPosition.x - 5 + 20 * Math.random(),
+//       y: newPosition.y - 5 + 20 * Math.random(),
+//       opacity: 1,
+//       opacityDecay: 0.02,
+//       vx: newPongSpeed.y * (Math.random() - 0.5) * 0.3,
+//       vy: newPongSpeed.x * (Math.random() - 0.5) * 0.3,
+//       w: 3,
+//       h: 3,
+//     })
+//   );
+// }
