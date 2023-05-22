@@ -22,7 +22,7 @@ export class ChatService {
 			return ;
 		let dmRoom = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false } });
 		if (dmRoom === null)
-			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, false));
+			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, false, 1));
 		client.join(dmRoom.channelId);
 	}
 
@@ -205,7 +205,7 @@ export class ChatService {
 		if (channelName.length < 1 || channelName.length > 16)
 			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, false);
+		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, false, 1);
 		await this.channelRepository.save(ROOM);
 		await this.memberRepository.save(new Member(USER_DATA, ROOM, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
@@ -292,6 +292,8 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
 		if (MEMBER !== null)
 			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
+		CHANNEL.memberCount += 1;
+		await this.channelRepository.save(CHANNEL);
 		return this.userService.hideData(await this.memberRepository.save(new Member(FRIEND_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
 	}
 
@@ -315,6 +317,10 @@ export class ChatService {
 		MEMBER.isAdmin = isAdmin;
 		MEMBER.isBanned = isBanned;
 		MEMBER.isMuted = isMuted;
+		if (MEMBER.isBanned === true) {
+			CHANNEL.memberCount -= 1;
+			await this.channelRepository.save(CHANNEL);
+		}
 		return this.userService.hideData(await this.memberRepository.save(MEMBER));
 	}
 
@@ -335,6 +341,8 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+		CHANNEL.memberCount -= 1;
+		await this.channelRepository.save(CHANNEL);
 		this.memberRepository.delete(MEMBER);
 		return this.userService.hideData(MEMBER);
 	}

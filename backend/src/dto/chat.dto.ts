@@ -27,11 +27,14 @@ export class ChannelDTO {
 	@ApiProperty({ example: true })
 	isRoom: boolean;
 
-	@ApiProperty({ example: 123 })
+	@ApiProperty({ example: 42 })
 	channelId: number;
 
 	@ApiProperty({ example: true })
 	newMessage: boolean;
+
+	@ApiProperty({ example: 42 })
+	memberCount: number;
 }
 
 export class MemberDTO {
@@ -63,7 +66,7 @@ export class MemberDTO {
 	@ApiProperty({ example: "2023-04-01T00:00:00.000Z" })
 	lastRead: boolean;
 
-	@ApiProperty({ example: 123 })
+	@ApiProperty({ example: 42 })
 	memberId: number;
 }
 
@@ -92,7 +95,7 @@ export class MessageDTO {
 	@ApiProperty({ example: "2023-04-01T00:00:00.000Z" })
 	timeStamp: string;
 
-	@ApiProperty({ example: 123 })
+	@ApiProperty({ example: 42 })
 	messageId: number;
 
 	@ApiProperty({ example: true })
@@ -124,7 +127,7 @@ export class PostRoomBodyDTO {
 }
 
 export class PatchRoomBodyDTO {
-	@ApiProperty({ example: 123 })
+	@ApiProperty({ example: 42 })
 	channelId: number;
 
 	@ApiProperty({ example: "Doughnuts' Room" })
@@ -141,7 +144,7 @@ export class PatchRoomBodyDTO {
 }
 
 export class PostRoomMemberBodyDTO {
-	@ApiProperty({ example: 123 })
+	@ApiProperty({ example: 42 })
 	channelId: number;
 
 	@ApiProperty({ example: "schuah" })
@@ -161,7 +164,7 @@ export class PostRoomMemberBodyDTO {
 }
 
 export class PatchRoomMemberBodyDTO {
-	@ApiProperty({ example: 123 })
+	@ApiProperty({ example: 42 })
 	channelId: number;
 
 	@ApiProperty({ example: "schuah" })

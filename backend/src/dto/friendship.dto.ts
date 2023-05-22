@@ -17,7 +17,7 @@ export class FriendshipDTO {
 	@ApiProperty({ example: "PENDING | ACCEPTED | BLOCKED" })
 	status: string;
 
-	@ApiProperty({ example: 123})
+	@ApiProperty({ example: 42})
 	id: number;
 }
 
