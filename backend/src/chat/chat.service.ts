@@ -156,10 +156,10 @@ export class ChatService {
 	}
 
 	// Retrives all members of a channel
-	async getAllChannelMember(accessToken: string, channelId: number): Promise<[MemberDTO]> {
+	async getAllChannelMember(accessToken: string, channelId: number): Promise<any> {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined || MY_MEMBER.isBanned === true)
-			return;
+			return [];
 		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		return this.userService.hideData(MEMBERS);
 	}
