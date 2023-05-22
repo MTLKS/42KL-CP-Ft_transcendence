@@ -6,8 +6,10 @@ import NewChannel from './NewChannel';
 import ChannelInfo from './ChannelInfo';
 import ChannelMemberList from './ChannelMemberList';
 import { NewChannelError } from './newChannelReducer';
-import { createChannel } from '../../../../api/chatAPIs';
+import { createChannel, inviteMemberToChannel } from '../../../../api/chatAPIs';
 import ChatroomList from '../Chatroom/ChatroomList';
+import { ErrorData } from '../../../../model/ErrorData';
+import { ChannelData } from '../../../../model/ChatRoomData';
 
 function NewChatInfo() {
 
@@ -28,6 +30,26 @@ function NewChatInfo() {
     </div>
   )
 
+  async function inviteMember(channelData: ChannelData) {
+    const { members } = state;
+    const inviteErrors: number[] = [];
+
+    const allMembers = members.filter(member => member.role !== 'owner');
+    for (const member of allMembers) {
+      const inviteResponse = await inviteMemberToChannel({
+        channelId: channelData.channelId,
+        intraName: member.memberInfo.intraName,
+        isAdmin: member.role === 'admin',
+        isBanned: false,
+        isMuted: false,
+        password: null,
+      })
+      if (inviteResponse.status !== 201) {
+        inviteErrors.push(inviteResponse.status);
+      }
+    }
+  }
+
   async function createNewChannel() {
     const { channelName, password, errors, isPrivate } = state;
     let errorCount = 0;
@@ -46,15 +68,17 @@ function NewChatInfo() {
 
     if (errorCount !== 0) return ;
 
-
     const createChannelResponse = await createChannel({
       channelName: state.channelName,
       password: state.password,
       isPrivate: state.isPrivate,
     });
 
-    dispatch({ type: 'RESET' });
-    setChatBody(<ChatroomList />);
+    if (createChannelResponse.status === 201) {
+      inviteMember(createChannelResponse.data as ChannelData);
+      dispatch({ type: 'RESET' });
+      setChatBody(<ChatroomList />);
+    }
   }
 }
 

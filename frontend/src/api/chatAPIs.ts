@@ -25,7 +25,7 @@ export function updateChannel(updateChannelData: UpdateChannelData) {
   return api.patch(`${CHANNEL_NAMESPACE}`, updateChannelData);
 }
 
-export function inviteMember(inviteMemberData: InviteMemberData) {
+export function inviteMemberToChannel(inviteMemberData: InviteMemberData) {
   return api.post(`${CHANNEL_NAMESPACE}/member`, inviteMemberData);
 }
 

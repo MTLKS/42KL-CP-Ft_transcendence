@@ -16,7 +16,6 @@ function ChannelList() {
       <div className='mx-10 gap-y-4 h-full'>
         <ChatTableTitle title='channels (4)' searchable={true} setFilterKeyword={setFilterKeyword} />
         <div className='h-full w-full overflow-y-scroll'>
-          {/** The channel list */}
           <Channel />
         </div>
       </div>
