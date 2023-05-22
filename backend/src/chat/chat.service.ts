@@ -42,22 +42,23 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - channel is not found"));
 		
-		if (CHANNEL.isRoom === false) {
+		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, CHANNEL.isRoom, message, new Date().toISOString());
+		if (CHANNEL.isRoom === true) {
+			await this.messageRepository.save(NEW_MESSAGE);
+			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
+			for (let member of MEMBERS) {
+				const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+				server.to(MEMBER_CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
+			}
+		} else {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid friendhsip - you are not friends with this user"));
-			const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, false, message, new Date().toISOString());
 			await this.messageRepository.save(NEW_MESSAGE);
 			const MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
-			if (MEMBER.error !== undefined)
-				await this.memberRepository.save(new Member(USER_DATA, CHANNEL, true, false, false, new Date().toISOString()));
-			else {
-				MEMBER.lastRead = new Date().toISOString();
-				await this.memberRepository.save(MEMBER);
-			}
+			MEMBER.lastRead = new Date().toISOString();
+			await this.memberRepository.save(MEMBER);
 			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
-		} else {
-		
 		}
 	}
 
@@ -100,7 +101,12 @@ export class ChatService {
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		}
-		server.to(CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
+		
+		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
+		for (let member of MEMBERS) {
+			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+			server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
+		}
 	}
 
 	// Retrives user's member data of that channel
@@ -152,6 +158,8 @@ export class ChatService {
 	async createRoom(accessToken: string, channelName: string, isPrivate: boolean, password: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || password === undefined)
 			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
+		if (isPrivate === true && password !== null)
+			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
 		if (password !== null) {
 			if (password.length < 1 || password.length >= 16)
 				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
@@ -166,47 +174,92 @@ export class ChatService {
 		return this.userService.hideData(ROOM);
 	}
 
-	// Adds a user to a room
-	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean ): Promise<any> {
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(MY_MEMBER.error);
-		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
-		if (CHANNEL.isRoom === false)
-			return new ErrorDTO("Invalid channelId - this channel is not a room");
-		
-		if (MY_MEMBER.isAdmin === false)
-			return new ErrorDTO("Invalid channelId - requires admin privileges");
-		const USER_DATA = await this.userService.getUserDataByIntraName(accessToken, intraName);
-		if (USER_DATA.error !== undefined)
-			return new ErrorDTO(USER_DATA.error);
-		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, USER_DATA.intraName);
-		if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
-			return new ErrorDTO("Invalid intraName - you are not friends with this user");
-
-		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
-		if (MEMBER !== null)
-			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
-		return this.userService.hideData(await this.memberRepository.save(new Member(USER_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
-	}
-
 	// Updates room settings
 	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
 		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
 			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
+		if (isPrivate === true && newPassword !== null)
+			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
+		if (channelName.length < 1 || channelName.length > 16)
+			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		if (CHANNEL.password !== null && (oldPassword === null || await bcrypt.compare(oldPassword, CHANNEL.password) === false))
+			return new ErrorDTO("Invalid password - password does not match");
 		if (newPassword !== null) {
 			if (newPassword.length < 1 || newPassword.length > 16)
 				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
 			newPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
 		}
-		if (channelName.length < 1 || channelName.length > 16)
-			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
-		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const ROOM = await this.channelRepository.findOne({ where: {channelId: channelId, isRoom: true, owner: {userName: USER_DATA.userName}}, relations: ['owner'] });
-		// TBC
+
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (CHANNEL.owner.intraName !== MY_MEMBER.intraName)
+			return new ErrorDTO("Invalid channelId - requires owner privileges");
+		
+		CHANNEL.channelName = channelName;
+		CHANNEL.isPrivate = isPrivate;
+		CHANNEL.password = newPassword;
+		return this.userService.hideData(await this.channelRepository.save(CHANNEL));
 	}
 
-	// Deletes a room
-	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
+	// Adds a user to a room
+	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean, password: string): Promise<any> {
+		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined || password === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean), isMuted(boolean) and password(null | string)");
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined) {
+			const USER_DATA = await this.userService.getMyUserData(accessToken);
+			if (USER_DATA.intraName != intraName)
+				return new ErrorDTO("Invalid channelId - requires admin privileges");
+			MY_MEMBER["isAdmin"] = false;
+		}
+
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");			
+		const FRIEND_DATA = await this.userService.getUserDataByIntraName(accessToken, intraName);
+		if (FRIEND_DATA.error !== undefined)
+			return new ErrorDTO(FRIEND_DATA.error);
+		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_DATA.intraName);
+		if (FRIEND_DATA.intraName !== intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
+			return new ErrorDTO("Invalid intraName - you are not friends with this user");
+		if (MY_MEMBER.isAdmin === false && (isAdmin === true || isBanned === true || isMuted === true || FRIEND_DATA.intraName !== intraName))
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+		
+		if (CHANNEL.isPrivate === true && MY_MEMBER.isAdmin === false)
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+		else if (CHANNEL.password !== null && MY_MEMBER.isAdmin === false && (password === null || await bcrypt.compare(password, CHANNEL.password) === false))
+			return new ErrorDTO("Invalid password - password does not match");
+		
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		if (MEMBER !== null)
+			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
+		return this.userService.hideData(await this.memberRepository.save(new Member(FRIEND_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
+	}
+
+	// Updates a user's member settings
+	async updateMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean): Promise<any> {
+		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean) and isMuted(boolean)");
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (MY_MEMBER.isAdmin === false)
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		if (MEMBER === null)
+			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+		MEMBER.isAdmin = isAdmin;
+		MEMBER.isBanned = isBanned;
+		MEMBER.isMuted = isMuted;
+		return this.userService.hideData(await this.memberRepository.save(MEMBER));
 	}
 }

@@ -115,7 +115,44 @@ export class PostRoomBodyDTO {
 	password: null | string;
 }
 
+export class PatchRoomBodyDTO {
+	@ApiProperty({ example: 123 })
+	channelId: number;
+
+	@ApiProperty({ example: "Doughnuts' Room" })
+	channelName: string;
+
+	@ApiProperty({ example: true })
+	isPrivate: boolean;
+
+	@ApiProperty({ example: "password123" })
+	oldPassword: null | string;
+
+	@ApiProperty({ example: "password123" })
+	newPassword: null | string;
+}
+
 export class PostRoomMemberBodyDTO {
+	@ApiProperty({ example: 123 })
+	channelId: number;
+
+	@ApiProperty({ example: "schuah" })
+	intraName: string;
+
+	@ApiProperty({ example: true })
+	isAdmin: boolean;
+
+	@ApiProperty({ example: true })
+	isBanned: boolean;
+
+	@ApiProperty({ example: true })
+	isMuted: boolean;
+
+	@ApiProperty({ example: "password123" })
+	password: null | string;
+}
+
+export class PatchRoomMemberBodyDTO {
 	@ApiProperty({ example: 123 })
 	channelId: number;
 
