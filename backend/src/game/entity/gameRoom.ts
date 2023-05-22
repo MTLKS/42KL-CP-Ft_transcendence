@@ -1,5 +1,6 @@
 import { Ball } from './ball';
 import { Rect } from './rect';
+import { Paddle } from './paddle';
 import { GameSetting } from './gameSetting';
 import { Server } from 'socket.io';
 import { GameDTO } from 'src/dto/game.dto';
@@ -14,17 +15,21 @@ import { MatchService } from 'src/match/match.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/entity/users.entity';
 
+//Direction refer to which paddle is checking(1 for left, -1 for right, 0 for other than paddle)
+//It is pass through in constructor.
 export class CollisionResult {
   collided: boolean;
   collideTime: number;
   normalX: number;
   normalY: number;
+  direction: number;
 
-  constructor() {
+  constructor(direction: number) {
     this.collided = false;
     this.collideTime = 0;
     this.normalX = 0;
     this.normalY = 0;
+    this.direction = direction;
   }
 }
 
@@ -38,8 +43,8 @@ export class GameRoom {
   ballInitSpeedX: number;
   ballInitSpeedY: number;
   Ball: Ball;
-  leftPaddle: Rect;
-  rightPaddle: Rect;
+  leftPaddle: Paddle;
+  rightPaddle: Paddle;
   interval: NodeJS.Timer | null;
   resetTime: number;
   lastWinner: string;
@@ -79,13 +84,13 @@ export class GameRoom {
       setting.ballSize,
       setting.ballSize,
     );
-    this.leftPaddle = new Rect(
+    this.leftPaddle = new Paddle(
       setting.paddleOffsetX,
       this.canvasHeight / 2,
       setting.paddleWidth,
       setting.leftPaddleHeight,
     );
-    this.rightPaddle = new Rect(
+    this.rightPaddle = new Paddle(
       this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth,
       this.canvasHeight / 2,
       setting.paddleWidth,
@@ -184,14 +189,14 @@ export class GameRoom {
       );
   }
 
-  objectCollision(ball: Ball, paddle: Rect): CollisionResult {
+  objectCollision(ball: Ball, paddle: Rect, direction: number): CollisionResult {
     let xInvEntry, yInvEntry;
     let xInvExit, yInvExit;
     let xEntry, yEntry;
     let xExit, yExit;
     let entryTime, exitTime;
 
-    let result = new CollisionResult();
+    let result = new CollisionResult(direction);
 
     if (ball.velX > 0) {
       xInvEntry = paddle.posX - (ball.posX + ball.width);
@@ -256,17 +261,25 @@ export class GameRoom {
   gameCollisionDetection() {
     let result = null;
     if (this.Ball.posX > this.canvasWidth * 0.85) {
-      result = this.objectCollision(this.Ball, this.rightPaddle);
+      result = this.objectCollision(this.Ball, this.rightPaddle, -1);
     } else if (this.Ball.posX < this.canvasWidth * 0.15) {
-      result = this.objectCollision(this.Ball, this.leftPaddle);
+      result = this.objectCollision(this.Ball, this.leftPaddle, 1);
     }
 
     if (result && result.collided) {
-      this.Ball.collisionResponse(
-        result.collideTime,
-        result.normalX,
-        result.normalY,
-      );
+      if (result.direction == 1) {
+        this.leftPaddle.paddleCollisionAction(this.Ball, 
+          result.collideTime, result.normalX, result.normalY);
+      }
+      else if (result.direction == -1) {
+        this.rightPaddle.paddleCollisionAction(this.Ball, 
+          result.collideTime, result.normalX, result.normalY);
+      }
+      // this.Ball.collisionResponse(
+      //   result.collideTime,
+      //   result.normalX,
+      //   result.normalY,
+      // );
     }
   }
 
