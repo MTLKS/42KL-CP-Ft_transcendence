@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext';

@@ -14,16 +14,13 @@ function ChannelInfoForm(props: ChannelInfoProps) {
   const { state, dispatch } = useContext(NewChannelContext)
   const { modifying, setModifyChannel } = props;
   const [channelName, setChannelName] = useState<string>(state.channelName);
-  const [password, setPassword] = useState<string>('');
+  const [password, setPassword] = useState<string>(''); // old password for editing, new password for creating
+  const [newPassword, setNewPassword] = useState<string>(''); // new password for editing, should only use when editing
   const [isPrivate, setIsPrivate] = useState<boolean>(state.isPrivate);
   const [isPasswordProtected, setIsPasswordProtected] = useState<boolean>(false);
   const [showChannelNameNamingRules, setShowChannelNameNamingRules] = useState<boolean>(false);
   const [showPasswordRules, setShowPasswordRules] = useState<boolean>(false);
   const [previousChannelInfo, setPreviousChannelInfo] = useState<NewChannelState>(state);
-
-  useEffect(() => {
-    console.log(state);
-  }, [state]);
 
   return (
     <div className='w-[70%] h-fit flex flex-row items-center mx-auto'>
@@ -71,10 +68,26 @@ function ChannelInfoForm(props: ChannelInfoProps) {
               }
             </div>
           }
+          {
+            !state.isNewChannel && !isPrivate && isPasswordProtected && modifying &&
+            <div className='flex flex-col gap-y-2'>
+              <p className='text-highlight text-sm font-extrabold'>New Password</p>
+              <div className='flex flex-row'>
+                <input type="password" id='channel-new-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={newPassword} onChange={handleNewPasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
+                <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowNewPassword} onMouseUp={toggleShowNewPassword}><FaEye className='mx-auto' /></button>
+              </div>
+              {
+                (state.errors.includes(NewChannelError.INVALID_NEW_PASSWORD) || (!state.isNewChannel && showPasswordRules)) &&
+                <div className='text-xs px-[1ch] text-highlight/50'>
+                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${newPassword.length > 0 && newPassword.length <= 16 && 'text-accGreen'}`}>{newPassword.length > 0 && newPassword.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                </div>
+              }
+            </div>
+          }
           {!modifying && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>EDIT CHANNEL</button>}
           {modifying && !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
           {modifying && !isPrivate && isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button>}
-          {!state.isNewChannel && modifying && <button className='bg-dimshadow text-accRed w-fit mx-auto p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
+          {!state.isNewChannel && modifying && <button className='bg-dimshadow text-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
         </div>
       </div>
     </div>
@@ -82,7 +95,6 @@ function ChannelInfoForm(props: ChannelInfoProps) {
 
   function toggleEditChannel() {
     setModifyChannel();
-    console.log(modifying);
     if (!modifying) {
       const clone = JSON.parse(JSON.stringify(state));
       setPreviousChannelInfo(clone);
@@ -99,7 +111,11 @@ function ChannelInfoForm(props: ChannelInfoProps) {
     // Toggle channel visibility (public or private)
     setIsPrivate(!isPrivate);
     dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPrivate });
-    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
+
+    if (!isPrivate) {
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
+    }
   }
 
   function togglePassword() {
@@ -109,6 +125,11 @@ function ChannelInfoForm(props: ChannelInfoProps) {
     if (isPasswordProtected) {
       setPassword('');
       dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
+    }
+    
+    if (isPasswordProtected && !state.isNewChannel) {
+      setNewPassword('');
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
     }
   }
 
@@ -123,6 +144,17 @@ function ChannelInfoForm(props: ChannelInfoProps) {
     }
   }
 
+  function toggleShowNewPassword(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    e.preventDefault();
+    e.stopPropagation();
+    const passwordInput = document.getElementById('channel-new-password') as HTMLInputElement;
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+    } else {
+      passwordInput.type = 'password';
+    }
+  }
+
   function handleChannelNameOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     setChannelName(e.target.value);
     dispatch({ type: 'SET_CHANNEL_NAME', channelName: e.target.value });
@@ -130,7 +162,12 @@ function ChannelInfoForm(props: ChannelInfoProps) {
 
   function handlePasswordOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     setPassword(e.target.value);
-    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value })
+    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+  }
+
+  function handleNewPasswordOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setNewPassword(e.target.value);
+    dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: e.target.value });
   }
 }
 

@@ -9,6 +9,7 @@ interface ChannelMemberRole {
 export enum NewChannelError {
   INVALID_CHANNEL_NAME = 400,
   INVALID_PASSWORD = 410,
+  INVALID_NEW_PASSWORD = 411,
 }
 
 export interface NewChannelState {
@@ -16,6 +17,7 @@ export interface NewChannelState {
   channelName: string,
   isPrivate: boolean,
   password: string | null,
+  newPassword: string | null,
   errors: NewChannelError[],
   isNewChannel: boolean,
 }
@@ -25,6 +27,7 @@ export const newChannelInitialState: NewChannelState = {
   channelName: '',
   isPrivate: false,
   password: null,
+  newPassword: null,
   errors: [],
   isNewChannel: true,
 }
@@ -39,6 +42,7 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_NAME', channelName: string }
   | { type: 'SET_CHANNEL_PRIVACY', isPrivate: boolean }
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
+  | { type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: string | null }
   | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData, members: MemberData[] }
   | { type: 'ADD_ERROR', error: NewChannelError}
   | { type: 'IS_EDIT_CHANNEL'}
@@ -130,6 +134,12 @@ export default function newChannelReducer(state = newChannelInitialState, action
         password: action.password,
       }
     }
+    case 'SET_CHANNEL_NEW_PASSWORD': {
+      return {
+        ...state,
+        newPassword: action.newPassword,
+      }
+    }
     case 'SET_CHANNEL_PRIVACY': {
       return {
         ...state,
@@ -142,7 +152,8 @@ export default function newChannelReducer(state = newChannelInitialState, action
         ...state,
         channelName: chatroomData.channelName,
         isPrivate: chatroomData.isPrivate,
-        password: chatroomData.password,
+        password: chatroomData.password === null ? null : '',
+        newPassword: null,
         members: members.map(member => {
           const role = member.isAdmin ? (chatroomData.owner?.intraName === member.user.intraName ? 'owner' : 'admin') : 'member';
           const memberRole: ChannelMemberRole = {
