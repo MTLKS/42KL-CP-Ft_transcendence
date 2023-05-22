@@ -115,10 +115,11 @@ export class PowerGameRoom extends GameRoom{
 		this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
 		this.Ball.update();
 
-		console.log(this.Ball.velX, this.Ball.velY);
+		this.leftPaddle.updateDelta();
+		this.rightPaddle.updateDelta();
 
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-		if (score!=0){
+		if (score == 1 || score == 2){
 			if (score == 1){
 				this.player1Score++;
 				this.lastWinner = "player1";
@@ -132,6 +133,13 @@ export class PowerGameRoom extends GameRoom{
 			this.insideField = false;
 			this.paddleHitCount = 0;
 			this.gameReset = true;
+		}
+
+		if (score == 3){
+			if (this.currentEffect != FieldEffect.GRAVITY){
+				this.Ball.accelX = 0;
+				this.Ball.accelY = 0;
+			}
 		}
 		
 		if (this.elapseTime >= this.fieldEffectTimer){
@@ -194,6 +202,8 @@ export class PowerGameRoom extends GameRoom{
 		
 		if (result && result.collided){
 			this.paddleTimer = Date.now();
+			this.Ball.accelX = 0;
+			this.Ball.accelY = 0;
 			//Check left paddle
 			if (result.direction == 1){
 				if (this.leftPaddle.powerUp == PowerUp.SPEED){
@@ -202,7 +212,6 @@ export class PowerGameRoom extends GameRoom{
 				this.leftPaddle.paddleCollisionAction(this.Ball,
 					result.collideTime,
 					result.normalX,result.normalY,
-					false,
 					this.paddleHitCount);
 			}
 			//Check right paddle
@@ -213,7 +222,6 @@ export class PowerGameRoom extends GameRoom{
 				this.rightPaddle.paddleCollisionAction(this.Ball,
 					result.collideTime,
 					result.normalX,result.normalY,
-					false,
 					this.paddleHitCount);
 			}
 		}
@@ -245,7 +253,7 @@ export class PowerGameRoom extends GameRoom{
 
 	fieldChange(server: Server){
 		// let effect = this.getRandomNum();
-		let effect = 2;
+		let effect = 0;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

@@ -83,6 +83,8 @@ export class GameRoom {
       this.canvasHeight / 2,
       setting.ballSize,
       setting.ballSize,
+      setting.ballSpeedX,
+      setting.ballSpeedY,
     );
     this.leftPaddle = new Paddle(
       setting.paddleOffsetX,
@@ -267,14 +269,7 @@ export class GameRoom {
     }
 
     if (result && result.collided) {
-      if (result.direction == 1) {
-        this.leftPaddle.paddleCollisionAction(this.Ball, 
-          result.collideTime, result.normalX, result.normalY);
-      }
-      else if (result.direction == -1) {
-        this.rightPaddle.paddleCollisionAction(this.Ball, 
-          result.collideTime, result.normalX, result.normalY);
-      }
+      this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
     }
   }
 
@@ -406,6 +401,8 @@ export class GameRoom {
   resetGame(server: Server) {
     this.Ball.posX = this.canvasWidth / 2;
     this.Ball.posY = this.canvasHeight / 2;
+    this.Ball.accelX = 0;
+    this.Ball.accelY = 0;
     if (this.lastWinner.length == 0) {
       this.Ball.velX =
         this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);

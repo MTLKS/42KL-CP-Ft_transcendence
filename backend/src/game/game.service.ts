@@ -18,7 +18,8 @@ import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
 
 export enum PowerUp{
-  SPEED = 0,
+  NORMAL = 0,
+  SPEED,
   SIZE,
   PRECISION,
   SPIN
@@ -269,8 +270,10 @@ export class GameService {
         ROOM_SETTING,
         this.matchService,
         this.userService,
-        PowerUp.PRECISION,//To change
-        PowerUp.PRECISION,//To change
+        PowerUp.SPIN,
+        PowerUp.NORMAL,
+        // PowerUp.SPEED,//TODO: change
+        // PowerUp.SPEED,//TODO: change
       );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);

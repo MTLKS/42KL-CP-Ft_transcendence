@@ -4,8 +4,15 @@ import { DynamicRect } from "./dynamicRect";
  * Ball class. modify the check constraint function to score instead of bounce
  */
 export class Ball extends DynamicRect{
-	constructor (posX, posY, width, height, mass = 1){
+	initialSpeedX: number;
+	initialSpeedY: number;
+
+	constructor (posX: number, posY: number, width: number, height: number, 
+		initSpeedX: number, initSpeedY: number, mass: number = 1){
 		super(posX, posY, width, height,mass);
+
+		this.initialSpeedX = initSpeedX;
+		this.initialSpeedY = initSpeedY;
 	}
 
 	/**
@@ -28,10 +35,12 @@ export class Ball extends DynamicRect{
 		if (this.posY <= 0){
 			this.posY = 0;
 			this.velY *= -1;
+			return 3
 		}
 		if (this.posY + this.height >= borderHeight){
 			this.posY = borderHeight - this.height;
 			this.velY *= -1;
+			return 3
 		}
 		return 0;
 	}
