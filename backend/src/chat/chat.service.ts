@@ -190,11 +190,11 @@ export class ChatService {
 		if (isPrivate === true && password !== null)
 			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");
 		if (password !== null) {
-			if (password.length < 1 || password.length >= 16)
+			if (password.length < 1 || password.length > 16)
 				return new ErrorDTO("Invalid password - password must be between 1-16 characters");
 			password = await bcrypt.hash(password, await bcrypt.genSalt(10));
 		}
-		if (channelName.length < 1 || channelName.length >= 16)
+		if (channelName.length < 1 || channelName.length > 16)
 			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, false);
