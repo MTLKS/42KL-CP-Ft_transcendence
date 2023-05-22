@@ -99,7 +99,12 @@ export class MessageDTO {
 	hidden: boolean;
 }
 
-export class GetMessageBodyDTO {
+export class GetChannelQueryDTO {
+	@ApiProperty({ description: null, required: false })
+	startWith: string;
+}
+
+export class GetMessageQueryDTO {
 	@ApiProperty({ description: "Defaults to 100", required: false })
 	perPage: number;
 
