@@ -1,11 +1,11 @@
 import { FriendshipService } from "src/friendship/friendship.service";
 import { Friendship } from "src/entity/friendship.entity";
+import { ChannelDTO, MemberDTO } from "src/dto/chat.dto";
 import { Channel } from "src/entity/channel.entity";
 import { Message } from "src/entity/message.entity";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Member } from "src/entity/member.entity";
-import { ChannelDTO } from "src/dto/chat.dto";
 import { ErrorDTO } from "src/dto/error.dto";
 import { Injectable } from "@nestjs/common";
 import { Repository, In } from "typeorm";
@@ -155,8 +155,17 @@ export class ChatService {
 		return this.userService.hideData(channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime()));
 	}
 
+	// Retrives all members of a channel
+	async getAllChannelMember(accessToken: string, channelId: number): Promise<[MemberDTO]> {
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined || MY_MEMBER.isBanned === true)
+			return;
+		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
+		return this.userService.hideData(MEMBERS);
+	}
+
 	// Retrives all messages from a channel
-	async getAllMessageFromChannel(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
+	async getAllChannelMessage(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
 		perPage = Number(perPage);
 		page = Number(page);
 		if (channelId === undefined)
