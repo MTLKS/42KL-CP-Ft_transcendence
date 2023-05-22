@@ -12,9 +12,9 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   const { state, dispatch } = useContext(NewChannelContext)
   const { modifying } = props;
-  const [channelName, setChannelName] = useState<string>('');
+  const [channelName, setChannelName] = useState<string>(state.channelName);
   const [password, setPassword] = useState<string>('');
-  const [isPrivate, setIsPrivate] = useState<boolean>(false);
+  const [isPrivate, setIsPrivate] = useState<boolean>(state.isPrivate);
   const [isPasswordProtected, setIsPasswordProtected] = useState<boolean>(false);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ function ChannelInfo(props: ChannelInfoProps) {
             <p className='text-highlight text-base font-extrabold uppercase underline'>{isPrivate ? 'private' : 'public'}</p>
           </div>
         </button>
-        <div className={`flex flex-col ${!isPasswordProtected && 'my-auto'} gap-y-4 w-[60%]`}>
+        <div className={`flex flex-col ${isPrivate && 'my-auto'} gap-y-4 w-[60%]`}>
           <div className='flex flex-col gap-y-2'>
             <p className='text-highlight text-sm font-extrabold'>Channel Name</p>
             {
@@ -55,7 +55,7 @@ function ChannelInfo(props: ChannelInfoProps) {
             }
           </div>
           {
-            isPasswordProtected && modifying &&
+            !isPrivate && isPasswordProtected && modifying &&
             <div className='flex flex-col gap-y-2'>
               <p className='text-highlight text-sm font-extrabold'>Password</p>
               <div className='flex flex-row'>
@@ -65,7 +65,7 @@ function ChannelInfo(props: ChannelInfoProps) {
             </div>
           }
           { !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button> }
-          { isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button> }
+          { !isPrivate && isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button> }
         </div>
       </div>
     </div>
@@ -75,6 +75,7 @@ function ChannelInfo(props: ChannelInfoProps) {
     // Toggle channel visibility (public or private)
     setIsPrivate(!isPrivate);
     dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPrivate });
+    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
   }
 
   function togglePassword() {

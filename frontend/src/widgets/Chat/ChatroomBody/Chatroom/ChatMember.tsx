@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { FaCheck, FaPlus } from 'react-icons/fa'
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { FaCheck, FaMinus, FaPlus } from 'react-icons/fa'
 import { FriendData } from '../../../../model/FriendData';
 import UserContext from '../../../../contexts/UserContext';
 import { UserData } from '../../../../model/UserData';
@@ -12,18 +12,41 @@ interface ChatMemberProps {
   memberRole?: 'owner' | 'admin' | 'member';
 }
 
-function ChatMemberRoleTag(props: { role: 'owner' | 'admin' | 'member' }) {
-  const { role } = props;
+interface ChatMemberRoleTagProps {
+  role: 'owner' | 'admin' | 'member';
+  intraName: string;
+}
+
+function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
+
+  const { state, dispatch } = useContext(NewChannelContext);
+  const { role, intraName } = props;
+  const [isPressed, setIsPressed] = useState(false);
+
+  if (role === 'member') {
+    return (
+      <div className='flex flex-row overflow-hidden'>
+        <button
+          className={`w-[100%] overflow-hidden bg-dimshadow text-highlight border-highlight border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2`}
+          onClick={promoteOrDemoteAsAdmin}
+        >
+          {isPressed ? <FaMinus className='text-base'/> : <FaPlus className='text-base'/>}
+          <p>admin</p>
+        </button>
+      </div>
+    )
+  }
 
   if (role === 'admin') {
     return (
-      <div
-        className='bg-dimshadow text-highlight hover:text-dimshadow hover:bg-highlight hover:border-0 border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2'
-        onMouseDown={(e) => { e.preventDefault() }}
-        onMouseUp={(e) => { e.preventDefault() }}
-      >
-        <FaPlus className='text-base'/>
-        <p>{role}</p>
+      <div className='flex flex-row overflow-hidden'>
+        <button
+          className={`w-[100%] overflow-hidden ${isPressed ? 'bg-highlight text-dimshadow' : 'bg-dimshadow text-highlight'} border-highlight border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2`}
+          onClick={promoteOrDemoteAsAdmin}
+        >
+          {isPressed ? <FaMinus className='text-base'/> : <FaPlus className='text-base'/>}
+          <p>admin</p>
+        </button>
       </div>
     )
   }
@@ -35,13 +58,23 @@ function ChatMemberRoleTag(props: { role: 'owner' | 'admin' | 'member' }) {
       </div>
     )
   }
-  return <></>
+
+  return null;
+
+  function promoteOrDemoteAsAdmin() {
+    setIsPressed(!isPressed);
+    if (isPressed) {
+      dispatch({ type: 'ASSIGN_AS_MEMBER', intraName: intraName });
+    } else {
+      dispatch({ type: 'ASSIGN_AS_ADMIN', intraName: intraName });
+    }
+  }
 }
 
 function ChatMember(props: ChatMemberProps) {
 
   const { selectable, userData, memberRole } = props;
-  const { state, dispatch } = useContext(NewChannelContext);
+  const { dispatch } = useContext(NewChannelContext);
   const [isSelected, setIsSelected] = useState(props.isSelected || false);
 
   return (
@@ -62,7 +95,7 @@ function ChatMember(props: ChatMemberProps) {
         </div>
         <p className={`'text-base font-extrabold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre`}>{userData.userName} ({userData.intraName})</p>
       </div>
-      { memberRole !== undefined && <ChatMemberRoleTag role={memberRole} /> }
+      { memberRole !== undefined && <ChatMemberRoleTag intraName={userData.intraName} role={memberRole} /> }
     </div>
   )
 

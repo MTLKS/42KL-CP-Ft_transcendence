@@ -11,10 +11,6 @@ function NewChatInfo() {
   const { state, dispatch } = useContext(NewChannelContext);
   const { setChatBody } = useContext(ChatContext);
 
-  useEffect(() => {
-    console.log("newchatinfo", state);
-  }, [])
-
   return (
     <div className='flex flex-col'>
       <ChatNavbar
@@ -30,6 +26,7 @@ function NewChatInfo() {
   )
 
   function createChannel() {
+    console.log("Create channel with this info", state);
   }
 }
 
