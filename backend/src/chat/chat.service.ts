@@ -41,7 +41,12 @@ export class ChatService {
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - channel is not found"));
-		
+		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
+		if (MY_MEMBER.error !== undefined)
+			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO(MY_MEMBER.error));
+		if (MY_MEMBER.isMuted === true || MY_MEMBER.isBanned === true)
+			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - you are muted or banned from this channel"));
+
 		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, CHANNEL.isRoom, message, new Date().toISOString());
 		if (CHANNEL.isRoom === true) {
 			await this.messageRepository.save(NEW_MESSAGE);
@@ -55,11 +60,10 @@ export class ChatService {
 		} else {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
-				return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid friendhsip - you are not friends with this user"));
+				return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - you are not friends with this user"));
 			await this.messageRepository.save(NEW_MESSAGE);
-			const MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
-			MEMBER.lastRead = new Date().toISOString();
-			await this.memberRepository.save(MEMBER);
+			MY_MEMBER.lastRead = new Date().toISOString();
+			await this.memberRepository.save(MY_MEMBER);
 			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 		}
 	}
@@ -98,6 +102,8 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
+		if (MY_MEMBER.isBanned === true)
+			return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName);
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
@@ -117,7 +123,7 @@ export class ChatService {
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
-		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - member is not found in that channelId") : this.userService.hideData(MEMBER_DATA);
+		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - you are not a member of this channel") : this.userService.hideData(MEMBER_DATA);
 	}
 
 	// Retrives all channel of the user
@@ -127,6 +133,8 @@ export class ChatService {
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
 		let channel = [];
 		for (let member of MY_MEMBERS) {
+			if (member.isBanned === true)
+				continue;
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const CHANNEL_ID = MEMBERS.map(member => member.channel.channelId);
 			const LAST_MESSAGE = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: MY_CHANNEL.channelId } }], order: { timeStamp: "DESC" } });
