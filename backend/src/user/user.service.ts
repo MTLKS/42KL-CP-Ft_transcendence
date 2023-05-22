@@ -148,7 +148,7 @@ export class UserService {
 				else if (key === "tfaSecret")
 					OBJ[key] = "HIDDEN";
 				else if (key === "password")
-					OBJ[key] = "HIDDEN";
+					OBJ[key] = OBJ[key] === null ? null : "HIDDEN";
 			}
 			return OBJ;
 		}
