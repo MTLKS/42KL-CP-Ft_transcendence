@@ -196,13 +196,31 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
-		if (CHANNEL.owner.intraName !== MY_MEMBER.intraName)
+		if (CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
 			return new ErrorDTO("Invalid channelId - requires owner privileges");
 		
 		CHANNEL.channelName = channelName;
 		CHANNEL.isPrivate = isPrivate;
 		CHANNEL.password = newPassword;
 		return this.userService.hideData(await this.channelRepository.save(CHANNEL));
+	}
+
+	// Deletes a room
+	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
+		if (channelId === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number)");
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
+			return new ErrorDTO("Invalid channelId - requires owner privileges");
+		await this.memberRepository.delete({ channel: { channelId: channelId } });
+		await this.messageRepository.delete({ receiverChannel: { channelId: channelId } });
+		await this.channelRepository.delete({ channelId: channelId });
+		return this.userService.hideData(CHANNEL);
 	}
 
 	// Adds a user to a room
@@ -254,7 +272,7 @@ export class ChatService {
 		if (CHANNEL === null || CHANNEL.isRoom === false)
 			return new ErrorDTO("Invalid channelId - channel is not found");
 		
-		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
 		MEMBER.isAdmin = isAdmin;
@@ -262,7 +280,7 @@ export class ChatService {
 		MEMBER.isMuted = isMuted;
 		return this.userService.hideData(await this.memberRepository.save(MEMBER));
 	}
-	
+
 	// Deletes a user from a room
 	async deleteMember(accessToken: string, channelId: number, intraName: string): Promise<any> {
 		if (channelId === undefined || intraName === undefined)
@@ -270,7 +288,7 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
-		if (MY_MEMBER.isAdmin === false)
+		if (MY_MEMBER.user.intraName !== intraName || MY_MEMBER.isAdmin === false)
 			return new ErrorDTO("Invalid channelId - requires admin privileges");
 
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });

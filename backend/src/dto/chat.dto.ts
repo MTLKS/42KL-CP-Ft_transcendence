@@ -97,10 +97,10 @@ export class MessageDTO {
 }
 
 export class GetMessageBodyDTO {
-	@ApiProperty({ description: "Defaults to 100" })
+	@ApiProperty({ description: "Defaults to 100", required: false })
 	perPage: number;
 
-	@ApiProperty({ description: "Defaults to 1" })
+	@ApiProperty({ description: "Defaults to 1", required: false })
 	page: number;
 }
 
@@ -167,12 +167,4 @@ export class PatchRoomMemberBodyDTO {
 
 	@ApiProperty({ example: true })
 	isMuted: boolean;
-}
-
-export class DeleteRoomMemberBodyDTO {
-	@ApiProperty({ example: 123 })
-	channelId: number;
-
-	@ApiProperty({ example: "schuah" })
-	intraName: string;
 }

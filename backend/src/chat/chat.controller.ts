@@ -1,4 +1,4 @@
-import { ChannelDTO, DeleteRoomMemberBodyDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
+import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
 import { Body, Controller, Get, Headers, Param, Post, Patch, Query, Delete } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
@@ -43,20 +43,28 @@ export class ChatController {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
 	}
 
-	@Post('room/member')
-	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid channelId - channel is not found", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
-	@ApiOkResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
-	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
-		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted, body.password);
-	}
-
 	@Patch('room')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid channelName - channelName must be between 1-16 characters", "Invalid channelId - channel is not found", "Invalid password - password does not match", "Invalid password - password must be between 1-16 characters", "Invalid channelId - requires owner privileges"])
 	@ApiOkResponse({ description: "Returns the updated room (requires owner privileges)", type: ChannelDTO})
 	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomBodyDTO): any {
 		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
+	}
+
+	@Delete('room/:channelID')
+	@UseGuards(AuthGuard)
+	@ApiCommonHeader()
+	@ApiOkResponse({ description: "Returns the deleted room (requires owner privileges)", type: ChannelDTO})
+	deleteRoom(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number): any {
+		return this.chatService.deleteRoom(accessToken, channelId);
+	}
+
+	@Post('room/member')
+	@UseGuards(AuthGuard)
+	@ApiCommonHeader(["Invalid channelId - channel is not found", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
+	@ApiOkResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
+	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
+		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted, body.password);
 	}
 
 	@Patch('room/member')
@@ -67,11 +75,11 @@ export class ChatController {
 		return this.chatService.updateMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
 	}
 
-	@Delete('room/member')
+	@Delete('room/member/:channelID/:intraName')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelId(number) and intraName(string)", "Invalid channelId - requires admin privileges", "Invalid channelId - channel is not found", "Invalid intraName - user is not a member of this channel"])
 	@ApiOkResponse({ description: "Returns the deleted member (requires admin privileges)", type: MemberDTO})
-	deleteMember(@Headers('Authorization') accessToken: string, @Body() body: DeleteRoomMemberBodyDTO): any {
-		return this.chatService.deleteMember(accessToken, body.channelId, body.intraName);
+	deleteMember(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number, @Param('intraName') intraName: string): any {
+		return this.chatService.deleteMember(accessToken, channelId, intraName);
 	}
 }
