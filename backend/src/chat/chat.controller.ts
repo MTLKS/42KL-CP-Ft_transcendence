@@ -1,10 +1,11 @@
 import { ChannelDTO, GetChannelQueryDTO, GetMessageQueryDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
 import { Body, Controller, Get, Headers, Param, Post, Patch, Query, Delete } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiHeader, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
 import { UseGuards } from "@nestjs/common";
+import { TFAGuard } from "src/guard/TFAGuard";
 
 @ApiTags("Chat")
 @Controller("chat")
@@ -52,17 +53,19 @@ export class ChatController {
 	}
 
 	@Patch('room')
-	@UseGuards(AuthGuard)
+	@UseGuards(TFAGuard)
+	@ApiHeader({ name: 'OTP', description: 'OTP 6 digit code (eg. 123456)', required: true })
 	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid channelName - channelName must be between 1-16 characters", "Invalid channelId - channel is not found", "Invalid password - password does not match", "Invalid password - password must be between 1-16 characters", "Invalid channelId - requires owner privileges"])
-	@ApiOkResponse({ description: "Returns the updated room (requires owner privileges)", type: ChannelDTO})
+	@ApiOkResponse({ description: "Returns the updated room (requires owner privileges, TFA if enabled)", type: ChannelDTO})
 	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomBodyDTO): any {
 		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
 	}
 
 	@Delete('room/:channelId')
-	@UseGuards(AuthGuard)
+	@UseGuards(TFAGuard)
 	@ApiCommonHeader()
-	@ApiOkResponse({ description: "Returns the deleted room (requires owner privileges)", type: ChannelDTO})
+	@ApiHeader({ name: 'OTP', description: 'OTP 6 digit code (eg. 123456)', required: true })
+	@ApiOkResponse({ description: "Returns the deleted room (requires owner privileges, TFA if enabled)", type: ChannelDTO})
 	deleteRoom(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number): any {
 		return this.chatService.deleteRoom(accessToken, channelId);
 	}
