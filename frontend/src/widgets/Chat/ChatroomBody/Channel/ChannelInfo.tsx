@@ -14,12 +14,21 @@ function ChannelInfo(props: ChannelInfoProps) {
   const { modifying } = props;
   const [channelName, setChannelName] = useState<string>('');
   const [password, setPassword] = useState<string>('');
-  const [isPublic, setIsPublic] = useState<boolean>(true);
+  const [isPrivate, setIsPrivate] = useState<boolean>(false);
   const [isPasswordProtected, setIsPasswordProtected] = useState<boolean>(false);
 
   useEffect(() => {
     console.log("channelinfo", state);
   }, [state]);
+
+  useEffect(() => {
+    console.log("CHANNEL INFO:", {
+      channelName: channelName,
+      password: password,
+      isPrivate: isPrivate,
+      isPasswordProtected: isPasswordProtected,
+    });
+  }, [channelName, password, isPrivate, isPasswordProtected]);
 
   return (
     <div className='w-[70%] h-fit flex flex-row items-center mx-auto'>
@@ -29,16 +38,16 @@ function ChannelInfo(props: ChannelInfoProps) {
           onClick={toggleChannelVisibility}
         >
           <div className='hidden group-hover:flex transition-all duration-200 ease-in-out absolute p-2 top-0 w-full h-full bg-highlight/80 overflow-hidden rounded text-xl font-extrabold text-dimshadow'>
-            <p className='my-auto w-full h-fit uppercase'>Switch to {isPublic ? 'private' : 'public'}</p>
+            <p className='my-auto w-full h-fit uppercase'>Switch to {isPrivate ? 'public' : 'private'}</p>
           </div>
           <div className='w-full h-fit flex flex-col items-center my-auto gap-y-2'>
-            {isPublic ? <ImEarth className='text-highlight text-7xl' /> : <FaUserSecret className='text-highlight text-7xl' />}
-            <p className='text-highlight text-base font-extrabold uppercase underline'>{isPublic ? 'public' : 'private'}</p>
+            {isPrivate ? <FaUserSecret className='text-highlight text-7xl' /> : <ImEarth className='text-highlight text-7xl' />}
+            <p className='text-highlight text-base font-extrabold uppercase underline'>{isPrivate ? 'private' : 'public'}</p>
           </div>
         </button>
-        <div className='flex flex-col gap-y-4 w-[60%]'>
+        <div className={`flex flex-col ${!isPasswordProtected && 'my-auto'} gap-y-4 w-[60%]`}>
           <div className='flex flex-col gap-y-2'>
-            <p className='text-highlight text-sm font-extrabold'>Channel Name</p> {/** > 1 && <= 16 */}
+            <p className='text-highlight text-sm font-extrabold'>Channel Name</p>
             {
               modifying
                 ? <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-sm font-extrabold text-center text-highlight py-2 px-4 outline-none w-full cursor-text' autoComplete='off' value={channelName} onChange={handleChannelNameOnChange}/>
@@ -50,12 +59,12 @@ function ChannelInfo(props: ChannelInfoProps) {
             <div className='flex flex-col gap-y-2'>
               <p className='text-highlight text-sm font-extrabold'>Password</p>
               <div className='flex flex-row'>
-                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password} onChange={handlePasswordOnChange} />
-                <button className='bg-highlight aspect-square h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
+                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password} onChange={handlePasswordOnChange} />
+                <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
               </div>
             </div>
           }
-          { !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button> }
+          { !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button> }
           { isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button> }
         </div>
       </div>
@@ -63,15 +72,18 @@ function ChannelInfo(props: ChannelInfoProps) {
   )
 
   function toggleChannelVisibility() {
-    console.log('toggleChannelprivacy');
-    dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPublic });
-    setIsPublic(!isPublic);
+    // Toggle channel visibility (public or private)
+    setIsPrivate(!isPrivate);
+    dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPrivate });
   }
 
   function togglePassword() {
+    // Toggle password protection
     setIsPasswordProtected(!isPasswordProtected);
-    if (!isPasswordProtected) {
+    // if currently is password protected, clear password
+    if (isPasswordProtected) {
       setPassword('');
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
     }
   }
 
@@ -93,7 +105,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   function handlePasswordOnChange(e: React.ChangeEvent<HTMLInputElement>) {
     setPassword(e.target.value);
-    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value })
   }
 }
 

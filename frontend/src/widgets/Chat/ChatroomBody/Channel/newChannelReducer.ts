@@ -38,8 +38,9 @@ export type NewChannelAction =
   | { type: 'ASSIGN_AS_MEMBER', intraName: string}
   | { type: 'SET_CHANNEL_NAME', channelName: string }
   | { type: 'SET_CHANNEL_PRIVACY', isPrivate: boolean }
-  | { type: 'SET_CHANNEL_PASSWORD', password: string }
+  | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
   | { type: 'CREATE_CHANNEL' }
+  | { type: 'RESET'};
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
   console.log("action:", action.type);
@@ -150,6 +151,9 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
       console.log(state.errors);
       return newState;
+    }
+    case 'RESET': {
+      return newChannelInitialState;
     }
     default:
       return state

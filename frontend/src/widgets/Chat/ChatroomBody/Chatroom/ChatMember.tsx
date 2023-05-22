@@ -3,13 +3,13 @@ import { FaCheck, FaPlus } from 'react-icons/fa'
 import { FriendData } from '../../../../model/FriendData';
 import UserContext from '../../../../contexts/UserContext';
 import { UserData } from '../../../../model/UserData';
+import { NewChannelContext } from '../../../../contexts/ChatContext';
 
 interface ChatMemberProps {
   isSelected?: boolean;
   selectable: boolean;
   userData: UserData,
   memberRole?: 'owner' | 'admin' | 'member';
-  toggleMember: (userInfo: UserData) => boolean;
 }
 
 function ChatMemberRoleTag(props: { role: 'owner' | 'admin' | 'member' }) {
@@ -40,20 +40,14 @@ function ChatMemberRoleTag(props: { role: 'owner' | 'admin' | 'member' }) {
 
 function ChatMember(props: ChatMemberProps) {
 
-  const { selectable, userData, toggleMember, memberRole } = props;
-  const { myProfile } = useContext(UserContext);
+  const { selectable, userData, memberRole } = props;
+  const { state, dispatch } = useContext(NewChannelContext);
   const [isSelected, setIsSelected] = useState(props.isSelected || false);
-
-  const handleSelectUser = () => {
-    if (!selectable) return;
-    const selected: boolean = toggleMember(userData);
-    setIsSelected(selected);
-  }
 
   return (
     <div
       className='flex flex-row w-full items-center transition-all duration-75 ease-in-out justify-between'
-      onClick={handleSelectUser}
+      onClick={handleSelectMember}
     >
       <div className={`flex flex-row flex-1 items-center gap-x-4 ${selectable ? 'group cursor-pointer' : 'cursor-default'}`}>
         <div className='aspect-square object-cover w-12 relative'>
@@ -71,6 +65,15 @@ function ChatMember(props: ChatMemberProps) {
       { memberRole !== undefined && <ChatMemberRoleTag role={memberRole} /> }
     </div>
   )
+
+  function handleSelectMember() {
+    if (!selectable) return;
+    if (isSelected)
+      dispatch({ type: 'DESELECT_MEMBER', userInfo: userData });
+    else
+      dispatch({ type: 'SELECT_MEMBER', userInfo: userData });
+    setIsSelected(!isSelected);
+  }
 }
 
 export default ChatMember

@@ -8,15 +8,13 @@ import { NewChannelContext } from '../../../../contexts/ChatContext'
 
 interface ChannelMemberListProps {
   title: string,
-  state: NewChannelState,
-  dispatch: React.Dispatch<NewChannelAction>,
   friendList?: UserData[],
-  isUsingOldState: boolean,
 }
 
 function ChannelMemberList(props: ChannelMemberListProps) {
 
-  const { state, dispatch, isUsingOldState, title, friendList } = props;
+  const { state } = useContext(NewChannelContext);
+  const { title, friendList } = props;
   const [filterKeyword, setFilterKeyword] = useState("");
 
 
@@ -30,24 +28,10 @@ function ChannelMemberList(props: ChannelMemberListProps) {
   )
 
   function displayMemberList() {
-    if (friendList !== undefined && !isUsingOldState) {
-      return (friendList.map(friend => <ChatMember key={friend.intraId} selectable={true} userData={friend} toggleMember={handleToggleMember}/>));
-    } else if (friendList !== undefined && isUsingOldState) {
-      return (friendList.map(friend =>
-        <ChatMember key={friend.intraId} selectable={true} userData={friend} toggleMember={handleToggleMember} isSelected={state.members.find(member => member.memberInfo.intraName === friend.intraName) !== undefined}/>
-      ));
+    if (friendList !== undefined) {
+      return (friendList.map(friend => <ChatMember key={friend.intraId} selectable={true} userData={friend} isSelected={state.members.find(member => member.memberInfo.intraName === friend.intraName) !== undefined}/>));
     }
-    return (state.members.map(member => <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} toggleMember={handleToggleMember} memberRole={member.role} />));
-  }
-
-  function handleToggleMember(userData: UserData): boolean {
-    if (state.members.find(member => member.memberInfo.intraName === userData.intraName)) {
-      dispatch({ type: 'DESELECT_MEMBER', userInfo: userData });
-      return false;
-    } else {
-      dispatch({ type: 'SELECT_MEMBER', userInfo: userData });
-      return true;
-    }
+    return (state.members.map(member => <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={member.role} />));
   }
 }
 

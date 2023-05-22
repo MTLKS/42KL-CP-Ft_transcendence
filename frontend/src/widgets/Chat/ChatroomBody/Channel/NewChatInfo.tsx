@@ -19,18 +19,17 @@ function NewChatInfo() {
     <div className='flex flex-col'>
       <ChatNavbar
         title='channel info'
-        backAction={() => setChatBody(<NewChannel oldState={state} />)}
+        backAction={() => setChatBody(<NewChannel />)}
         nextComponent={<ChatButton title='create' onClick={createChannel} />}
       />
       <ChannelInfo modifying={true} />
       <div className='w-full h-full mt-6'>
-        <ChannelMemberList title="members" isUsingOldState={false} state={state} dispatch={dispatch} />
+        <ChannelMemberList title="members" />
       </div>
     </div>
   )
 
   function createChannel() {
-    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: 'hello test' });
   }
 }
 

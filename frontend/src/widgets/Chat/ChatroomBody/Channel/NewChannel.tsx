@@ -4,7 +4,7 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { FriendsContext } from '../../../../contexts/FriendContext'
 import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext'
 import ChatroomList from '../Chatroom/ChatroomList'
-import newChannelReducer, { NewChannelAction, NewChannelState, newChannelInitialState } from './newChannelReducer'
+import { NewChannelState } from './newChannelReducer'
 import NewChatInfo from './NewChatInfo'
 import UserContext from '../../../../contexts/UserContext'
 import { UserData } from '../../../../model/UserData'
@@ -18,11 +18,10 @@ interface NewChannelProps {
 function NewChannel(props: NewChannelProps) {
 
   const { oldState } = props;
-  const [state, dispatch] = useReducer(newChannelReducer, oldState || newChannelInitialState);
+  const { state, dispatch } = useContext(NewChannelContext);
   const { setChatBody } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
   const { friends } = useContext(FriendsContext);
-  const [toNextStep, setToNextStep] = useState(false);
   const acceptedFriendsUserData = useMemo(() => {
     const acceptedFriends: FriendData[] = friends.filter(friend => friend.status.toLowerCase() === 'accepted');
     const friendsUserData: UserData[] = acceptedFriends.map(friend => (myProfile.intraName === friend.sender.intraName ? friend.receiver : friend.sender));
@@ -30,34 +29,23 @@ function NewChannel(props: NewChannelProps) {
   }, [friends]);
 
   useEffect(() => {
-    if (state.members.find(member => member.memberInfo.intraName === myProfile.intraName) === undefined) {
-      dispatch({ type: 'SELECT_MEMBER', userInfo: myProfile });
-    }
+    // Select the user itself as the first member of the channel (owner)
+    dispatch({ type: 'SELECT_MEMBER', userInfo: myProfile });
+    dispatch({ type: 'ASSIGN_AS_OWNER', intraName: myProfile.intraName });
   }, []);
 
   useEffect(() => {
-    if (toNextStep) {
-      setChatBody(
-        <NewChannelContext.Provider value={{ state, dispatch }}>
-          <NewChatInfo />
-        </NewChannelContext.Provider>
-      );
-    }
-  }, [toNextStep]);
+    console.log("NewChannel:", state);
+  }, [state]);
 
   return (
     <div className='w-full h-full'>
       <ChatNavbar
         title={`new channel`}
-        nextComponent={
-          <ChatButton
-            title={state.members && (state.members.length === 1 ? `skip` : `next (${state.members.length - 1})`)}
-            onClick={goToNextStep}
-          />
-        }
-        backAction={() => setChatBody(<ChatroomList />)}
+        nextComponent={<ChatButton title={state.members && (state.members.length === 1 ? `skip` : `next (${state.members.length - 1})`)} onClick={goToNextStep} />}
+        backAction={backAction}
       />
-      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList state={state} dispatch={dispatch} title='friends' friendList={acceptedFriendsUserData} isUsingOldState={oldState !== undefined} /> : displayNoFriends()}
+      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList title='friends' friendList={acceptedFriendsUserData} /> : displayNoFriends()}
     </div>
   )
 
@@ -70,9 +58,15 @@ function NewChannel(props: NewChannelProps) {
     )
   }
 
+  function backAction() {
+    // When returning to the chatroom list, reset the new channel state
+    setChatBody(<ChatroomList />);
+    dispatch({ type: 'RESET' });
+  }
+
   function goToNextStep() {
-    dispatch({ type: 'ASSIGN_AS_OWNER', intraName: myProfile.intraName });
-    setToNextStep(true);
+    // Go to the next step of the multiform
+    setChatBody(<NewChatInfo />);
   }
 }
 
