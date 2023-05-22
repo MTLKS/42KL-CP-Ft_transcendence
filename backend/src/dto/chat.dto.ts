@@ -94,13 +94,16 @@ export class MessageDTO {
 
 	@ApiProperty({ example: 123 })
 	messageId: number;
+
+	@ApiProperty({ example: true })
+	hidden: boolean;
 }
 
 export class GetMessageBodyDTO {
-	@ApiProperty({ description: "Defaults to 100" })
+	@ApiProperty({ description: "Defaults to 100", required: false })
 	perPage: number;
 
-	@ApiProperty({ description: "Defaults to 1" })
+	@ApiProperty({ description: "Defaults to 1", required: false })
 	page: number;
 }
 

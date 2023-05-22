@@ -41,23 +41,29 @@ export class ChatService {
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - channel is not found"));
-		
+		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
+		if (MY_MEMBER.error !== undefined)
+			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO(MY_MEMBER.error));
+		if (MY_MEMBER.isMuted === true || MY_MEMBER.isBanned === true)
+			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - you are muted or banned from this channel"));
+
 		const NEW_MESSAGE = new Message(MY_CHANNEL, CHANNEL, CHANNEL.isRoom, message, new Date().toISOString());
 		if (CHANNEL.isRoom === true) {
 			await this.messageRepository.save(NEW_MESSAGE);
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
 			for (let member of MEMBERS) {
 				const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+				if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
+					continue;
 				server.to(MEMBER_CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 			}
 		} else {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
-				return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid friendhsip - you are not friends with this user"));
+				return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - you are not friends with this user"));
 			await this.messageRepository.save(NEW_MESSAGE);
-			const MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
-			MEMBER.lastRead = new Date().toISOString();
-			await this.memberRepository.save(MEMBER);
+			MY_MEMBER.lastRead = new Date().toISOString();
+			await this.memberRepository.save(MY_MEMBER);
 			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 		}
 	}
@@ -73,6 +79,8 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId)
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
+		if (MY_MEMBER.isBanned === true)
+			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName);
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
@@ -96,6 +104,8 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
+		if (MY_MEMBER.isBanned === true)
+			return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName);
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
@@ -105,6 +115,8 @@ export class ChatService {
 		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
 		for (let member of MEMBERS) {
 			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+			if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
+				continue;
 			server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
 		}
 	}
@@ -113,7 +125,7 @@ export class ChatService {
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
-		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - member is not found in that channelId") : this.userService.hideData(MEMBER_DATA);
+		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - you are not a member of this channel") : this.userService.hideData(MEMBER_DATA);
 	}
 
 	// Retrives all channel of the user
@@ -123,11 +135,13 @@ export class ChatService {
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
 		let channel = [];
 		for (let member of MY_MEMBERS) {
+			if (member.isBanned === true)
+				continue;
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const CHANNEL_ID = MEMBERS.map(member => member.channel.channelId);
 			const LAST_MESSAGE = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: MY_CHANNEL.channelId } }], order: { timeStamp: "DESC" } });
 			member.channel.newMessage  = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > member.lastRead;
-			member.channel.owner.accessToken = LAST_MESSAGE === null ? new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
+			member.channel.owner.accessToken = LAST_MESSAGE === null ? member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
 			channel.push(member.channel);
 		}
 		return this.userService.hideData(channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime()));
@@ -141,7 +155,7 @@ export class ChatService {
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
-		if (CHANNEL.isRoom === true ) {
+		if (CHANNEL.isRoom === false ) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return new ErrorDTO("Invalid channelId - you are not friends with this user");
@@ -149,9 +163,24 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
+		if (MY_MEMBER.isBanned === true)
+			return new ErrorDTO("Invalid channelId - you are banned from this channel");
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: MY_MEMBER.user.intraName, isRoom: false }, relations: ['owner'] });
-		const MESSAGES = await this.messageRepository.find({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: channelId } }, { receiverChannel: { channelId: channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
-		return this.userService.hideData(MESSAGES.length - (page * perPage) < 0 ? MESSAGES.slice(0, Math.max(0, perPage + MESSAGES.length - (page * perPage))) : MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
+		let messages = CHANNEL.isRoom === false 
+			? await this.messageRepository.find({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: channelId } }, { receiverChannel: { channelId: channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] }) 
+			: await this.messageRepository.find({ where: { receiverChannel: { channelId: channelId } }, relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
+		messages = messages.length - (page * perPage) < 0 ? messages.slice(0, Math.max(0, perPage + messages.length - (page * perPage))) : messages.slice(messages.length - (page * perPage), messages.length - ((page - 1) * perPage))
+		
+		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel'] });
+		const BLOCKED_INTRA_NAME = [];
+		for (let member of MEMBERS) {
+			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, member.user.intraName);
+			if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
+				BLOCKED_INTRA_NAME.push(member.user.intraName);
+		}
+		for (let message of messages )
+			message["hidden"] = BLOCKED_INTRA_NAME.includes(message.senderChannel.owner.intraName)
+		return this.userService.hideData(messages);
 	}
 
 	// Creates a new room
@@ -196,13 +225,31 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
-		if (CHANNEL.owner.intraName !== MY_MEMBER.intraName)
+		if (CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
 			return new ErrorDTO("Invalid channelId - requires owner privileges");
 		
 		CHANNEL.channelName = channelName;
 		CHANNEL.isPrivate = isPrivate;
 		CHANNEL.password = newPassword;
 		return this.userService.hideData(await this.channelRepository.save(CHANNEL));
+	}
+
+	// Deletes a room
+	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
+		if (channelId === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number)");
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
+			return new ErrorDTO("Invalid channelId - requires owner privileges");
+		await this.memberRepository.delete({ channel: { channelId: channelId } });
+		await this.messageRepository.delete({ receiverChannel: { channelId: channelId } });
+		await this.channelRepository.delete({ channelId: channelId });
+		return this.userService.hideData(CHANNEL);
 	}
 
 	// Adds a user to a room
@@ -254,12 +301,33 @@ export class ChatService {
 		if (CHANNEL === null || CHANNEL.isRoom === false)
 			return new ErrorDTO("Invalid channelId - channel is not found");
 		
-		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
 		MEMBER.isAdmin = isAdmin;
 		MEMBER.isBanned = isBanned;
 		MEMBER.isMuted = isMuted;
 		return this.userService.hideData(await this.memberRepository.save(MEMBER));
+	}
+
+	// Deletes a user from a room
+	async deleteMember(accessToken: string, channelId: number, intraName: string): Promise<any> {
+		if (channelId === undefined || intraName === undefined)
+			return new ErrorDTO("Invalid body - body must include channelId(number) and intraName(string)");
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined)
+			return new ErrorDTO(MY_MEMBER.error);
+		if (MY_MEMBER.user.intraName !== intraName || MY_MEMBER.isAdmin === false)
+			return new ErrorDTO("Invalid channelId - requires admin privileges");
+
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
+		if (CHANNEL === null || CHANNEL.isRoom === false)
+			return new ErrorDTO("Invalid channelId - channel is not found");
+		
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		if (MEMBER === null)
+			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+		this.memberRepository.delete(MEMBER);
+		return this.userService.hideData(MEMBER);
 	}
 }
