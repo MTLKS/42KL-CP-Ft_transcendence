@@ -35,9 +35,9 @@ export class Paddle extends Rect {
 		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
 		if (Math.abs(avgDelta) > this.spinRequirement){
 			console.log("spin down");
-			ball.accelY = this.spinForce * avgDelta; 
+			ball.accelY = -this.spinForce * avgDelta; 
 			if (this.powerUp == PowerUp.SPIN){
-				ball.accelY = this.spinForce * avgDelta * 2;
+				ball.accelY = -this.spinForce * avgDelta * 2;
 			}
 		}
 		switch (this.powerUp){

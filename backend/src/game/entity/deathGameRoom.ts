@@ -35,10 +35,10 @@ export class DeathGameRoom extends GameRoom{
 	gameCollisionDetection(){
 		let result = null;
 		if (this.Ball.posX > this.canvasWidth * 0.85){
-			result = this.objectCollision(this.Ball, this.rightPaddle);
+			// result = this.objectCollision(this.Ball, this.rightPaddle); //TODO: uncomment
 		}
 		else if(this.Ball.posX < this.canvasWidth * 0.15){
-			result = this.objectCollision(this.Ball, this.leftPaddle);
+			// result = this.objectCollision(this.Ball, this.leftPaddle); //TODO: uncomment
 		}
 		
 		if (result && result.collided){

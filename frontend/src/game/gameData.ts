@@ -236,8 +236,9 @@ export class GameData {
         this.displayGame();
         break;
       case "GameEnd":
-        this.endGame();
         this.stopDisplayGame();
+        this.endGame();
+        this.disableLocalTick();
         break;
       case "FieldEffect":
         const fieldEffect = <FieldEffectDTO>state.data;

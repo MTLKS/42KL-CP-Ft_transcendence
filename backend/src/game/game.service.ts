@@ -188,9 +188,9 @@ export class GameService {
       this.queues[clientQueue].splice(i, 1);
       if (LOBBY_LOGGING)
         console.log(`Game start ${otherPlayer.intraName} ${player.intraName}`);
-      if (clientQueue === "standard")
-        this.joinLobby(otherPlayer, player, clientQueue);
-      else
+      // if (clientQueue === "standard")
+      //   this.joinLobby(otherPlayer, player, clientQueue);
+      // else
         this.joinGame(otherPlayer, player, clientQueue, server);
       return;
     }
@@ -232,9 +232,27 @@ export class GameService {
     player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName)));
   }
 
+  getPowerUp(powerUpString: string): PowerUp {
+    let powerUp: PowerUp;
+    powerUpString = powerUpString.toLowerCase();
+    if (powerUpString === "speed" || powerUpString === "vzzzzzzt")
+      powerUp = PowerUp.SPEED;
+    else if (powerUpString === "precision" || powerUpString === "piiuuuuu")
+      powerUp = PowerUp.PRECISION;
+    else if (powerUpString === "size" || powerUpString === "ngeeeaat")
+      powerUp = PowerUp.SIZE;
+    else if (powerUpString === "spin" || powerUpString === "vrooooom")
+      powerUp = PowerUp.SPIN;
+    else
+      powerUp = null;
+    return powerUp;
+  }
+
   async handleReady(client: Socket, powerUp: string, server: Server) {
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
+    console.log(powerUp);
+    if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
@@ -250,13 +268,13 @@ export class GameService {
       }
       if (gameLobby.player1Ready && gameLobby.player2Ready)
       {
-        this.joinGame(gameLobby.player1, gameLobby.player2, "standard", server, gameLobby.player1PowerUp, gameLobby.player2PowerUp);
+        this.joinGame(gameLobby.player1, gameLobby.player2, "standard", server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
         this.gameLobbies.delete(key);
       }
     });
   }
 
-  async joinGame(player1: Player, player2: Player, gameType: string, server: Server, player1PowerUp?: string, player2PowerUp?: string): Promise<string> {
+  async joinGame(player1: Player, player2: Player, gameType: string, server: Server, player1PowerUp?: PowerUp, player2PowerUp?: PowerUp): Promise<string> {
     let room;
     if (gameType === 'boring') {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.BORING);
@@ -270,10 +288,10 @@ export class GameService {
         ROOM_SETTING,
         this.matchService,
         this.userService,
+        // player1PowerUp,
+        // player2PowerUp
         PowerUp.SPIN,
-        PowerUp.NORMAL,
-        // PowerUp.SPEED,//TODO: change
-        // PowerUp.SPEED,//TODO: change
+        PowerUp.SPIN,
       );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
