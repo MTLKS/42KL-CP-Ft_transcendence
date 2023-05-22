@@ -1,5 +1,6 @@
 import { GameRoom,CollisionResult } from "./gameRoom";
-import { Player }  from "./player"; 
+import { Player }  from "./player";
+import { Paddle } from "./paddle";
 import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
 import { GameStateDTO, FieldEffectDTO } from "src/dto/gameState.dto";
@@ -35,10 +36,11 @@ enum FieldEffect{
  * @param paddleTimer Time where the ball last hit the paddle
  * @param paddleElapseTime Time elapsed since the ball last hit the paddle
  * @param paddleResetTimer Maximum time where the ball will be reset if not touching paddle
+ * @param fieldEffectArray Array of to store list field effect, used to randomize the field effect
+ * @param paddleHitCount Number of time the ball hit the paddle, used to increase the speed when power up is speed.
+ * (To prevent bug if ball hit paddle while in speed zone)
  */
 export class PowerGameRoom extends GameRoom{
-	player1PowerUp: PowerUp;
-	player2PowerUp: PowerUp;
 	startTime: number;
 	elapseTime: number = 0;
 	minTime: number;
@@ -55,8 +57,9 @@ export class PowerGameRoom extends GameRoom{
 	paddleElapseTime: number = 0;
 	paddleResetTimer: number;
 	fieldEffectArray: number[] = [0,1,2,3,4];
+	paddleHitCount: number;
 	
-	//Config Setting for Power Ups
+	//Config Setting for Field Effect
 	gravityPower: number;
 	timeZoneRadius: number;
 	timeZoneSpeedUp: number;
@@ -68,11 +71,13 @@ export class PowerGameRoom extends GameRoom{
 	blockMass: number;
 
 
+
 	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService,
 		Player1PowerUp: PowerUp, Player2PowerUp: PowerUp){
 		super(player1, player2, gameType, setting, matchService, userService);
-		this.player1PowerUp = Player1PowerUp;
-		this.player2PowerUp = Player2PowerUp;
+		
+		this.leftPaddle.powerUp = Player1PowerUp;
+		this.rightPaddle.powerUp = Player2PowerUp;
 
 		//Config Setting
 		this.minTime = 10;
@@ -102,19 +107,16 @@ export class PowerGameRoom extends GameRoom{
 		this.paddleTimer = Date.now();
 		this.currentEffect = FieldEffect.NORMAL;
 
-		//Size Power Up
-		if (this.player1PowerUp == PowerUp.SIZE){
-			this.leftPaddle.height = 120;
-		}
-		if (this.player2PowerUp == PowerUp.SIZE){
-			this.rightPaddle.height = 120;
-		}
+		this.paddleHitCount = 0;
 	}
 
 	gameUpdate(server: Server){
 		this.elapseTime = (Date.now() - this.startTime) / 1000;
 		this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
 		this.Ball.update();
+
+		console.log(this.Ball.velX, this.Ball.velY);
+
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score!=0){
 			if (score == 1){
@@ -127,6 +129,8 @@ export class PowerGameRoom extends GameRoom{
 			}
 			this.resetTime = Date.now();
 			this.paddleTimer = Date.now();
+			this.insideField = false;
+			this.paddleHitCount = 0;
 			this.gameReset = true;
 		}
 		
@@ -144,6 +148,7 @@ export class PowerGameRoom extends GameRoom{
 		
 		if (this.paddleElapseTime >= this.paddleResetTimer){
 			this.paddleTimer = Date.now();
+			this.insideField = false;
 			this.resetGame(server);
 		}
 
@@ -172,14 +177,14 @@ export class PowerGameRoom extends GameRoom{
 		let result = null;
 
 		if (this.Ball.posX > this.canvasWidth * 0.85){
-			result = this.objectCollision(this.Ball, this.rightPaddle);
+			result = this.objectCollision(this.Ball, this.rightPaddle, -1);
 		}
 		else if(this.Ball.posX < this.canvasWidth * 0.15){
-			result = this.objectCollision(this.Ball, this.leftPaddle);
+			result = this.objectCollision(this.Ball, this.leftPaddle, 1);
 		}
 
 		if (this.currentEffect == FieldEffect.BLOCK && this.blockObject != null){
-			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject);
+			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject, 0);
 			
 			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
 				this.Ball.impulsCollisionResponse(this.blockObject, -BLOCK_COLLISION.normalX, -BLOCK_COLLISION.normalY);
@@ -189,7 +194,28 @@ export class PowerGameRoom extends GameRoom{
 		
 		if (result && result.collided){
 			this.paddleTimer = Date.now();
-			this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
+			//Check left paddle
+			if (result.direction == 1){
+				if (this.leftPaddle.powerUp == PowerUp.SPEED){
+					this.paddleHitCount ++;
+				}
+				this.leftPaddle.paddleCollisionAction(this.Ball,
+					result.collideTime,
+					result.normalX,result.normalY,
+					false,
+					this.paddleHitCount);
+			}
+			//Check right paddle
+			else if (result.direction == -1){
+				if (this.rightPaddle.powerUp == PowerUp.SPEED){
+					this.paddleHitCount ++;
+				}
+				this.rightPaddle.paddleCollisionAction(this.Ball,
+					result.collideTime,
+					result.normalX,result.normalY,
+					false,
+					this.paddleHitCount);
+			}
 		}
 	}
 
@@ -218,7 +244,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
+		// let effect = this.getRandomNum();
+		let effect = 2;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
@@ -274,6 +301,11 @@ export class PowerGameRoom extends GameRoom{
 		if (this.blockObject != null){
 			this.blockObject = null;
 		}
+		if (this.currentEffect == FieldEffect.TIME_ZONE && this.insideField == true){
+			this.insideField = false;
+			this.Ball.velX /= this.effectMagnitude;
+			this.Ball.velY /= this.effectMagnitude;
+		}
 		this.currentEffect = FieldEffect.NORMAL;
 		this.Ball.initAcceleration(0,0);
 		this.effectMagnitude = 0;
@@ -312,7 +344,7 @@ export class PowerGameRoom extends GameRoom{
 			minX = this.canvasWidth * 0.5;
 			maxX = this.canvasWidth * 0.85 - size;
 		}
-		if (spawnQuadrant /2 == 0){
+		if (spawnQuadrant / 2 < 1){
 			minY = 0;
 			maxY = this.canvasHeight * 0.5;
 		}
@@ -321,8 +353,6 @@ export class PowerGameRoom extends GameRoom{
 			maxY = this.canvasHeight - size;
 		}
 		
-		console.log("Ball: ", ballQuadrant, "Spawn:", spawnQuadrant);
-		console.log("minX: ", minX, "maxX: ", maxX, "minY: ", minY, "maxY: ", maxY);
 		let posX = Math.floor(Math.random() * (maxX - minX) + minX);
 		let posY = Math.floor(Math.random() * (maxY - minY) + minY);
 

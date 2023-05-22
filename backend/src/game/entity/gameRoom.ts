@@ -275,11 +275,6 @@ export class GameRoom {
         this.rightPaddle.paddleCollisionAction(this.Ball, 
           result.collideTime, result.normalX, result.normalY);
       }
-      // this.Ball.collisionResponse(
-      //   result.collideTime,
-      //   result.normalX,
-      //   result.normalY,
-      // );
     }
   }
 
