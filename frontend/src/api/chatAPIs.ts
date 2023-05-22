@@ -32,3 +32,7 @@ export function inviteMemberToChannel(inviteMemberData: InviteMemberData) {
 export function updateMemberRole(updateMemberData: UpdateMemberData) {
   return api.patch(`${CHANNEL_NAMESPACE}/member`, updateMemberData);
 }
+
+export function getChannelMemberData(channelId: number): Promise<AxiosResponse> {
+  return api.get(`${NAMESPACE}/channel/member/${channelId}`);
+}

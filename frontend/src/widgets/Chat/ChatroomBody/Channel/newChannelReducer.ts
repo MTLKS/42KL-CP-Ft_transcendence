@@ -1,4 +1,4 @@
-import { ChatroomData } from "../../../../model/ChatRoomData";
+import { ChatroomData, MemberData } from "../../../../model/ChatRoomData";
 import { UserData } from "../../../../model/UserData"
 
 interface ChannelMemberRole {
@@ -17,6 +17,7 @@ export interface NewChannelState {
   isPrivate: boolean,
   password: string | null,
   errors: NewChannelError[],
+  isNewChannel: boolean,
 }
 
 export const newChannelInitialState: NewChannelState = {
@@ -25,6 +26,7 @@ export const newChannelInitialState: NewChannelState = {
   isPrivate: false,
   password: null,
   errors: [],
+  isNewChannel: true,
 }
 
 export type NewChannelAction =
@@ -37,10 +39,12 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_NAME', channelName: string }
   | { type: 'SET_CHANNEL_PRIVACY', isPrivate: boolean }
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
-  | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData }
+  | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData, members: MemberData[] }
   | { type: 'ADD_ERROR', error: NewChannelError}
+  | { type: 'IS_EDIT_CHANNEL'}
   | { type: 'RESET_ERRORS'}
-  | { type: 'RESET'};
+  | { type: 'RESET'}
+  | { type: 'CLONE_STATE', state: NewChannelState };
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
   switch (action.type) {
@@ -133,12 +137,26 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'SET_CHANNEL_INFO': {
+      const { chatroomData, members } = action;
       return {
         ...state,
-        channelName: action.chatroomData.channelName,
-        isPrivate: action.chatroomData.isPrivate,
-        password: action.chatroomData.password,
-
+        channelName: chatroomData.channelName,
+        isPrivate: chatroomData.isPrivate,
+        password: chatroomData.password,
+        members: members.map(member => {
+          const role = member.isAdmin ? (chatroomData.owner?.intraName === member.user.intraName ? 'owner' : 'admin') : 'member';
+          const memberRole: ChannelMemberRole = {
+            memberInfo: member.user,
+            role: role,
+          }
+          return memberRole;
+        })
+      }
+    }
+    case 'IS_EDIT_CHANNEL': {
+      return {
+        ...state,
+        isNewChannel: false,
       }
     }
     case 'RESET_ERRORS': {
@@ -146,6 +164,9 @@ export default function newChannelReducer(state = newChannelInitialState, action
         ...state,
         errors: [],
       }
+    }
+    case 'CLONE_STATE': {
+      return action.state;
     }
     case 'RESET': {
       return newChannelInitialState;

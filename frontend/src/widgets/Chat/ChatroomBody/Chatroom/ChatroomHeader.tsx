@@ -1,13 +1,14 @@
 import React, { useContext, useState } from 'react'
 import { ImEarth } from 'react-icons/im'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
-import { ChatContext, ChatroomContentContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomContentContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import ChatroomList from './ChatroomList';
 import { FaUser, FaUserSecret } from 'react-icons/fa';
 import { ChatroomData } from '../../../../model/ChatRoomData';
 import PreviewProfileContext from '../../../../contexts/PreviewProfileContext';
 import Profile from '../../../Profile/Profile';
 import NewChatInfo from '../Channel/NewChatInfo';
+import ChannelInfo from '../Channel/ChannelInfo';
 
 interface ChatroomHeaderProps {
   chatroomData: ChatroomData;
@@ -29,6 +30,7 @@ function ChatroomIcon(props: { isRoom: boolean, isPrivate: boolean }) {
 function ChatroomHeader(props: ChatroomHeaderProps) {
 
   const { chatroomData } = props;
+  const { dispatch } = useContext(NewChannelContext);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const { setChatBody } = useContext(ChatContext);
   const [expanded, setExpanded] = useState(false);
@@ -48,7 +50,8 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
 
   function checkChannelInfo() {
     if (chatroomData.isRoom) {
-      setChatBody(<NewChatInfo />);
+      dispatch({ type: 'IS_EDIT_CHANNEL' });
+      setChatBody(<ChannelInfo chatroomData={chatroomData} />);
     } else {
       setPreviewProfileFunction(chatroomData.owner!);
       setTopWidgetFunction(<Profile expanded={!expanded} />);
@@ -58,6 +61,7 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
 
   function closeChatroom() {
     setChatBody(<ChatroomList />);
+    dispatch({ type: 'RESET' });
   }
 }
 

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomTextField from './ChatroomTextField'
 import { ChatroomData, ChatroomMessageData, MemberData } from '../../../../model/ChatRoomData';
-import { getChatroomMessages, getMemberData } from '../../../../api/chatAPIs';
+import { getChannelMemberData, getChatroomMessages, getMemberData } from '../../../../api/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
 import { ChatContext, ChatroomMessagesContext, ChatroomsContext, NewChannelContext } from '../../../../contexts/ChatContext';
@@ -40,8 +40,6 @@ function ChatroomContent(props: ChatroomContentProps) {
   const { state, dispatch } = useContext(NewChannelContext);
 
   useEffect(() => {
-    console.log(chatroomData);
-    setChannelInfo();
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
@@ -49,8 +47,10 @@ function ChatroomContent(props: ChatroomContentProps) {
     }
     // fetch message history
     fetchMessageHistory();
-    // get chatroom member data
-    getChatroomMemberData();
+    // get my last read
+    getMyLastRead();
+    // fetch chat members
+    fetchChatMembers();
     // listen for incoming messages
     listenForIncomingMessages();
     // use to listen if the user scrolls up to the top of the chat
@@ -91,9 +91,9 @@ function ChatroomContent(props: ChatroomContentProps) {
     </ChatroomMessagesContext.Provider>
   )
 
-  function setChannelInfo() {
+  function setChannelInfo(members: MemberData[]) {
     if (!chatroomData.isRoom) return;
-    dispatch({ type: 'SET_CHANNEL_INFO', chatroomData: chatroomData});
+    dispatch({ type: 'SET_CHANNEL_INFO', chatroomData: chatroomData, members: members});
   }
 
   function handleScrollToTop() {
@@ -102,6 +102,13 @@ function ChatroomContent(props: ChatroomContentProps) {
       const isAtTop = (scrollableDiv.scrollHeight - scrollableDiv.clientHeight + scrollableDiv.scrollTop) === 0;
       setIsAtTop(isAtTop);
     }
+  }
+
+  async function fetchChatMembers() {
+    if (!chatroomData.isRoom) return;
+
+    const members = (await getChannelMemberData(chatroomData.channelId)).data as MemberData[];
+    setChannelInfo(members);
   }
 
   async function fetchMessageHistory() {
@@ -119,8 +126,9 @@ function ChatroomContent(props: ChatroomContentProps) {
     setPage(page + 1);
   }
 
-  async function getChatroomMemberData() {
-    const memberData = (await getMemberData(chatroomData.channelId)).data as MemberData;
+  async function getMyLastRead() {
+    
+    const memberData = (await getChannelMemberData(chatroomData.channelId)).data as MemberData;
     setChatMemberLastRead(memberData.lastRead);
   }
 
