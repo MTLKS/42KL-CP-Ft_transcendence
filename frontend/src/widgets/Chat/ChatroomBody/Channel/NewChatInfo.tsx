@@ -6,6 +6,8 @@ import NewChannel from './NewChannel';
 import ChannelInfo from './ChannelInfo';
 import ChannelMemberList from './ChannelMemberList';
 import { NewChannelError } from './newChannelReducer';
+import { createChannel } from '../../../../api/chatAPIs';
+import ChatroomList from '../Chatroom/ChatroomList';
 
 function NewChatInfo() {
 
@@ -17,7 +19,7 @@ function NewChatInfo() {
       <ChatNavbar
         title='channel info'
         backAction={() => setChatBody(<NewChannel />)}
-        nextComponent={<ChatButton title='create' onClick={createChannel} />}
+        nextComponent={<ChatButton title='create' onClick={createNewChannel} />}
       />
       <ChannelInfo modifying={true} />
       <div className='w-full h-full mt-6'>
@@ -26,7 +28,7 @@ function NewChatInfo() {
     </div>
   )
 
-  function createChannel() {
+  async function createNewChannel() {
     const { channelName, password, errors, isPrivate } = state;
     let errorCount = 0;
   
@@ -44,7 +46,15 @@ function NewChatInfo() {
 
     if (errorCount !== 0) return ;
 
-    dispatch({ type: 'CREATE_CHANNEL' });
+
+    const createChannelResponse = await createChannel({
+      channelName: state.channelName,
+      password: state.password,
+      isPrivate: state.isPrivate,
+    });
+
+    dispatch({ type: 'RESET' });
+    setChatBody(<ChatroomList />);
   }
 }
 

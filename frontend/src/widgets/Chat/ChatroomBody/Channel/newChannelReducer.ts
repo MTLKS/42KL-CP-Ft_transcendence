@@ -22,7 +22,7 @@ export const newChannelInitialState: NewChannelState = {
   members: [],
   channelName: '',
   isPrivate: false,
-  password: '',
+  password: null,
   errors: [],
 }
 
@@ -38,7 +38,6 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
   | { type: 'ADD_ERROR', error: NewChannelError}
   | { type: 'RESET_ERRORS'}
-  | { type: 'CREATE_CHANNEL' }
   | { type: 'RESET'};
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
@@ -130,8 +129,6 @@ export default function newChannelReducer(state = newChannelInitialState, action
         ...state,
         isPrivate: action.isPrivate,
       }
-    }
-    case 'CREATE_CHANNEL': {
     }
     case 'RESET_ERRORS': {
       return {
