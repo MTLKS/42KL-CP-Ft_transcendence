@@ -8,6 +8,7 @@ export class Paddle extends Rect {
 	speedIncrement: number;
 	speedIncrementCount: number;
 	lastPosY: number;
+	prevDeltas: number[] =[];
 	delta: number;
 	spinRequirement: number;
 	spinForce: number;
@@ -22,8 +23,8 @@ export class Paddle extends Rect {
 		this.sizeIncrement = 1.2;
 		this.speedIncrement = 1;
 		this.speedIncrementCount = 0;
-		this.spinRequirement = 1;
-		this.spinForce = 2;
+		this.spinRequirement = 2;
+		this.spinForce = 1.5;
 
 		if (this.powerUp == PowerUp.SIZE){
 			this.height *= this.sizeIncrement;
@@ -31,20 +32,12 @@ export class Paddle extends Rect {
 	}
 
 	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number, hitCount: number=0){
-		if (Math.abs(this.delta) > this.spinRequirement){
-			if (this.delta > 0){
-				console.log("spin down");
-				ball.accelY = this.spinForce; 
-				if (this.powerUp == PowerUp.SPIN){
-					ball.accelY = this.spinForce * 2;
-				}
-			}
-			else if (this.delta < 0){
-				console.log("spin up");
-				ball.accelY = -this.spinForce;
-				if (this.powerUp == PowerUp.SPIN){
-					ball.accelY = -this.spinForce * 2;
-				}
+		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
+		if (Math.abs(avgDelta) > this.spinRequirement){
+			console.log("spin down");
+			ball.accelY = this.spinForce * avgDelta; 
+			if (this.powerUp == PowerUp.SPIN){
+				ball.accelY = this.spinForce * avgDelta * 2;
 			}
 		}
 		switch (this.powerUp){
@@ -67,5 +60,9 @@ export class Paddle extends Rect {
 	updateDelta(){
 		this.delta = this.posY - this.lastPosY;
 		this.lastPosY = this.posY;
+		this.prevDeltas.push(this.delta);
+		if (this.prevDeltas.length > 10){
+			this.prevDeltas.shift();
+		}
 	}
 }
