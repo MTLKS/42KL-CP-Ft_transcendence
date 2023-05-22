@@ -23,6 +23,37 @@ export interface ChannelData {
 	channelId: number
 }
 
+export interface CreateChannelData {
+  channelName: string,
+  isPrivate: boolean,
+  password: string | null,
+}
+
+export interface UpdateChannelData {
+  channelId: number,
+  channelName: string,
+  isPrivate: boolean,
+  oldPassword: string | null,
+  newPassword: string | null,
+}
+
+export interface InviteMemberData {
+  channelId: number,
+  intraName: string,
+  isAdmin: boolean,
+  isBanned: boolean,
+  isMuted: boolean,
+  password: string | null,
+}
+
+export interface UpdateMemberData {
+  channelId: number,
+  intraName: string,
+  isAdmin: boolean,
+  isBanned: boolean,
+  isMuted: boolean,
+}
+
 export interface ChatroomMessageData {
   senderChannel: ChannelData;
   receiverChannel: ChannelData;
