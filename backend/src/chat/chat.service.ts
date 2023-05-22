@@ -141,7 +141,7 @@ export class ChatService {
 			const CHANNEL_ID = MEMBERS.map(member => member.channel.channelId);
 			const LAST_MESSAGE = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: MY_CHANNEL.channelId } }], order: { timeStamp: "DESC" } });
 			member.channel.newMessage  = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > member.lastRead;
-			member.channel.owner.accessToken = LAST_MESSAGE === null ? new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
+			member.channel.owner.accessToken = LAST_MESSAGE === null ? member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
 			channel.push(member.channel);
 		}
 		return this.userService.hideData(channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime()));
