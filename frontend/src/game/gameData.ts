@@ -62,6 +62,8 @@ export class GameData {
   globalGravityX: number = 0;
   globalGravityY: number = 0;
 
+  blockPosition: Offset = { x: -500, y: -500 };
+
   setScale?: (scale: number) => void;
   setUsingTicker?: (usingTicker: boolean) => void;
   setShouldRender?: (shouldRender: boolean) => void;
@@ -302,12 +304,8 @@ export class GameData {
     this.player1Score = data.player1Score;
     this.player2Score = data.player2Score;
 
-    this.gameEntities.forEach((entity) => {
-      if (entity instanceof GameBlock && data.blockX && data.blockY) {
-        entity.x = data.blockX;
-        entity.y = data.blockY;
-      }
-    });
+    if (data.blockX && data.blockY)
+      this.blockPosition = { x: data.blockX, y: data.blockY };
   };
 
   listenToGameResponse = (data: GameResponseDTO) => {

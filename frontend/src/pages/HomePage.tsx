@@ -451,11 +451,11 @@ function HomePage(props: HomePageProps) {
   }
 
   async function showFriendList(intraName: string | null) {
-    
+
     const errors: errorType[] = [];
     let newCards: JSX.Element[] = [];
     const friendProfile: UserData | ErrorData = (intraName === null ? userData : (await getProfileOfUser(intraName)).data);
- 
+
     // to handle if the user is not found & if the friendship status is blocked
     if ((friendProfile as ErrorData).error) {
       errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
@@ -466,7 +466,7 @@ function HomePage(props: HomePageProps) {
       if (intraName !== null) {
         friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
       }
-      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)}/>);
+      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
     }
     newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
     setElements(appendNewCard(newCards));

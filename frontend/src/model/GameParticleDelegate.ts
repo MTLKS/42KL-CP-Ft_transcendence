@@ -63,7 +63,7 @@ class GameParticleDelegate {
       newPongSpeed,
       addSprite
     );
-    if (pongSpeedMagnitude > 10) {
+    if (pongSpeedMagnitude > 20) {
       this.addSpitParticle(
         this.particles,
         newPosition,

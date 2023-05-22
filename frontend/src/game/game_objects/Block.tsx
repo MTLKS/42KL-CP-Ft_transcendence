@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useRef } from 'react'
 import * as PIXI from 'pixi.js';
-import { Container, Sprite, useApp } from '@pixi/react';
+import { Container, Sprite, useApp, useTick } from '@pixi/react';
 import { DropShadowFilter } from 'pixi-filters';
 import { GameDataCtx } from '../../GameApp';
 
@@ -39,9 +39,12 @@ function Block(props: BlockProps) {
 
   const ref = useRef<PIXI.Sprite>(null);
 
-  useEffect(() => {
+  useTick(() => {
     if (!ref.current) return;
-  }, [ref.current]);
+    const { x, y } = gameData.blockPosition
+    ref.current.x = x;
+    ref.current.y = y;
+  });
 
   useEffect(() => {
     if (!ref.current) return;
