@@ -1,12 +1,12 @@
 export class GameStartDTO {
   opponentIntraName: string;
-  gameType: string;
+  gameType: "boring" | "standard" | "death" | "";
   isLeft: boolean;
   gameRoom: string;
 
   constructor(
     opponentIntraName: string,
-    gameType: string,
+    gameType: "boring" | "standard" | "death" | "",
     isLeft: boolean,
     gameRoom: string
   ) {

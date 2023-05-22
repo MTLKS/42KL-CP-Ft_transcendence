@@ -16,7 +16,8 @@ import sleep from '../functions/sleep';
 import { GameData, PaddleType } from './gameData';
 import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravityArrow';
 import ColorTween from './functions/colorInterpolation';
-import { RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
+import { DropShadowFilter, RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
+import InwardShadow from './game_objects/InwardShadow';
 
 interface GameProps {
   scale: number;
@@ -98,7 +99,10 @@ function Game(props: GameProps) {
         newGameGravityArrow = new GameGravityArrow({ arrowsParticles: [], diraction: gameData.globalGravityY > 0 ? GameGravityArrowDiraction.DOWN : GameGravityArrowDiraction.UP });
       }
     }
-    else if (bgColor !== 0x242424 && !bgColorTween) {
+    else if (gameData.gameType === 'death' && !bgColorTween && bgColor !== 0xAD6454) {
+      setBgColorTween(new ColorTween({ start: bgColor, end: 0xAD6454 }));
+    }
+    else if ((gameData.gameType === 'standard' || gameData.gameType === 'boring') && bgColor !== 0x242424 && !bgColorTween) {
       setBgColorTween(new ColorTween({ start: bgColor, end: 0x242424 }));
       newGameGravityArrow = null;
     }
@@ -138,6 +142,7 @@ function Game(props: GameProps) {
   return (
     <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto'>
       <Sprite width={1600} height={900} texture={backgoundTexture} />
+      <InwardShadow />
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />

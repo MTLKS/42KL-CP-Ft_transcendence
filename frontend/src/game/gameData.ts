@@ -53,6 +53,7 @@ export class GameData {
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
+  gameType: "boring" | "standard" | "death" | "" = "";
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
 
@@ -232,6 +233,7 @@ export class GameData {
       case "GameStart":
         this.isLeft = (<GameStartDTO>state.data).isLeft;
         this.gameRoom = (<GameStartDTO>state.data).gameRoom;
+        this.gameType = (<GameStartDTO>state.data).gameType;
         this.startGame();
         this.displayGame();
         break;
