@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { FaEye, FaUserSecret } from 'react-icons/fa';
+import React, { useContext, useEffect, useRef, useState } from 'react'
+import { FaCheck, FaCross, FaEye, FaTimes, FaUserSecret } from 'react-icons/fa';
 import { ImEarth } from 'react-icons/im'
-import { NewChannelAction, NewChannelState } from './newChannelReducer';
+import { NewChannelAction, NewChannelError, NewChannelState } from './newChannelReducer';
 import { NewChannelContext } from '../../../../contexts/ChatContext';
 
 interface ChannelInfoProps {
@@ -16,19 +16,8 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [password, setPassword] = useState<string>('');
   const [isPrivate, setIsPrivate] = useState<boolean>(state.isPrivate);
   const [isPasswordProtected, setIsPasswordProtected] = useState<boolean>(false);
-
-  useEffect(() => {
-    console.log("channelinfo", state);
-  }, [state]);
-
-  useEffect(() => {
-    console.log("CHANNEL INFO:", {
-      channelName: channelName,
-      password: password,
-      isPrivate: isPrivate,
-      isPasswordProtected: isPasswordProtected,
-    });
-  }, [channelName, password, isPrivate, isPasswordProtected]);
+  const [showChannelNameNamingRules, setShowChannelNameNamingRules] = useState<boolean>(false);
+  const [showPasswordRules, setShowPasswordRules] = useState<boolean>(false);
 
   return (
     <div className='w-[70%] h-fit flex flex-row items-center mx-auto'>
@@ -50,8 +39,14 @@ function ChannelInfo(props: ChannelInfoProps) {
             <p className='text-highlight text-sm font-extrabold'>Channel Name</p>
             {
               modifying
-                ? <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-sm font-extrabold text-center text-highlight py-2 px-4 outline-none w-full cursor-text' autoComplete='off' value={channelName} onChange={handleChannelNameOnChange}/>
+                ? <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-sm font-extrabold text-center text-highlight py-2 px-4 outline-none w-full cursor-text' autoComplete='off' value={channelName} onChange={handleChannelNameOnChange} onFocus={() => setShowChannelNameNamingRules(true)} onBlur={() => setShowChannelNameNamingRules(false)}/>
                 : <p>{channelName}</p>
+            }
+            {
+              (state.errors.includes(NewChannelError.INVALID_CHANNEL_NAME) || showChannelNameNamingRules) &&
+              <div className='text-xs px-[1ch] text-highlight/50'>
+                <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${channelName.length > 0 && channelName.length <= 16 && 'text-accGreen'}`}>{channelName.length > 0 && channelName.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+              </div>
             }
           </div>
           {
@@ -59,9 +54,15 @@ function ChannelInfo(props: ChannelInfoProps) {
             <div className='flex flex-col gap-y-2'>
               <p className='text-highlight text-sm font-extrabold'>Password</p>
               <div className='flex flex-row'>
-                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password} onChange={handlePasswordOnChange} />
+                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
                 <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
               </div>
+              {
+                (state.errors.includes(NewChannelError.INVALID_PASSWORD) || showPasswordRules) &&
+                <div className='text-xs px-[1ch] text-highlight/50'>
+                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${password.length > 0 && password.length <= 16 && 'text-accGreen'}`}>{password.length > 0 && password.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                </div>
+              }
             </div>
           }
           { !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button> }

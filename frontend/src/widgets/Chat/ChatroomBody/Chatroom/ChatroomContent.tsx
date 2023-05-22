@@ -39,7 +39,6 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
 
   useEffect(() => {
-    console.log(chatroomData);
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);

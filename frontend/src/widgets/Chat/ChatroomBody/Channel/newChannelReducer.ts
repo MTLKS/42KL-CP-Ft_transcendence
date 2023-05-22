@@ -5,12 +5,9 @@ interface ChannelMemberRole {
   role: 'admin' | 'member' | 'owner'
 }
 
-enum NewChannelError {
-  CHANNEL_NAME_EMPTY,
-  CHANNEL_NAME_TOO_LONG,
-  CHANNEL_NAME_TOO_SHORT,
-  CHANNEL_PASSWORD_TOO_LONG,
-  CHANNEL_PASSWORD_TOO_SHORT,
+export enum NewChannelError {
+  INVALID_CHANNEL_NAME = 400,
+  INVALID_PASSWORD = 410,
 }
 
 export interface NewChannelState {
@@ -39,11 +36,12 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_NAME', channelName: string }
   | { type: 'SET_CHANNEL_PRIVACY', isPrivate: boolean }
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
+  | { type: 'ADD_ERROR', error: NewChannelError}
+  | { type: 'RESET_ERRORS'}
   | { type: 'CREATE_CHANNEL' }
   | { type: 'RESET'};
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
-  console.log("action:", action.type);
   switch (action.type) {
     case 'SELECT_MEMBER': {
       if (state.members.find(member => member.memberInfo.intraName === action.userInfo.intraName)) {
@@ -109,6 +107,12 @@ export default function newChannelReducer(state = newChannelInitialState, action
         }),
       }
     }
+    case 'ADD_ERROR': {
+      return {
+        ...state,
+        errors: [...state.errors, action.error],
+      }
+    }
     case 'SET_CHANNEL_NAME': {
       return {
         ...state,
@@ -122,35 +126,18 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'SET_CHANNEL_PRIVACY': {
-      console.log("set channel privacy");
       return {
         ...state,
         isPrivate: action.isPrivate,
       }
     }
     case 'CREATE_CHANNEL': {
-      const newState = {...state}
-      if (state.channelName === '') {
-        newState.errors.push(NewChannelError.CHANNEL_NAME_EMPTY)
+    }
+    case 'RESET_ERRORS': {
+      return {
+        ...state,
+        errors: [],
       }
-      if (state.channelName.length > 16) {
-        newState.errors.push(NewChannelError.CHANNEL_NAME_TOO_LONG)
-      }
-      if (state.channelName.length < 1) {
-        newState.errors.push(NewChannelError.CHANNEL_NAME_TOO_SHORT)
-      }
-      if (state.password && state.password.length > 16) {
-        newState.errors.push(NewChannelError.CHANNEL_PASSWORD_TOO_LONG)
-      }
-      if (state.password && state.password.length < 1) {
-        newState.errors.push(NewChannelError.CHANNEL_PASSWORD_TOO_SHORT)
-      }
-      if (newState.errors.length === 0) {
-        console.log("Create channel");
-        return state;
-      }
-      console.log(state.errors);
-      return newState;
     }
     case 'RESET': {
       return newChannelInitialState;

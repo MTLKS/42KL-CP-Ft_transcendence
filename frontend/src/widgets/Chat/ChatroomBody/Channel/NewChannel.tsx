@@ -34,10 +34,6 @@ function NewChannel(props: NewChannelProps) {
     dispatch({ type: 'ASSIGN_AS_OWNER', intraName: myProfile.intraName });
   }, []);
 
-  useEffect(() => {
-    console.log("NewChannel:", state);
-  }, [state]);
-
   return (
     <div className='w-full h-full'>
       <ChatNavbar
@@ -66,6 +62,7 @@ function NewChannel(props: NewChannelProps) {
 
   function goToNextStep() {
     // Go to the next step of the multiform
+    dispatch({ type: 'RESET_ERRORS' });
     setChatBody(<NewChatInfo />);
   }
 }
