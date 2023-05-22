@@ -94,6 +94,9 @@ export class MessageDTO {
 
 	@ApiProperty({ example: 123 })
 	messageId: number;
+
+	@ApiProperty({ example: true })
+	hidden: boolean;
 }
 
 export class GetMessageBodyDTO {

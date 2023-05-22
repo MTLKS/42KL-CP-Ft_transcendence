@@ -48,6 +48,8 @@ export class ChatService {
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
 			for (let member of MEMBERS) {
 				const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+				if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
+					continue;
 				server.to(MEMBER_CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 			}
 		} else {
@@ -105,6 +107,8 @@ export class ChatService {
 		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
 		for (let member of MEMBERS) {
 			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+			if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
+				continue;
 			server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
 		}
 	}
@@ -141,7 +145,7 @@ export class ChatService {
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
-		if (CHANNEL.isRoom === true ) {
+		if (CHANNEL.isRoom === false ) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return new ErrorDTO("Invalid channelId - you are not friends with this user");
@@ -149,9 +153,24 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
+		if (MY_MEMBER.isBanned === true)
+			return new ErrorDTO("Invalid channelId - you are banned from this channel");
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: MY_MEMBER.user.intraName, isRoom: false }, relations: ['owner'] });
-		const MESSAGES = await this.messageRepository.find({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: channelId } }, { receiverChannel: { channelId: channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
-		return this.userService.hideData(MESSAGES.length - (page * perPage) < 0 ? MESSAGES.slice(0, Math.max(0, perPage + MESSAGES.length - (page * perPage))) : MESSAGES.slice(MESSAGES.length - (page * perPage), MESSAGES.length - ((page - 1) * perPage)));
+		let messages = CHANNEL.isRoom === false 
+			? await this.messageRepository.find({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: channelId } }, { receiverChannel: { channelId: channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] }) 
+			: await this.messageRepository.find({ where: { receiverChannel: { channelId: channelId } }, relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
+		messages = messages.length - (page * perPage) < 0 ? messages.slice(0, Math.max(0, perPage + messages.length - (page * perPage))) : messages.slice(messages.length - (page * perPage), messages.length - ((page - 1) * perPage))
+		
+		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel'] });
+		const BLOCKED_INTRA_NAME = [];
+		for (let member of MEMBERS) {
+			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, member.user.intraName);
+			if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
+				BLOCKED_INTRA_NAME.push(member.user.intraName);
+		}
+		for (let message of messages )
+			message["hidden"] = BLOCKED_INTRA_NAME.includes(message.senderChannel.owner.intraName)
+		return this.userService.hideData(messages);
 	}
 
 	// Creates a new room
