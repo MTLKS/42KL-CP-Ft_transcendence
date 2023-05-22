@@ -1,11 +1,11 @@
 import { FriendshipService } from "src/friendship/friendship.service";
 import { Friendship } from "src/entity/friendship.entity";
+import { ChannelDTO, MemberDTO } from "src/dto/chat.dto";
 import { Channel } from "src/entity/channel.entity";
 import { Message } from "src/entity/message.entity";
 import { UserService } from "src/user/user.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Member } from "src/entity/member.entity";
-import { ChannelDTO } from "src/dto/chat.dto";
 import { ErrorDTO } from "src/dto/error.dto";
 import { Injectable } from "@nestjs/common";
 import { Repository, In } from "typeorm";
@@ -22,7 +22,7 @@ export class ChatService {
 			return ;
 		let dmRoom = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false } });
 		if (dmRoom === null)
-			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, false));
+			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, false, 1));
 		client.join(dmRoom.channelId);
 	}
 
@@ -129,13 +129,13 @@ export class ChatService {
 	}
 
 	// Retrives all channel of the user
-	async getAllChannel(accessToken: string): Promise<[ChannelDTO]> {
+	async getAllChannel(accessToken: string, startWith: string): Promise<[ChannelDTO]> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MY_MEMBERS = await this.memberRepository.find({ where: { user: { intraName: USER_DATA.intraName } }, relations: ['user', 'channel', 'channel.owner'] });
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
 		let channel = [];
 		for (let member of MY_MEMBERS) {
-			if (member.isBanned === true)
+			if (member.isBanned === true || (startWith !== undefined && member.channel.channelName.toLowerCase().startsWith(startWith.toLowerCase()) === false))
 				continue;
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const CHANNEL_ID = MEMBERS.map(member => member.channel.channelId);
@@ -144,11 +144,28 @@ export class ChatService {
 			member.channel.owner.accessToken = LAST_MESSAGE === null ? member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
 			channel.push(member.channel);
 		}
+		const PUBLIC_CHANNELS = await this.channelRepository.find({ where: { isRoom: true, isPrivate: false }, relations: ['owner'] });
+		for (let publicChannel of PUBLIC_CHANNELS) {
+			if (startWith !== undefined && publicChannel.channelName.toLowerCase().startsWith(startWith.toLowerCase()) === false)
+				continue;
+			const MEMBER = await this.getMyMemberData(accessToken, publicChannel.channelId);
+			if (MEMBER.error !== undefined)
+				channel.push(publicChannel);
+		}
 		return this.userService.hideData(channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime()));
 	}
 
+	// Retrives all members of a channel
+	async getAllChannelMember(accessToken: string, channelId: number): Promise<any> {
+		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		if (MY_MEMBER.error !== undefined || MY_MEMBER.isBanned === true)
+			return [];
+		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
+		return this.userService.hideData(MEMBERS);
+	}
+
 	// Retrives all messages from a channel
-	async getAllMessageFromChannel(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
+	async getAllChannelMessage(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
 		perPage = Number(perPage);
 		page = Number(page);
 		if (channelId === undefined)
@@ -197,7 +214,7 @@ export class ChatService {
 		if (channelName.length < 1 || channelName.length > 16)
 			return new ErrorDTO("Invalid channelName - channelName must be between 1-16 characters");
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, false);
+		const ROOM = new Channel(USER_DATA, channelName, isPrivate, password, true, false, 1);
 		await this.channelRepository.save(ROOM);
 		await this.memberRepository.save(new Member(USER_DATA, ROOM, true, false, false, new Date().toISOString()));
 		return this.userService.hideData(ROOM);
@@ -284,6 +301,8 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
 		if (MEMBER !== null)
 			return new ErrorDTO("Invalid intraName - user is already a member of this channel");
+		CHANNEL.memberCount += 1;
+		await this.channelRepository.save(CHANNEL);
 		return this.userService.hideData(await this.memberRepository.save(new Member(FRIEND_DATA, CHANNEL, isAdmin, isBanned, isMuted, new Date().toISOString())));
 	}
 
@@ -307,6 +326,10 @@ export class ChatService {
 		MEMBER.isAdmin = isAdmin;
 		MEMBER.isBanned = isBanned;
 		MEMBER.isMuted = isMuted;
+		if (MEMBER.isBanned === true) {
+			CHANNEL.memberCount -= 1;
+			await this.channelRepository.save(CHANNEL);
+		}
 		return this.userService.hideData(await this.memberRepository.save(MEMBER));
 	}
 
@@ -327,6 +350,8 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+		CHANNEL.memberCount -= 1;
+		await this.channelRepository.save(CHANNEL);
 		this.memberRepository.delete(MEMBER);
 		return this.userService.hideData(MEMBER);
 	}
