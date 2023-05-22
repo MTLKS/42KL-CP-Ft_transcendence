@@ -1,5 +1,5 @@
-import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
-import { Body, Controller, Get, Headers, Param, Post, Patch, Query } from "@nestjs/common";
+import { ChannelDTO, DeleteRoomMemberBodyDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
+import { Body, Controller, Get, Headers, Param, Post, Patch, Query, Delete } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
 import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "src/guard/AuthGuard";
@@ -65,5 +65,13 @@ export class ChatController {
 	@ApiOkResponse({ description: "Returns the updated member (requires admin privileges)", type: MemberDTO})
 	updateMember(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomMemberBodyDTO): any {
 		return this.chatService.updateMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
+	}
+
+	@Delete('room/member')
+	@UseGuards(AuthGuard)
+	@ApiCommonHeader(["Invalid body - body must include channelId(number) and intraName(string)", "Invalid channelId - requires admin privileges", "Invalid channelId - channel is not found", "Invalid intraName - user is not a member of this channel"])
+	@ApiOkResponse({ description: "Returns the deleted member (requires admin privileges)", type: MemberDTO})
+	deleteMember(@Headers('Authorization') accessToken: string, @Body() body: DeleteRoomMemberBodyDTO): any {
+		return this.chatService.deleteMember(accessToken, body.channelId, body.intraName);
 	}
 }

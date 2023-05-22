@@ -168,3 +168,11 @@ export class PatchRoomMemberBodyDTO {
 	@ApiProperty({ example: true })
 	isMuted: boolean;
 }
+
+export class DeleteRoomMemberBodyDTO {
+	@ApiProperty({ example: 123 })
+	channelId: number;
+
+	@ApiProperty({ example: "schuah" })
+	intraName: string;
+}
