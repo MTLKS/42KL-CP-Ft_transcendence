@@ -79,6 +79,8 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId)
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
+		if (MY_MEMBER.isBanned === true)
+			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		if (CHANNEL.isRoom === false) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName);
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
