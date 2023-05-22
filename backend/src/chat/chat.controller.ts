@@ -1,7 +1,7 @@
 import { ChannelDTO, GetMessageBodyDTO, MemberDTO, MessageDTO, PatchRoomBodyDTO, PatchRoomMemberBodyDTO, PostRoomBodyDTO, PostRoomMemberBodyDTO } from "src/dto/chat.dto";
 import { Body, Controller, Get, Headers, Param, Post, Patch, Query, Delete } from "@nestjs/common";
 import { ApiCommonHeader } from "src/ApiCommonHeader/ApiCommonHeader.decorator";
-import { ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { AuthGuard } from "src/guard/AuthGuard";
 import { ChatService } from "./chat.service";
 import { UseGuards } from "@nestjs/common";
@@ -38,7 +38,7 @@ export class ChatController {
 	@Post('room')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid password - password must be between 1-16 characters", "Invalid channelName - channelName must be between 1-16 characters"])
-	@ApiOkResponse({ description: "Returns the newly created room", type: ChannelDTO})
+	@ApiCreatedResponse({ description: "Returns the newly created room", type: ChannelDTO})
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: PostRoomBodyDTO): any {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
 	}
@@ -62,7 +62,7 @@ export class ChatController {
 	@Post('room/member')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid channelId - channel is not found", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
-	@ApiOkResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
+	@ApiCreatedResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
 	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
 		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted, body.password);
 	}
