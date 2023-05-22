@@ -5,7 +5,7 @@ import { ChatroomData, ChatroomMessageData, MemberData } from '../../../../model
 import { getChatroomMessages, getMemberData } from '../../../../api/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
-import { ChatContext, ChatroomMessagesContext, ChatroomsContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomMessagesContext, ChatroomsContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import { playNewMessageSound } from '../../../../functions/audio';
 import ChatUnreadSeparator from './ChatUnreadSeparator';
 
@@ -37,8 +37,11 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [page, setPage] = useState<number>(1);
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
+  const { state, dispatch } = useContext(NewChannelContext);
 
   useEffect(() => {
+    console.log(chatroomData);
+    setChannelInfo();
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
@@ -87,6 +90,11 @@ function ChatroomContent(props: ChatroomContentProps) {
       </div>
     </ChatroomMessagesContext.Provider>
   )
+
+  function setChannelInfo() {
+    if (!chatroomData.isRoom) return;
+    dispatch({ type: 'SET_CHANNEL_INFO', chatroomData: chatroomData});
+  }
 
   function handleScrollToTop() {
     const scrollableDiv = scrollableDivRef.current;

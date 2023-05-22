@@ -17,7 +17,6 @@ function ChannelMemberList(props: ChannelMemberListProps) {
   const { title, friendList } = props;
   const [filterKeyword, setFilterKeyword] = useState("");
 
-
   return (
     <div className='w-[95%] h-full mx-auto flex flex-col gap-y-2'>
       <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />

@@ -1,3 +1,4 @@
+import { ChatroomData } from "../../../../model/ChatRoomData";
 import { UserData } from "../../../../model/UserData"
 
 interface ChannelMemberRole {
@@ -36,6 +37,7 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_NAME', channelName: string }
   | { type: 'SET_CHANNEL_PRIVACY', isPrivate: boolean }
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
+  | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData }
   | { type: 'ADD_ERROR', error: NewChannelError}
   | { type: 'RESET_ERRORS'}
   | { type: 'RESET'};
@@ -128,6 +130,15 @@ export default function newChannelReducer(state = newChannelInitialState, action
       return {
         ...state,
         isPrivate: action.isPrivate,
+      }
+    }
+    case 'SET_CHANNEL_INFO': {
+      return {
+        ...state,
+        channelName: action.chatroomData.channelName,
+        isPrivate: action.chatroomData.isPrivate,
+        password: action.chatroomData.password,
+
       }
     }
     case 'RESET_ERRORS': {

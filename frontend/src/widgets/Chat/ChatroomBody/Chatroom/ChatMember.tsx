@@ -17,20 +17,29 @@ interface ChatMemberRoleTagProps {
   intraName: string;
 }
 
+let count: number = 0;
 function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   const { state, dispatch } = useContext(NewChannelContext);
   const { role, intraName } = props;
   const [isPressed, setIsPressed] = useState(false);
+  const currentTimeRef = useRef<number>(0);
+  const [gradientPosition, setGradientPosition] = useState(0);
 
   if (role === 'member') {
     return (
-      <div className='flex flex-row overflow-hidden'>
+      <div className='flex flex-row relative'>
+        <div
+          className={`absolute z-0 top-0 left-0 h-full transition-all ease-linear ${gradientPosition === 0 ? 'duration-150' : 'duration-1000'} bg-highlight`}
+          style={{ width: `${gradientPosition}%` }}
+        ></div>
         <button
-          className={`w-[100%] overflow-hidden bg-dimshadow text-highlight border-highlight border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2`}
-          onClick={promoteOrDemoteAsAdmin}
+          key={intraName + "-member"}
+          className={`mix-blend-difference w-[100%] z-[5] text-highlight overflow-hidden border-highlight border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-[3s]`}
+          onMouseDown={confirmAction}
+          onMouseUp={promoteMember}
         >
-          {isPressed ? <FaMinus className='text-base'/> : <FaPlus className='text-base'/>}
+          {isPressed ? <FaMinus className='text-base' /> : <FaPlus className='text-base' />}
           <p>admin</p>
         </button>
       </div>
@@ -39,12 +48,17 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   if (role === 'admin') {
     return (
-      <div className='flex flex-row overflow-hidden'>
+      <div className='flex flex-row overflow-hidden relative'>
+        <div
+          className='absolute z-0 top-0 left-0 h-full transition-all ease-linear duration-[1s] bg-highlight'
+          style={{ width: `${gradientPosition}%` }}
+        ></div>
         <button
-          className={`w-[100%] overflow-hidden ${isPressed ? 'bg-highlight text-dimshadow' : 'bg-dimshadow text-highlight'} border-highlight border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2`}
-          onClick={promoteOrDemoteAsAdmin}
+          key={intraName + "-admin"}
+          className={`w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-base font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-100`}
+          onClick={demoteMember}
         >
-          {isPressed ? <FaMinus className='text-base'/> : <FaPlus className='text-base'/>}
+          <FaMinus className='text-base' />
           <p>admin</p>
         </button>
       </div>
@@ -61,13 +75,28 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   return null;
 
-  function promoteOrDemoteAsAdmin() {
-    setIsPressed(!isPressed);
-    if (isPressed) {
-      dispatch({ type: 'ASSIGN_AS_MEMBER', intraName: intraName });
-    } else {
+  function confirmAction() {
+    setGradientPosition(100);
+    currentTimeRef.current = Date.now();
+  }
+
+  function promoteMember() {
+    const currentTime = Date.now();
+    const timeDifference = currentTime - currentTimeRef.current;
+
+    if (timeDifference < 1000) {
+      setGradientPosition(0);
+      return;
+    }
+    if (timeDifference >= 1000) {
       dispatch({ type: 'ASSIGN_AS_ADMIN', intraName: intraName });
     }
+    currentTimeRef.current = currentTime;
+  }
+
+  function demoteMember() {
+    setGradientPosition(0);
+    dispatch({ type: 'ASSIGN_AS_MEMBER', intraName: intraName });
   }
 }
 
@@ -95,7 +124,7 @@ function ChatMember(props: ChatMemberProps) {
         </div>
         <p className={`'text-base font-extrabold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre`}>{userData.userName} ({userData.intraName})</p>
       </div>
-      { memberRole !== undefined && <ChatMemberRoleTag intraName={userData.intraName} role={memberRole} /> }
+      {memberRole !== undefined && <ChatMemberRoleTag intraName={userData.intraName} role={memberRole} />}
     </div>
   )
 
