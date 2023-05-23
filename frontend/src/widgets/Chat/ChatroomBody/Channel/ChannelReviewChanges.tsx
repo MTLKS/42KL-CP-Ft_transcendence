@@ -85,7 +85,7 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
     if (logs.length > 0)
       return (logs);
     return ([
-      <div className='relative w-full h-full'>
+      <div key={"No_changes" + Date.now()} className='relative w-full h-full'>
         <p className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-dimshadow text-sm text-center font-bold uppercase underline decoration-wavy decoration-accRed'>No changes were made</p>
       </div>
     ])

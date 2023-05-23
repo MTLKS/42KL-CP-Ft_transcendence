@@ -110,12 +110,13 @@ function ChannelInfo(props: ChannelInfoProps) {
      * 1. Public
      *  - change name only [ok, oldpassword and newpassword should both be null]
      *  - enable password [ok, oldpassword and newpassword should be the same]
+     *  - disable password [ok, oldpassword is previous password, newpassword is null]
      *  - public to private [ok, oldpassword and newpassword should be null]
      * 
      * 2. Private
      *  - change name only [ok]
      *  - switch to public, no password [ok]
-     *  - switch to public, with password
+     *  - switch to public, with password [ok]
      *  - switch back to private
      * 
      * 3. Protected
