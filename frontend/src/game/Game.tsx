@@ -38,8 +38,8 @@ function Game(props: GameProps) {
 
   const containerRef = useRef<PIXI.Container>(null);
 
-  const ballhit = useCallback((pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
-
+  const ballhit = useCallback(async (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
+    await sleep(30);
     if (containerRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
     const shorkwaveSpeed = pongSpeedMagnitude / 10 * scale;
@@ -114,7 +114,7 @@ function Game(props: GameProps) {
     setGameGravityArrow(newGameGravityArrow);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    if (newPosition.x <= 0 || newPosition.x >= 1600 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+    if (newPosition.x <= 20 || newPosition.x >= 1600 - 20) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (
       newPosition.x <= leftPaddlePosition.x + 30
@@ -140,7 +140,7 @@ function Game(props: GameProps) {
 
   if (!shouldRender) return <></>;
   return (
-    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto'>
+    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : null}>
       <Sprite width={1600} height={900} texture={backgoundTexture} />
       <InwardShadow />
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />

@@ -60,6 +60,9 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
 
 
   const trailContainerRef = useRef<PIXI.ParticleContainer>(null);
+  const trailRedContainerRef = useRef<PIXI.ParticleContainer>(null);
+  const trailCyanContainerRef = useRef<PIXI.ParticleContainer>(null);
+  const trailPurpleContainerRef = useRef<PIXI.ParticleContainer>(null);
   const whiteContainerRef = useRef<PIXI.ParticleContainer>(null);
   const cyanContainerRef = useRef<PIXI.ParticleContainer>(null);
   const redContainerRef = useRef<PIXI.ParticleContainer>(null);
@@ -74,6 +77,23 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   }, [gameGravityArrow]);
 
   useTick((delta) => {
+    const newPosition = gameData.pongPosition;
+    if (newPosition.x <= 10)
+      gameParticleDelegate.particles.forEach((p) => {
+        p.ax = 1 + Math.random() * 3;
+        p.vy = (Math.random() - 0.5) * 50;
+        p.vx = 2;
+        p.sizeDecayFactor = 1.03;
+        p.opacityDecay = 0.015;
+      });
+    else if (newPosition.x >= 1600 - 20)
+      gameParticleDelegate.particles.forEach((p) => {
+        p.ax = -1 - Math.random() * 3;
+        p.vy = (Math.random() - 0.5) * 50;
+        p.vx = -2;
+        p.sizeDecayFactor = 1.03;
+        p.opacityDecay = 0.015;
+      });
     if (gameData.leftPaddleType === PaddleType.Vzzzzzzt) {
       if (leftLightningParticles) {
         leftLightningParticles.centerX = gameData.leftPaddlePosition.x + 7.5;
@@ -168,6 +188,21 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         properties={{ position: true, scale: true, alpha: true }}
       />
       <ParticleContainer
+        ref={trailRedContainerRef}
+        key={"trailParticlesRed"}
+        properties={{ position: true, scale: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={trailCyanContainerRef}
+        key={"trailParticlesCyan"}
+        properties={{ position: true, scale: true, alpha: true }}
+      />
+      <ParticleContainer
+        ref={trailPurpleContainerRef}
+        key={"trailParticlesPurple"}
+        properties={{ position: true, scale: true, alpha: true }}
+      />
+      <ParticleContainer
         ref={cyanContainerRef}
         key={"cyanParticles"}
         properties={{ position: true, alpha: true }}
@@ -245,10 +280,16 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     particle.sprite = sprite;
     if (colorIndex === 0 && affectedByGravity) {
       whiteContainerRef.current?.addChild(sprite);
+    } else if (colorIndex === 1 && !affectedByGravity) {
+      trailCyanContainerRef.current?.addChild(sprite);
     } else if (colorIndex === 1) {
       cyanContainerRef.current?.addChild(sprite);
+    } else if (colorIndex === 4 && !affectedByGravity) {
+      trailRedContainerRef.current?.addChild(sprite);
     } else if (colorIndex === 4) {
       redContainerRef.current?.addChild(sprite);
+    } else if (colorIndex === 2 && !affectedByGravity) {
+      trailPurpleContainerRef.current?.addChild(sprite);
     } else if (!affectedByGravity) {
       trailContainerRef.current?.addChild(sprite);
     } else {
@@ -262,10 +303,16 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     let sprite: PIXI.Sprite | undefined;
     if (colorIndex === 0 && affectedByGravity && whiteContainerRef.current) {
       sprite = whiteContainerRef.current.removeChildAt(whiteContainerRef.current.getChildIndex(ref));
+    } else if (colorIndex === 1 && !affectedByGravity && trailCyanContainerRef.current) {
+      sprite = trailCyanContainerRef.current.removeChildAt(trailCyanContainerRef.current.getChildIndex(ref));
     } else if (colorIndex === 1 && cyanContainerRef.current) {
       sprite = cyanContainerRef.current.removeChildAt(cyanContainerRef.current.getChildIndex(ref));
+    } else if (colorIndex === 4 && trailRedContainerRef.current && !affectedByGravity) {
+      sprite = trailRedContainerRef.current.removeChildAt(trailRedContainerRef.current.getChildIndex(ref));
     } else if (colorIndex === 4 && redContainerRef.current) {
       sprite = redContainerRef.current.removeChildAt(redContainerRef.current.getChildIndex(ref));
+    } else if (colorIndex === 2 && !affectedByGravity && trailPurpleContainerRef.current) {
+      sprite = trailPurpleContainerRef.current.removeChildAt(trailPurpleContainerRef.current.getChildIndex(ref));
     } else if (!affectedByGravity && trailContainerRef.current) {
       sprite = trailContainerRef.current.removeChildAt(trailContainerRef.current.getChildIndex(ref));
     } else if (purpleContainerRef.current) {
