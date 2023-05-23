@@ -172,6 +172,8 @@ export class ChatService {
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
+		if (CHANNEL === null)
+			return new ErrorDTO("Invalid channelId - channel does not exist");
 		if (CHANNEL.isRoom === false ) {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, CHANNEL.owner.intraName)
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
@@ -222,7 +224,7 @@ export class ChatService {
 
 	// Updates room settings
 	async updateRoom(accessToken: string, channelId: number, channelName: string, isPrivate: boolean, oldPassword: string, newPassword: string): Promise<any> {
-		if (channelName === undefined || isPrivate === undefined || newPassword === undefined)
+		if (channelId === undefined || channelName === undefined || isPrivate === undefined || newPassword === undefined)
 			return new ErrorDTO("Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)");
 		if (isPrivate === true && newPassword !== null)
 			return new ErrorDTO("Invalid body - password must be null if isPrivate is true");

@@ -38,7 +38,7 @@ export class ChatController {
 
 	@Get('message/:channelId')
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid body - body must include channelId(number)", "Invalid channelId - you are not friends with this user", "Invalid channelId - member is not found in that channelId", "Invalid channelId - you are banned from this channel"])
+	@ApiCommonHeader(["Invalid body - body must include channelId(number)", "Invalid channelId - channel does not exist", "Invalid channelId - you are not friends with this user", "Invalid channelId - member is not found in that channelId", "Invalid channelId - you are banned from this channel"])
 	@ApiOkResponse({ description: "Returns all the messages of the user in the channel", type: [MessageDTO]})
 	getAllChannelMessage(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number, @Query() query: GetMessageQueryDTO): Promise<any> {
 		return this.chatService.getAllChannelMessage(accessToken, channelId, query.perPage, query.page);
