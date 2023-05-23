@@ -246,7 +246,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setValue('');
       setHistoryIndex(-1);
     }
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') e.preventDefault();
     if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && enableHistory) {
       let newHistoryIndex = historyIndex;
       e.preventDefault();
@@ -268,7 +268,6 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setHistoryIndex(newHistoryIndex);
     }
     if (e.key === 'Tab' || e.key === 'ArrowRight' && toolTipCommand) {
-      e.preventDefault();
       if (toolTipCommand && splitValue.length === 1) {
         e.currentTarget.value = toolTipCommand;
         setValue(toolTipCommand);
