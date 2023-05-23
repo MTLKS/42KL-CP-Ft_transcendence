@@ -38,6 +38,7 @@ export class GameData {
   // pong variables
   private _pongPosition: Offset = { x: 800, y: 450 };
   private _pongSpeed: Offset = { x: 12, y: 8 };
+  pongSpin: number = 2;
 
   // player related variables
   leftPaddlePosition: Offset = { x: -50, y: 450 };

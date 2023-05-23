@@ -33,8 +33,10 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     const purple = app.renderer.generateTexture(box);
     drawLightingParticleTexture(box);
     const lightning = app.renderer.generateTexture(box);
+    drawRedParticleTexture(box);
+    const red = app.renderer.generateTexture(box);
     box.destroy();
-    return [white, cyan, purple, lightning];
+    return [white, cyan, purple, lightning, red];
   }, []);
 
   const arrowTexture = useMemo(() => {
@@ -60,6 +62,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   const trailContainerRef = useRef<PIXI.ParticleContainer>(null);
   const whiteContainerRef = useRef<PIXI.ParticleContainer>(null);
   const cyanContainerRef = useRef<PIXI.ParticleContainer>(null);
+  const redContainerRef = useRef<PIXI.ParticleContainer>(null);
   const purpleContainerRef = useRef<PIXI.ParticleContainer>(null);
   const lightningContainerRef = useRef<PIXI.ParticleContainer>(null);
   const arrowContainerRef = useRef<PIXI.ParticleContainer>(null);
@@ -170,6 +173,11 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         properties={{ position: true, alpha: true }}
       />
       <ParticleContainer
+        ref={redContainerRef}
+        key={"redParticles"}
+        properties={{ position: true, alpha: true }}
+      />
+      <ParticleContainer
         ref={whiteContainerRef}
         key={"whiteParticles"}
         properties={{ position: true, alpha: true }}
@@ -239,6 +247,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       whiteContainerRef.current?.addChild(sprite);
     } else if (colorIndex === 1) {
       cyanContainerRef.current?.addChild(sprite);
+    } else if (colorIndex === 4) {
+      redContainerRef.current?.addChild(sprite);
     } else if (!affectedByGravity) {
       trailContainerRef.current?.addChild(sprite);
     } else {
@@ -254,6 +264,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
       sprite = whiteContainerRef.current.removeChildAt(whiteContainerRef.current.getChildIndex(ref));
     } else if (colorIndex === 1 && cyanContainerRef.current) {
       sprite = cyanContainerRef.current.removeChildAt(cyanContainerRef.current.getChildIndex(ref));
+    } else if (colorIndex === 4 && redContainerRef.current) {
+      sprite = redContainerRef.current.removeChildAt(redContainerRef.current.getChildIndex(ref));
     } else if (!affectedByGravity && trailContainerRef.current) {
       sprite = trailContainerRef.current.removeChildAt(trailContainerRef.current.getChildIndex(ref));
     } else if (purpleContainerRef.current) {
@@ -283,6 +295,13 @@ function drawPurpleParticleTexture(box: PIXI.Graphics) {
 function drawCyanParticleTexture(box: PIXI.Graphics) {
   box.clear();
   box.beginFill(0x5F928F, 0.8);
+  box.drawRect(0, 0, 2, 2);
+  box.endFill();
+}
+
+function drawRedParticleTexture(box: PIXI.Graphics) {
+  box.clear();
+  box.beginFill(0xAD6454, 0.8);
   box.drawRect(0, 0, 2, 2);
   box.endFill();
 }

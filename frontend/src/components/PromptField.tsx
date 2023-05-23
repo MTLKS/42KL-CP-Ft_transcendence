@@ -268,6 +268,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setHistoryIndex(newHistoryIndex);
     }
     if (e.key === 'Tab' || e.key === 'ArrowRight' && toolTipCommand) {
+      e.preventDefault();
       if (toolTipCommand && splitValue.length === 1) {
         e.currentTarget.value = toolTipCommand;
         setValue(toolTipCommand);

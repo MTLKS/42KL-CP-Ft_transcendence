@@ -18,9 +18,19 @@ class GameParticleDelegate {
   ) {
     const newPosition = this.gameData.pongPosition;
     const newPongSpeed = this.gameData.pongSpeed;
-    const pongSpeedMagnitude = Math.sqrt(
+    let pongSpeedMagnitude = Math.sqrt(
       newPongSpeed.x ** 2 + newPongSpeed.y ** 2
     );
+    this.gameData.gameEntities.forEach((entity) => {
+      if (entity instanceof GameTimeZone) {
+        const distance = Math.sqrt(
+          Math.pow(newPosition.x - entity.x, 2) +
+            Math.pow(newPosition.y - entity.y, 2)
+        );
+        if (distance < 1 || distance > entity.w / 2) return;
+        pongSpeedMagnitude /= entity.timeFactor;
+      }
+    });
     this.particles.forEach((particle) => {
       if (particle.opacity <= 0.01) {
         this.particles.splice(this.particles.indexOf(particle), 1);
@@ -63,14 +73,17 @@ class GameParticleDelegate {
       newPongSpeed,
       addSprite
     );
-    if (pongSpeedMagnitude > 20) {
-      this.addSpitParticle(
+    this.addSpitParticle(this.particles, newPosition, newPongSpeed, addSprite);
+    if (this.gameData.pongSpin > 1) {
+      this.addSpitParticleRed(
         this.particles,
         newPosition,
         newPongSpeed,
         addSprite
       );
-      this.addSpitParticle2(
+    }
+    if (pongSpeedMagnitude > 20) {
+      this.addSpitParticleCyan(
         this.particles,
         newPosition,
         newPongSpeed,
@@ -137,7 +150,33 @@ class GameParticleDelegate {
     });
   }
 
-  addSpitParticle2(
+  addSpitParticleRed(
+    newParticles: GameParticle[],
+    newPosition: Offset,
+    newPongSpeed: Offset,
+    addSprite: (sprite: GameParticle) => void
+  ) {
+    for (let i = 0; i < 2; i++) {
+      const size = 6 + 4 * Math.random();
+      const newParticle = new GameParticle({
+        x: newPosition.x + 5 - 10 / 2,
+        y: newPosition.y + 5 - 10 / 2,
+        opacity: 1,
+        opacityDecay: 0.02,
+        vx: newPongSpeed.x * 1.5 + (Math.random() - 0.5) * 3,
+        vy: newPongSpeed.y * 1.5 + (Math.random() - 0.5) * 3,
+        w: size,
+        h: size,
+        speedDecayFactor: 0.95,
+        colorIndex: 4,
+        affectedByTimeZone: false,
+      });
+      addSprite(newParticle);
+      newParticles.push(newParticle);
+    }
+  }
+
+  addSpitParticleCyan(
     newParticles: GameParticle[],
     newPosition: Offset,
     newPongSpeed: Offset,
