@@ -135,12 +135,12 @@ export class PowerGameRoom extends GameRoom{
 			this.gameReset = true;
 		}
 
-		if (score == 3){
-			if (this.currentEffect != FieldEffect.GRAVITY){
-				this.Ball.accelX = 0;
-				this.Ball.accelY = 0;
-			}
-		}
+		// if (score == 3){
+		// 	if (this.currentEffect != FieldEffect.GRAVITY){
+		// 		this.Ball.accelX = 0;
+		// 		this.Ball.accelY = 0;
+		// 	}
+		// }
 		
 		if (this.elapseTime >= this.fieldEffectTimer){
 			this.fieldChange(server);
@@ -253,7 +253,7 @@ export class PowerGameRoom extends GameRoom{
 
 	fieldChange(server: Server){
 		// let effect = this.getRandomNum();
-		let effect = 0;
+		let effect = 1;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

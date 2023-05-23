@@ -24,7 +24,7 @@ export class Paddle extends Rect {
 		this.speedIncrement = 1;
 		this.speedIncrementCount = 0;
 		this.spinRequirement = 2;
-		this.spinForce = 1.5;
+		this.spinForce = 1;
 
 		if (this.powerUp == PowerUp.SIZE){
 			this.height *= this.sizeIncrement;
@@ -34,7 +34,6 @@ export class Paddle extends Rect {
 	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number, hitCount: number=0){
 		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
 		if (Math.abs(avgDelta) > this.spinRequirement){
-			console.log("spin down");
 			ball.accelY = -this.spinForce * avgDelta; 
 			if (this.powerUp == PowerUp.SPIN){
 				ball.accelY = -this.spinForce * avgDelta * 2;
@@ -61,7 +60,7 @@ export class Paddle extends Rect {
 		this.delta = this.posY - this.lastPosY;
 		this.lastPosY = this.posY;
 		this.prevDeltas.push(this.delta);
-		if (this.prevDeltas.length > 10){
+		if (this.prevDeltas.length > 5){
 			this.prevDeltas.shift();
 		}
 	}

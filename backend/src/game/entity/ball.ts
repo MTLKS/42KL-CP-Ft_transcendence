@@ -6,6 +6,8 @@ import { DynamicRect } from "./dynamicRect";
 export class Ball extends DynamicRect{
 	initialSpeedX: number;
 	initialSpeedY: number;
+	prevY: number;
+	accelerating: boolean;
 
 	constructor (posX: number, posY: number, width: number, height: number, 
 		initSpeedX: number, initSpeedY: number, mass: number = 1){
@@ -13,6 +15,9 @@ export class Ball extends DynamicRect{
 
 		this.initialSpeedX = initSpeedX;
 		this.initialSpeedY = initSpeedY;
+
+		this.prevY = 3;
+		this.accelerating = false;
 	}
 
 	/**
@@ -67,4 +72,24 @@ export class Ball extends DynamicRect{
 		object.velX += impulseX * otherInvMass;
 		object.velY += impulseY * otherInvMass;
 	}
+
+	// update(){
+	// 	if (this.accelerating == false && this.accelY == 0){
+	// 		this.prevY = this.velY;
+	// 	}
+	// 	if (this.accelY != 0){
+	// 		this.accelerating = true;
+	// 	}
+	// 	if (this.accelerating == true){
+	// 		if (this.accelY == 0){
+	// 			this.accelerating = false;
+	// 			this.velY = this.prevY * Math.sign(this.velY);
+	// 		}
+	// 	}
+	// 	this.velX += this.accelX * (1 / 60);
+	// 	this.velY += this.accelY * (1 / 60);
+	// 	this.posX += this.velX;
+	// 	this.posY += this.velY;
+	// 	console.log(this.velY);
+	// }
 }
