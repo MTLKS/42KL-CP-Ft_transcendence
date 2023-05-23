@@ -9,7 +9,7 @@ import { ErrorPopup } from '../../components/Popup';
 import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
 import Api from '../../api/api';
 import sleep from '../../functions/sleep';
-import login from '../../api/loginAPI';
+import { login } from '../../api/loginAPI';
 import { FaArrowLeft } from 'react-icons/fa';
 import UserFormTfa from './UserFormTfa';
 

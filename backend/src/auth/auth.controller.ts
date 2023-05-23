@@ -22,13 +22,6 @@ export class AuthController {
 	startGoogleLogin(@Req() req: any): any {
 		return;
 	}
-
-	@Get('google/callback')
-	@UseGuards(AuthGuard('google'))
-	@ApiOkResponse({ description: "The callback route from google login after code has been traded", type: AuthResponseDTO })
-	googleAuthRedirect(@Req() req: any): Promise<AuthResponseDTO> {
-		return this.authService.googleAuthRedirect(req);
-	}
 	
 	@Post()
 	@ApiCreatedResponse({ description: "Used to trade the code to get the access token of a user (Code will expire upon use)", type: AuthResponseDTO })

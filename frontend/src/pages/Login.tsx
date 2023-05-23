@@ -1,5 +1,5 @@
 import Title from '../components/Title';
-import login from '../api/loginAPI';
+import { login, googleLogin } from '../api/loginAPI';
 import PromptField, { CommandOptionData } from '../components/PromptField';
 import sleep from '../functions/sleep';
 import { useEffect, useRef, useState } from 'react';
@@ -65,7 +65,7 @@ function Login() {
       <div className={`${errorStyle} duration-[0.1s]`}>
         <PromptField
           handleCommands={handleCommands}
-          availableCommands={[new CommandOptionData({ command: "LOGIN" })]}
+          availableCommands={[new CommandOptionData({ command: "LOGIN" }), new CommandOptionData({ command: "BACKDOOR" })]}
           center={true}
           capitalize={true}
           ref={promptFieldRef}
@@ -81,6 +81,9 @@ function Login() {
     switch (command[0]) {
       case "LOGIN":
         login();
+        break;
+      case "BACKDOOR":
+        googleLogin();
         break;
       default:
         setErrorCount(errorCount + 1);
