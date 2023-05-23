@@ -75,6 +75,7 @@ export class GameData {
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
   private sendPlayerMove?: (y: number, gameRoom: string) => void;
+  private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -87,6 +88,9 @@ export class GameData {
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = (y: number, gameRoom: string) => {
       this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
+    };
+    this.sendPlayerClick = (isMouseDown: boolean, gameRoom: string) => {
+      this.socketApi.sendMessages("playerClick", { gameRoom: gameRoom, isMouseDown: isMouseDown });
     };
   }
 
@@ -326,6 +330,10 @@ export class GameData {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
     this.sendPlayerMove?.(y, this.gameRoom);
+  }
+
+  updatePlayerClick(isMouseDown: boolean) {
+    this.sendPlayerClick?.(isMouseDown, this.gameRoom);
   }
 
   async useLocalTick() {

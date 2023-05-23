@@ -320,6 +320,14 @@ export class GameService {
     ROOM.updatePlayerPos(client.id, value);
   }
 
+  async playerMouseUpdate(client: Socket, roomID: string, isMouseDown: boolean) {
+    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    if (USER_DATA.error !== undefined) return;
+    const ROOM = this.gameRooms.get(roomID);
+    if (ROOM === undefined) return;
+    // ROOM.updatePlayerMouse(client.id, isMouseDown);
+  }
+
   clearGameRooms() {
     this.gameRooms.forEach((gameRoom, key) => {
       if (gameRoom.gameEnded) {

@@ -31,8 +31,12 @@ function GameApp(props: GameAppProps) {
   useEffect(() => {
     const canvas = document.getElementById('pixi') as HTMLCanvasElement
     canvas.addEventListener('mousemove', onmousemove);
+    canvas.addEventListener('mousedown', onmousedown);
+    canvas.addEventListener('mouseup', onmouseup);
     return () => {
       canvas.removeEventListener('mousemove', onmousemove);
+      canvas.removeEventListener('mousedown', onmousedown);
+      canvas.removeEventListener('mouseup', onmouseup);
     }
   }, [scale]);
   return (
@@ -48,6 +52,14 @@ function GameApp(props: GameAppProps) {
     if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
     gameData.updatePlayerPosition(e.offsetY / gameData.gameMaxHeight * 900 / scale);
+  }
+
+  function onmousedown() {
+    gameData.updatePlayerClick(true);
+  }
+
+  function onmouseup() {
+    gameData.updatePlayerClick(false);
   }
 }
 
