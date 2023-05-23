@@ -122,7 +122,7 @@ class GameParticleDelegate {
     colorIndex: number,
     addSprite: (sprite: GameParticle) => void
   ) {
-    const numberOfParticles = 3;
+    const numberOfParticles = 4;
     for (let i = 0; i < numberOfParticles; i++) {
       const newParticle = new GameParticle({
         x: newPosition.x - (newSpeed.x * i) / numberOfParticles,

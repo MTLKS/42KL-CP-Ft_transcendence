@@ -44,15 +44,15 @@ function Game(props: GameProps) {
     if (containerRef.current === null) return;
     if (shadowRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
-    const shorkwaveSpeed = pongSpeedMagnitude / 10 * scale;
+    const shockwaveSpeed = pongSpeedMagnitude / 5 * scale;
     const rgbSplitMagnitude = 0.5;
-    const shorkwaveFilter = new ShockwaveFilter();
-    shorkwaveFilter.center = [hitPosition.x * scale, hitPosition.y * scale];
-    shorkwaveFilter.time = 0;
-    shorkwaveFilter.amplitude = 100 * scale;
-    shorkwaveFilter.wavelength = 5 / scale;
-    shorkwaveFilter.radius = 1900 * scale;
-    shorkwaveFilter.brightness = 3;
+    const shockwaveFilter = new ShockwaveFilter();
+    shockwaveFilter.center = [hitPosition.x * scale, hitPosition.y * scale];
+    shockwaveFilter.time = 0;
+    shockwaveFilter.amplitude = 100 * scale;
+    shockwaveFilter.wavelength = 5 / scale;
+    shockwaveFilter.radius = 1900 * scale;
+    shockwaveFilter.brightness = 3;
     const rgbSplitFilter = new RGBSplitFilter();
     rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
     rgbSplitFilter.green = new PIXI.Point(0, 0);
@@ -65,23 +65,23 @@ function Game(props: GameProps) {
       if (containerRef.current === null) return;
       if (shadowRef.current.alpha >= 0.5)
         shadowRef.current.alpha *= 0.995;
-      shorkwaveFilter.time += 0.01 * shorkwaveSpeed;
-      if (shorkwaveFilter.brightness > 1)
-        shorkwaveFilter.brightness *= 0.96;
-      shorkwaveFilter.wavelength += 2 * shorkwaveSpeed;
-      shorkwaveFilter.amplitude *= 0.95 ** shorkwaveSpeed;
+      shockwaveFilter.time += 0.01 * shockwaveSpeed;
+      if (shockwaveFilter.brightness > 1)
+        shockwaveFilter.brightness *= 0.96;
+      shockwaveFilter.wavelength += 2 * shockwaveSpeed;
+      shockwaveFilter.amplitude *= 0.95;
       (rgbSplitFilter.red as PIXI.Point).x *= 0.95;
       (rgbSplitFilter.red as PIXI.Point).y *= 0.95;
       (rgbSplitFilter.blue as PIXI.Point).x *= 0.95;
       (rgbSplitFilter.blue as PIXI.Point).y *= 0.95;
-      if (shorkwaveFilter.time >= 0.8) {
+      if (shockwaveFilter.time >= 2 * scale) {
         ticker.remove(tickerCallback);
         ticker.stop();
       }
     };
     ticker.add(tickerCallback);
     ticker.start();
-    containerRef.current.filters = [shorkwaveFilter, rgbSplitFilter];
+    containerRef.current.filters = [shockwaveFilter, rgbSplitFilter];
   }, [scale]);
 
   useEffect(() => {
@@ -122,20 +122,22 @@ function Game(props: GameProps) {
     setGameGravityArrow(newGameGravityArrow);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    if (newPosition.x <= 20 || newPosition.x >= 1600 - 20) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
-    if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
-    if (
-      newPosition.x <= leftPaddlePosition.x + 30
-      && newPosition.x >= leftPaddlePosition.x - 30
-      && newPosition.y >= leftPaddlePosition.y - 60
-      && newPosition.y <= leftPaddlePosition.y + 60
-    ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
-    if (
-      newPosition.x <= rightPaddlePosition.x + 30
-      && newPosition.x >= rightPaddlePosition.x - 30
-      && newPosition.y >= rightPaddlePosition.y - 60
-      && newPosition.y <= rightPaddlePosition.y + 60
-    ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+    if (gameData.useHitFilter) {
+      if (newPosition.x <= 20 || newPosition.x >= 1600 - 20) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+      if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+      if (
+        newPosition.x <= leftPaddlePosition.x + 30
+        && newPosition.x >= leftPaddlePosition.x - 30
+        && newPosition.y >= leftPaddlePosition.y - 60
+        && newPosition.y <= leftPaddlePosition.y + 60
+      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+      if (
+        newPosition.x <= rightPaddlePosition.x + 30
+        && newPosition.x >= rightPaddlePosition.x - 30
+        && newPosition.y >= rightPaddlePosition.y - 60
+        && newPosition.y <= rightPaddlePosition.y + 60
+      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+    }
   }, usingTicker ?? true);
 
   const backgoundTexture = useMemo(() => {

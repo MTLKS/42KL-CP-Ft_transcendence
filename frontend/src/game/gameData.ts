@@ -30,8 +30,10 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = true;
-  useEntitiesFilter: boolean = true;
+  useParticlesFilter: boolean = false;
+  useEntitiesFilter: boolean = false;
+  usePaddleFilter: boolean = false;
+  useHitFilter: boolean = false;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;

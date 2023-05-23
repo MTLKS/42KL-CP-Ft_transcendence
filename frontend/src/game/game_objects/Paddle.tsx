@@ -136,7 +136,7 @@ function Paddle(props: PaddleProps) {
       ref={paddleRef}
       texture={texture}
       pivot={new PIXI.Point(size.w / 2, size.h / 2)}
-      filters={[filter]}
+      filters={gameData.usePaddleFilter ? [filter] : null}
     />
   )
 }
