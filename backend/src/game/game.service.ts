@@ -16,6 +16,7 @@ import {
 import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
+import { PracticeGameRoom } from './entity/practiceGameRoom';
 
 export enum PowerUp{
   NORMAL = 0,
@@ -124,7 +125,7 @@ export class GameService {
     if (USER_DATA.error !== undefined) return;
 
     // Check if queue is known
-    if (!(clientQueue in this.queues)) {
+    if (!(clientQueue in this.queues) && clientQueue !== "practice") {
       if (LOBBY_LOGGING)
         console.log(
           `${USER_DATA.intraName} tried to join unknown queue "${clientQueue}".`,
@@ -168,6 +169,12 @@ export class GameService {
       return;
     }
 
+    if (clientQueue === "practice") {
+      let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
+      this.joinPractice(server, player);
+      return;
+    }
+
     // Puts player in the queue
     if (LOBBY_LOGGING)
       console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
@@ -195,11 +202,6 @@ export class GameService {
       return;
     }
     this.queues[clientQueue].push(player);
-
-    //TESTING
-    var player1 = this.queues[clientQueue].pop();
-    // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server);
   }
 
   async leaveQueue(client: Socket) {
@@ -274,6 +276,14 @@ export class GameService {
     });
   }
 
+  async joinPractice(server: Server, player: Player) {
+    let room = new PracticeGameRoom(player, PowerUp.SPIN);
+    player.socket.join(room.roomID);
+    player.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO("Bot", "standard", true, room.roomID)));
+    this.gameRooms.set(room.roomID, room);
+    await room.run(server);
+  }
+
   async joinGame(player1: Player, player2: Player, gameType: string, server: Server, player1PowerUp?: PowerUp, player2PowerUp?: PowerUp): Promise<string> {
     let room;
     if (gameType === 'boring') {
@@ -286,12 +296,12 @@ export class GameService {
         player2,
         gameType,
         ROOM_SETTING,
-        this.matchService,
-        this.userService,
         // player1PowerUp,
         // player2PowerUp
         PowerUp.SPEED,
         PowerUp.NORMAL,
+        this.matchService,
+        this.userService,
       );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);

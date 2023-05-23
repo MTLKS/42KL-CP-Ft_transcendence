@@ -69,8 +69,7 @@ export class PowerGameRoom extends GameRoom{
 
 
 
-	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService,
-		Player1PowerUp: PowerUp, Player2PowerUp: PowerUp){
+	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, Player1PowerUp: PowerUp, Player2PowerUp: PowerUp, matchService?: MatchService, userService?: UserService) {
 		super(player1, player2, gameType, setting, matchService, userService);
 		
 		this.leftPaddle.powerUp = Player1PowerUp;
