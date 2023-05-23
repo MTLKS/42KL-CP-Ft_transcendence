@@ -197,9 +197,9 @@ export class GameService {
     this.queues[clientQueue].push(player);
 
     //TESTING
-    // var player1 = this.queues[clientQueue].pop();
+    var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    // this.joinGame(player1, player1, clientQueue, server);
+    this.joinGame(player1, player1, clientQueue, server);
   }
 
   async leaveQueue(client: Socket) {
@@ -290,8 +290,8 @@ export class GameService {
         this.userService,
         // player1PowerUp,
         // player2PowerUp
-        PowerUp.SPIN,
-        PowerUp.SPIN,
+        PowerUp.SPEED,
+        PowerUp.NORMAL,
       );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);

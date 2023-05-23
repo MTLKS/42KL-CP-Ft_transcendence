@@ -109,12 +109,18 @@ export class PowerGameRoom extends GameRoom{
 		this.elapseTime = (Date.now() - this.startTime) / 1000;
 		this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
 		this.Ball.update();
-		this.Ball.hitObstacle = false;
 
 		this.leftPaddle.updateDelta();
 		this.rightPaddle.updateDelta();
 
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+		if (score != 0){
+			this.Ball.hitObstacle = true;
+		}
+		else{
+			this.Ball.hitObstacle = false;
+		}
+
 		if (score == 1 || score == 2){
 			if (score == 1){
 				this.player1Score++;
@@ -127,6 +133,7 @@ export class PowerGameRoom extends GameRoom{
 			this.resetTime = Date.now();
 			this.paddleTimer = Date.now();
 			this.insideField = false;
+			this.Ball.energized =false;
 			this.gameReset = true;
 		}
 
@@ -244,8 +251,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		// let effect = this.getRandomNum();
-		let effect = 1;
+		let effect = this.getRandomNum();
+		// let effect = 1;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

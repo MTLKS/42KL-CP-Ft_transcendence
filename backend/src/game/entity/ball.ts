@@ -9,6 +9,7 @@ export class Ball extends DynamicRect{
 	prevY: number;
 	accelerating: boolean;
 	hitObstacle: boolean;
+	energized: boolean = false;
 
 	constructor (posX: number, posY: number, width: number, height: number, 
 		initSpeedX: number, initSpeedY: number, mass: number = 1){
@@ -29,28 +30,28 @@ export class Ball extends DynamicRect{
 	checkContraint(borderWidth: number, borderHeight: number) : number{
 		if (this.posX <= 0){
 			this.posX = 0;
-			this.velX = 0;
-			this.velY = 0;
-			this.hitObstacle = true;
+			// this.velX = 0;
+			// this.velY = 0;
+			// this.hitObstacle = true;
 			return 2;
 		}
 		if (this.posX + this.width >= borderWidth){
 			this.posX = borderWidth - this.width;
-			this.velX = 0;
-			this.velY = 0;
-			this.hitObstacle = true;
+			// this.velX = 0;
+			// this.velY = 0;
+			// this.hitObstacle = true;
 			return 1;
 		}
 		if (this.posY <= 0){
 			this.posY = 0;
 			this.velY *= -1;
-			this.hitObstacle = true;
+			// this.hitObstacle = true;
 			return 3
 		}
 		if (this.posY + this.height >= borderHeight){
 			this.posY = borderHeight - this.height;
 			this.velY *= -1;
-			this.hitObstacle = true;
+			// this.hitObstacle = true;
 			return 3
 		}
 		return 0;
@@ -96,5 +97,18 @@ export class Ball extends DynamicRect{
 		this.velY += this.accelY * (1 / 60);
 		this.posX += this.velX;
 		this.posY += this.velY;
+	}
+
+	energizedBall(incrementX: number, incrementY: number){
+		if (this.energized == false){
+			this.velX = Math.sign(this.velX) * (Math.abs(this.velX) + incrementX);
+			this.velY = Math.sign(this.velY) * (Math.abs(this.velY) + incrementY);
+			this.prevY = Math.abs(this.velY);
+		}
+	}
+
+	resetVelocity(){
+		this.velX = Math.sign(this.velX) * this.initialSpeedX;
+		this.velY = Math.sign(this.velY) * this.initialSpeedY;
 	}
 }

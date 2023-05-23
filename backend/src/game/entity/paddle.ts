@@ -42,7 +42,8 @@ export class Paddle extends Rect {
 
 	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number){
 		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
-		if (this.powerUp != PowerUp.SPEED){
+		if (ball.energized == true && this.powerUp != PowerUp.SPEED){
+			ball.resetVelocity();
 			ball.energized = false;
 		}
 		if (Math.abs(avgDelta) > this.spinRequirement){
@@ -60,9 +61,8 @@ export class Paddle extends Rect {
 				break;
 			case PowerUp.SPEED:
 				ball.collisionResponse(collideTime, normalX, normalY);
+				ball.energizedBall(this.speedIncrementX, this.speedIncrementY);
 				ball.energized = true;
-				// ball.velX = Math.sign(ball.velX) * (ball.initialSpeedX + (hitCount * this.speedIncrement));
-				// ball.velY = Math.sign(ball.velY) * (ball.initialSpeedY + (hitCount * this.speedIncrement));
 				break;
 			case PowerUp.SPIN:
 				ball.collisionResponse(collideTime, normalX, normalY);
