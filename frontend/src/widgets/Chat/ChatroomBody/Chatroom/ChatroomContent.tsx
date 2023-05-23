@@ -128,7 +128,7 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   async function getMyLastRead() {
     
-    const memberData = (await getChannelMemberData(chatroomData.channelId)).data as MemberData;
+    const memberData = (await getMemberData(chatroomData.channelId)).data as MemberData;
     setChatMemberLastRead(memberData.lastRead);
   }
 
