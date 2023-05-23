@@ -4,8 +4,11 @@ import { TbScript } from 'react-icons/tb';
 import { ImEarth } from 'react-icons/im'
 import { NewChannelAction, NewChannelError, NewChannelState } from './newChannelReducer';
 import { NewChannelContext } from '../../../../contexts/ChatContext';
+import { ChatroomData } from '../../../../model/ChatRoomData';
+import UserContext from '../../../../contexts/UserContext';
 
 interface ChannelInfoProps {
+  currentChannelData: ChatroomData,
   isReviewingChanges?: boolean,
   setIsReviewingChanges?: (newState: boolean) => void;
   modifying: boolean,
@@ -14,7 +17,7 @@ interface ChannelInfoProps {
 
 function ChannelInfoForm(props: ChannelInfoProps) {
 
-  const { state, dispatch } = useContext(NewChannelContext)
+  const { state, dispatch } = useContext(NewChannelContext);
   const { modifying, setModifyChannel, isReviewingChanges = false, setIsReviewingChanges = () => {} } = props;
   const [channelName, setChannelName] = useState<string>(state.channelName);
   const [password, setPassword] = useState<string | null>(null); // old password for editing, new password for creating
@@ -67,6 +70,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
                 {!state.isNewChannel && !isPasswordProtected && <p className='w-fit animate-pulse text-[10px] px-[1ch] text-highlight bg-accRed'>DISABLED AFTER SAVE</p>}
               </div>
              {(!state.isNewChannel && modifying && previousChannelInfo.password !== null && !previousChannelInfo.isPrivate) && <p className='text-[10px] text-highlight/50'>Require password to change channel info</p>}
+             {(state.errors.includes(NewChannelError.WRONG_PASSWORD)) && <p className='text-[10px] text-highlight bg-accRed px-[1ch] w-fit'>Wrong password!</p>}
               <div className='flex flex-row'>
                 <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password ? password : ''} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
                 <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
@@ -98,7 +102,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
           {!modifying && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>EDIT CHANNEL</button>}
           {modifying && !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
           {modifying && !isPrivate && isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button>}
-          {(!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE PASSWORD` : `CHANGE PASSWORD`}</button>}
+          {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE PASSWORD` : `CHANGE PASSWORD`}</button>}
           {!state.isNewChannel && modifying && <button className='bg-dimshadow text-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
         </div>
       </div>
@@ -125,16 +129,22 @@ function ChannelInfoForm(props: ChannelInfoProps) {
   function toggleChannelVisibility() {
     if (!modifying) return;
 
-    // setPassword('');
-    // setNewPassword('');
     if (isPrivate) {
       // switch to public
       dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
       dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
     } else {
       // switch to private
-      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
+      if (previousChannelInfo.password !== null) {
+        dispatch({ type: 'SET_CHANNEL_PASSWORD', password: ''});
+        setPassword('');
+      } else {
+        dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
+        setPassword(null);
+      }
       dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
+      setNewPassword(null);
+      setIsPasswordProtected(false);
     }
     setIsPrivate(!isPrivate);
     dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPrivate });
@@ -203,10 +213,17 @@ function ChannelInfoForm(props: ChannelInfoProps) {
 
   function handlePasswordOnChange(e: React.ChangeEvent<HTMLInputElement>) {
 
+    if (state.isNewChannel && isPasswordProtected) {
+      setPassword(e.target.value);
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+      return ;
+    }
+
     // when editing channel info and previously this channel was password protected
     if (!state.isNewChannel && previousChannelInfo.password !== null) {
       setPassword(e.target.value);
       dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+      // if the user wants to change the password and will be set to password protected
       if (isPasswordProtected && !changePassword) {
         setNewPassword(e.target.value);
         dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: e.target.value });

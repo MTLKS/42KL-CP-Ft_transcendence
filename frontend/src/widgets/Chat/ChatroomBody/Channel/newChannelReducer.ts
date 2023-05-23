@@ -11,6 +11,7 @@ export enum NewChannelError {
   INVALID_PASSWORD,
   INVALID_NEW_PASSWORD,
   REQUIRED_PASSWORD_TO_MAKE_CHANGES,
+  WRONG_PASSWORD,
 }
 
 export interface NewChannelState {
@@ -19,18 +20,22 @@ export interface NewChannelState {
   isPrivate: boolean,
   password: string | null,
   newPassword: string | null,
+  isPasswordProtected: boolean,
   errors: NewChannelError[],
   isNewChannel: boolean,
+  hasChanges: boolean,
 }
 
 export const newChannelInitialState: NewChannelState = {
   members: [],
   channelName: '',
   isPrivate: false,
+  isPasswordProtected: false,
   password: null,
   newPassword: null,
   errors: [],
   isNewChannel: true,
+  hasChanges: false,
 }
 
 export type NewChannelAction =
@@ -45,10 +50,12 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
   | { type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: string | null }
   | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData, members: MemberData[] }
-  | { type: 'ADD_ERROR', error: NewChannelError}
-  | { type: 'IS_EDIT_CHANNEL'}
-  | { type: 'RESET_ERRORS'}
-  | { type: 'RESET'}
+  | { type: 'SET_HAS_CHANGES', payload: boolean }
+  | { type: 'ADD_ERROR', error: NewChannelError }
+  | { type: 'IS_EDIT_CHANNEL' }
+  | { type: 'SET_'}
+  | { type: 'RESET_ERRORS' }
+  | { type: 'RESET' }
   | { type: 'CLONE_STATE', state: NewChannelState };
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
@@ -175,6 +182,15 @@ export default function newChannelReducer(state = newChannelInitialState, action
       return {
         ...state,
         errors: [],
+      }
+    }
+    case 'SET_HAS_CHANGES': {
+      if (state.hasChanges === action.payload) {
+        return state;
+      }
+      return {
+        ...state,
+        hasChanges: action.payload,
       }
     }
     case 'CLONE_STATE': {

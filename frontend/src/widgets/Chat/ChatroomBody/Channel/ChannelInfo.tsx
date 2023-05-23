@@ -11,6 +11,7 @@ import UserContext from '../../../../contexts/UserContext'
 import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
 import { updateChannel } from '../../../../api/chatAPIs'
+import { ErrorData } from '../../../../model/ErrorData'
 
 interface ChannelInfoProps {
   chatroomData: ChatroomData;
@@ -28,10 +29,6 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [tfaVerified, setTfaVerified] = useState<boolean>(false);
   const [verifyingTfa, setVerifyingTfa] = useState<boolean>(false);
   const [isReviewingChanges, setIsReviewingChanges] = useState<boolean>(false);
-
-  useEffect(() => {
-    console.log(chatroomData);
-  }, []);
 
   return (
     <div className='flex flex-col h-full'>
@@ -84,7 +81,7 @@ function ChannelInfo(props: ChannelInfoProps) {
   function showEditChannelForm() {
     return (
       <>
-        <ChannelInfoForm isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} modifying={modifying} setModifyChannel={modifyChannel} />
+        <ChannelInfoForm currentChannelData={chatroomData} isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} modifying={modifying} setModifyChannel={modifyChannel} />
         <div className='w-full h-full mt-6'>
           <ChannelMemberList title="members" />
         </div>
@@ -107,7 +104,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
     /**
      * Try these scenarios:
-     * 1. Public
+     * 1. Public [ok]
      *  - change name only [ok, oldpassword and newpassword should both be null]
      *  - enable password [ok, oldpassword and newpassword should be the same]
      *  - disable password [ok, oldpassword is previous password, newpassword is null]
@@ -117,13 +114,12 @@ function ChannelInfo(props: ChannelInfoProps) {
      *  - change name only [ok]
      *  - switch to public, no password [ok]
      *  - switch to public, with password [ok]
-     *  - switch back to private
      * 
      * 3. Protected
      *   - change name only [ok]
      *   - change password [ok]
      *   - disable pasword (public) [ok]
-     *   - switch to private
+     *   - switch to private [ok]
      * 
      * 4. Error handling
      *  - channel name [ok]
@@ -132,22 +128,29 @@ function ChannelInfo(props: ChannelInfoProps) {
      *  - wrong password (protected)
      */
 
+    // cancel password -> password becomes disabled password
+
     dispatch({ type: 'RESET_ERRORS' });
 
     if (!(channelName.length > 0 && channelName.length <= 16)) {
-      console.log("invalid channel name");
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_CHANNEL_NAME });
       errorCount++;
     }
     
+    // when previously is public then set to private
+    // check if previously is password protected or not, if yes, check password validity
+    if (isPrivate && previousChannelInfo.current.password !== null && password !== null && !(password.length > 0 && password.length <= 16)) {
+      dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
+      errorCount++;
+    }
+
+    // when switch to public and is set to password protected, check password validity
     if (!isPrivate && password !== null && !(password.length > 0 && password.length <= 16)) {
-      console.log("invalid password");
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
       errorCount++;
     }
 
     if (!isPrivate && newPassword !== null && !(newPassword.length > 0 && newPassword.length <= 16)) {
-      console.log("invalid new password");
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_NEW_PASSWORD });
       errorCount++;
     }
@@ -162,13 +165,14 @@ function ChannelInfo(props: ChannelInfoProps) {
       isPrivate: isPrivate,
     }
 
-    console.log("updated channel info: ", updatedChannelInfo);
-
     const updateChannelResponse = await updateChannel(updatedChannelInfo);
-    
-    console.log(updateChannelResponse.data);
-    // return ;
+
     if (updateChannelResponse.status === 200) {
+
+      if ((updateChannelResponse.data as ErrorData).error) {
+        dispatch({ type: 'ADD_ERROR', error: NewChannelError.WRONG_PASSWORD });
+        return ;
+      }
       dispatch({ type: 'RESET' });
       setChatBody(<ChatroomContent chatroomData={(updateChannelResponse.data as ChatroomData)} />);
     }

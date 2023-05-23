@@ -21,7 +21,7 @@ enum ChangeType {
 function ChannelReviewChanges(props: ChannelReviewChangesProps) {
 
   const { previousChannelInfo, isReviewingChanges, setIsReviewingChanges } = props;
-  const { state } = useContext(NewChannelContext);
+  const { state, dispatch } = useContext(NewChannelContext);
   const [opacity, setOpacity] = useState(0);
 
   useEffect(() => {
@@ -66,7 +66,8 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
       logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_NAME, previousChannelInfo.channelName, state.channelName));
     }
 
-    if (previousChannelInfo.password !== null && state.newPassword === null) {
+    // if previously got password, 
+    if (previousChannelInfo.password !== null && state.newPassword === null && state.isPrivate) {
       logs.push(ChannelLog(ChangeType.DISABLED_PASSWORD, '', ''));
     }
 
@@ -82,8 +83,11 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
       logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_VISIBILITY, previousChannelInfo.isPrivate ? 'Private' : 'Public', state.isPrivate ? 'Private' : 'Public'));
     }
 
-    if (logs.length > 0)
+    if (logs.length > 0) {
+      dispatch({ type: 'SET_HAS_CHANGES', payload: true });
       return (logs);
+    }
+    dispatch({ type: 'SET_HAS_CHANGES', payload: false });
     return ([
       <div key={"No_changes" + Date.now()} className='relative w-full h-full'>
         <p className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-dimshadow text-sm text-center font-bold uppercase underline decoration-wavy decoration-accRed'>No changes were made</p>
