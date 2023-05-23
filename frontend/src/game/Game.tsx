@@ -37,10 +37,12 @@ function Game(props: GameProps) {
   const app = useApp();
 
   const containerRef = useRef<PIXI.Container>(null);
+  const shadowRef = useRef<PIXI.Container>(null);
 
   const ballhit = useCallback(async (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
     await sleep(30);
     if (containerRef.current === null) return;
+    if (shadowRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
     const shorkwaveSpeed = pongSpeedMagnitude / 10 * scale;
     const rgbSplitMagnitude = 0.5;
@@ -54,11 +56,14 @@ function Game(props: GameProps) {
     rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
     rgbSplitFilter.green = new PIXI.Point(0, 0);
     rgbSplitFilter.blue = new PIXI.Point(pongSpeed.x * rgbSplitMagnitude, pongSpeed.y * rgbSplitMagnitude);
-
+    shadowRef.current.alpha = 1;
 
     const ticker = new PIXI.Ticker();
     const tickerCallback = (delta: number) => {
+      if (shadowRef.current === null) return;
       if (containerRef.current === null) return;
+      if (shadowRef.current.alpha >= 0.5)
+        shadowRef.current.alpha *= 0.99;
       shorkwaveFilter.time += 0.01 * shorkwaveSpeed;
       shorkwaveFilter.wavelength += 2 * shorkwaveSpeed;
       shorkwaveFilter.amplitude *= 0.95 ** shorkwaveSpeed;
@@ -142,7 +147,9 @@ function Game(props: GameProps) {
   return (
     <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : null}>
       <Sprite width={1600} height={900} texture={backgoundTexture} />
-      <InwardShadow />
+      <Container ref={shadowRef} alpha={0.5}>
+        <InwardShadow />
+      </Container>
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
