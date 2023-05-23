@@ -121,7 +121,13 @@ function ChannelInfoForm(props: ChannelInfoProps) {
       setChannelName(previousChannelInfo.channelName);
       setIsPrivate(previousChannelInfo.isPrivate);
       setIsPasswordProtected(previousChannelInfo.password !== null);
-      setPassword(null);
+      if (previousChannelInfo.password !== null) {
+        dispatch({ type: 'SET_CHANNEL_PASSWORD', password: ''});
+        setPassword('');
+      } else {
+        dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null});
+        setPassword(null);
+      }
       setNewPassword(null);
     }
   }
@@ -166,7 +172,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
     // current password protection state
     if (isPasswordProtected) {
       // switch to unprotected
-      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: password });
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
       dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
       setNewPassword(null);
       if (changePassword) {

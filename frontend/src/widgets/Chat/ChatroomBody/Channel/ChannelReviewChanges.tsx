@@ -66,8 +66,8 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
       logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_NAME, previousChannelInfo.channelName, state.channelName));
     }
 
-    // if previously got password, 
-    if (previousChannelInfo.password !== null && state.newPassword === null && state.isPrivate) {
+    // if previously got password, then changed, cancel
+    if (previousChannelInfo.password !== null && ((state.password === null) || (state.password === null && state.newPassword === null))) {
       logs.push(ChannelLog(ChangeType.DISABLED_PASSWORD, '', ''));
     }
 
