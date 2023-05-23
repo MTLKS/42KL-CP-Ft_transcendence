@@ -332,7 +332,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	/**
-	 * Return a random position for the power up to spawn. Will not spawn directly on ball.
+	 * Return a random position for the power up to spawn. Will not spawn directly on ball
+	 * and not on edge,will add a offset between edge
 	 * @param size size of block, and diameter of circle
 	 */
 	getRandomSpawnPosition(size: number){
@@ -349,20 +350,20 @@ export class PowerGameRoom extends GameRoom{
 		let minX, maxX, minY, maxY;
 		
 		if (spawnQuadrant %2 == 0){
-			minX = this.canvasWidth * 0.15;
+			minX = this.canvasWidth * 0.15 + size + 20;
 			maxX = this.canvasWidth * 0.5;
 		}
 		else{
 			minX = this.canvasWidth * 0.5;
-			maxX = this.canvasWidth * 0.85 - size;
+			maxX = this.canvasWidth * 0.85 - size - 20;
 		}
 		if (spawnQuadrant / 2 < 1){
-			minY = 0;
+			minY = 0 + size + 20;
 			maxY = this.canvasHeight * 0.5;
 		}
 		else{
 			minY = this.canvasHeight * 0.5;
-			maxY = this.canvasHeight - size;
+			maxY = this.canvasHeight - size - 20;
 		}
 		
 		let posX = Math.floor(Math.random() * (maxX - minX) + minX);
