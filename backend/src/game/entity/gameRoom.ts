@@ -377,13 +377,13 @@ export class GameRoom {
     let winnerElo = WINNER.elo;
     let loserElo = LOSER.elo;
     let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
-    let change = Math.round(20 * (1 - expected));
+    let change = Math.round(40 * (1 - expected));
 
     winnerElo += change;
     loserElo -= change;
 
-    this.userService.updateUserElo(winner, winnerElo, true);
     this.userService.updateUserElo(loser, loserElo, false);
+    this.userService.updateUserElo(winner, winnerElo, true);
   }
 
   endGameNoMatch() {

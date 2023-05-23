@@ -181,7 +181,7 @@ export class GameService {
     for (let i = 0; i < this.queues[clientQueue].length; i++) {
       const OTHER_USER_DATA = await this.userService.getUserDataByIntraName(player.accessToken, this.queues[clientQueue][i].intraName);
       console.log(OTHER_USER_DATA.intraName, OTHER_USER_DATA.elo);
-      if (OTHER_USER_DATA.error !== undefined || Math.abs(OTHER_USER_DATA.elo - USER_DATA.elo) > 100)
+      if (OTHER_USER_DATA.error !== undefined)
         continue;
 
       let otherPlayer = this.queues[clientQueue][i];
