@@ -27,17 +27,17 @@ function InwardShadow() {
         color = 0x242424;
         break;
       case 'standard':
-        color = 0x202020;
+        color = 0x000000;
         break;
       default:
-        color = 0x242424;
+        color = 0x000000;
     }
 
     const box = new PIXI.Graphics();
     box.drawRect(0, 0, 1, 100);
 
     for (let i = 0; i < 100; i++) {
-      box.beginFill(color, (i / 110) ** 3);
+      box.beginFill(color, Number(((i / 110) ** 3).toFixed(2)));
       box.drawRect(0, 100 - i, 1, 1);
       box.endFill();
     }

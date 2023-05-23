@@ -6,6 +6,7 @@ import GameParticle from "./GameParticle";
 class GameParticleDelegate {
   particles: GameParticle[] = [];
   particleCycle: number = 0;
+  paddleParticleCycle: number = 0;
   gameData: GameData;
 
   constructor(gameData: GameData) {
@@ -72,6 +73,9 @@ class GameParticleDelegate {
       newPongSpeed,
       addSprite
     );
+    this.addBlackholeParticle(this.gameData, this.particles, addSprite);
+
+    if (pongSpeedMagnitude == 0) return this.particles;
     let colorIndex = 0;
     if (this.gameData.pongSpin > 1) {
       this.addSpitParticleRed(
@@ -103,7 +107,10 @@ class GameParticleDelegate {
     );
     this.addSpitParticle(this.particles, newPosition, newPongSpeed, addSprite);
 
-    this.addBlackholeParticle(this.gameData, this.particles, addSprite);
+    if (this.paddleParticleCycle === 2) this.paddleParticleCycle = 0;
+    else this.paddleParticleCycle++;
+    if (this.paddleParticleCycle !== 0) return this.particles;
+    this.addPaddleParticle(this.particles, addSprite);
 
     return this.particles;
   }
@@ -260,6 +267,40 @@ class GameParticleDelegate {
       vy: newPongSpeed.x * (Math.random() - 0.5) * 0.3,
       w: 3,
       h: 3,
+    });
+    addSprite(newParticle);
+    newParticles.push(newParticle);
+  }
+
+  addPaddleParticle(
+    newParticles: GameParticle[],
+    addSprite: (sprite: GameParticle) => void
+  ) {
+    const leftPaddle = this.gameData.leftPaddlePosition;
+    let newParticle = new GameParticle({
+      x: leftPaddle.x + 15 * Math.random(),
+      y: leftPaddle.y + 100 * (Math.random() - 0.5),
+      opacity: 0.5,
+      opacityDecay: 0.02,
+      vx: 6 * (Math.random() - 0.5),
+      vy: 3 * (Math.random() - 0.5),
+      speedDecayFactor: 0.9,
+      w: 5,
+      h: 5,
+    });
+    addSprite(newParticle);
+    newParticles.push(newParticle);
+    const rightPaddle = this.gameData.rightPaddlePosition;
+    newParticle = new GameParticle({
+      x: rightPaddle.x + 15 * Math.random(),
+      y: rightPaddle.y + 100 * (Math.random() - 0.5),
+      opacity: 0.5,
+      opacityDecay: 0.02,
+      vx: 6 * (Math.random() - 0.5),
+      vy: 3 * (Math.random() - 0.5),
+      speedDecayFactor: 0.9,
+      w: 5,
+      h: 5,
     });
     addSprite(newParticle);
     newParticles.push(newParticle);

@@ -23,6 +23,7 @@ export enum PaddleType {
   "Piiuuuuu",
   "Ngeeeaat",
   "Vrooooom",
+  "boring",
 }
 
 export class GameData {
@@ -43,8 +44,8 @@ export class GameData {
   // player related variables
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
-  leftPaddleType: PaddleType = PaddleType.Vzzzzzzt;
-  rightPaddleType: PaddleType = PaddleType.Vzzzzzzt;
+  leftPaddleType: PaddleType = PaddleType.boring;
+  rightPaddleType: PaddleType = PaddleType.boring;
   isLeft: boolean = true;
   player1Score: number = 0;
   player2Score: number = 0;

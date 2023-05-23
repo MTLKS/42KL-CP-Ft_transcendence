@@ -52,19 +52,22 @@ function Game(props: GameProps) {
     shorkwaveFilter.amplitude = 100 * scale;
     shorkwaveFilter.wavelength = 5 / scale;
     shorkwaveFilter.radius = 1900 * scale;
+    shorkwaveFilter.brightness = 3;
     const rgbSplitFilter = new RGBSplitFilter();
     rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
     rgbSplitFilter.green = new PIXI.Point(0, 0);
     rgbSplitFilter.blue = new PIXI.Point(pongSpeed.x * rgbSplitMagnitude, pongSpeed.y * rgbSplitMagnitude);
-    shadowRef.current.alpha = 1;
+    shadowRef.current.alpha = gameData.gameType === "death" ? 1 : 0.7;
 
     const ticker = new PIXI.Ticker();
     const tickerCallback = (delta: number) => {
       if (shadowRef.current === null) return;
       if (containerRef.current === null) return;
       if (shadowRef.current.alpha >= 0.5)
-        shadowRef.current.alpha *= 0.99;
+        shadowRef.current.alpha *= 0.995;
       shorkwaveFilter.time += 0.01 * shorkwaveSpeed;
+      if (shorkwaveFilter.brightness > 1)
+        shorkwaveFilter.brightness *= 0.96;
       shorkwaveFilter.wavelength += 2 * shorkwaveSpeed;
       shorkwaveFilter.amplitude *= 0.95 ** shorkwaveSpeed;
       (rgbSplitFilter.red as PIXI.Point).x *= 0.95;
@@ -150,8 +153,12 @@ function Game(props: GameProps) {
       <Container ref={shadowRef} alpha={0.5}>
         <InwardShadow />
       </Container>
-      <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
+      <Container x={850} y={900} anchor={0.5}>
+        <GameText text='PONG' anchor={new PIXI.Point(1, 1)} fontSize={250} position={{ x: 150, y: 0 }} opacity={0.1} />
+        <GameText text='sh' anchor={new PIXI.Point(0, 1.1)} fontSize={150} position={{ x: 150, y: 0 }} opacity={0.1} />
+      </Container>
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+      <GameText text={":"} anchor={new PIXI.Point(0.5, 0)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <Pong size={{ w: 10, h: 10 }} />
       <Entities />
