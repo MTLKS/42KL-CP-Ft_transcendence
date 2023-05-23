@@ -1,5 +1,5 @@
 import Title from '../components/Title';
-import { login, googleLogin } from '../api/loginAPI';
+import login from '../api/loginAPI';
 import PromptField, { CommandOptionData } from '../components/PromptField';
 import sleep from '../functions/sleep';
 import { useEffect, useRef, useState } from 'react';
@@ -72,7 +72,7 @@ function Login() {
         />
       </div>
       {
-        (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0 mt-3'>Have you tried using 'login'?</div>)
+        (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0 mt-3'>Have you tried using 'LOGIN' or 'BACKDOOR'?</div>)
       }
     </div >
   )
@@ -80,10 +80,12 @@ function Login() {
   function handleCommands(command: string[]) {
     switch (command[0]) {
       case "LOGIN":
+        sessionStorage.setItem("google", "false");
         login();
         break;
       case "BACKDOOR":
-        googleLogin();
+        sessionStorage.setItem("google", "true");
+        login();
         break;
       default:
         setErrorCount(errorCount + 1);

@@ -12,9 +12,15 @@ export class AuthService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) { dotenv.config(); }
 
 	// Starts the login process
-	async startLogin(accessToken: string): Promise<GetRedirectDTO> {
+	async startLogin(accessToken: string, googleLogin: string): Promise<GetRedirectDTO> {
 		try {
-			return new GetRedirectDTO(((await this.userRepository.find({ where: {accessToken: CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)} })).length !== 0) ? process.env.CLIENT_DOMAIN + ":" + process.env.FE_PORT : process.env.APP_REDIRECT );
+			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8)
+			const RESPONSE_TYPE = 'code';
+			const REDIRECT_URI = process.env.DOMAIN + ":" + process.env.FE_PORT;
+			const SCOPE = 'email profile';
+			const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+			const REDIRECT = googleLogin === "true" ? `https://accounts.google.com/o/oauth2/v2/auth?response_type=${RESPONSE_TYPE}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPE)}&client_id=${CLIENT_ID}` : process.env.APP_REDIRECT;
+			return new GetRedirectDTO(((await this.userRepository.findOne({ where: { accessToken: accessToken } })) !== null) ? process.env.CLIENT_DOMAIN + ":" + process.env.FE_PORT : REDIRECT );
 		}
 		catch {
 			return new GetRedirectDTO(process.env.APP_REDIRECT);
@@ -44,7 +50,7 @@ export class AuthService {
 
 			const ENTITY_USER = await this.userRepository.findOne({ where: { email: GOOGLE_DATA.email } });
 			if (ENTITY_USER !== null) {
-				ENTITY_USER.accessToken = accessToken;
+				ENTITY_USER.accessToken = returnData.access_token;
 				await this.userRepository.save(ENTITY_USER);
 				return new AuthResponseDTO(accessToken, false);
 			}

@@ -11,9 +11,10 @@ export class AuthController {
 
 	@Get()
 	@ApiHeader({ name: 'Authorization', description: 'The encrypted access token of the user', required: false })
+	@ApiHeader({ name: 'GoogleLogin', description: 'Whether the login is for google', required: false })
 	@ApiOkResponse({ description: "Used to initiate the login process for a user", type: GetRedirectDTO })
-	startLogin(@Headers('Authorization') accessToken: string): Promise<GetRedirectDTO> {
-		return this.authService.startLogin(accessToken);
+	startLogin(@Headers('Authorization') accessToken: string, @Headers('GoogleLogin') googleLogin: string): Promise<GetRedirectDTO> {
+		return this.authService.startLogin(accessToken, googleLogin);
 	}
 
 	@Get('google')
