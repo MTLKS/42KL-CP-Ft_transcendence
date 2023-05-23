@@ -150,7 +150,7 @@ function Game(props: GameProps) {
 
   if (!shouldRender) return <></>;
   return (
-    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : null}>
+    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : undefined}>
       <Sprite width={1600} height={900} texture={backgoundTexture} />
       <Container ref={shadowRef} alpha={0.5}>
         <InwardShadow />

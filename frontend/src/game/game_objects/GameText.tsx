@@ -20,7 +20,7 @@ function GameText(props: GameTextProps) {
     const textGraphic = new PIXI.Text(text, new PIXI.TextStyle({
       fontFamily: 'JetBrains Mono',
       fontSize: fontSize,
-      fill: ['#ffffff'],
+      fill: '#ffffff',
     }));
     const box = new PIXI.Graphics();
     box.beginFill(color, opacity);
