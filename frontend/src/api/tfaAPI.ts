@@ -1,5 +1,5 @@
 import { ITFAData } from "../model/TfaData";
-import Api from "../api/api";
+import Api from "./api";
 
 export async function getTFA(): Promise<ITFAData> {
   return (await Api.get("/2fa")).data as ITFAData;

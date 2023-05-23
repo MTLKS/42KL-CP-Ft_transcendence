@@ -1,9 +1,9 @@
-import { getTFA, removeTFA, checkTFA, forgotTFA } from '../functions/tfa';
+import { getTFA, removeTFA, checkTFA, forgotTFA } from '../api/tfaAPI';
 import { ITFAData } from '../model/TfaData';
 import React, { useContext, useEffect } from 'react'
 import Card, { CardType } from './Card';
 import UserContext from '../contexts/UserContext';
-import { getMyProfile } from '../functions/profile';
+import { getMyProfile } from '../api/profileAPI';
 import { UserData } from '../model/UserData';
 
 interface TFAProps {

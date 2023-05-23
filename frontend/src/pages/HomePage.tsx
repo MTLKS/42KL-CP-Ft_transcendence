@@ -5,9 +5,9 @@ import Profile from '../widgets/Profile/Profile';
 import MatrixRain from "../widgets/MatrixRain";
 import Chat from '../widgets/Chat/Chat';
 import { UserData } from '../model/UserData';
-import { getProfileOfUser } from '../functions/profile';
+import { getProfileOfUser } from '../api/profileAPI';
 import YoutubeEmbed from '../components/YoutubeEmbed';
-import { friendListOf, getFriendList } from '../functions/friendlist';
+import { friendListOf, getFriendList } from '../api/friendListAPI';
 import { FriendData } from '../model/FriendData';
 import Friendlist from '../widgets/Friends/Friendlist/Friendlist';
 import FriendRequestPopup from '../widgets/Friends/FriendRequest/FriendRequestPopup';
@@ -17,7 +17,7 @@ import { ACTION_TYPE } from '../widgets/Friends/FriendAction/FriendActionCard';
 import FriendAction from '../widgets/Friends/FriendAction/FriendAction';
 import { FriendsContext, SelectedFriendContext } from '../contexts/FriendContext';
 import UserContext from '../contexts/UserContext';
-import { addFriend } from '../functions/friendactions';
+import { addFriend } from '../api/friendActionAPI';
 import HelpCard from '../widgets/TerminalCards/HelpCard';
 import { allCommands, friendCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
@@ -28,6 +28,7 @@ import { ErrorData } from '../model/ErrorData';
 import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
+import login from '../api/loginAPI';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
@@ -46,6 +47,7 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),
   new CommandOptionData({ command: "reset" }),
+  new CommandOptionData({ command: "logout" })
 ];
 
 interface HomePageProps {
@@ -76,15 +78,6 @@ function HomePage(props: HomePageProps) {
   );
 
   const pageRef = useRef<HTMLDivElement>(null);
-
-  const initFriendshipSocket = () => {
-    friendshipSocket.listen("friendshipRoom", (data: any) => {
-      getFriendList().then((friends) => {
-        const newFriendsData = friends.data as FriendData[];
-        setMyFriends(newFriendsData);
-      });
-    })
-  }
 
   useEffect(() => {
     initFriendshipSocket();
@@ -126,6 +119,15 @@ function HomePage(props: HomePageProps) {
       </UserContext.Provider>
     </PreviewProfileContext.Provider>
   )
+
+  function initFriendshipSocket() {
+    friendshipSocket.listen("friendshipRoom", (data: any) => {
+      getFriendList().then((friends) => {
+        const newFriendsData = friends.data as FriendData[];
+        setMyFriends(newFriendsData);
+      });
+    })
+  }
 
   function handleCommands(command: string[]) {
     let newList: JSX.Element[] = [];
@@ -179,6 +181,10 @@ function HomePage(props: HomePageProps) {
       case "reset":
         setUpdateUser(true);
         setUserData(userData);
+        break;
+      case "logout":
+        document.cookie = "Authorization=;";
+        window.location.assign("/");
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -449,11 +455,11 @@ function HomePage(props: HomePageProps) {
   }
 
   async function showFriendList(intraName: string | null) {
-    
+
     const errors: errorType[] = [];
     let newCards: JSX.Element[] = [];
     const friendProfile: UserData | ErrorData = (intraName === null ? userData : (await getProfileOfUser(intraName)).data);
- 
+
     // to handle if the user is not found & if the friendship status is blocked
     if ((friendProfile as ErrorData).error) {
       errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
@@ -464,7 +470,7 @@ function HomePage(props: HomePageProps) {
       if (intraName !== null) {
         friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
       }
-      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)}/>);
+      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
     }
     newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
     setElements(appendNewCard(newCards));

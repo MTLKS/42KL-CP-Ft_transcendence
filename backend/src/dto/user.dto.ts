@@ -1,10 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UserDTO {
-	constructor(intraId: number, userName: string, intraName: string, elo: number, accessToken: string, avatar: string, tfaSecret: string, winning: boolean) {
+	constructor(intraId: number, userName: string, intraName: string, email: string, elo: number, accessToken: string, avatar: string, tfaSecret: string, winning: boolean) {
 		this.intraId = intraId;
 		this.userName = userName;
 		this.intraName = intraName;
+		this.email = email;
 		this.elo = elo;
 		this.accessToken = accessToken;
 		this.avatar = avatar;
@@ -20,6 +21,9 @@ export class UserDTO {
 	
 	@ApiProperty({ example: "schuah" })
 	intraName: string;
+
+	@ApiProperty({ example: "chuahtseyung2002@gmail.com" })
+	email: string;
 
 	@ApiProperty({ example: 9999 })
 	elo: number;
