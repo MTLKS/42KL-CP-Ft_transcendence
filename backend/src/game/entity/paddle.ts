@@ -2,11 +2,19 @@ import { Rect } from "./rect";
 import { Ball } from "./ball";
 import { PowerUp } from "../game.service";
 
+/**
+ * @param powerUp current powerUp for paddle
+ * @param sizeIncrement size increment when using using size powerUp
+ * @param energized boolean variable to check the paddle is energized
+ * @param speedIncrementX speed increment in x direction when using speed powerUp
+ * @param speedIncrementY speed increment in y direction when using speed powerUp
+ */
 export class Paddle extends Rect {
 	powerUp: PowerUp;
 	sizeIncrement: number;
-	speedIncrement: number;
-	speedIncrementCount: number;
+	energized: boolean;
+	speedIncrementX: number;
+	speedIncrementY: number;
 	lastPosY: number;
 	prevDeltas: number[] =[];
 	delta: number;
@@ -21,10 +29,10 @@ export class Paddle extends Rect {
 
 		//Config Setting for PowerUp
 		this.sizeIncrement = 1.2;
-		this.speedIncrement = 1;
-		this.speedIncrementCount = 0;
+		this.speedIncrementX = 1;
+		this.speedIncrementY = 0;
 		this.spinRequirement = 3;
-		this.spinForce = 1;
+		this.spinForce = 1.5;
 
 		if (this.powerUp == PowerUp.SIZE){
 			this.height *= this.sizeIncrement;
@@ -48,8 +56,8 @@ export class Paddle extends Rect {
 				break;
 			case PowerUp.SPEED:
 				ball.collisionResponse(collideTime, normalX, normalY);
-				ball.velX = Math.sign(ball.velX) * (ball.initialSpeedX + (hitCount * this.speedIncrement));
-				ball.velY = Math.sign(ball.velY) * (ball.initialSpeedY + (hitCount * this.speedIncrement));
+				// ball.velX = Math.sign(ball.velX) * (ball.initialSpeedX + (hitCount * this.speedIncrement));
+				// ball.velY = Math.sign(ball.velY) * (ball.initialSpeedY + (hitCount * this.speedIncrement));
 				break;
 			case PowerUp.SPIN:
 				ball.collisionResponse(collideTime, normalX, normalY);

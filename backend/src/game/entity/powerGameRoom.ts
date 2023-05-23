@@ -114,6 +114,7 @@ export class PowerGameRoom extends GameRoom{
 		this.elapseTime = (Date.now() - this.startTime) / 1000;
 		this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
 		this.Ball.update();
+		this.Ball.hitObstacle = false;
 
 		this.leftPaddle.updateDelta();
 		this.rightPaddle.updateDelta();
@@ -206,6 +207,7 @@ export class PowerGameRoom extends GameRoom{
 		
 		if (result && result.collided){
 			this.paddleTimer = Date.now();
+			this.Ball.hitObstacle = true;
 			this.Ball.accelX = 0;
 			this.Ball.accelY = 0;
 			//Check left paddle
