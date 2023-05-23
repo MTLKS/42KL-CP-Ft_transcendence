@@ -62,7 +62,6 @@ class GameParticleDelegate {
       particle.update(finalTimeFactor);
     });
     // add particles
-    this.addTrailParticle(this.particles, newPosition, addSprite);
     if (this.particleCycle === this.gameData.tickPerParticlesSpawn)
       this.particleCycle = 0;
     else this.particleCycle++;
@@ -73,7 +72,7 @@ class GameParticleDelegate {
       newPongSpeed,
       addSprite
     );
-    this.addSpitParticle(this.particles, newPosition, newPongSpeed, addSprite);
+    let colorIndex = 0;
     if (this.gameData.pongSpin > 1) {
       this.addSpitParticleRed(
         this.particles,
@@ -81,6 +80,7 @@ class GameParticleDelegate {
         newPongSpeed,
         addSprite
       );
+      colorIndex = 4;
     }
     if (pongSpeedMagnitude > 20) {
       this.addSpitParticleCyan(
@@ -89,7 +89,19 @@ class GameParticleDelegate {
         newPongSpeed,
         addSprite
       );
+      colorIndex = 1;
     }
+    if (this.gameData.pongSpin > 1 && pongSpeedMagnitude > 20) {
+      colorIndex = 2;
+    }
+    this.addTrailParticle(
+      this.particles,
+      newPosition,
+      newPongSpeed,
+      colorIndex,
+      addSprite
+    );
+    this.addSpitParticle(this.particles, newPosition, newPongSpeed, addSprite);
 
     this.addBlackholeParticle(this.gameData, this.particles, addSprite);
 
@@ -99,23 +111,29 @@ class GameParticleDelegate {
   addTrailParticle(
     newParticles: GameParticle[],
     newPosition: Offset,
+    newSpeed: Offset,
+    colorIndex: number,
     addSprite: (sprite: GameParticle) => void
   ) {
-    const newParticle = new GameParticle({
-      x: newPosition.x,
-      y: newPosition.y,
-      opacity: 1,
-      vx: 0.12,
-      vy: 0.12,
-      opacityDecay: 0.03,
-      sizeDecay: 0.3,
-      w: 10,
-      h: 10,
-      colorIndex: 0,
-      affectedByGravity: false,
-    });
-    addSprite(newParticle);
-    newParticles.push(newParticle);
+    const numberOfParticles = 3;
+    for (let i = 0; i < numberOfParticles; i++) {
+      const newParticle = new GameParticle({
+        x: newPosition.x - (newSpeed.x * i) / numberOfParticles,
+        y: newPosition.y - (newSpeed.y * i) / numberOfParticles,
+        opacity: 1,
+        vx: 0.12,
+        vy: 0.12,
+        opacityDecay: 0.03,
+        sizeDecay: 0.3,
+        w: 10,
+        h: 10,
+        colorIndex: colorIndex,
+        affectedByGravity: false,
+      });
+      newParticle.update(i / numberOfParticles);
+      addSprite(newParticle);
+      newParticles.push(newParticle);
+    }
   }
 
   addBlackholeParticle(

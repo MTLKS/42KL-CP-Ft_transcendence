@@ -37,10 +37,12 @@ function Game(props: GameProps) {
   const app = useApp();
 
   const containerRef = useRef<PIXI.Container>(null);
+  const shadowRef = useRef<PIXI.Container>(null);
 
-  const ballhit = useCallback((pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
-
+  const ballhit = useCallback(async (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
+    await sleep(30);
     if (containerRef.current === null) return;
+    if (shadowRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
     const shorkwaveSpeed = pongSpeedMagnitude / 10 * scale;
     const rgbSplitMagnitude = 0.5;
@@ -54,11 +56,14 @@ function Game(props: GameProps) {
     rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
     rgbSplitFilter.green = new PIXI.Point(0, 0);
     rgbSplitFilter.blue = new PIXI.Point(pongSpeed.x * rgbSplitMagnitude, pongSpeed.y * rgbSplitMagnitude);
-
+    shadowRef.current.alpha = 1;
 
     const ticker = new PIXI.Ticker();
     const tickerCallback = (delta: number) => {
+      if (shadowRef.current === null) return;
       if (containerRef.current === null) return;
+      if (shadowRef.current.alpha >= 0.5)
+        shadowRef.current.alpha *= 0.99;
       shorkwaveFilter.time += 0.01 * shorkwaveSpeed;
       shorkwaveFilter.wavelength += 2 * shorkwaveSpeed;
       shorkwaveFilter.amplitude *= 0.95 ** shorkwaveSpeed;
@@ -114,7 +119,7 @@ function Game(props: GameProps) {
     setGameGravityArrow(newGameGravityArrow);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    if (newPosition.x <= 0 || newPosition.x >= 1600 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+    if (newPosition.x <= 20 || newPosition.x >= 1600 - 20) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
     if (
       newPosition.x <= leftPaddlePosition.x + 30
@@ -140,9 +145,11 @@ function Game(props: GameProps) {
 
   if (!shouldRender) return <></>;
   return (
-    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto'>
+    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : null}>
       <Sprite width={1600} height={900} texture={backgoundTexture} />
-      <InwardShadow />
+      <Container ref={shadowRef} alpha={0.5}>
+        <InwardShadow />
+      </Container>
       <GameText text='PONG' anchor={0.5} fontSize={250} position={{ x: 800, y: 750 }} opacity={0.1} />
       <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
       <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />

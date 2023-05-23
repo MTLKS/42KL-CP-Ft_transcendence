@@ -19,6 +19,7 @@ import * as PIXI from "pixi.js";
  * @param {number} opacityDecay
  * @param {number} speedDecayFactor
  * @param {number} sizeDecay
+ * @param {number} sizeDecayFactor
  * @param {number} colorIndex
  * @param {boolean} affectedByGravity
  */
@@ -38,6 +39,7 @@ interface GameParticleData {
   opacity?: number;
   opacityDecay?: number;
   sizeDecay?: number;
+  sizeDecayFactor?: number;
   speedDecayFactor?: number;
   colorIndex?: number;
   affectedByGravity?: boolean;
@@ -81,6 +83,7 @@ class GameParticle {
   public opacityDecay: number;
   public speedDecayFactor: number;
   public sizeDecay: number;
+  public sizeDecayFactor: number;
   public colorIndex: number;
   public affectedByGravity: boolean;
   public affectedByTimeZone: boolean;
@@ -103,6 +106,7 @@ class GameParticle {
     speedDecayFactor,
     colorIndex,
     sizeDecay,
+    sizeDecayFactor,
     affectedByGravity,
     affectedByTimeZone,
   }: GameParticleData) {
@@ -123,6 +127,7 @@ class GameParticle {
     this.opacityDecay = opacityDecay ?? 0;
     this.speedDecayFactor = speedDecayFactor ?? 1;
     this.sizeDecay = sizeDecay ?? 0;
+    this.sizeDecayFactor = sizeDecayFactor ?? 1;
     this.colorIndex = colorIndex ?? 0;
     this.affectedByGravity = affectedByGravity ?? true;
     this.affectedByTimeZone = affectedByTimeZone ?? true;
@@ -167,6 +172,10 @@ class GameParticle {
     if (this.speedDecayFactor != 0) {
       this.vx *= this.speedDecayFactor;
       this.vy *= this.speedDecayFactor;
+    }
+    if (this.sizeDecayFactor != 1) {
+      this.w *= this.sizeDecayFactor;
+      this.h *= this.sizeDecayFactor;
     }
     if (this.sprite == null) return;
     this.sprite.x = this.x;
