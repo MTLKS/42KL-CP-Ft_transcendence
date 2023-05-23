@@ -162,7 +162,7 @@ export class GameRoom {
   gameUpdate(server: Server) {
     this.Ball.update();
     let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-    if (score != 0) {
+    if (score == 1 || score == 2) {
       if (score == 1) {
         this.player1Score++;
         this.lastWinner = 'player1';

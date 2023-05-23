@@ -8,16 +8,18 @@ import { PowerUp } from "../game.service";
  * @param energized boolean variable to check the paddle is energized
  * @param speedIncrementX speed increment in x direction when using speed powerUp
  * @param speedIncrementY speed increment in y direction when using speed powerUp
+ * @param lastPosY Position of paddle in previous frame
+ * @param prevDeltas Array of previous deltas of paddle position. Used to calculate spin
+ * @param spinRequirement Minimum delta required to trigger spin
+ * @param spinForce Force of spin
  */
 export class Paddle extends Rect {
 	powerUp: PowerUp;
 	sizeIncrement: number;
-	energized: boolean;
 	speedIncrementX: number;
 	speedIncrementY: number;
 	lastPosY: number;
 	prevDeltas: number[] =[];
-	delta: number;
 	spinRequirement: number;
 	spinForce: number;
 
@@ -25,12 +27,11 @@ export class Paddle extends Rect {
 		super(posX, posY, width, height, mass);
 		this.powerUp = powerUp;
 		this.lastPosY = 0;
-		this.delta = 0;
 
 		//Config Setting for PowerUp
 		this.sizeIncrement = 1.2;
-		this.speedIncrementX = 1;
-		this.speedIncrementY = 0;
+		this.speedIncrementX = 5;
+		this.speedIncrementY = 3;
 		this.spinRequirement = 3;
 		this.spinForce = 1.5;
 
@@ -39,8 +40,11 @@ export class Paddle extends Rect {
 		}
 	}
 
-	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number, hitCount: number=0){
+	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number){
 		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
+		if (this.powerUp != PowerUp.SPEED){
+			ball.energized = false;
+		}
 		if (Math.abs(avgDelta) > this.spinRequirement){
 			ball.accelY = -this.spinForce * avgDelta; 
 			if (this.powerUp == PowerUp.SPIN){
@@ -56,6 +60,7 @@ export class Paddle extends Rect {
 				break;
 			case PowerUp.SPEED:
 				ball.collisionResponse(collideTime, normalX, normalY);
+				ball.energized = true;
 				// ball.velX = Math.sign(ball.velX) * (ball.initialSpeedX + (hitCount * this.speedIncrement));
 				// ball.velY = Math.sign(ball.velY) * (ball.initialSpeedY + (hitCount * this.speedIncrement));
 				break;
@@ -65,9 +70,9 @@ export class Paddle extends Rect {
 	}
 
 	updateDelta(){
-		this.delta = this.posY - this.lastPosY;
+		let delta = this.posY - this.lastPosY;
 		this.lastPosY = this.posY;
-		this.prevDeltas.push(this.delta);
+		this.prevDeltas.push(delta);
 		if (this.prevDeltas.length > 5){
 			this.prevDeltas.shift();
 		}

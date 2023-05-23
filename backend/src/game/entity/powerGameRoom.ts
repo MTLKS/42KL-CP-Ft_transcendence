@@ -37,8 +37,6 @@ enum FieldEffect{
  * @param paddleElapseTime Time elapsed since the ball last hit the paddle
  * @param paddleResetTimer Maximum time where the ball will be reset if not touching paddle
  * @param fieldEffectArray Array of to store list field effect, used to randomize the field effect
- * @param paddleHitCount Number of time the ball hit the paddle, used to increase the speed when power up is speed.
- * (To prevent bug if ball hit paddle while in speed zone)
  */
 export class PowerGameRoom extends GameRoom{
 	startTime: number;
@@ -57,7 +55,6 @@ export class PowerGameRoom extends GameRoom{
 	paddleElapseTime: number = 0;
 	paddleResetTimer: number;
 	fieldEffectArray: number[] = [0,1,2,3,4];
-	paddleHitCount: number;
 	
 	//Config Setting for Field Effect
 	gravityPower: number;
@@ -106,8 +103,6 @@ export class PowerGameRoom extends GameRoom{
 		this.effectContinuousTimer = Infinity;
 		this.paddleTimer = Date.now();
 		this.currentEffect = FieldEffect.NORMAL;
-
-		this.paddleHitCount = 0;
 	}
 
 	gameUpdate(server: Server){
@@ -132,7 +127,6 @@ export class PowerGameRoom extends GameRoom{
 			this.resetTime = Date.now();
 			this.paddleTimer = Date.now();
 			this.insideField = false;
-			this.paddleHitCount = 0;
 			this.gameReset = true;
 		}
 
@@ -212,23 +206,15 @@ export class PowerGameRoom extends GameRoom{
 			this.Ball.accelY = 0;
 			//Check left paddle
 			if (result.direction == 1){
-				if (this.leftPaddle.powerUp == PowerUp.SPEED){
-					this.paddleHitCount ++;
-				}
 				this.leftPaddle.paddleCollisionAction(this.Ball,
 					result.collideTime,
-					result.normalX,result.normalY,
-					this.paddleHitCount);
+					result.normalX,result.normalY);
 			}
 			//Check right paddle
 			else if (result.direction == -1){
-				if (this.rightPaddle.powerUp == PowerUp.SPEED){
-					this.paddleHitCount ++;
-				}
 				this.rightPaddle.paddleCollisionAction(this.Ball,
 					result.collideTime,
-					result.normalX,result.normalY,
-					this.paddleHitCount);
+					result.normalX,result.normalY);
 			}
 		}
 	}
