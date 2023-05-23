@@ -25,7 +25,7 @@ export class ChatController {
 	@ApiCommonHeader()
 	@ApiOkResponse({ description: "Returns all the DM channels of the user", type: [ChannelDTO]})
 	getAllChannel(@Headers('Authorization') accessToken: string, @Query() query: GetChannelQueryDTO): Promise<[ChannelDTO]> {
-		return this.chatService.getAllChannel(accessToken, query.startWith);
+		return this.chatService.getAllChannel(accessToken, query.startWith, Number(query.perPage), Number(query.page));
 	}
 
 	@Get('channel/member/:channelId')
