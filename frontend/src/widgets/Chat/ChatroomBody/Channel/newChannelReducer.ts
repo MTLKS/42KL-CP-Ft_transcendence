@@ -7,9 +7,10 @@ interface ChannelMemberRole {
 }
 
 export enum NewChannelError {
-  INVALID_CHANNEL_NAME = 400,
-  INVALID_PASSWORD = 410,
-  INVALID_NEW_PASSWORD = 411,
+  INVALID_CHANNEL_NAME,
+  INVALID_PASSWORD,
+  INVALID_NEW_PASSWORD,
+  REQUIRED_PASSWORD_TO_MAKE_CHANGES,
 }
 
 export interface NewChannelState {

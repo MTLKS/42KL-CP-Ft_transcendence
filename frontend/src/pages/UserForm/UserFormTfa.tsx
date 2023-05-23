@@ -8,6 +8,7 @@ interface UserFormTfaProps {
   tfaVerified: boolean;
   setTFAVerified: React.Dispatch<React.SetStateAction<boolean>>;
   handleSubmit: () => void;
+  invert?: boolean;
 }
 
 function UserFormTFAStatus(props: { tfaVerified: boolean }) {
@@ -22,10 +23,9 @@ function UserFormTFAStatus(props: { tfaVerified: boolean }) {
 function UserFormTfa(props: UserFormTfaProps) {
 
   // Props
-  const { tfaCode, setTfaCode, tfaVerified, setTFAVerified, handleSubmit } = props;
+  const { tfaCode, setTfaCode, tfaVerified, setTFAVerified, handleSubmit, invert = false } = props;
 
   // Hooks
-  // const [tfaCode, setTfaCode] = useState<string>('');
   const tfaCodeInputRef = useRef<HTMLInputElement>(null);
   const [currentDigit, setCurrentDigit] = useState<number>(0);
   const [hasResult, setHasResult] = useState<boolean>(false);
@@ -61,7 +61,7 @@ function UserFormTfa(props: UserFormTfaProps) {
   return (
     <div className='animate-pulse-short'>
       <div className='flex flex-col gap-y-2 cursor-pointer' onClick={() => tfaCodeInputRef.current?.focus()}>
-        <p className='w-full'>2FA Verification</p>
+        <p className={`w-full ${invert && 'text-highlight'}`}>2FA Verification</p>
         <p className='text-sm text-highlight/80 font-normal'>Hold on! We need to verify your 2FA code before we proceed.</p>
         <div className='flex flex-row gap-x-3 items-center h-fit'>
           <div className='flex flex-row gap-x-1 w-fit text-2xl'>
