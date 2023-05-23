@@ -73,23 +73,22 @@ export class Ball extends DynamicRect{
 		object.velY += impulseY * otherInvMass;
 	}
 
-	// update(){
-	// 	if (this.accelerating == false && this.accelY == 0){
-	// 		this.prevY = this.velY;
-	// 	}
-	// 	if (this.accelY != 0){
-	// 		this.accelerating = true;
-	// 	}
-	// 	if (this.accelerating == true){
-	// 		if (this.accelY == 0){
-	// 			this.accelerating = false;
-	// 			this.velY = this.prevY * Math.sign(this.velY);
-	// 		}
-	// 	}
-	// 	this.velX += this.accelX * (1 / 60);
-	// 	this.velY += this.accelY * (1 / 60);
-	// 	this.posX += this.velX;
-	// 	this.posY += this.velY;
-	// 	console.log(this.velY);
-	// }
+	update(){
+		if (this.accelerating == false && this.accelY == 0){
+			this.prevY = this.velY;
+		}
+		if (this.accelY != 0){
+			this.accelerating = true;
+		}
+		if (this.accelerating == true){
+			if (this.accelY == 0){
+				this.accelerating = false;
+				this.velY = this.prevY * Math.sign(this.velY);
+			}
+		}
+		this.velX += this.accelX * (1 / 60);
+		this.velY += this.accelY * (1 / 60);
+		this.posX += this.velX;
+		this.posY += this.velY;
+	}
 }

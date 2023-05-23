@@ -135,12 +135,16 @@ export class PowerGameRoom extends GameRoom{
 			this.gameReset = true;
 		}
 
-		// if (score == 3){
-		// 	if (this.currentEffect != FieldEffect.GRAVITY){
-		// 		this.Ball.accelX = 0;
-		// 		this.Ball.accelY = 0;
-		// 	}
-		// }
+		if (score == 3){
+			if (this.currentEffect != FieldEffect.GRAVITY){
+				this.Ball.accelX = 0;
+				this.Ball.accelY = 0;
+			}
+		}
+
+		if (this.currentEffect == FieldEffect.GRAVITY){
+			this.Ball.initAcceleration(0, this.gravityPower * this.effectMagnitude);
+		}
 		
 		if (this.elapseTime >= this.fieldEffectTimer){
 			this.fieldChange(server);
@@ -263,12 +267,10 @@ export class PowerGameRoom extends GameRoom{
 			case FieldEffect.GRAVITY:
 				let direction = Math.random();
 				if (direction < 0.5){
-					this.Ball.initAcceleration(0, this.gravityPower);
 					this.effectMagnitude = 1;
 					server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("GRAVITY", 0,0,1)));
 				}
 				else{
-					this.Ball.initAcceleration(0, -this.gravityPower);
 					this.effectMagnitude = -1;
 					server.emit("gameState", new GameStateDTO("FieldEffect",new FieldEffectDTO("GRAVITY", 0,0,-1)));
 				}
