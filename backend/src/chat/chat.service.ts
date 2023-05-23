@@ -112,13 +112,13 @@ export class ChatService {
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO("Invalid channelId - you are not a member of this channel"));
 		}
 		
-		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
-		for (let member of MEMBERS) {
-			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
-			if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
-				continue;
-			server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
-		}
+    const MEMBERS = CHANNEL.isRoom === true ? await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] }) : await this.memberRepository.find({ where: { channel: { channelId: MY_CHANNEL.channelId } }, relations: ['user', 'channel'] });
+    for (let member of MEMBERS) {
+      if (member.user.intraName === USER_DATA.intraName)
+          continue;
+      const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
+      server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
+    }
 	}
 
 	// Retrives user's member data of that channel
