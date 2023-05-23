@@ -123,6 +123,8 @@ export class ChatService {
 
 	// Retrives user's member data of that channel
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
+    if (Number.isNaN(channelId))
+      new ErrorDTO("Invalid channelId - you are not a member of this channel")
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - you are not a member of this channel") : this.userService.hideData(MEMBER_DATA);
@@ -157,6 +159,8 @@ export class ChatService {
 
 	// Retrives all members of a channel
 	async getAllChannelMember(accessToken: string, channelId: number): Promise<any> {
+    if (Number.isNaN(channelId) === true)
+      return [];
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined || MY_MEMBER.isBanned === true)
 			return [];
@@ -166,8 +170,6 @@ export class ChatService {
 
 	// Retrives all messages from a channel
 	async getAllChannelMessage(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
-		perPage = Number(perPage);
-		page = Number(page);
 		if (channelId === undefined)
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		
@@ -255,7 +257,7 @@ export class ChatService {
 
 	// Deletes a room
 	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
-		if (channelId === undefined)
+		if (Number.isNaN(channelId) === true)
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
 		if (CHANNEL === null || CHANNEL.isRoom === false)
@@ -337,7 +339,7 @@ export class ChatService {
 
 	// Deletes a user from a room
 	async deleteMember(accessToken: string, channelId: number, intraName: string): Promise<any> {
-		if (channelId === undefined || intraName === undefined)
+		if (Number.isNaN(channelId) === true || intraName === undefined)
 			return new ErrorDTO("Invalid body - body must include channelId(number) and intraName(string)");
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
