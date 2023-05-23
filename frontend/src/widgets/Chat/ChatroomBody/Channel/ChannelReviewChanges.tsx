@@ -15,6 +15,7 @@ enum ChangeType {
   ENABLED_PASSWORD,
   CHANGED_PASSWORD,
   CHANGED_CHANNEL_VISIBILITY,
+  WRONG_PASSWORD,
 }
 
 function ChannelReviewChanges(props: ChannelReviewChangesProps) {
@@ -44,13 +45,15 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
   function ChannelLog(type: ChangeType, previousValue: string, newValue: string) {
     switch (type) {
       case ChangeType.CHANGED_CHANNEL_NAME:
-        return (<p className='flex flex-row whitespace-pre text-dimshadow font-bold items-center w-full'>- CHANGED CHANNEL NAME: <span className='bg-accCyan px-[1ch] text-highlight'>{previousValue}</span> to <span className='bg-accGreen px-[1ch] text-highlight'>{newValue}</span></p>)
+        return (<p key={type + Date.now()} className='flex flex-row whitespace-pre text-dimshadow font-bold items-center w-full'>- CHANGED CHANNEL NAME: <span className='bg-accCyan px-[1ch] text-highlight'>{previousValue}</span> to <span className='bg-accGreen px-[1ch] text-highlight'>{newValue}</span></p>)
       case ChangeType.DISABLED_PASSWORD:
-        return (<p className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- <span className='px-[1ch] bg-accRed text-highlight'>DISABLED PASSWORD</span> </p>)
+        return (<p key={type + Date.now()} className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- <span className='px-[1ch] bg-accRed text-highlight'>DISABLED PASSWORD</span> </p>)
       case ChangeType.ENABLED_PASSWORD:
-        return (<p className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- <span className='px-[1ch] bg-accGreen text-highlight'>ENABLED PASSWORD</span> </p>)
+        return (<p key={type + Date.now()} className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- <span className='px-[1ch] bg-accGreen text-highlight'>ENABLED PASSWORD</span> </p>)
+      case ChangeType.CHANGED_PASSWORD:
+        return (<p key={type + Date.now()} className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- <span className='px-[1ch] bg-accRed text-highlight'>Password changed</span></p>)
       case ChangeType.CHANGED_CHANNEL_VISIBILITY:
-        return (<p className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- CHANGED CHANNEL VISIBILITY: <span className='bg-accCyan px-[1ch] text-highlight'>{previousValue}</span> to <span className='bg-accGreen px-[1ch] text-highlight'>{newValue}</span></p>)
+        return (<p key={type + Date.now()} className='flex flex-row whitespace-pre text-dimshadow font-bold items-center'>- CHANGED CHANNEL VISIBILITY: <span className='bg-accCyan px-[1ch] text-highlight'>{previousValue}</span> to <span className='bg-accGreen px-[1ch] text-highlight'>{newValue}</span></p>)
       default:
         return (<></>)
     }
@@ -63,8 +66,12 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
       logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_NAME, previousChannelInfo.channelName, state.channelName));
     }
 
-    if (previousChannelInfo.password !== null && state.password === null) {
+    if (previousChannelInfo.password !== null && state.newPassword === null) {
       logs.push(ChannelLog(ChangeType.DISABLED_PASSWORD, '', ''));
+    }
+
+    if (state.password !== null && state.newPassword !== null && state.password !== state.newPassword) {
+      logs.push(ChannelLog(ChangeType.CHANGED_PASSWORD, '', ''));
     }
 
     if (previousChannelInfo.password === null && state.password !== null) {

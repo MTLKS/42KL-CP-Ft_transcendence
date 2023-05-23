@@ -17,8 +17,8 @@ function ChannelInfoForm(props: ChannelInfoProps) {
   const { state, dispatch } = useContext(NewChannelContext)
   const { modifying, setModifyChannel, isReviewingChanges = false, setIsReviewingChanges = () => {} } = props;
   const [channelName, setChannelName] = useState<string>(state.channelName);
-  const [password, setPassword] = useState<string>(''); // old password for editing, new password for creating
-  const [newPassword, setNewPassword] = useState<string>(''); // new password for editing, should only use when editing
+  const [password, setPassword] = useState<string | null>(null); // old password for editing, new password for creating
+  const [newPassword, setNewPassword] = useState<string | null>(null); // new password for editing, should only use when editing
   const [isPrivate, setIsPrivate] = useState<boolean>(state.isPrivate);
   const [isPasswordProtected, setIsPasswordProtected] = useState<boolean>(state.password !== null);
   const [changePassword, setChangePassword] = useState<boolean>(false);
@@ -62,32 +62,35 @@ function ChannelInfoForm(props: ChannelInfoProps) {
           {
             ((!state.isNewChannel && modifying && previousChannelInfo.password !== null && !previousChannelInfo.isPrivate) || (!isPrivate && isPasswordProtected && modifying)) &&
             <div className='flex flex-col gap-y-2'>
-              <p className='text-highlight text-sm font-extrabold'>{!state.isNewChannel && changePassword ? 'Old Password' : 'Password'}</p>
+              <div className='flex flex-row justify-between items-center'>
+                <p className='text-highlight text-sm font-extrabold'>{!state.isNewChannel && changePassword ? 'Old Password' : 'Password'}</p>
+                {!state.isNewChannel && !isPasswordProtected && <p className='w-fit animate-pulse text-[10px] px-[1ch] text-highlight bg-accRed'>DISABLED AFTER SAVE</p>}
+              </div>
              {(!state.isNewChannel && modifying && previousChannelInfo.password !== null && !previousChannelInfo.isPrivate) && <p className='text-[10px] text-highlight/50'>Require password to change channel info</p>}
               <div className='flex flex-row'>
-                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
+                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={password ? password : ''} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
                 <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
               </div>
               {
-                (state.isNewChannel && (state.errors.includes(NewChannelError.INVALID_PASSWORD) || showPasswordRules)) &&
+                (state.isNewChannel || (state.errors.includes(NewChannelError.INVALID_PASSWORD) || showPasswordRules)) &&
                 <div className='text-xs px-[1ch] text-highlight/50'>
-                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${password.length > 0 && password.length <= 16 && 'text-accGreen'}`}>{password.length > 0 && password.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${password && password.length > 0 && password.length <= 16 && 'text-accGreen'}`}>{password && password.length > 0 && password.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
                 </div>
               }
             </div>
           }
           {
-            changePassword && !state.isNewChannel && !isPrivate && isPasswordProtected && modifying &&
+            changePassword && !state.isNewChannel && !isPrivate && modifying &&
             <div className='flex flex-col gap-y-2'>
               <p className='text-highlight text-sm font-extrabold'>New Password</p>
               <div className='flex flex-row'>
-                <input type="password" id='channel-new-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={newPassword} onChange={handleNewPasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
+                <input type="password" id='channel-new-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text' value={newPassword ? newPassword : ''} onChange={handleNewPasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
                 <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowNewPassword} onMouseUp={toggleShowNewPassword}><FaEye className='mx-auto' /></button>
               </div>
               {
                 (state.errors.includes(NewChannelError.INVALID_NEW_PASSWORD) || (!state.isNewChannel && showPasswordRules)) &&
                 <div className='text-xs px-[1ch] text-highlight/50'>
-                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${newPassword.length > 0 && newPassword.length <= 16 && 'text-accGreen'}`}>{newPassword.length > 0 && newPassword.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${newPassword && newPassword.length > 0 && newPassword.length <= 16 && 'text-accGreen'}`}>{newPassword && newPassword.length > 0 && newPassword.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
                 </div>
               }
             </div>
@@ -95,7 +98,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
           {!modifying && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>EDIT CHANNEL</button>}
           {modifying && !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
           {modifying && !isPrivate && isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button>}
-          {(!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>CHANGE PASSWORD</button>}
+          {(!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE PASSWORD` : `CHANGE PASSWORD`}</button>}
           {!state.isNewChannel && modifying && <button className='bg-dimshadow text-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
         </div>
       </div>
@@ -114,44 +117,61 @@ function ChannelInfoForm(props: ChannelInfoProps) {
       setChannelName(previousChannelInfo.channelName);
       setIsPrivate(previousChannelInfo.isPrivate);
       setIsPasswordProtected(previousChannelInfo.password !== null);
+      setPassword(null);
+      setNewPassword(null);
     }
   }
 
   function toggleChannelVisibility() {
     if (!modifying) return;
-    // Toggle channel visibility (public or private)
-    setIsPrivate(!isPrivate);
-    dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPrivate });
 
-    if (!isPrivate) {
-      setPassword('');
+    // setPassword('');
+    // setNewPassword('');
+    if (isPrivate) {
+      // switch to public
       dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
-      setNewPassword('');
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
+    } else {
+      // switch to private
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
       dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
     }
+    setIsPrivate(!isPrivate);
+    dispatch({ type: 'SET_CHANNEL_PRIVACY', isPrivate: !isPrivate });
   }
 
   function changeChannelPassword() {
+    if (!isPasswordProtected) setIsPasswordProtected(true);
+    if (changePassword) {
+      setNewPassword(null);
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
+    } else {
+      setNewPassword('');
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: '' });
+    }
     setChangePassword(!changePassword);
   }
 
   function togglePassword() {
-    // Toggle password protection
-    setIsPasswordProtected(!isPasswordProtected);
-    if (!isPasswordProtected) {
-      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: ''});
-    }
-
-    // if currently is password protected, clear password
+    // current password protection state
     if (isPasswordProtected) {
-      setPassword('');
-      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: null });
+      // switch to unprotected
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: password });
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
+      setNewPassword(null);
+      if (changePassword) {
+        setChangePassword(!changePassword);
+      }
     }
     
-    if (isPasswordProtected && !state.isNewChannel) {
+    if (!isPasswordProtected) {
+      // switch to protected
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: '' });
+      setPassword('');
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: '' });
       setNewPassword('');
-      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null });
     }
+    setIsPasswordProtected(!isPasswordProtected);
   }
 
   function toggleShowPassword(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -182,15 +202,44 @@ function ChannelInfoForm(props: ChannelInfoProps) {
   }
 
   function handlePasswordOnChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPassword(e.target.value);
-    dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
-    if (!changePassword) {
-      setNewPassword(e.target.value);
-      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: e.target.value });
+
+    // when editing channel info and previously this channel was password protected
+    if (!state.isNewChannel && previousChannelInfo.password !== null) {
+      setPassword(e.target.value);
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+      if (isPasswordProtected && !changePassword) {
+        setNewPassword(e.target.value);
+        dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: e.target.value });
+      }
+      return ;
+    }
+
+    if (!isPrivate && !state.isNewChannel && isPasswordProtected) {
+      setPassword(e.target.value);
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+      if (!changePassword) {
+        dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: e.target.value });
+      }
+      return ;
+    }
+
+    if (isPrivate && previousChannelInfo.password !== null) {
+      // setPassword(e.target.value);
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
+      return ;
+    }
+
+    if (isPrivate && isPasswordProtected) {
+      dispatch({ type: 'SET_CHANNEL_PASSWORD', password: e.target.value });
     }
   }
 
   function handleNewPasswordOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+
+    if (!isPasswordProtected && !state.isNewChannel) {
+      dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: null});
+    }
+
     setNewPassword(e.target.value);
     dispatch({ type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: e.target.value });
   }

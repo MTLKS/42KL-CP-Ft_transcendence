@@ -38,6 +38,7 @@ export const ChatroomContentContext = createContext<ChatroomContentContextType>(
     password: null,
     owner: null,
     newMessage: false,
+    memberCount: 0,
   },
 });
 

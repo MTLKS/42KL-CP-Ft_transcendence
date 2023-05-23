@@ -5,11 +5,12 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext'
 import ChatroomContent from '../Chatroom/ChatroomContent'
 import ChannelInfoForm from './ChannelInfoForm'
-import { ChatroomData } from '../../../../model/ChatRoomData'
-import { NewChannelState } from './newChannelReducer'
+import { ChatroomData, UpdateChannelData } from '../../../../model/ChatRoomData'
+import { NewChannelError, NewChannelState } from './newChannelReducer'
 import UserContext from '../../../../contexts/UserContext'
 import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
+import { updateChannel } from '../../../../api/chatAPIs'
 
 interface ChannelInfoProps {
   chatroomData: ChatroomData;
@@ -27,6 +28,10 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [tfaVerified, setTfaVerified] = useState<boolean>(false);
   const [verifyingTfa, setVerifyingTfa] = useState<boolean>(false);
   const [isReviewingChanges, setIsReviewingChanges] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log(chatroomData);
+  }, []);
 
   return (
     <div className='flex flex-col h-full'>
@@ -96,8 +101,76 @@ function ChannelInfo(props: ChannelInfoProps) {
     setChatBody(<ChatroomContent chatroomData={chatroomData} />);
   }
 
-  function saveChannelEdits() {
-    console.log("channel info: ", state);
+  async function saveChannelEdits() {
+    const { channelName, password, newPassword, isPrivate } = state;
+    let errorCount = 0;
+
+    /**
+     * Try these scenarios:
+     * 1. Public
+     *  - change name only [ok, oldpassword and newpassword should both be null]
+     *  - enable password [ok, oldpassword and newpassword should be the same]
+     *  - public to private [ok, oldpassword and newpassword should be null]
+     * 
+     * 2. Private
+     *  - change name only [ok]
+     *  - switch to public, no password [ok]
+     *  - switch to public, with password
+     *  - switch back to private
+     * 
+     * 3. Protected
+     *   - change name only [ok]
+     *   - change password [ok]
+     *   - disable pasword (public) [ok]
+     *   - switch to private
+     * 
+     * 4. Error handling
+     *  - channel name [ok]
+     *  - password & new password [ok]
+     *  - switch between public, protected and private [ok]
+     *  - wrong password (protected)
+     */
+
+    dispatch({ type: 'RESET_ERRORS' });
+
+    if (!(channelName.length > 0 && channelName.length <= 16)) {
+      console.log("invalid channel name");
+      dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_CHANNEL_NAME });
+      errorCount++;
+    }
+    
+    if (!isPrivate && password !== null && !(password.length > 0 && password.length <= 16)) {
+      console.log("invalid password");
+      dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
+      errorCount++;
+    }
+
+    if (!isPrivate && newPassword !== null && !(newPassword.length > 0 && newPassword.length <= 16)) {
+      console.log("invalid new password");
+      dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_NEW_PASSWORD });
+      errorCount++;
+    }
+
+    if (errorCount !== 0) return;
+
+    const updatedChannelInfo: UpdateChannelData = {
+      channelId: chatroomData.channelId,
+      channelName: channelName,
+      oldPassword: password,
+      newPassword: state.newPassword,
+      isPrivate: isPrivate,
+    }
+
+    console.log("updated channel info: ", updatedChannelInfo);
+
+    const updateChannelResponse = await updateChannel(updatedChannelInfo);
+    
+    console.log(updateChannelResponse.data);
+    // return ;
+    if (updateChannelResponse.status === 200) {
+      dispatch({ type: 'RESET' });
+      setChatBody(<ChatroomContent chatroomData={(updateChannelResponse.data as ChatroomData)} />);
+    }
   }
 }
 
