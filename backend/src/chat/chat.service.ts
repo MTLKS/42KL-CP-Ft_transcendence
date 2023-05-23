@@ -123,13 +123,19 @@ export class ChatService {
 
 	// Retrives user's member data of that channel
 	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
+    if (Number.isNaN(channelId))
+      new ErrorDTO("Invalid channelId - you are not a member of this channel")
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		return MEMBER_DATA === null ? new ErrorDTO("Invalid channelId - you are not a member of this channel") : this.userService.hideData(MEMBER_DATA);
 	}
 
 	// Retrives all channel of the user
-	async getAllChannel(accessToken: string, startWith: string): Promise<[ChannelDTO]> {
+	async getAllChannel(accessToken: string, startWith: string, perPage: number = 50, page: number = 1): Promise<[ChannelDTO]> {
+    if (Number.isNaN(perPage) === true)
+      perPage = 50;
+    if (Number.isNaN(page) === true)
+      page = 1;
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MY_MEMBERS = await this.memberRepository.find({ where: { user: { intraName: USER_DATA.intraName } }, relations: ['user', 'channel', 'channel.owner'] });
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
@@ -152,13 +158,15 @@ export class ChatService {
 			if (MEMBER.error !== undefined)
 				channel.push(publicChannel);
 		}
-		return this.userService.hideData(channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime()));
+    channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
+    channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
+		return this.userService.hideData(channel);
 	}
 
 	// Retrives all members of a channel
 	async getAllChannelMember(accessToken: string, channelId: number): Promise<any> {
-		if (Number.isNaN(channelId))
-			return [];
+    if (Number.isNaN(channelId) === true)
+      return [];
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined || MY_MEMBER.isBanned === true)
 			return [];
@@ -168,9 +176,11 @@ export class ChatService {
 
 	// Retrives all messages from a channel
 	async getAllChannelMessage(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
-		perPage = Number(perPage);
-		page = Number(page);
-		if (Number.isNaN(channelId))
+    if (Number.isNaN(perPage) === true)
+      perPage = 100;
+    if (Number.isNaN(page) === true)
+      page = 1;
+		if (Number.isNaN(channelId) === true)
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
@@ -257,7 +267,7 @@ export class ChatService {
 
 	// Deletes a room
 	async deleteRoom(accessToken: string, channelId: number): Promise<any> {
-		if (channelId === undefined)
+		if (Number.isNaN(channelId) === true)
 			return new ErrorDTO("Invalid body - body must include channelId(number)");
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
 		if (CHANNEL === null || CHANNEL.isRoom === false)
@@ -339,7 +349,7 @@ export class ChatService {
 
 	// Deletes a user from a room
 	async deleteMember(accessToken: string, channelId: number, intraName: string): Promise<any> {
-		if (channelId === undefined || intraName === undefined)
+		if (Number.isNaN(channelId) === true || intraName === undefined)
 			return new ErrorDTO("Invalid body - body must include channelId(number) and intraName(string)");
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)

@@ -15,9 +15,9 @@ export class ChatController {
 	@Get('member/:channelId')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid channelId - member is not found in that channelId"])
-	@ApiOkResponse({ description: "Returns the member data of the user in the channel", type: MemberDTO })
-	getMyMemberData(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number): Promise<any> {
-		return this.chatService.getMyMemberData(accessToken, channelId);
+	@ApiOkResponse({ description: "Returns the member data of the user in the channel", type: MemberDTO})
+	getMyMemberData(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: string): Promise<any> {
+		return this.chatService.getMyMemberData(accessToken, Number(channelId));
 	}
 
 	@Get('channel')
@@ -25,23 +25,23 @@ export class ChatController {
 	@ApiCommonHeader()
 	@ApiOkResponse({ description: "Returns all the DM channels of the user", type: [ChannelDTO] })
 	getAllChannel(@Headers('Authorization') accessToken: string, @Query() query: GetChannelQueryDTO): Promise<[ChannelDTO]> {
-		return this.chatService.getAllChannel(accessToken, query.startWith);
+		return this.chatService.getAllChannel(accessToken, query.startWith, Number(query.perPage), Number(query.page));
 	}
 
 	@Get('channel/member/:channelId')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader()
-	@ApiOkResponse({ description: "Returns all the channels of the user", type: [MemberDTO] })
-	getAllChannelMember(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number): Promise<[MemberDTO]> {
+	@ApiOkResponse({ description: "Returns all the channels of the user", type: [MemberDTO]})
+	getAllChannelMember(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: string): Promise<[MemberDTO]> {
 		return this.chatService.getAllChannelMember(accessToken, Number(channelId));
 	}
 
 	@Get('message/:channelId')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelId(number)", "Invalid channelId - channel does not exist", "Invalid channelId - you are not friends with this user", "Invalid channelId - member is not found in that channelId", "Invalid channelId - you are banned from this channel"])
-	@ApiOkResponse({ description: "Returns all the messages of the user in the channel", type: [MessageDTO] })
-	getAllChannelMessage(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number, @Query() query: GetMessageQueryDTO): Promise<any> {
-		return this.chatService.getAllChannelMessage(accessToken, Number(channelId), query.perPage, query.page);
+	@ApiOkResponse({ description: "Returns all the messages of the user in the channel", type: [MessageDTO]})
+	getAllChannelMessage(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: string, @Query() query: GetMessageQueryDTO): Promise<any> {
+		return this.chatService.getAllChannelMessage(accessToken, Number(channelId), Number(query.perPage), Number(query.page));
 	}
 
 	@Post('room')
@@ -65,9 +65,9 @@ export class ChatController {
 	@UseGuards(TFAGuard)
 	@ApiCommonHeader()
 	@ApiHeader({ name: 'OTP', description: 'OTP 6 digit code (eg. 123456)', required: true })
-	@ApiOkResponse({ description: "Returns the deleted room (requires owner privileges, TFA if enabled)", type: ChannelDTO })
-	deleteRoom(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number): any {
-		return this.chatService.deleteRoom(accessToken, channelId);
+	@ApiOkResponse({ description: "Returns the deleted room (requires owner privileges, TFA if enabled)", type: ChannelDTO})
+	deleteRoom(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: string): any {
+		return this.chatService.deleteRoom(accessToken, Number(channelId));
 	}
 
 	@Post('room/member')
@@ -89,8 +89,8 @@ export class ChatController {
 	@Delete('room/member/:channelId/:intraName')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelId(number) and intraName(string)", "Invalid channelId - requires admin privileges", "Invalid channelId - channel is not found", "Invalid intraName - user is not a member of this channel"])
-	@ApiOkResponse({ description: "Returns the deleted member (requires admin privileges)", type: MemberDTO })
-	deleteMember(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: number, @Param('intraName') intraName: string): any {
-		return this.chatService.deleteMember(accessToken, channelId, intraName);
+	@ApiOkResponse({ description: "Returns the deleted member (requires admin privileges)", type: MemberDTO})
+	deleteMember(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: string, @Param('intraName') intraName: string): any {
+		return this.chatService.deleteMember(accessToken, Number(channelId), intraName);
 	}
 }
