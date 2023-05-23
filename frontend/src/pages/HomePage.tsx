@@ -28,6 +28,7 @@ import { ErrorData } from '../model/ErrorData';
 import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
+import login from '../api/loginAPI';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
@@ -46,6 +47,7 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),
   new CommandOptionData({ command: "reset" }),
+  new CommandOptionData({ command: "logout" })
 ];
 
 interface HomePageProps {
@@ -179,6 +181,10 @@ function HomePage(props: HomePageProps) {
       case "reset":
         setUpdateUser(true);
         setUserData(userData);
+        break;
+      case "logout":
+        document.cookie = "Authorization=;";
+        window.location.assign("/");
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
