@@ -41,7 +41,7 @@ function NewChannel(props: NewChannelProps) {
         nextComponent={<ChatButton title={state.members && (state.members.length === 1 ? `skip` : `next (${state.members.length - 1})`)} onClick={goToNextStep} />}
         backAction={backAction}
       />
-      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList title='friends' friendList={acceptedFriendsUserData} /> : displayNoFriends()}
+      {acceptedFriendsUserData.length > 0 ? <ChannelMemberList isInviting={false} title='friends' friendList={acceptedFriendsUserData} /> : displayNoFriends()}
     </div>
   )
 

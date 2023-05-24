@@ -16,26 +16,34 @@ export enum NewChannelError {
 
 export interface NewChannelState {
   members: ChannelMemberRole[],
+  inviteList: ChannelMemberRole[],
   channelName: string,
   isPrivate: boolean,
+  isInviting: boolean,
   password: string | null,
   newPassword: string | null,
   isPasswordProtected: boolean,
   errors: NewChannelError[],
   isNewChannel: boolean,
   hasChanges: boolean,
+  isOwner: boolean,
+  isAdmin: boolean,
 }
 
 export const newChannelInitialState: NewChannelState = {
   members: [],
+  inviteList: [],
   channelName: '',
   isPrivate: false,
+  isInviting: false,
   isPasswordProtected: false,
   password: null,
   newPassword: null,
   errors: [],
   isNewChannel: true,
   hasChanges: false,
+  isOwner: false,
+  isAdmin: false,
 }
 
 export type NewChannelAction =
@@ -52,8 +60,11 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData, members: MemberData[] }
   | { type: 'SET_HAS_CHANGES', payload: boolean }
   | { type: 'ADD_ERROR', error: NewChannelError }
+  | { type: 'INVITE_MEMBER', userInfo: UserData } // by default, invite will just invite as member
   | { type: 'IS_EDIT_CHANNEL' }
-  | { type: 'SET_'}
+  | { type: 'TOGGLE_IS_INVITING', isInviting: boolean }
+  | { type: 'IS_OWNER', userInfo: UserData }
+  | { type: 'IS_ADMIN', userInfo: UserData }
   | { type: 'RESET_ERRORS' }
   | { type: 'RESET' }
   | { type: 'CLONE_STATE', state: NewChannelState };
@@ -177,6 +188,29 @@ export default function newChannelReducer(state = newChannelInitialState, action
         ...state,
         isNewChannel: false,
       }
+    }
+    case 'IS_OWNER': {
+      const ownerData = state.members.find(member => member.role === 'owner');
+      return {
+        ...state,
+        isOwner: ownerData?.memberInfo.intraName === action.userInfo.intraName,
+      }
+    }
+    case 'TOGGLE_IS_INVITING': {
+      return {
+        ...state,
+        isInviting: action.isInviting,
+      }
+    }
+    case 'IS_ADMIN': {
+      const isAdmin = state.members.find(member => member.memberInfo.intraName === action.userInfo.intraName && member.role === 'admin');
+      return {
+        ...state,
+        isAdmin: isAdmin !== undefined,
+      }
+    }
+    case 'INVITE_MEMBER': {
+      // before inviting, will already check if my friend is already in the channel or not
     }
     case 'RESET_ERRORS': {
       return {

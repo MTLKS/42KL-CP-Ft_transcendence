@@ -8,7 +8,7 @@ import { ChatroomData } from '../../../../model/ChatRoomData';
 import UserContext from '../../../../contexts/UserContext';
 
 interface ChannelInfoProps {
-  currentChannelData: ChatroomData,
+  currentChannelData?: ChatroomData,
   isReviewingChanges?: boolean,
   setIsReviewingChanges?: (newState: boolean) => void;
   modifying: boolean,
@@ -99,7 +99,13 @@ function ChannelInfoForm(props: ChannelInfoProps) {
               }
             </div>
           }
-          {!modifying && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>EDIT CHANNEL</button>}
+          {
+            state.isOwner && !state.isNewChannel && !modifying &&
+            <div className='flex flex-row w-full justify-between'>
+              <button className='text-sm bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>MANAGE CHANNEL</button>
+              <button className='text-sm text-highlight bg-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={() => console.log("delete channel")}>DELETE CHANNEL</button>
+            </div>
+          }
           {modifying && !isPrivate && !isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
           {modifying && !isPrivate && isPasswordProtected && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button>}
           {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE PASSWORD` : `CHANGE PASSWORD`}</button>}

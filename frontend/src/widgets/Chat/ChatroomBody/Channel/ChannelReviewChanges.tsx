@@ -31,7 +31,7 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
   return (
     <div
       style={{opacity: `${opacity}`}}
-      className='p-3 w-full h-full box-border bg-highlight rounded relative overflow-hidden flex flex-col transition-opacity duration-[1s]'>
+      className='p-3 w-full h-full box-border bg-highlight rounded relative overflow-hidden flex flex-col transition-opacity duration-700'>
       <div>
         <button className='absolute border-dimshadow border-2 hover:bg-highlight hover:text-dimshadow aspect-square bg-dimshadow text-highlight rounded p-1' onClick={() => setIsReviewingChanges(!isReviewingChanges)} ><FaTimes /></button>
         <p className='text-lg font-extrabold w-fit mx-auto px-[1ch] text-center text-highlight bg-dimshadow'>CHANGES</p>

@@ -12,6 +12,9 @@ import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
 import { updateChannel } from '../../../../api/chatAPIs'
 import { ErrorData } from '../../../../model/ErrorData'
+import { FriendsContext } from '../../../../contexts/FriendContext'
+import { UserData } from '../../../../model/UserData'
+import { FaTimes } from 'react-icons/fa'
 
 interface ChannelInfoProps {
   chatroomData: ChatroomData;
@@ -21,6 +24,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   const { chatroomData } = props;
   const { myProfile } = useContext(UserContext);
+  const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
   const { state, dispatch } = useContext(NewChannelContext);
   const [modifying, setModifying] = useState(false);
@@ -30,6 +34,10 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [verifyingTfa, setVerifyingTfa] = useState<boolean>(false);
   const [isReviewingChanges, setIsReviewingChanges] = useState<boolean>(false);
 
+  useEffect(() => {
+    dispatch({ type: 'IS_OWNER', userInfo: myProfile});
+  }, []);
+
   return (
     <div className='flex flex-col h-full'>
       <ChatNavbar
@@ -38,17 +46,44 @@ function ChannelInfo(props: ChannelInfoProps) {
         nextComponent={modifying ? <ChatButton title='save' onClick={saveChannelEdits} /> : <></>}
       />
       <div className='w-full h-full relative box-border'>
+        { state.isInviting && showInviteList() }
         { isReviewingChanges && showChanges() }
         { verifyingTfa && showVerifyTFAForm() }
         { showEditChannelForm() }
+        <div className='w-full h-full mt-6'>
+          <ChannelMemberList title="members" modifying={modifying} />
+        </div>
       </div>
     </div>
   )
 
   function showChanges() {
     return (
-      <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[90%] mx-auto absolute flex z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
-        <ChannelReviewChanges previousChannelInfo={previousChannelInfo.current} isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} />
+      <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
+        <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[60%] mx-auto absolute flex z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
+          <ChannelReviewChanges previousChannelInfo={previousChannelInfo.current} isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} />
+        </div>
+      </div>
+    )
+  }
+
+  function showInviteList() {
+
+    const friendUserData = friends.map(friend => {
+      return friend.sender.intraId === myProfile.intraId ? friend.receiver : friend.sender;
+    });
+
+    const friendsButNotMembers = friendUserData.filter(friend => {
+      if (state.members.find(member => member.memberInfo.intraId === friend.intraId)) return false;
+      return true;
+    });
+
+    return (
+      <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
+        <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
+          <button className='m-2 border-dimshadow w-fit border-2 hover:bg-highlight hover:text-dimshadow aspect-square bg-dimshadow text-highlight rounded p-1' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
+          <ChannelMemberList title='friend' friendList={friendsButNotMembers} viewingInviteList={true} />
+        </div>
       </div>
     )
   }
@@ -82,9 +117,6 @@ function ChannelInfo(props: ChannelInfoProps) {
     return (
       <>
         <ChannelInfoForm currentChannelData={chatroomData} isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} modifying={modifying} setModifyChannel={modifyChannel} />
-        <div className='w-full h-full mt-6'>
-          <ChannelMemberList title="members" />
-        </div>
       </>
     )
   }
@@ -102,43 +134,13 @@ function ChannelInfo(props: ChannelInfoProps) {
     const { channelName, password, newPassword, isPrivate } = state;
     let errorCount = 0;
 
-    /**
-     * Try these scenarios:
-     * 1. Public [ok]
-     *  - change name only [ok, oldpassword and newpassword should both be null]
-     *  - enable password [ok, oldpassword and newpassword should be the same]
-     *  - disable password [ok, oldpassword is previous password, newpassword is null]
-     *  - public to private [ok, oldpassword and newpassword should be null]
-     * 
-     * 2. Private
-     *  - change name only [ok]
-     *  - switch to public, no password [ok]
-     *  - switch to public, with password [ok]
-     * 
-     * 3. Protected
-     *   - change name only [ok]
-     *   - change password [ok]
-     *   - disable pasword (public) [ok]
-     *   - switch to private [ok]
-     * 
-     * 4. Error handling
-     *  - channel name [ok]
-     *  - password & new password [ok]
-     *  - switch between public, protected and private [ok]
-     *  - wrong password (protected)
-     */
-
-    // cancel password -> password becomes disabled password
-
     dispatch({ type: 'RESET_ERRORS' });
 
     if (!(channelName.length > 0 && channelName.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_CHANNEL_NAME });
       errorCount++;
     }
-    
-    // when previously is public then set to private
-    // check if previously is password protected or not, if yes, check password validity
+
     if (isPrivate && previousChannelInfo.current.password !== null && password !== null && !(password.length > 0 && password.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
       errorCount++;
