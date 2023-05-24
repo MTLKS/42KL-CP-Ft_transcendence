@@ -5,12 +5,12 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext'
 import ChatroomContent from '../Chatroom/ChatroomContent'
 import ChannelInfoForm from './ChannelInfoForm'
-import { ChatroomData, UpdateChannelData } from '../../../../model/ChatRoomData'
+import { ChatroomData, MemberData, UpdateChannelData } from '../../../../model/ChatRoomData'
 import { NewChannelError, NewChannelState } from './newChannelReducer'
 import UserContext from '../../../../contexts/UserContext'
 import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
-import { updateChannel } from '../../../../api/chatAPIs'
+import { inviteMemberToChannel, updateChannel } from '../../../../api/chatAPIs'
 import { ErrorData } from '../../../../model/ErrorData'
 import { FriendsContext } from '../../../../contexts/FriendContext'
 import { UserData } from '../../../../model/UserData'
@@ -80,15 +80,22 @@ function ChannelInfo(props: ChannelInfoProps) {
 
     return (
       <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
-        <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
-          <button className='m-2 border-dimshadow w-fit border-2 hover:bg-highlight hover:text-dimshadow aspect-square bg-dimshadow text-highlight rounded p-1' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
+        <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded overflow-hidden'>
+          <div className='relative mb-2 w-full flex flex-row justify-between items-center'>
+            <button className='m-2 border-dimshadow w-fit aspect-square border-2 hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight rounded p-1' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
+            {state.inviteList.length > 0 && <button className='border-2 border-highlight bg-dimshadow text-highlight hover:text-dimshadow hover:bg-highlight font-extrabold rounded text-sm p-1.5 h-fit' onClick={sendInvites}>SEND INVITES ({state.inviteList.length})</button>}
+          </div>
           { friendsButNotMembers.length === 0
             ? (
               <div className='w-full h-full relative'>
                 <p className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-extrabold text-highlight'>{ friendUserData.length === 0 ? 'No friends to choose from...' : 'All you friends are in this channel already!' }</p>
               </div>
             ) :
-            (<ChannelMemberList title='friend' friendList={friendsButNotMembers} viewingInviteList={true} />)
+            (
+              <div className='overflow-y-scroll'>
+                <ChannelMemberList title='friend' friendList={friendsButNotMembers} viewingInviteList={true} />
+              </div>
+            )
           }
         </div>
       </div>
@@ -135,6 +142,29 @@ function ChannelInfo(props: ChannelInfoProps) {
   function backToChatroom() {
     dispatch({ type: 'CLONE_STATE', state: previousChannelInfo.current });
     setChatBody(<ChatroomContent chatroomData={chatroomData} />);
+  }
+
+  async function sendInvites() {
+    const { inviteList } = state;
+    const inviteErrors: number[] = [];
+
+    for (const invite of inviteList) {
+      const inviteResponse = await inviteMemberToChannel({
+        channelId: chatroomData.channelId,
+        intraName: invite.memberInfo.intraName,
+        isAdmin: false,
+        isBanned: false,
+        isMuted: false,
+        password: null,
+      })
+      if (inviteResponse.status !== 201) {
+        inviteErrors.push(invite.memberInfo.intraId);
+      } else {
+        dispatch({ type: 'SELECT_MEMBER', userInfo: (inviteResponse.data as MemberData).user});
+      }
+    }
+    dispatch({ type: 'RESET_INVITE_LIST' });
+    dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})
   }
 
   async function saveChannelEdits() {

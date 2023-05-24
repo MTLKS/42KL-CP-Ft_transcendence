@@ -61,11 +61,13 @@ export type NewChannelAction =
   | { type: 'SET_HAS_CHANGES', payload: boolean }
   | { type: 'ADD_ERROR', error: NewChannelError }
   | { type: 'INVITE_MEMBER', userInfo: UserData } // by default, invite will just invite as member
+  | { type: 'REMOVE_INVITE', userInfo: UserData }
   | { type: 'IS_EDIT_CHANNEL' }
   | { type: 'TOGGLE_IS_INVITING', isInviting: boolean }
   | { type: 'IS_OWNER', userInfo: UserData }
   | { type: 'IS_ADMIN', userInfo: UserData }
   | { type: 'RESET_ERRORS' }
+  | { type: 'RESET_INVITE_LIST' }
   | { type: 'RESET' }
   | { type: 'CLONE_STATE', state: NewChannelState };
 
@@ -210,12 +212,33 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
     }
     case 'INVITE_MEMBER': {
-      // before inviting, will already check if my friend is already in the channel or not
+      if (state.inviteList.find(invitation => invitation.memberInfo.intraName === action.userInfo.intraName)) {
+        return state;
+      }
+      return {
+        ...state,
+        inviteList: [...state.inviteList, { memberInfo: action.userInfo, role: 'member' }],
+      }
+    }
+    case 'REMOVE_INVITE': {
+      if (!state.inviteList.find(invitation => invitation.memberInfo.intraName === action.userInfo.intraName)) {
+        return state;
+      }
+      return {
+        ...state,
+        inviteList: state.inviteList.filter(invitation => invitation.memberInfo.intraName !== action.userInfo.intraName),
+      }
     }
     case 'RESET_ERRORS': {
       return {
         ...state,
         errors: [],
+      }
+    }
+    case 'RESET_INVITE_LIST': {
+      return {
+        ...state,
+        inviteList: [],
       }
     }
     case 'SET_HAS_CHANGES': {

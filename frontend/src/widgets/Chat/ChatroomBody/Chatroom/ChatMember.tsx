@@ -6,7 +6,6 @@ import { UserData } from '../../../../model/UserData';
 import { NewChannelContext } from '../../../../contexts/ChatContext';
 
 interface ChatMemberProps {
-  isInviting?: boolean;
   isModifyingMember?: boolean;
   isSelected?: boolean;
   selectable: boolean;
@@ -159,8 +158,8 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
 function ChatMember(props: ChatMemberProps) {
 
-  const { isInviting, isModifyingMember, selectable, userData, memberRole } = props;
-  const { dispatch } = useContext(NewChannelContext);
+  const { isModifyingMember, selectable, userData, memberRole } = props;
+  const { state, dispatch } = useContext(NewChannelContext);
   const [isSelected, setIsSelected] = useState(props.isSelected || false);
 
   return (
@@ -192,11 +191,21 @@ function ChatMember(props: ChatMemberProps) {
 
   function handleSelectMember() {
     if (!selectable) return;
+
+    setIsSelected(!isSelected);
+    // to handle invite member to existing channel
+    if (state.isInviting) {
+      if (isSelected)
+        dispatch({ type: 'REMOVE_INVITE', userInfo: userData});
+      else
+        dispatch({ type: 'INVITE_MEMBER', userInfo: userData });
+      return ;
+    }
+    // to handle add member to new channel
     if (isSelected)
       dispatch({ type: 'DESELECT_MEMBER', userInfo: userData });
     else
       dispatch({ type: 'SELECT_MEMBER', userInfo: userData });
-    setIsSelected(!isSelected);
   }
 }
 

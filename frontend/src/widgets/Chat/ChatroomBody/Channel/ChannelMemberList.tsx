@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle'
 import ChatMember from '../Chatroom/ChatMember'
-import { NewChannelAction, NewChannelState } from './newChannelReducer'
-import { FriendData } from '../../../../model/FriendData'
 import { UserData } from '../../../../model/UserData'
 import { NewChannelContext } from '../../../../contexts/ChatContext'
 import { FaUserPlus } from 'react-icons/fa'
@@ -23,7 +21,7 @@ function ChannelMemberList(props: ChannelMemberListProps) {
   return (
     <div className='w-[95%] h-full mx-auto flex flex-col gap-y-2'>
       <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
-      {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> INVITE</button>}
+      {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> INVITE FRIENDS</button>}
       <div className='w-full h-full overflow-y-scroll flex flex-col gap-y-2.5 scrollbar-hide scroll-smooth'>
         {displayMemberList()}
       </div>
@@ -31,7 +29,11 @@ function ChannelMemberList(props: ChannelMemberListProps) {
   )
 
   function displayMemberList() {
+
     if (friendList !== undefined) {
+      if (state.isInviting) {
+        return (friendList.map(friend => <ChatMember key={friend.intraId} selectable={true} userData={friend} />));
+      }
       return (friendList.map(friend => <ChatMember key={friend.intraId} selectable={true} userData={friend} isSelected={state.members.find(member => member.memberInfo.intraName === friend.intraName) !== undefined}/>));
     }
     if (!state.isNewChannel) {

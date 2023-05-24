@@ -45,7 +45,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
               <p className='text-highlight text-base font-extrabold uppercase underline'>{isPrivate ? 'private' : 'public'}</p>
             </div>
           </button>
-          { !state.isNewChannel && modifying && <button className='flex flex-row items-center bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight w-fit h-fit p-2 text-center rounded text-xs font-bold uppercase whitespace-pre' onClick={() => setIsReviewingChanges(!isReviewingChanges)}><TbScript className='text-base' /> Review Changes</button> }
+          { !state.isNewChannel && (modifying) && <button className='flex flex-row items-center bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight w-fit h-fit p-2 text-center rounded text-xs font-bold uppercase whitespace-pre' onClick={() => setIsReviewingChanges(!isReviewingChanges)}><TbScript className='text-base' /> Review Changes</button> }
         </div>
         <div className={`flex flex-col justify-center ${isPrivate && 'my-auto'} gap-y-4 w-[60%]`}>
           <div className='flex flex-col gap-y-2'>
