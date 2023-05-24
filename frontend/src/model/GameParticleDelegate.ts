@@ -75,38 +75,43 @@ class GameParticleDelegate {
     );
     this.addBlackholeParticle(this.gameData, this.particles, addSprite);
 
-    if (pongSpeedMagnitude == 0) return this.particles;
-    let colorIndex = 0;
-    if (this.gameData.pongSpin > 1) {
-      this.addSpitParticleRed(
+    if (pongSpeedMagnitude !== 0) {
+      let colorIndex = 0;
+      if (this.gameData.pongSpin > 1) {
+        this.addSpitParticleRed(
+          this.particles,
+          newPosition,
+          newPongSpeed,
+          addSprite
+        );
+        colorIndex = 4;
+      }
+      if (pongSpeedMagnitude > 20) {
+        this.addSpitParticleCyan(
+          this.particles,
+          newPosition,
+          newPongSpeed,
+          addSprite
+        );
+        colorIndex = 1;
+      }
+      if (this.gameData.pongSpin > 1 && pongSpeedMagnitude > 20) {
+        colorIndex = 2;
+      }
+      this.addTrailParticle(
+        this.particles,
+        newPosition,
+        newPongSpeed,
+        colorIndex,
+        addSprite
+      );
+      this.addSpitParticle(
         this.particles,
         newPosition,
         newPongSpeed,
         addSprite
       );
-      colorIndex = 4;
     }
-    if (pongSpeedMagnitude > 20) {
-      this.addSpitParticleCyan(
-        this.particles,
-        newPosition,
-        newPongSpeed,
-        addSprite
-      );
-      colorIndex = 1;
-    }
-    if (this.gameData.pongSpin > 1 && pongSpeedMagnitude > 20) {
-      colorIndex = 2;
-    }
-    this.addTrailParticle(
-      this.particles,
-      newPosition,
-      newPongSpeed,
-      colorIndex,
-      addSprite
-    );
-    this.addSpitParticle(this.particles, newPosition, newPongSpeed, addSprite);
-
     if (this.paddleParticleCycle === 2) this.paddleParticleCycle = 0;
     else this.paddleParticleCycle++;
     if (this.paddleParticleCycle !== 0) return this.particles;

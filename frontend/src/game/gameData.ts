@@ -31,9 +31,9 @@ export class GameData {
 
   // game display settings
   useParticlesFilter: boolean = false;
-  useEntitiesFilter: boolean = false;
-  usePaddleFilter: boolean = false;
-  useHitFilter: boolean = false;
+  useEntitiesFilter: boolean = true;
+  usePaddleFilter: boolean = true;
+  useHitFilter: boolean = true;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;
@@ -74,7 +74,7 @@ export class GameData {
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
-  private sendPlayerMove?: (y: number, gameRoom: string) => void;
+  private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
   private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
 
   resize?: () => void;
@@ -86,11 +86,18 @@ export class GameData {
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
-    this.sendPlayerMove = (y: number, gameRoom: string) => {
-      this.socketApi.sendMessages("playerMove", { gameRoom: gameRoom, y: y });
+    this.sendPlayerMove = (y: number, x: number, gameRoom: string) => {
+      this.socketApi.sendMessages("playerMove", {
+        gameRoom: gameRoom,
+        y: y,
+        x: x,
+      });
     };
     this.sendPlayerClick = (isMouseDown: boolean, gameRoom: string) => {
-      this.socketApi.sendMessages("playerClick", { gameRoom: gameRoom, isMouseDown: isMouseDown });
+      this.socketApi.sendMessages("playerClick", {
+        gameRoom: gameRoom,
+        isMouseDown: isMouseDown,
+      });
     };
   }
 
@@ -323,13 +330,13 @@ export class GameData {
     // console.log(data);
   };
 
-  updatePlayerPosition(y: number) {
+  updatePlayerPosition(y: number, x: number) {
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
-    this.sendPlayerMove?.(y, this.gameRoom);
+    this.sendPlayerMove?.(y, x, this.gameRoom);
   }
 
   updatePlayerClick(isMouseDown: boolean) {

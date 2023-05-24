@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { RefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Stage, Container, Text, Graphics, useTick, withFilters, useApp, ParticleContainer, Sprite } from '@pixi/react'
 import Paddle from './game_objects/Paddle';
 import { BoxSize, Offset } from '../model/GameModels';
@@ -18,6 +18,7 @@ import { GameGravityArrow, GameGravityArrowDiraction } from '../model/GameGravit
 import ColorTween from './functions/colorInterpolation';
 import { DropShadowFilter, RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
 import InwardShadow from './game_objects/InwardShadow';
+import { update } from 'lodash';
 
 interface GameProps {
   scale: number;
@@ -36,23 +37,26 @@ function Game(props: GameProps) {
   const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(undefined);
   const app = useApp();
 
+  const timeRef = useRef<number[]>([]);
+  const fpsTextRef = useRef<PIXI.Text>(null);
+
   const containerRef = useRef<PIXI.Container>(null);
   const shadowRef = useRef<PIXI.Container>(null);
 
-  const ballhit = useCallback(async (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset) => {
+  const ballhit = useCallback(async (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset, strength: number) => {
     await sleep(30);
     if (containerRef.current === null) return;
     if (shadowRef.current === null) return;
     if (containerRef.current.filters !== null) containerRef.current.filters = null;
-    const shockwaveSpeed = pongSpeedMagnitude / 5 * scale;
-    const rgbSplitMagnitude = 0.5;
+    const shockwaveSpeed = pongSpeedMagnitude / 5 * scale * strength;
+    const rgbSplitMagnitude = strength;
     const shockwaveFilter = new ShockwaveFilter();
     shockwaveFilter.center = [hitPosition.x * scale, hitPosition.y * scale];
     shockwaveFilter.time = 0;
-    shockwaveFilter.amplitude = 100 * scale;
+    shockwaveFilter.amplitude = 150 * scale * strength;
     shockwaveFilter.wavelength = 5 / scale;
-    shockwaveFilter.radius = 1900 * scale;
-    shockwaveFilter.brightness = 3;
+    shockwaveFilter.radius = 1900 * scale * strength;
+    shockwaveFilter.brightness = 1.5;
     const rgbSplitFilter = new RGBSplitFilter();
     rgbSplitFilter.red = new PIXI.Point(-pongSpeed.x * rgbSplitMagnitude, -pongSpeed.y * rgbSplitMagnitude);
     rgbSplitFilter.green = new PIXI.Point(0, 0);
@@ -74,7 +78,7 @@ function Game(props: GameProps) {
       (rgbSplitFilter.red as PIXI.Point).y *= 0.95;
       (rgbSplitFilter.blue as PIXI.Point).x *= 0.95;
       (rgbSplitFilter.blue as PIXI.Point).y *= 0.95;
-      if (shockwaveFilter.time >= 2 * scale) {
+      if (shockwaveFilter.time >= 2 * scale / strength) {
         ticker.remove(tickerCallback);
         ticker.stop();
       }
@@ -97,6 +101,21 @@ function Game(props: GameProps) {
     const leftPaddlePosition = gameData.leftPaddlePosition;
     const rightPaddlePosition = gameData.rightPaddlePosition;
     let newGameGravityArrow = gameGravityArrow;
+
+    if (fpsTextRef.current !== null) {
+      const currentTime = Date.now();
+      timeRef.current.push(currentTime);
+      if (timeRef.current.length > 10) {
+        let average = 0;
+        timeRef.current.forEach((time, index) => {
+          if (index === 0) return;
+          average += time - timeRef.current[index - 1];
+        });
+        average /= timeRef.current.length - 1;
+        fpsTextRef.current.text = `FPS: ${(1000 / average).toFixed(1)}`;
+        timeRef.current.length = 0;
+      }
+    }
 
     if (gameData.globalGravityY !== 0) {
       gameData.globalGravityY = Math.sign(gameData.globalGravityY) * 2 / pongSpeedMagnitude
@@ -123,20 +142,20 @@ function Game(props: GameProps) {
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
     if (gameData.useHitFilter) {
-      if (newPosition.x <= 20 || newPosition.x >= 1600 - 20) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
-      if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+      if (newPosition.x <= 20 || newPosition.x >= 1600 - 20) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1);
+      if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5);
       if (
         newPosition.x <= leftPaddlePosition.x + 30
         && newPosition.x >= leftPaddlePosition.x - 30
         && newPosition.y >= leftPaddlePosition.y - 60
         && newPosition.y <= leftPaddlePosition.y + 60
-      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5);
       if (
         newPosition.x <= rightPaddlePosition.x + 30
         && newPosition.x >= rightPaddlePosition.x - 30
         && newPosition.y >= rightPaddlePosition.y - 60
         && newPosition.y <= rightPaddlePosition.y + 60
-      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed);
+      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5);
     }
   }, usingTicker ?? true);
 
@@ -150,24 +169,27 @@ function Game(props: GameProps) {
 
   if (!shouldRender) return <></>;
   return (
-    <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : undefined}>
-      <Sprite width={1600} height={900} texture={backgoundTexture} />
-      <Container ref={shadowRef} alpha={0.5}>
-        <InwardShadow />
+    <>
+      <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : undefined}>
+        <Sprite width={1600} height={900} texture={backgoundTexture} />
+        <Container ref={shadowRef} alpha={0.5}>
+          <InwardShadow />
+        </Container>
+        <Container x={850} y={900} anchor={0.5}>
+          <GameText text='PONG' anchor={new PIXI.Point(1, 1)} fontSize={250} position={{ x: 150, y: 0 }} opacity={0.1} />
+          <GameText text='sh' anchor={new PIXI.Point(0, 1.1)} fontSize={150} position={{ x: 150, y: 0 }} opacity={0.1} />
+        </Container>
+        <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+        <GameText text={":"} anchor={new PIXI.Point(0.5, 0)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+        <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+        <Pong size={{ w: 10, h: 10 }} />
+        <Entities />
+        <ParticlesRenderer key={"particle renderer"} gameGravityArrow={gameGravityArrow} />
+        <Paddle left={true} />
+        <Paddle left={false} />
       </Container>
-      <Container x={850} y={900} anchor={0.5}>
-        <GameText text='PONG' anchor={new PIXI.Point(1, 1)} fontSize={250} position={{ x: 150, y: 0 }} opacity={0.1} />
-        <GameText text='sh' anchor={new PIXI.Point(0, 1.1)} fontSize={150} position={{ x: 150, y: 0 }} opacity={0.1} />
-      </Container>
-      <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      <GameText text={":"} anchor={new PIXI.Point(0.5, 0)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-      <Pong size={{ w: 10, h: 10 }} />
-      <Entities />
-      <ParticlesRenderer key={"particle renderer"} gameGravityArrow={gameGravityArrow} />
-      <Paddle left={true} />
-      <Paddle left={false} />
-    </Container>
+      <Text ref={fpsTextRef} style={new PIXI.TextStyle({ fill: 0xB3A183, fontSize: 16 })} x={10} y={5} />
+    </>
   )
 }
 
