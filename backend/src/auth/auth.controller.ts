@@ -11,9 +11,10 @@ export class AuthController {
 
 	@Get()
 	@ApiHeader({ name: 'Authorization', description: 'The encrypted access token of the user', required: false })
+	@ApiHeader({ name: 'GoogleLogin', description: 'Whether the login is for google', required: false })
 	@ApiOkResponse({ description: "Used to initiate the login process for a user", type: GetRedirectDTO })
-	startLogin(@Headers('Authorization') accessToken: string): Promise<GetRedirectDTO> {
-		return this.authService.startLogin(accessToken);
+	startLogin(@Headers('Authorization') accessToken: string, @Headers('GoogleLogin') googleLogin: string): Promise<GetRedirectDTO> {
+		return this.authService.startLogin(accessToken, googleLogin);
 	}
 
 	@Get('google')
@@ -21,13 +22,6 @@ export class AuthController {
 	@ApiOkResponse({ description: "Used to initiate the google login process for a user, requesting code from google (Code will expire upon use)" })
 	startGoogleLogin(@Req() req: any): any {
 		return;
-	}
-
-	@Get('google/callback')
-	@UseGuards(AuthGuard('google'))
-	@ApiOkResponse({ description: "The callback route from google login after code has been traded", type: AuthResponseDTO })
-	googleAuthRedirect(@Req() req: any): Promise<AuthResponseDTO> {
-		return this.authService.googleAuthRedirect(req);
 	}
 	
 	@Post()

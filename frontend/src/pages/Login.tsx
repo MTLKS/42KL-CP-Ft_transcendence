@@ -65,14 +65,14 @@ function Login() {
       <div className={`${errorStyle} duration-[0.1s]`}>
         <PromptField
           handleCommands={handleCommands}
-          availableCommands={[new CommandOptionData({ command: "LOGIN" })]}
+          availableCommands={[new CommandOptionData({ command: "LOGIN" }), new CommandOptionData({ command: "BACKDOOR" })]}
           center={true}
           capitalize={true}
           ref={promptFieldRef}
         />
       </div>
       {
-        (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0 mt-3'>Have you tried using 'login'?</div>)
+        (errorCount >= 3 && <div className='animate-pulse text-md uppercase opacity-0 mt-3'>Have you tried using 'LOGIN' or 'BACKDOOR'?</div>)
       }
     </div >
   )
@@ -80,6 +80,11 @@ function Login() {
   function handleCommands(command: string[]) {
     switch (command[0]) {
       case "LOGIN":
+        sessionStorage.setItem("google", "false");
+        login();
+        break;
+      case "BACKDOOR":
+        sessionStorage.setItem("google", "true");
         login();
         break;
       default:
