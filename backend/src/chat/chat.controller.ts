@@ -28,6 +28,14 @@ export class ChatController {
 		return this.chatService.getAllChannel(accessToken, query.startWith, Number(query.perPage), Number(query.page));
 	}
 
+	@Get('channel/public')
+	@UseGuards(AuthGuard)
+	@ApiCommonHeader()
+	@ApiOkResponse({ description: "Returns all the public channels", type: [ChannelDTO]})
+	getAllPublicChannel(@Headers('Authorization') accessToken: string, @Query() query: GetChannelQueryDTO): Promise<[ChannelDTO]> {
+		return this.chatService.getAllPublicChannel(accessToken, query.startWith, Number(query.perPage), Number(query.page));
+	}
+
 	@Get('channel/member/:channelId')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader()
