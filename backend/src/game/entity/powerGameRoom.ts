@@ -181,11 +181,12 @@ export class PowerGameRoom extends GameRoom{
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
 				this.Ball.velY,
 				this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), 
-				this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
+				this.player1Score, this.player2Score, this.Ball.spinY, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
 		}
 		else{
 			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				this.Ball.velY,this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), this.player1Score, this.player2Score));
+				this.Ball.velY,this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), this.player1Score, this.player2Score,
+				this.Ball.spinY));
 		}
 
 	}
@@ -258,7 +259,7 @@ export class PowerGameRoom extends GameRoom{
 
 	fieldChange(server: Server){
 		// let effect = this.getRandomNum();
-		let effect = 1;
+		let effect = 4;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

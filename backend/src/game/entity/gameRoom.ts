@@ -151,10 +151,6 @@ export class GameRoom {
             'score',
           );
         }
-
-        server.to(this.roomID).emit('gameLoop',
-        	new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX,
-        		this.Ball.velY,this.leftPaddle.posY + 50, this.rightPaddle.posY + 50, this.player1Score, this.player2Score));
       }, 1000 / 60);
     }
   }
@@ -338,6 +334,8 @@ export class GameRoom {
       );
     // console.log(`game ${this.roomID} ended`);
     this.gameEnded = true;
+    this.player1.socket.leave(this.roomID);
+    this.player2.socket.leave(this.roomID);
     this.matchService.createNewMatch(
       this.player1.intraName,
       this.player2.intraName,

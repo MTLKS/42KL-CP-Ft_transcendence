@@ -7,11 +7,12 @@ export class GameDTO{
 	rightPaddlePosY: number;
 	player1Score: number;
 	player2Score: number;
+	spin: number;
 	blockX: number|null;
 	blockY: number|null;
 
 	constructor(ballPosX: number, ballPosY: number, ballVelX: number, ballVelY: number, leftPaddlePosY: number, rightPaddlePosY: number, player1Score: number, player2Score: number,
-		blockX: number|null = null, blockY: number|null = null){
+		spin: number = 0, blockX: number|null = null, blockY: number|null = null){
 		this.ballPosX = ballPosX;
 		this.ballPosY = ballPosY;
 		this.ballVelX = ballVelX;
@@ -22,5 +23,6 @@ export class GameDTO{
 		this.player2Score = player2Score;
 		this.blockX = blockX;
 		this.blockY = blockY;
+		this.spin = spin;
 	}
 }

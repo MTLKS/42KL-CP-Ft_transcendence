@@ -14,6 +14,7 @@ export class Ball extends DynamicRect{
 	hitWall: boolean = false;
 	hitPaddle: boolean = false;
 	energized: boolean = false;
+	
 
 	constructor (posX: number, posY: number, width: number, height: number, 
 		initSpeedX: number, initSpeedY: number, mass: number = 1){
