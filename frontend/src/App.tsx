@@ -49,7 +49,7 @@ function App() {
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     let code: { code: string | null } = { code: urlParams.get('code') };
-
+    
     if (code.code) {
       checkAuth(code.code).then(async (res) => {
         if (res) {
@@ -60,9 +60,9 @@ function App() {
           if ((res as any).data.newUser) {
             setUserData((await getMyProfile()).data as UserData);
             setNewUser(true);
-          }
-          else
+          } else {
             login();
+          }
         }
       }).catch((err) => {
         console.log(err);

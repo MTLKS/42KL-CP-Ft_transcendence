@@ -36,7 +36,7 @@ class SocketApi {
 
   connect() {
     this.socket.on("connect", () => {
-      console.log(this.socket.id);
+      // console.log(this.socket.id);
     });
   }
 

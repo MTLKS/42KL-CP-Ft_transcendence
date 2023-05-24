@@ -13,7 +13,7 @@ export class StatusService {
 	async userConnect(client: any, server: any): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		if (USER_DATA === null || USER_DATA.error !== undefined)
-			return server.emit('statusRoom', new ErrorDTO("Invalid token - Token not found"));
+			return;
 		const STATUS = await this.statusRepository.findOne({ where: {intraName: USER_DATA.intraName} });
 		client.join(USER_DATA.intraName);
 		if (STATUS !== null) {
@@ -21,7 +21,11 @@ export class StatusService {
 			STATUS.status = "ONLINE";
 			await this.statusRepository.save(STATUS);
 		} else {
-			await this.statusRepository.save(new Status(USER_DATA.intraName, client.id, "ONLINE"));
+			try {
+				await this.statusRepository.save(new Status(USER_DATA.intraName, client.id, "ONLINE"));
+			} catch {
+				return;
+			}
 		}
 		server.to(USER_DATA.intraName).emit('statusRoom', { "intraName": USER_DATA.intraName, "status": "ONLINE" });
 	}

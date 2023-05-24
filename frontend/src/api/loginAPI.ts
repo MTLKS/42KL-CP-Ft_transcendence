@@ -20,9 +20,8 @@ async function login() {
       .find((cookie) => cookie.includes("Authorization"))
       ?.split("=")[1] ?? ""
   );
-  Api.get<IResponse>("/auth").then((res) => {
-    window.location.assign(res.data.redirectUrl);
-  });
+  Api.updateToken("GoogleLogin", sessionStorage.getItem('google') ?? "false");
+  Api.get<IResponse>("/auth").then((res) => { window.location.assign(res.data.redirectUrl); })
 }
 
 export default login;
