@@ -149,6 +149,18 @@ export class ChatService {
 			member.channel.owner.accessToken = LAST_MESSAGE === null ? member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
 			channel.push(member.channel);
 		}
+    channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
+    channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
+		return this.userService.hideData(channel);
+	}
+
+	// Retrives all public channel
+	async getAllPublicChannel(accessToken: string, startWith: string, perPage: number = 50, page: number = 1): Promise<[ChannelDTO]> {
+		if (Number.isNaN(perPage) === true)
+			perPage = 50;
+		if (Number.isNaN(page) === true)
+			page = 1;
+		let channel = [];
 		const PUBLIC_CHANNELS = await this.channelRepository.find({ where: { isRoom: true, isPrivate: false }, relations: ['owner'] });
 		for (let publicChannel of PUBLIC_CHANNELS) {
 			if (startWith !== undefined && publicChannel.channelName.toLowerCase().startsWith(startWith.toLowerCase()) === false)
@@ -158,7 +170,7 @@ export class ChatService {
 				channel.push(publicChannel);
 		}
 		channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
-		channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
+    channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
 		return this.userService.hideData(channel);
 	}
 
