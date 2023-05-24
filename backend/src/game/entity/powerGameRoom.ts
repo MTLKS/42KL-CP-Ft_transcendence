@@ -115,10 +115,10 @@ export class PowerGameRoom extends GameRoom{
 
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score != 0){
-			this.Ball.hitObstacle = true;
+			this.Ball.hitWall = true;
 		}
 		else{
-			this.Ball.hitObstacle = false;
+			this.Ball.hitWall = false;
 		}
 
 		if (score == 1 || score == 2){
@@ -135,6 +135,8 @@ export class PowerGameRoom extends GameRoom{
 			this.insideField = false;
 			this.Ball.energized =false;
 			this.gameReset = true;
+			this.Ball.accelerating = false;
+			this.Ball.spinning = false;
 		}
 
 		if (score == 3){
@@ -146,6 +148,7 @@ export class PowerGameRoom extends GameRoom{
 
 		if (this.currentEffect == FieldEffect.GRAVITY){
 			this.Ball.initAcceleration(0, this.gravityPower * this.effectMagnitude);
+			this.Ball.accelerating = true;
 		}
 		
 		if (this.elapseTime >= this.fieldEffectTimer){
@@ -207,10 +210,9 @@ export class PowerGameRoom extends GameRoom{
 		}
 		
 		if (result && result.collided){
+			this.Ball.hitPaddle = true;
+			this.Ball.lastHitTimer = Date.now();
 			this.paddleTimer = Date.now();
-			this.Ball.hitObstacle = true;
-			this.Ball.accelX = 0;
-			this.Ball.accelY = 0;
 			//Check left paddle
 			if (result.direction == 1){
 				this.leftPaddle.paddleCollisionAction(this.Ball,
@@ -223,6 +225,9 @@ export class PowerGameRoom extends GameRoom{
 					result.collideTime,
 					result.normalX,result.normalY);
 			}
+		}
+		else{
+			this.Ball.hitPaddle = false;
 		}
 	}
 
@@ -245,14 +250,15 @@ export class PowerGameRoom extends GameRoom{
 			}
 		}
 		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
+			this.Ball.accelerating = true;
 			this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
 		}
 		
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
-		// let effect = 1;
+		// let effect = this.getRandomNum();
+		let effect = 1;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

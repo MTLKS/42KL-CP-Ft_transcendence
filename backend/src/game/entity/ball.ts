@@ -6,9 +6,13 @@ import { DynamicRect } from "./dynamicRect";
 export class Ball extends DynamicRect{
 	initialSpeedX: number;
 	initialSpeedY: number;
-	prevY: number;
-	accelerating: boolean;
-	hitObstacle: boolean;
+	prevY: number = 0;
+	spinY: number = 0;
+	lastHitTimer: number = 0;
+	accelerating: boolean =false;
+	spinning: boolean = false;
+	hitWall: boolean = false;
+	hitPaddle: boolean = false;
 	energized: boolean = false;
 
 	constructor (posX: number, posY: number, width: number, height: number, 
@@ -18,40 +22,31 @@ export class Ball extends DynamicRect{
 		this.initialSpeedX = initSpeedX;
 		this.initialSpeedY = initSpeedY;
 
-		this.prevY = 3;
-		this.accelerating = false;
-		this.hitObstacle = false;
+		this.prevY;
 	}
 
 	/**
 	 * Return 1 or 2 if the ball hit the left or right border respectively.
+	 * Return 3 if the ball hit the top or bottom border.
 	 * Return 0 otherwise.
 	 */
 	checkContraint(borderWidth: number, borderHeight: number) : number{
 		if (this.posX <= 0){
 			this.posX = 0;
-			// this.velX = 0;
-			// this.velY = 0;
-			// this.hitObstacle = true;
 			return 2;
 		}
 		if (this.posX + this.width >= borderWidth){
 			this.posX = borderWidth - this.width;
-			// this.velX = 0;
-			// this.velY = 0;
-			// this.hitObstacle = true;
 			return 1;
 		}
 		if (this.posY <= 0){
 			this.posY = 0;
 			this.velY *= -1;
-			// this.hitObstacle = true;
 			return 3
 		}
 		if (this.posY + this.height >= borderHeight){
 			this.posY = borderHeight - this.height;
 			this.velY *= -1;
-			// this.hitObstacle = true;
 			return 3
 		}
 		return 0;
@@ -80,21 +75,32 @@ export class Ball extends DynamicRect{
 		object.velY += impulseY * otherInvMass;
 	}
 
+	spin(force:number){
+		this.spinning = true;
+		this.spinY = force;
+	}
+
 	update(){
-		if (this.accelerating == false && this.accelY == 0){
-			this.prevY = Math.abs(this.velY);
+		if (this.energized == false){
+			this.prevY = this.initialSpeedY;
 		}
-		if (this.accelY != 0){
-			this.accelerating = true;
+
+		if (this.spinning == true){
+			let elapseTime = Date.now() - this.lastHitTimer;
+			if (this.hitWall == true || (this.hitPaddle == true && elapseTime > 500)){
+				this.spinning = false;
+				this.spinY = 0;
+				this.velY = this.prevY * Math.sign(this.velY);
+			}
 		}
 		if (this.accelerating == true){
-			if (this.accelY == 0 && this.hitObstacle == true){
+			if (this.accelY == 0 && (this.hitWall == true || this.hitPaddle == true)){
 				this.accelerating = false;
 				this.velY = this.prevY * Math.sign(this.velY);
 			}
 		}
 		this.velX += this.accelX * (1 / 60);
-		this.velY += this.accelY * (1 / 60);
+		this.velY += (this.accelY + this.spinY) * (1 / 60);
 		this.posX += this.velX;
 		this.posY += this.velY;
 	}
@@ -103,7 +109,7 @@ export class Ball extends DynamicRect{
 		if (this.energized == false){
 			this.velX = Math.sign(this.velX) * (Math.abs(this.velX) + incrementX);
 			this.velY = Math.sign(this.velY) * (Math.abs(this.velY) + incrementY);
-			this.prevY = Math.abs(this.velY);
+			this.prevY = this.initialSpeedY + incrementY;
 		}
 	}
 

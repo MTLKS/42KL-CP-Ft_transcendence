@@ -403,6 +403,7 @@ export class GameRoom {
     this.Ball.posY = this.canvasHeight / 2;
     this.Ball.accelX = 0;
     this.Ball.accelY = 0;
+    this.Ball.spinY = 0;
     if (this.lastWinner.length == 0) {
       this.Ball.velX =
         this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);

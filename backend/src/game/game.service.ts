@@ -291,7 +291,7 @@ export class GameService {
         // player1PowerUp,
         // player2PowerUp
         PowerUp.SPEED,
-        PowerUp.NORMAL,
+        PowerUp.SPEED,
       );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);

@@ -23,6 +23,7 @@ export class Paddle extends Rect {
 	spinRequirement: number;
 	spinForce: number;
 
+
 	constructor(posX, posY, width, height, mass: number=1, powerUp: PowerUp = PowerUp.NORMAL) {
 		super(posX, posY, width, height, mass);
 		this.powerUp = powerUp;
@@ -47,9 +48,9 @@ export class Paddle extends Rect {
 			ball.energized = false;
 		}
 		if (Math.abs(avgDelta) > this.spinRequirement){
-			ball.accelY = -this.spinForce * avgDelta; 
+			ball.spin(-this.spinForce * avgDelta)
 			if (this.powerUp == PowerUp.SPIN){
-				ball.accelY = -this.spinForce * avgDelta * 2;
+				ball.spin(-this.spinForce * avgDelta * 2);
 			}
 		}
 		switch (this.powerUp){
