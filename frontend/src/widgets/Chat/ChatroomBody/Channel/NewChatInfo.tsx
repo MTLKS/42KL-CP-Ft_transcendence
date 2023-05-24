@@ -24,7 +24,7 @@ function NewChatInfo() {
       />
       <ChannelInfoForm modifying={true} setModifyChannel={() => {}} />
       <div className='w-full h-full mt-6'>
-        <ChannelMemberList title="members" isInviting={false} />
+        <ChannelMemberList title="members" />
       </div>
     </div>
   )

@@ -82,7 +82,14 @@ function ChannelInfo(props: ChannelInfoProps) {
       <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
         <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
           <button className='m-2 border-dimshadow w-fit border-2 hover:bg-highlight hover:text-dimshadow aspect-square bg-dimshadow text-highlight rounded p-1' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
-          <ChannelMemberList title='friend' friendList={friendsButNotMembers} viewingInviteList={true} />
+          { friendsButNotMembers.length === 0
+            ? (
+              <div className='w-full h-full relative'>
+                <p className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-extrabold text-highlight'>{ friendUserData.length === 0 ? 'No friends to choose from...' : 'All you friends are in this channel already!' }</p>
+              </div>
+            ) :
+            (<ChannelMemberList title='friend' friendList={friendsButNotMembers} viewingInviteList={true} />)
+          }
         </div>
       </div>
     )
