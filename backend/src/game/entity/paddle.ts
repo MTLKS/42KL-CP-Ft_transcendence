@@ -52,6 +52,9 @@ export class Paddle extends Rect {
 			if (this.powerUp == PowerUp.SPIN){
 				ball.spin(-this.spinForce * avgDelta * 2);
 			}
+			else if (this.powerUp == PowerUp.SPEED){
+				ball.spin(-this.spinForce * avgDelta * 0.5);
+			}
 		}
 		switch (this.powerUp){
 			case PowerUp.NORMAL:
