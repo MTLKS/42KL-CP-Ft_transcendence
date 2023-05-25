@@ -93,13 +93,13 @@ export class UserService {
 			accessToken = null;
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
-		return USER_DATA.avatar.startsWith("https://") ? res.redirect(USER_DATA.avatar) : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
+		return res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.findOne({ where: {intraName} });
-		return USER_DATA === null ? new ErrorDTO("Invalid intraName - user does not exist") : USER_DATA.avatar.startsWith("https://") ? res.redirect(USER_DATA.avatar) : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
+		return USER_DATA === null ? new ErrorDTO("Invalid intraName - user does not exist") : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Updates existing user by saving their userName and avatar
