@@ -45,6 +45,12 @@ interface GameParticleData {
   affectedByGravity?: boolean;
   affectedByTimeZone?: boolean;
 }
+interface ParticleUpdateData {
+  timeFactor?: number;
+  globalGravityX?: number;
+  globalGravityY?: number;
+  delta?: number;
+}
 
 /**
  * @class GameParticle
@@ -151,31 +157,32 @@ class GameParticle {
     };
   }
 
-  public update(
-    timeFactor: number = 1,
-    globalGravityX: number = 0,
-    globalGravityY: number = 0
-  ) {
+  public update({
+    timeFactor = 1,
+    globalGravityX = 0,
+    globalGravityY = 0,
+    delta = 1,
+  }: ParticleUpdateData) {
     if (!this.affectedByTimeZone) timeFactor = 1;
     if (this.opacity <= 0) return;
-    this.x += this.vx * timeFactor;
-    this.y += this.vy * timeFactor;
-    this.vx += (this.ax + globalGravityX) * timeFactor;
-    this.vy += (this.ay + globalGravityY) * timeFactor;
-    this.ax += this.jx * timeFactor;
-    this.ay += this.jy * timeFactor;
-    this.opacity -= this.opacityDecay * timeFactor;
+    this.x += this.vx * timeFactor * delta;
+    this.y += this.vy * timeFactor * delta;
+    this.vx += (this.ax + globalGravityX) * timeFactor * delta;
+    this.vy += (this.ay + globalGravityY) * timeFactor * delta;
+    this.ax += this.jx * timeFactor * delta;
+    this.ay += this.jy * timeFactor * delta;
+    this.opacity -= this.opacityDecay * timeFactor * delta;
     if (this.sizeDecay != 0) {
-      this.w -= this.sizeDecay * timeFactor;
-      this.h -= this.sizeDecay * timeFactor;
+      this.w -= this.sizeDecay * timeFactor * delta;
+      this.h -= this.sizeDecay * timeFactor * delta;
     }
     if (this.speedDecayFactor != 0) {
-      this.vx *= this.speedDecayFactor;
-      this.vy *= this.speedDecayFactor;
+      this.vx *= this.speedDecayFactor ** delta;
+      this.vy *= this.speedDecayFactor ** delta;
     }
     if (this.sizeDecayFactor != 1) {
-      this.w *= this.sizeDecayFactor;
-      this.h *= this.sizeDecayFactor;
+      this.w *= this.sizeDecayFactor ** delta;
+      this.h *= this.sizeDecayFactor ** delta;
     }
     if (this.sprite == null) return;
     this.sprite.x = this.x;
@@ -255,7 +262,7 @@ class GameLightningParticle {
         removeSprite(particle);
         return;
       }
-      particle.update();
+      particle.update({});
     });
     if (this.particles.length > 12) {
       for (let i = 0; i < this.particles.length - 12; i++) {

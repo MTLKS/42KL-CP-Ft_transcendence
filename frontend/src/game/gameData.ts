@@ -216,7 +216,6 @@ export class GameData {
   async endGame() {
     console.log("end game");
     if (!this.gameStarted) return;
-    this._pongPosition = { x: 800, y: 450 };
     await sleep(3000);
     this.stopDisplayGame();
     this.gameStarted = false;
@@ -330,18 +329,19 @@ export class GameData {
     // console.log(data);
     // console.log(data.ballPosX, data.ballPosY);
     // console.log("isLeft: ", this.isLeft);
-    this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
       this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
     } else {
       this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
     }
-    this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
     this.player1Score = data.player1Score;
     this.player2Score = data.player2Score;
 
     if (data.blockX && data.blockY)
       this.blockPosition = { x: data.blockX, y: data.blockY };
+    if (this.usingLocalTick) return;
+    this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
+    this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
   };
 
   listenToGameResponse = (data: GameResponseDTO) => {
@@ -363,22 +363,7 @@ export class GameData {
 
   async useLocalTick() {
     this.usingLocalTick = true;
-    this._pongSpeed = { x: 15, y: 5 };
-    this.gameEntities = [
-      new GameTimeZone({ x: 1000, y: 300, w: 500, h: 500 }, 2),
-      new GameBlock({
-        x: 300,
-        y: 400,
-        w: 100,
-        h: 100,
-      }),
-      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2),
-      new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5),
-    ];
-    await sleep(1000);
-    this.setEntities?.(this.gameEntities);
     this.localTicker = new PIXI.Ticker();
-    this.localTicker.speed = 1;
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
   }
@@ -393,8 +378,10 @@ export class GameData {
 
   private _localTick(delta: number) {
     if (!this.usingLocalTick) return;
-    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1600 - 10)
-      this._pongSpeed.x *= -1;
+    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1590) {
+      this._pongPosition.x = 800;
+      this._pongPosition.y = 450;
+    }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this._pongSpeed.y *= -1;
 

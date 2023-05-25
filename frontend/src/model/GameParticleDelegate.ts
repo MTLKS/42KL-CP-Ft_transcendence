@@ -15,7 +15,8 @@ class GameParticleDelegate {
 
   update(
     addSprite: (sprite: GameParticle) => void,
-    removeSprite: (sprite: GameParticle) => void
+    removeSprite: (sprite: GameParticle) => void,
+    delta: number
   ) {
     const newPosition = this.gameData.pongPosition;
     const newPongSpeed = this.gameData.pongSpeed;
@@ -60,13 +61,14 @@ class GameParticleDelegate {
         }
       });
       this.gameData.applGlobalEffectToParticle(particle);
-      particle.update(finalTimeFactor);
+      particle.update({ timeFactor: finalTimeFactor, delta: delta });
     });
     // add particles
     if (this.particleCycle === this.gameData.tickPerParticlesSpawn)
       this.particleCycle = 0;
     else this.particleCycle++;
     if (this.particleCycle !== 0) return this.particles;
+    if (Math.random() > delta) return this.particles;
     this.addTrailingParticle(
       this.particles,
       newPosition,
@@ -142,7 +144,7 @@ class GameParticleDelegate {
         colorIndex: colorIndex,
         affectedByGravity: false,
       });
-      newParticle.update(i / numberOfParticles);
+      newParticle.update({ delta: i / numberOfParticles });
       addSprite(newParticle);
       newParticles.push(newParticle);
     }

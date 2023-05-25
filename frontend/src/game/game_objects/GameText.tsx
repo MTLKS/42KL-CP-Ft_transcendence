@@ -21,6 +21,7 @@ function GameText(props: GameTextProps) {
       fontFamily: 'JetBrains Mono',
       fontSize: fontSize,
       fill: '#ffffff',
+      letterSpacing: -20,
     }));
     const box = new PIXI.Graphics();
     box.beginFill(color, opacity);
