@@ -34,10 +34,10 @@ function ChannelInfoForm(props: ChannelInfoProps) {
       <div className='w-full flex flex-row items-center justify-between'>
         <div className='w-[30%] flex flex-col h-full items-center gap-y-2'>
           <button
-            className={`flex flex-col items-center gap-y-1 w-full aspect-square rounded outline-none ${modifying ? 'hover:border-dashed hover:border-2 hover:border-highlight cursor-pointer' : 'cursor-default'} focus:border-dashed focus:border-2 focus:border-highlight py-3 relative group`}
+            className={`flex flex-col items-center gap-y-1 w-full aspect-square rounded outline-none ${modifying && state.isOwner ? 'hover:border-dashed hover:border-2 hover:border-highlight cursor-pointer' : 'cursor-default'} focus:border-dashed focus:border-2 focus:border-highlight py-3 relative group`}
             onClick={toggleChannelVisibility}
           >
-            <div className={`hidden ${modifying ? 'group-hover:flex' : ''} transition-all duration-200 ease-in-out absolute p-2 top-0 w-full h-full bg-highlight/80 overflow-hidden rounded text-xl font-extrabold text-dimshadow`}>
+            <div className={`hidden ${modifying && state.isOwner ? 'group-hover:flex' : ''} transition-all duration-200 ease-in-out absolute p-2 top-0 w-full h-full bg-highlight/80 overflow-hidden rounded text-xl font-extrabold text-dimshadow`}>
               <p className='my-auto w-full h-fit uppercase'>Switch to {isPrivate ? 'public' : 'private'}</p>
             </div>
             <div className='w-full h-fit flex flex-col items-center my-auto gap-y-2'>
@@ -51,7 +51,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
           <div className='flex flex-col gap-y-1 h-full'>
             <p className={`${modifying ? 'text-highlight' : 'text-highlight/50'} text-sm font-extrabold`}>Channel Name</p>
             {
-              modifying
+              modifying && (state.isOwner || state.isNewChannel)
                 ? <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-sm font-extrabold text-center text-highlight py-2 px-4 outline-none w-full cursor-text' autoComplete='off' value={channelName} onChange={handleChannelNameOnChange} onFocus={() => setShowChannelNameNamingRules(true)} onBlur={() => setShowChannelNameNamingRules(false)} />
                 : <p className='text-highlight font-extrabold'>{channelName}</p>
             }
@@ -99,18 +99,18 @@ function ChannelInfoForm(props: ChannelInfoProps) {
             </div>
           }
           {
-            state.isOwner && !state.isNewChannel && !modifying &&
+            (state.isOwner || state.isAdmin) && !state.isNewChannel && !modifying &&
             <div className='flex flex-row w-full gap-x-2'>
               <button className='text-xs bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out flex flex-row gap-x-2 items-center' onClick={toggleEditChannel}><FaToolbox /> MANAGE CHANNEL</button>
               <button className='flex flex-row gap-x-2 items-center text-xs text-highlight bg-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>
             </div>
           }
           <div className='flex flex-row gap-x-2 items-center'>
-            {modifying && !isPrivate && !isPasswordProtected && <button className='w-full h-fit bg-accGreen text-highlight p-2 text-xs font-bold border-2 border-accGreen rounded hover:bg-dimshadow hover:text-accGreen transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
+            {modifying && !isPrivate && !isPasswordProtected && (state.isOwner || state.isNewChannel) && <button className='w-full h-fit bg-accGreen text-highlight p-2 text-xs font-bold border-2 border-accGreen rounded hover:bg-dimshadow hover:text-accGreen transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
             {modifying && !isPrivate && isPasswordProtected && <button className='h-fit w-full bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out text-xs' onClick={togglePassword}>DISABLE PASSWORD</button>}
             {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='h-fit w-full text-xs text-highlight bg-accCyan p-2 font-bold border-2 border-accCyan rounded hover:bg-dimshadow hover:text-accCyan transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE` : `CHANGE PASSWORD`}</button>}
           </div>
-          {!state.isNewChannel && modifying && <button className='text-sm bg-dimshadow text-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
+          {!state.isNewChannel && modifying && state.isOwner && <button className='text-sm bg-dimshadow text-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
         </div>
       </div>
     </div>
@@ -145,6 +145,9 @@ function ChannelInfoForm(props: ChannelInfoProps) {
   }
 
   function toggleChannelVisibility() {
+
+    if (!state.isOwner) return ;
+
     if (!modifying) return;
 
     if (isPrivate) {

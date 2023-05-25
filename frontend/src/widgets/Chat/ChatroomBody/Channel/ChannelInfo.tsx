@@ -38,7 +38,8 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [deleteConfirmationText, setDeleteConfirmationText] = useState<string>("");
 
   useEffect(() => {
-    dispatch({ type: 'IS_OWNER', userInfo: myProfile});
+    dispatch({ type: 'IS_OWNER', userInfo: myProfile });
+    dispatch({ type: 'IS_ADMIN', userInfo: myProfile });
   }, []);
 
   return (
@@ -55,7 +56,7 @@ function ChannelInfo(props: ChannelInfoProps) {
         { verifyingTfa && showVerifyTFAForm() }
         { showEditChannelForm() }
         <div className='w-full h-full mt-6 relative'>
-          <ChannelMemberList title="members" modifying={modifying} isScrollable={false} />
+          <ChannelMemberList title="members" modifying={modifying}  isScrollable={false} />
         </div>
       </div>
     </div>
@@ -73,7 +74,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   function showDeleteChannelConfirmation() {
     return (
-      <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
+      <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
         <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-fit mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded flex flex-col'>
         <button className='absolute border-dimshadow w-fit aspect-square border-2 hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight rounded p-1' onClick={changedMyMind} ><FaTimes /></button>
           <div className='w-full h-fit p-4 flex flex-col items-center my-auto text-highlight gap-y-2'>
@@ -106,7 +107,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   function showChanges() {
     return (
-      <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
+      <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
         <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[60%] mx-auto absolute flex z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
           <ChannelReviewChanges previousChannelInfo={previousChannelInfo.current} isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} />
         </div>
@@ -126,7 +127,7 @@ function ChannelInfo(props: ChannelInfoProps) {
     });
 
     return (
-      <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
+      <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
         <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded overflow-hidden'>
           <div className='relative mb-2 w-full flex flex-row justify-between items-center'>
             <button className='m-2 border-dimshadow w-fit aspect-square border-2 hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight rounded p-1' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>

@@ -4,6 +4,8 @@ import { FriendData } from '../../../../model/FriendData';
 import UserContext from '../../../../contexts/UserContext';
 import { UserData } from '../../../../model/UserData';
 import { NewChannelContext } from '../../../../contexts/ChatContext';
+import PreviewProfileContext from '../../../../contexts/PreviewProfileContext';
+import Profile from '../../../Profile/Profile';
 
 interface ChatMemberProps {
   isModifyingMember?: boolean;
@@ -68,7 +70,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   if (role === 'member') {
 
-    if (state.isNewChannel || (!state.isNewChannel && isModifying)) {
+    if (state.isNewChannel || (!state.isNewChannel && isModifying && state.isOwner)) {
       return (
         <div className='flex flex-row relative'>
           <div
@@ -93,7 +95,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   if (role === 'admin') {
 
-    if (state.isNewChannel || (!state.isNewChannel && isModifying)) {
+    if (state.isNewChannel || (!state.isNewChannel && isModifying && state.isOwner)) {
       return (
         <div className='flex flex-row overflow-hidden relative'>
           <div
@@ -160,6 +162,7 @@ function ChatMember(props: ChatMemberProps) {
 
   const { isModifyingMember, selectable, userData, memberRole } = props;
   const { state, dispatch } = useContext(NewChannelContext);
+  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const [isSelected, setIsSelected] = useState(props.isSelected || false);
 
   return (
@@ -178,7 +181,7 @@ function ChatMember(props: ChatMemberProps) {
             <FaCheck className={`text-lg text-highlight ${!isSelected && 'group-hover:invisible'}`} />
           </div>
         </div>
-        <p className={`text-sm font-bold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre`}>{userData.userName} ({userData.intraName})</p>
+        <p className={`text-sm font-bold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre ${!state.isNewChannel && 'hover:text-highlight cursor-pointer'}`} onClick={viewUserProfile}>{userData.userName} ({userData.intraName})</p>
       </div>
       <div className={`flex flex-row items-center ${isModifyingMember ? 'w-[35%] justify-between' : ''}`}>
         <div>
@@ -188,6 +191,13 @@ function ChatMember(props: ChatMemberProps) {
       </div>
     </div>
   )
+
+  function viewUserProfile() {
+    if (state.isNewChannel) return;
+    // might need to check if this user is blocked or not, whether it's the current user blocking or the other way around
+    setPreviewProfileFunction(userData);
+    setTopWidgetFunction(<Profile expanded={true} />);
+  }
 
   function handleSelectMember() {
     if (!selectable) return;

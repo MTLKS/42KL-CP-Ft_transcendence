@@ -23,7 +23,7 @@ function ChannelMemberList(props: ChannelMemberListProps) {
     <div className={`w-[95%] ${isScrollable && 'h-full'} mx-auto flex flex-col gap-y-2`}>
       <div className='flex flex-col gap-y-2 sticky top-0 z-10 bg-dimshadow'>
         <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
-        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> INVITE FRIENDS</button>}
+        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> ADD FRIENDS</button>}
       </div>
       <div className='w-full h-full overflow-y-scroll flex flex-col gap-y-2.5 scrollbar-hide scroll-smooth'>
         {displayMemberList()}
