@@ -40,3 +40,7 @@ export function getChannelMemberData(channelId: number): Promise<AxiosResponse> 
 export function deleteChannel(channelId: number) {
   return api.delete(`${CHANNEL_NAMESPACE}/${channelId}`);
 }
+
+export function kickMember(channelId: number, intraName: string) {
+  return api.delete(`${CHANNEL_NAMESPACE}/member/${channelId}/${intraName}`)
+}

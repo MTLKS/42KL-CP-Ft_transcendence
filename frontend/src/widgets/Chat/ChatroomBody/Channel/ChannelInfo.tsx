@@ -10,7 +10,7 @@ import { NewChannelError, NewChannelState } from './newChannelReducer'
 import UserContext from '../../../../contexts/UserContext'
 import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
-import { deleteChannel, inviteMemberToChannel, updateChannel } from '../../../../api/chatAPIs'
+import { deleteChannel, inviteMemberToChannel, kickMember, updateChannel } from '../../../../api/chatAPIs'
 import { ErrorData } from '../../../../model/ErrorData'
 import { FriendsContext } from '../../../../contexts/FriendContext'
 import { UserData } from '../../../../model/UserData'
@@ -42,6 +42,11 @@ function ChannelInfo(props: ChannelInfoProps) {
     dispatch({ type: 'IS_ADMIN', userInfo: myProfile });
   }, []);
 
+  useEffect(() => {
+    console.log(myProfile.userName+`/`+chatroomData.channelName);
+    console.log(deleteConfirmationText)
+  }, [deleteConfirmationText]);
+
   return (
     <div className='flex flex-col h-full'>
       <ChatNavbar
@@ -50,7 +55,7 @@ function ChannelInfo(props: ChannelInfoProps) {
         nextComponent={modifying ? <ChatButton title='save' onClick={saveChannelEdits} /> : <></>}
       />
       <div className='w-full h-full relative box-border overflow-y-scroll scrollbar-hide'>
-        { state.isTryingToDeleteChannel && showDeleteChannelConfirmation() }
+        { (state.isTryingToDeleteChannel || state.isTryingToLeaveChannel) && showLeaveOrDeleteChannelConfirmation() }
         { state.isInviting && showInviteList() }
         { isReviewingChanges && showChanges() }
         { verifyingTfa && showVerifyTFAForm() }
@@ -72,7 +77,18 @@ function ChannelInfo(props: ChannelInfoProps) {
     setChatBody(<ChatroomList />);
   }
 
-  function showDeleteChannelConfirmation() {
+  async function confirmLeaveChannel() {
+    const leaveChannelResponse = await kickMember(chatroomData.channelId, myProfile.intraName);
+
+    if (leaveChannelResponse.status === 400) {
+      return ;
+    }
+    console.log(leaveChannelResponse.data);
+    dispatch({ type: 'RESET' });
+    setChatBody(<ChatroomList />);
+  }
+
+  function showLeaveOrDeleteChannelConfirmation() {
     return (
       <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
         <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-fit mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded flex flex-col'>
@@ -82,12 +98,20 @@ function ChannelInfo(props: ChannelInfoProps) {
             <p className='text-lg font-extrabold'>{chatroomData.channelName}</p>
             <p className='text-sm'>Created by <span className='bg-accGreen px-[1ch] text-highlight'>{chatroomData.owner?.userName}</span></p>
             <p className='flex flex-row items-center uppercase gap-x-2 text-sm'><FaUsers /> {chatroomData.memberCount} members</p>
-            {!state.deleteConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_DELETE_CHANNEL' })}>I want to delete this channel</button>}
+            {state.isTryingToDeleteChannel && !state.deleteConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_DELETE_CHANNEL' })}>I want to delete this channel</button>}
+            {state.isTryingToLeaveChannel && !state.leaveConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_LEAVE_CHANNEL' })}>I want to leave this channel</button>}
             {state.deleteConfirmed && (
               <div className='gap-y-2 flex flex-col'>
                 <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='text-highlight select-none'>{chatroomData.owner?.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
                 <input type="text" className='w-full h-full p-2 text-sm font-bold rounded border-2 border-accRed bg-dimshadow text-highlight outline-none text-center' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
                 <button className={`${deleteConfirmationText === chatroomData.owner?.userName+`/`+chatroomData.channelName ? 'bg-accRed hover:text-accRed hover:bg-dimshadow cursor-pointer' : 'cursor-default border-highlight text-highlight opacity-25'} rounded border-2 p-2 border-accRed transition-all duration-100`} disabled={deleteConfirmationText !== chatroomData.owner?.userName+`/`+chatroomData.channelName} onClick={confirmDeleteChannel}>DELETE THIS CHANNEL</button>
+              </div>
+            )}
+            {state.leaveConfirmed && (
+              <div className='gap-y-2 flex flex-col'>
+                <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='text-highlight select-none'>{myProfile.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
+                <input type="text" className='w-full h-full p-2 text-sm font-bold rounded border-2 border-accRed bg-dimshadow text-highlight outline-none text-center' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
+                <button className={`${deleteConfirmationText === myProfile.userName+`/`+chatroomData.channelName ? 'bg-accRed hover:text-accRed hover:bg-dimshadow cursor-pointer' : 'cursor-default border-highlight text-highlight opacity-25'} rounded border-2 p-2 border-accRed transition-all duration-100`} disabled={deleteConfirmationText !== myProfile.userName+`/`+chatroomData.channelName} onClick={confirmLeaveChannel}>LEAVE THIS CHANNEL</button>
               </div>
             )}
           </div>
@@ -96,7 +120,10 @@ function ChannelInfo(props: ChannelInfoProps) {
     )
 
     function changedMyMind() {
-      dispatch({ type: 'IS_TRYING_TO_DELETE_CHANNEL' });
+      if (state.isTryingToLeaveChannel)
+        dispatch({ type: 'IS_TRYING_TO_LEAVE_CHANNEL' });
+      if (state.isTryingToDeleteChannel)
+        dispatch({ type: 'IS_TRYING_TO_DELETE_CHANNEL' });
       setDeleteConfirmationText("");
     }
   }
