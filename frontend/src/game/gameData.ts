@@ -31,7 +31,7 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = false;
+  useParticlesFilter: boolean = true;
   useEntitiesFilter: boolean = true;
   usePaddleFilter: boolean = true;
   useHitFilter: boolean = true;
@@ -58,6 +58,7 @@ export class GameData {
   // game state related variables
   usingLocalTick: boolean = false;
   localTicker: PIXI.Ticker | undefined = undefined;
+  localTickerPongSpeed: Offset = { x: 0, y: 0 };
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
@@ -138,7 +139,6 @@ export class GameData {
     }
     console.log("start game");
     this.gameStarted = true;
-    this.disableLocalTick();
     if (this.setShouldRender) this.setShouldRender?.(true);
   }
 
@@ -272,7 +272,6 @@ export class GameData {
         break;
       case "GameEnd":
         this.endGame();
-        this.disableLocalTick();
         break;
       case "FieldEffect":
         const fieldEffect = <FieldEffectDTO>state.data;
@@ -361,11 +360,12 @@ export class GameData {
     this.sendPlayerClick?.(isMouseDown, this.gameRoom);
   }
 
-  async useLocalTick() {
+  useLocalTick() {
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
+    this.localTickerPongSpeed = this.pongSpeed;
   }
 
   disableLocalTick() {
@@ -383,10 +383,10 @@ export class GameData {
       this._pongPosition.y = 450;
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
-      this._pongSpeed.y *= -1;
+      this.localTickerPongSpeed.y *= -1;
 
-    this._pongPosition.x += this.pongSpeed.x * delta;
-    this._pongPosition.y += this.pongSpeed.y * delta;
+    this._pongPosition.x += this.localTickerPongSpeed.x * delta;
+    this._pongPosition.y += this.localTickerPongSpeed.y * delta;
   }
 
   applGlobalEffectToParticle(particle: GameParticle) {

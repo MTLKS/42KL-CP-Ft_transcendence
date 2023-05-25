@@ -171,10 +171,10 @@ class GameParticle {
     this.vy += (this.ay + globalGravityY) * timeFactor * delta;
     this.ax += this.jx * timeFactor * delta;
     this.ay += this.jy * timeFactor * delta;
-    this.opacity -= this.opacityDecay * timeFactor * delta;
+    this.opacity -= Math.max(this.opacityDecay * timeFactor * delta, 0);
     if (this.sizeDecay != 0) {
-      this.w -= this.sizeDecay * timeFactor * delta;
-      this.h -= this.sizeDecay * timeFactor * delta;
+      this.w -= Math.max(this.sizeDecay * timeFactor * delta, 0);
+      this.h -= Math.max(this.sizeDecay * timeFactor * delta, 0);
     }
     if (this.speedDecayFactor != 0) {
       this.vx *= this.speedDecayFactor ** delta;

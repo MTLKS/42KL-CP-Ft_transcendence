@@ -47,9 +47,8 @@ function Game(props: GameProps) {
 
   const ballhit = useCallback(async (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset, strength: number, tickerSpeed: number) => {
     if (ballEffectRef.current === true) return;
-    console.log("ball hit");
     ballEffectRef.current = true;
-    await sleep(50);
+    await sleep(30);
     ballEffectRef.current = false;
     if (containerRef.current === null) return;
     if (shadowRef.current === null) return;
@@ -110,37 +109,9 @@ function Game(props: GameProps) {
     const rightPaddlePosition = gameData.rightPaddlePosition;
     let newGameGravityArrow = gameGravityArrow;
 
-    if (fpsTextRef.current !== null) {
-      const currentTime = Date.now();
-      timeRef.current.push(currentTime);
-      if (timeRef.current.length > 10) {
-        let average = 0;
-        timeRef.current.forEach((time, index) => {
-          if (index === 0) return;
-          average += time - timeRef.current[index - 1];
-        });
-        average /= timeRef.current.length - 1;
-        fpsTextRef.current.text = `FPS: ${(1000 / average).toFixed(1)}`;
-        timeRef.current.length = 0;
-      }
-    }
+    updateFpsText(fpsTextRef, timeRef);
 
-    if (gameData.globalGravityY !== 0) {
-      gameData.globalGravityY = Math.sign(gameData.globalGravityY) * 2 / pongSpeedMagnitude
-      if (!bgColorTween && bgColor !== (gameData.globalGravityY > 0 ? 0xc5a1ff : 0xd2b24f)) {
-        setBgColorTween(new ColorTween({ start: bgColor, end: gameData.globalGravityY > 0 ? 0xc5a1ff : 0xd2b24f }));
-      }
-      if (!gameGravityArrow) {
-        newGameGravityArrow = new GameGravityArrow({ arrowsParticles: [], diraction: gameData.globalGravityY > 0 ? GameGravityArrowDiraction.DOWN : GameGravityArrowDiraction.UP });
-      }
-    }
-    else if (gameData.gameType === 'death' && !bgColorTween && bgColor !== 0xAD6454) {
-      setBgColorTween(new ColorTween({ start: bgColor, end: 0xAD6454 }));
-    }
-    else if ((gameData.gameType === 'standard' || gameData.gameType === 'boring') && bgColor !== 0x242424 && !bgColorTween) {
-      setBgColorTween(new ColorTween({ start: bgColor, end: 0x242424 }));
-      newGameGravityArrow = null;
-    }
+    newGameGravityArrow = setGravityArrow(pongSpeedMagnitude, newGameGravityArrow);
     if (bgColorTween) {
       if (bgColorTween.done) setBgColorTween(undefined);
       bgColorTween.update(0.05 * delta)
@@ -149,74 +120,8 @@ function Game(props: GameProps) {
     setGameGravityArrow(newGameGravityArrow);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    if ((newPosition.x <= 45 || newPosition.x >= 1600 - 45)
-      // && ((player1Score === 9 && newPosition.x >= 1600 - 45) || (player2Score === 9 && newPosition.x <= 45))
-      && zoomSlowMoRef.current === null
-    ) {
-      console.log('zoom');
-      gameData.useLocalTick();
-      const x = (newPosition.x <= 45 ? 0 : 1600);
-      const y = newPosition.y;
-      zoomSlowMoRef.current = new PIXI.Ticker();
-      zoomSlowMoRef.current.speed = 0.4;
-      let t = 0;
-      if (gameData.localTicker)
-        gameData.localTicker.speed = 0.35;
-      app.ticker.speed *= 0.35;
-
-      const tickerCallback = (delta: number) => {
-        if (!containerRef.current) return;
-        if (!zoomSlowMoRef.current) return;
-        if (gameData.localTicker)
-          gameData.localTicker.speed *= 0.9 ** delta;
-        app.ticker.speed *= 0.9 ** delta;
-        containerRef.current.scale.x = Math.log10((t + 1) * 10) * 2 * scale;
-        containerRef.current.scale.y = Math.log10((t + 1) * 10) * 2 * scale;
-        containerRef.current.pivot.x = x;
-        containerRef.current.pivot.y = y;
-        containerRef.current.position.x = x * scale;
-        containerRef.current.position.y = y * scale;
-        t += delta;
-        if (t >= 50) {
-          containerRef.current.scale.x = scale;
-          containerRef.current.scale.y = scale;
-          containerRef.current.pivot.x = 0;
-          containerRef.current.pivot.y = 0;
-          containerRef.current.position.x = 0;
-          containerRef.current.position.y = 0;
-          app.ticker.speed = 1;
-          zoomSlowMoRef.current.remove(tickerCallback);
-          zoomSlowMoRef.current.stop();
-          if (gameData.localTicker)
-            gameData.localTicker.speed = 1;
-          zoomSlowMoRef.current = null;
-          gameData.disableLocalTick();
-        }
-      };
-      zoomSlowMoRef.current.add(tickerCallback);
-      zoomSlowMoRef.current.start();
-    }
-    if (gameData.useHitFilter) {
-      if (newPosition.x <= 0 || newPosition.x >= 1600 - 10) {
-        if (player1Score === 9 || player2Score === 9)
-          ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
-        else
-          ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 1);
-      }
-      if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
-      if (
-        newPosition.x <= leftPaddlePosition.x + 30
-        && newPosition.x >= leftPaddlePosition.x - 30
-        && newPosition.y >= leftPaddlePosition.y - 60
-        && newPosition.y <= leftPaddlePosition.y + 60
-      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
-      if (
-        newPosition.x <= rightPaddlePosition.x + 30
-        && newPosition.x >= rightPaddlePosition.x - 30
-        && newPosition.y >= rightPaddlePosition.y - 60
-        && newPosition.y <= rightPaddlePosition.y + 60
-      ) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
-    }
+    zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale);
+    ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
 
   const backgoundTexture = useMemo(() => {
@@ -251,9 +156,126 @@ function Game(props: GameProps) {
       <Text ref={fpsTextRef} style={new PIXI.TextStyle({ fill: 0xB3A183, fontSize: 16 })} x={10} y={5} />
     </>
   )
+
+  function setGravityArrow(pongSpeedMagnitude: number, newGameGravityArrow: GameGravityArrow | null) {
+    if (gameData.globalGravityY !== 0) {
+      gameData.globalGravityY = Math.sign(gameData.globalGravityY) * 2 / pongSpeedMagnitude;
+      if (!bgColorTween && bgColor !== (gameData.globalGravityY > 0 ? 0xc5a1ff : 0xd2b24f)) {
+        setBgColorTween(new ColorTween({ start: bgColor, end: gameData.globalGravityY > 0 ? 0xc5a1ff : 0xd2b24f }));
+      }
+      if (!gameGravityArrow) {
+        newGameGravityArrow = new GameGravityArrow({ arrowsParticles: [], diraction: gameData.globalGravityY > 0 ? GameGravityArrowDiraction.DOWN : GameGravityArrowDiraction.UP });
+      }
+    }
+    else if (gameData.gameType === 'death' && !bgColorTween && bgColor !== 0xAD6454) {
+      setBgColorTween(new ColorTween({ start: bgColor, end: 0xAD6454 }));
+    }
+    else if ((gameData.gameType === 'standard' || gameData.gameType === 'boring') && bgColor !== 0x242424 && !bgColorTween) {
+      setBgColorTween(new ColorTween({ start: bgColor, end: 0x242424 }));
+      newGameGravityArrow = null;
+    }
+    return newGameGravityArrow;
+  }
 }
 
 export default Game
+
+function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.MutableRefObject<number[]>) {
+  if (fpsTextRef.current !== null) {
+    const currentTime = Date.now();
+    timeRef.current.push(currentTime);
+    if (timeRef.current.length > 10) {
+      let average = 0;
+      timeRef.current.forEach((time, index) => {
+        if (index === 0) return;
+        average += time - timeRef.current[index - 1];
+      });
+      average /= timeRef.current.length - 1;
+      const fps = (1000 / average).toFixed(1);
+      fpsTextRef.current.text = `FPS: ${fps}`;
+      timeRef.current.length = 0;
+    }
+  }
+
+}
+
+function ballHitEffect(
+  gameData: GameData,
+  newPosition: Readonly<Offset>,
+  player1Score: number,
+  player2Score: number,
+  ballhit: (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset, strength: number, tickerSpeed: number) => Promise<void>,
+  pongSpeedMagnitude: number,
+  newPongSpeed: Readonly<Offset>,
+  leftPaddlePosition: Offset,
+  rightPaddlePosition: Offset
+) {
+  if (!gameData.useHitFilter) return;
+  if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
+    if (player1Score === 9 || player2Score === 9)
+      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
+    else
+      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 1);
+  }
+  if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+  if (newPosition.x <= leftPaddlePosition.x + 30
+    && newPosition.x >= leftPaddlePosition.x - 30
+    && newPosition.y >= leftPaddlePosition.y - 60
+    && newPosition.y <= leftPaddlePosition.y + 60) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+  if (newPosition.x <= rightPaddlePosition.x + 30
+    && newPosition.x >= rightPaddlePosition.x - 30
+    && newPosition.y >= rightPaddlePosition.y - 60
+    && newPosition.y <= rightPaddlePosition.y + 60) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+}
+
+async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number) {
+  if (!((newPosition.x <= 40 || newPosition.x >= 1600 - 50)
+    && ((player1Score === 9 && newPosition.x >= 1600 - 50) || (player2Score === 9 && newPosition.x <= 40))
+    && zoomSlowMoRef.current === null)) return;
+  gameData.useLocalTick();
+  const x = (newPosition.x <= 45 ? 0 : 1600);
+  const y = newPosition.y;
+  zoomSlowMoRef.current = new PIXI.Ticker();
+  zoomSlowMoRef.current.speed = 0.4;
+  let t = 0;
+  if (gameData.localTicker)
+    gameData.localTicker.speed = 0.15;
+  app.ticker.speed *= 0.15;
+
+  const tickerCallback = (delta: number) => {
+    if (!containerRef.current) return;
+    if (!zoomSlowMoRef.current) return;
+    const speed = Math.max(app.ticker.speed * (0.8 ** delta), 0.03);
+    const scaleVal = Math.log10((t + 1) * 10) * 2 * scale;
+    if (gameData.localTicker)
+      gameData.localTicker.speed = speed;
+    app.ticker.speed = speed;
+    containerRef.current.scale.x = scaleVal;
+    containerRef.current.scale.y = scaleVal;
+    containerRef.current.pivot.x = x;
+    containerRef.current.pivot.y = y;
+    containerRef.current.position.x = x * scale;
+    containerRef.current.position.y = y * scale;
+    t += delta;
+    if (t >= 55) {
+      containerRef.current.scale.x = scale;
+      containerRef.current.scale.y = scale;
+      containerRef.current.pivot.x = 0;
+      containerRef.current.pivot.y = 0;
+      containerRef.current.position.x = 0;
+      containerRef.current.position.y = 0;
+      app.ticker.speed = 1;
+      zoomSlowMoRef.current.remove(tickerCallback);
+      zoomSlowMoRef.current.stop();
+      if (gameData.localTicker)
+        gameData.localTicker.speed = 1;
+      zoomSlowMoRef.current = null;
+      gameData.disableLocalTick();
+    }
+  };
+  zoomSlowMoRef.current.add(tickerCallback);
+  zoomSlowMoRef.current.start();
+}
 // let particleCycle = 0;
 // function updateParticles(particles: GameParticle[], gameData: GameData, newPosition: Offset, newPongSpeed: Offset, pongSpeedMagnitude: number) {
 
