@@ -367,7 +367,7 @@ export class ChatService {
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return new ErrorDTO(MY_MEMBER.error);
-		if (MY_MEMBER.user.intraName !== intraName || MY_MEMBER.isAdmin === false)
+		if (MY_MEMBER.user.intraName !== intraName && MY_MEMBER.isAdmin === false)
 			return new ErrorDTO("Invalid channelId - requires admin privileges");
 
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
