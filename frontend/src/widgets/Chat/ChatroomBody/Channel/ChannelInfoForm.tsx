@@ -102,7 +102,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
             (state.isOwner || state.isAdmin) && !state.isNewChannel && !modifying &&
             <div className='flex flex-row w-full gap-x-2'>
               <button className='text-xs bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out flex flex-row gap-x-2 items-center' onClick={toggleEditChannel}><FaToolbox /> MANAGE CHANNEL</button>
-              <button className='flex flex-row gap-x-2 items-center text-xs text-highlight bg-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>
+              {state.isOwner && <button className='flex flex-row gap-x-2 items-center text-xs text-highlight bg-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>}
             </div>
           }
           <div className='flex flex-row gap-x-2 items-center'>

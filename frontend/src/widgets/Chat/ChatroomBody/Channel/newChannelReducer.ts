@@ -17,6 +17,7 @@ export enum NewChannelError {
 export interface NewChannelState {
   members: ChannelMemberRole[],
   inviteList: ChannelMemberRole[],
+  moderatedList: ChannelMemberRole[],
   channelName: string,
   isPrivate: boolean,
   isInviting: boolean,
@@ -35,6 +36,7 @@ export interface NewChannelState {
 export const newChannelInitialState: NewChannelState = {
   members: [],
   inviteList: [],
+  moderatedList: [],
   channelName: '',
   isPrivate: false,
   isInviting: false,
@@ -66,6 +68,7 @@ export type NewChannelAction =
   | { type: 'ADD_ERROR', error: NewChannelError }
   | { type: 'INVITE_MEMBER', userInfo: UserData } // by default, invite will just invite as member
   | { type: 'REMOVE_INVITE', userInfo: UserData }
+  | { type: 'MODERATOR_ACTION', userInfo: UserData, action: 'kick' | 'ban' | 'mute' } // no unban and unmute, the action should check if the user is previously banned/muted then do the opposite
   | { type: 'IS_EDIT_CHANNEL' }
   | { type: 'TOGGLE_IS_INVITING', isInviting: boolean }
   | { type: 'IS_OWNER', userInfo: UserData }
