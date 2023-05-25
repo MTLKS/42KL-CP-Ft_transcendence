@@ -72,8 +72,6 @@ export class Ball extends DynamicRect{
 		
 		let impulseX = j * normalX;
 		let impulseY = j * normalY;
-		this.velX -= impulseX * invMass;
-		this.velY -= impulseY * invMass;
 		object.velX += impulseX * otherInvMass;
 		object.velY += impulseY * otherInvMass;
 	}
