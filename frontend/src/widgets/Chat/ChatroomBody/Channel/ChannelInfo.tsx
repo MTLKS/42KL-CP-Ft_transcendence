@@ -10,11 +10,13 @@ import { NewChannelError, NewChannelState } from './newChannelReducer'
 import UserContext from '../../../../contexts/UserContext'
 import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
-import { inviteMemberToChannel, updateChannel } from '../../../../api/chatAPIs'
+import { deleteChannel, inviteMemberToChannel, updateChannel } from '../../../../api/chatAPIs'
 import { ErrorData } from '../../../../model/ErrorData'
 import { FriendsContext } from '../../../../contexts/FriendContext'
 import { UserData } from '../../../../model/UserData'
-import { FaTimes } from 'react-icons/fa'
+import { FaTimes, FaUserSecret, FaUsers } from 'react-icons/fa'
+import { ImEarth } from 'react-icons/im'
+import ChatroomList from '../Chatroom/ChatroomList'
 
 interface ChannelInfoProps {
   chatroomData: ChatroomData;
@@ -33,6 +35,7 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [tfaVerified, setTfaVerified] = useState<boolean>(false);
   const [verifyingTfa, setVerifyingTfa] = useState<boolean>(false);
   const [isReviewingChanges, setIsReviewingChanges] = useState<boolean>(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState<string>("");
 
   useEffect(() => {
     dispatch({ type: 'IS_OWNER', userInfo: myProfile});
@@ -45,17 +48,61 @@ function ChannelInfo(props: ChannelInfoProps) {
         backAction={backToChatroom}
         nextComponent={modifying ? <ChatButton title='save' onClick={saveChannelEdits} /> : <></>}
       />
-      <div className='w-full h-full relative box-border'>
+      <div className='w-full h-full relative box-border overflow-y-scroll scrollbar-hide'>
+        { state.isTryingToDeleteChannel && showDeleteChannelConfirmation() }
         { state.isInviting && showInviteList() }
         { isReviewingChanges && showChanges() }
         { verifyingTfa && showVerifyTFAForm() }
         { showEditChannelForm() }
-        <div className='w-full h-full mt-6'>
-          <ChannelMemberList title="members" modifying={modifying} />
+        <div className='w-full h-full mt-6 relative'>
+          <ChannelMemberList title="members" modifying={modifying} isScrollable={false} />
         </div>
       </div>
     </div>
   )
+
+  async function confirmDeleteChannel() {
+    const deleteChannelResponse = await deleteChannel(chatroomData.channelId);
+
+    if (deleteChannelResponse.status === 400) {
+      return ;
+    }
+    dispatch({ type: 'RESET' });
+    setChatBody(<ChatroomList />);
+  }
+
+  function showDeleteChannelConfirmation() {
+    return (
+      <div className='w-full h-full bg-dimshadow/70 absolute z-10'>
+        <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-fit mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded flex flex-col'>
+        <button className='absolute border-dimshadow w-fit aspect-square border-2 hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight rounded p-1' onClick={changedMyMind} ><FaTimes /></button>
+          <div className='w-full h-fit p-4 flex flex-col items-center my-auto text-highlight gap-y-2'>
+            { chatroomData.isPrivate ? <FaUserSecret className='text-3xl' /> : <ImEarth className='text-3xl' /> }
+            <p className='text-lg font-extrabold'>{chatroomData.channelName}</p>
+            <p className='text-sm'>Created by <span className='bg-accGreen px-[1ch] text-highlight'>{chatroomData.owner?.userName}</span></p>
+            <p className='flex flex-row items-center uppercase gap-x-2 text-sm'><FaUsers /> {chatroomData.memberCount} members</p>
+            {!state.deleteConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_DELETE_CHANNEL' })}>I want to delete this channel</button>}
+            {state.deleteConfirmed && (
+              <div className='gap-y-2 flex flex-col'>
+                <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='text-highlight select-none'>{chatroomData.owner?.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
+                <input type="text" className='w-full h-full p-2 text-sm font-bold rounded border-2 border-accRed bg-dimshadow text-highlight outline-none text-center' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
+                <button className={`${deleteConfirmationText === chatroomData.owner?.userName+`/`+chatroomData.channelName ? 'bg-accRed hover:text-accRed hover:bg-dimshadow cursor-pointer' : 'cursor-default border-highlight text-highlight opacity-25'} rounded border-2 p-2 border-accRed transition-all duration-100`} disabled={deleteConfirmationText !== chatroomData.owner?.userName+`/`+chatroomData.channelName} onClick={confirmDeleteChannel}>DELETE THIS CHANNEL</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+
+    function changedMyMind() {
+      dispatch({ type: 'IS_TRYING_TO_DELETE_CHANNEL' });
+      setDeleteConfirmationText("");
+    }
+  }
+
+  function handleDeleteConfirmationOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setDeleteConfirmationText(e.target.value);
+  }
 
   function showChanges() {
     return (

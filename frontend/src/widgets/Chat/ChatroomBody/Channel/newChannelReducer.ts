@@ -28,6 +28,8 @@ export interface NewChannelState {
   hasChanges: boolean,
   isOwner: boolean,
   isAdmin: boolean,
+  isTryingToDeleteChannel: boolean,
+  deleteConfirmed: boolean,
 }
 
 export const newChannelInitialState: NewChannelState = {
@@ -44,6 +46,8 @@ export const newChannelInitialState: NewChannelState = {
   hasChanges: false,
   isOwner: false,
   isAdmin: false,
+  isTryingToDeleteChannel: false,
+  deleteConfirmed: false,
 }
 
 export type NewChannelAction =
@@ -69,7 +73,9 @@ export type NewChannelAction =
   | { type: 'RESET_ERRORS' }
   | { type: 'RESET_INVITE_LIST' }
   | { type: 'RESET' }
-  | { type: 'CLONE_STATE', state: NewChannelState };
+  | { type: 'CLONE_STATE', state: NewChannelState }
+  | { type: 'IS_TRYING_TO_DELETE_CHANNEL' }
+  | { type: 'CONFIRM_DELETE_CHANNEL' }
 
 export default function newChannelReducer(state = newChannelInitialState, action: NewChannelAction): NewChannelState {
   switch (action.type) {
@@ -248,6 +254,18 @@ export default function newChannelReducer(state = newChannelInitialState, action
       return {
         ...state,
         hasChanges: action.payload,
+      }
+    }
+    case 'IS_TRYING_TO_DELETE_CHANNEL': {
+      return {
+        ...state,
+        isTryingToDeleteChannel: !state.isTryingToDeleteChannel,
+      }
+    }
+    case 'CONFIRM_DELETE_CHANNEL': {
+      return {
+        ...state,
+        deleteConfirmed: !state.deleteConfirmed,
       }
     }
     case 'CLONE_STATE': {

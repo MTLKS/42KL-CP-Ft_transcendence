@@ -36,3 +36,7 @@ export function updateMemberRole(updateMemberData: UpdateMemberData) {
 export function getChannelMemberData(channelId: number): Promise<AxiosResponse> {
   return api.get(`${NAMESPACE}/channel/member/${channelId}`);
 }
+
+export function deleteChannel(channelId: number) {
+  return api.delete(`${CHANNEL_NAMESPACE}/${channelId}`);
+}

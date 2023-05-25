@@ -6,6 +6,7 @@ import { NewChannelContext } from '../../../../contexts/ChatContext'
 import { FaUserPlus } from 'react-icons/fa'
 
 interface ChannelMemberListProps {
+  isScrollable?: boolean,
   modifying?: boolean,
   viewingInviteList?: boolean,
   title: string,
@@ -15,13 +16,15 @@ interface ChannelMemberListProps {
 function ChannelMemberList(props: ChannelMemberListProps) {
 
   const { state, dispatch } = useContext(NewChannelContext);
-  const { modifying, title, friendList, viewingInviteList = false } = props;
+  const { isScrollable = true, modifying, title, friendList, viewingInviteList = false } = props;
   const [filterKeyword, setFilterKeyword] = useState("");
 
   return (
-    <div className='w-[95%] h-full mx-auto flex flex-col gap-y-2'>
-      <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
-      {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> INVITE FRIENDS</button>}
+    <div className={`w-[95%] ${isScrollable && 'h-full'} mx-auto flex flex-col gap-y-2`}>
+      <div className='flex flex-col gap-y-2 sticky top-0 z-10 bg-dimshadow'>
+        <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
+        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> INVITE FRIENDS</button>}
+      </div>
       <div className='w-full h-full overflow-y-scroll flex flex-col gap-y-2.5 scrollbar-hide scroll-smooth'>
         {displayMemberList()}
       </div>

@@ -34,7 +34,7 @@ function ChatMemberActions() {
 
     return (
       <button
-        className={`flex flex-row cursor-default] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm font-extrabold uppercase p-2 items-center gap-x-1 transition-all duration-100`}
+        className={`flex flex-row cursor-default] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 items-center gap-x-1 transition-all duration-100`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -77,7 +77,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
           ></div>
           <button
             key={intraName + "-member"}
-            className={`mix-blend-difference w-[100%] z-[5] text-highlight overflow-hidden border-highlight border-2 border-dashed text-sm font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-[3s]`}
+            className={`mix-blend-difference w-[100%] z-[5] text-highlight overflow-hidden border-highlight border-2 border-dashed text-sm uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-[3s]`}
             onMouseDown={confirmAction}
             onMouseUp={promoteMember}
           >
@@ -102,7 +102,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
           ></div>
           <button
             key={intraName + "-admin"}
-            className={`w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm font-extrabold uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-100`}
+            className={`w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-100`}
             onClick={demoteMember}
           >
             <FaMinus className='text-base' />
@@ -113,7 +113,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
     } else {
       return (
         <div className='flex flex-row'>
-          <button key={intraName + "-admin"} className={`cursor-default w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm font-extrabold uppercase p-2 flex flex-row items-center gap-x-2 transition-all duration-100`}>
+          <button key={intraName + "-admin"} className={`cursor-default w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 flex flex-row items-center gap-x-2 transition-all duration-100`}>
             <p>admin</p>
           </button>
         </div>
@@ -123,7 +123,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   if (role === 'owner') {
     return (
-      <div className='bg-highlight text-sm font-extrabold uppercase p-2'>
+      <div className='bg-accCyan text-highlight text-sm uppercase p-2'>
         <p>{role}</p>
       </div>
     )
