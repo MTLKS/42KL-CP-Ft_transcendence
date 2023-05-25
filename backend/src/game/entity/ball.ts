@@ -14,7 +14,8 @@ export class Ball extends DynamicRect{
 	hitWall: boolean = false;
 	hitPaddle: boolean = false;
 	energized: boolean = false;
-	
+	attraced: boolean = false;
+	velocityMagnitude: number;
 
 	constructor (posX: number, posY: number, width: number, height: number, 
 		initSpeedX: number, initSpeedY: number, mass: number = 1){
@@ -22,6 +23,7 @@ export class Ball extends DynamicRect{
 
 		this.initialSpeedX = initSpeedX;
 		this.initialSpeedY = initSpeedY;
+		this.velocityMagnitude = Math.sqrt(initSpeedX * initSpeedX + initSpeedY * initSpeedY);
 
 		this.prevY;
 	}
@@ -85,7 +87,6 @@ export class Ball extends DynamicRect{
 		if (this.energized == false){
 			this.prevY = this.initialSpeedY;
 		}
-
 		if (this.spinning == true){
 			let elapseTime = Date.now() - this.lastHitTimer;
 			if (this.hitWall == true || (this.hitPaddle == true && elapseTime > 500)){
@@ -102,8 +103,15 @@ export class Ball extends DynamicRect{
 		}
 		this.velX += this.accelX * (1 / 60);
 		this.velY += (this.accelY + this.spinY) * (1 / 60);
-		this.posX += this.velX;
-		this.posY += this.velY;
+
+		if (this.attraced == true){
+			this.velX = 0;
+			this.velY = 0;
+		}
+		else{
+			this.posX += this.velX;
+			this.posY += this.velY;
+		}
 	}
 
 	energizedBall(incrementX: number, incrementY: number){
@@ -117,5 +125,23 @@ export class Ball extends DynamicRect{
 	resetVelocity(){
 		this.velX = Math.sign(this.velX) * this.initialSpeedX;
 		this.velY = Math.sign(this.velY) * this.initialSpeedY;
+	}
+
+	launchBall(mouseX: number, mouseY: number){
+		let dirX = mouseX - this.posX;
+		let dirY = mouseY - this.posY;
+		let magnitude = Math.sqrt(dirX * dirX + dirY * dirY);
+		if (magnitude != 0){
+			dirX /= magnitude;
+			dirY /= magnitude;
+
+			let velX = dirX * this.velocityMagnitude;
+			let velY = dirY * this.velocityMagnitude;
+			this.initialSpeedX = velX;
+			this.initialSpeedY = velY;
+			this.attraced = false;
+			this.velX = velX;
+			this.velY = velY;
+		}
 	}
 }

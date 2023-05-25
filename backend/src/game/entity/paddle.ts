@@ -22,6 +22,8 @@ export class Paddle extends Rect {
 	prevDeltas: number[] =[];
 	spinRequirement: number;
 	spinForce: number;
+	mouseDown: boolean = false;
+	canMove: boolean = true;
 
 
 	constructor(posX, posY, width, height, mass: number=1, powerUp: PowerUp = PowerUp.NORMAL) {
@@ -31,10 +33,10 @@ export class Paddle extends Rect {
 
 		//Config Setting for PowerUp
 		this.sizeIncrement = 1.2;
-		this.speedIncrementX = 5;
-		this.speedIncrementY = 3;
+		this.speedIncrementX = 3;
+		this.speedIncrementY = 1;
 		this.spinRequirement = 3;
-		this.spinForce = 1.5;
+		this.spinForce = 0.8;
 
 		if (this.powerUp == PowerUp.SIZE){
 			this.height *= this.sizeIncrement;
@@ -70,15 +72,26 @@ export class Paddle extends Rect {
 				break;
 			case PowerUp.SPIN:
 				ball.collisionResponse(collideTime, normalX, normalY);
+			case PowerUp.PRECISION:
+				if (this.mouseDown == true){
+					this.canMove = false;
+					ball.attraced = true;
+					ball.spinY = 0;
+				}
+				else{
+					ball.collisionResponse(collideTime, normalX, normalY);
+				}
+
 		}
 	}
 
-	updateDelta(){
+	updateDelta(): number{
 		let delta = this.posY - this.lastPosY;
 		this.lastPosY = this.posY;
 		this.prevDeltas.push(delta);
 		if (this.prevDeltas.length > 5){
 			this.prevDeltas.shift();
 		}
+		return (delta);
 	}
 }

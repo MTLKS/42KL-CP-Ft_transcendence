@@ -91,8 +91,8 @@ export class PowerGameRoom extends GameRoom{
 
 		//BLACKHOLE
 		this.blackHoleRadius = 20;
-		this.blackHoleEffectRadius = 20;
-		this.blackHoleForce = 500;
+		this.blackHoleEffectRadius = 30;
+		this.blackHoleForce = 700;
 
 		//BLOCK
 		this.blockSize = 200;
@@ -112,6 +112,21 @@ export class PowerGameRoom extends GameRoom{
 
 		this.leftPaddle.updateDelta();
 		this.rightPaddle.updateDelta();
+
+		if (this.Ball.attraced == true){
+			if (this.Ball.posX < this.canvasWidth / 2){
+				this.Ball.posX = this.roomSettings.paddleOffsetX + this.leftPaddle.width;
+				if (this.leftPaddle.mouseDown == false){
+					this.Ball.launchBall(this.leftMouseX, this.leftMouseY);
+				}
+			}
+			else{
+				this.Ball.posX = this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width;
+				if (this.rightPaddle.mouseDown == false){
+					this.Ball.launchBall(this.rightMouseX, this.rightMouseY);
+				}
+			}
+		}
 
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score != 0){
@@ -176,16 +191,30 @@ export class PowerGameRoom extends GameRoom{
 		this.gameCollisionDetection();
 		if (this.blockObject != null){
 			this.blockObject.update();
-			// console.log(this.blockObject.posX, this.blockObject.posY);
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
-			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+			server.to(this.roomID).emit('gameLoop',new GameDTO(
+				this.Ball.posX, 
+				this.Ball.posY, 
+				this.Ball.velX, 
 				this.Ball.velY,
-				this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), 
-				this.player1Score, this.player2Score, this.Ball.spinY, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
+				this.leftPaddle.posY + (this.leftPaddle.height/2), 
+				this.rightPaddle.posY + (this.rightPaddle.height/2), 
+				this.player1Score, 
+				this.player2Score, 
+				this.Ball.spinY, 
+				this.blockObject.posX + (this.blockSize/2),
+				this.blockObject.posY + (this.blockSize/2)));
 		}
 		else{
-			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				this.Ball.velY,this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), this.player1Score, this.player2Score,
+			server.to(this.roomID).emit('gameLoop',new GameDTO(
+				this.Ball.posX,
+				this.Ball.posY,
+				this.Ball.velX,
+				this.Ball.velY,
+				this.leftPaddle.posY + (this.leftPaddle.height/2),
+				this.rightPaddle.posY + (this.rightPaddle.height/2),
+				this.player1Score,
+				this.player2Score,
 				this.Ball.spinY));
 		}
 
@@ -258,8 +287,7 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		// let effect = this.getRandomNum();
-		let effect = 4;
+		let effect = this.getRandomNum();
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
@@ -322,6 +350,42 @@ export class PowerGameRoom extends GameRoom{
 		this.Ball.initAcceleration(0,0);
 		this.effectMagnitude = 0;
 		server.emit("gameState", new GameStateDTO("FieldEffect", new FieldEffectDTO("NORMAL", 0,0,0)));
+	}
+
+	updatePlayerPos(socketId: string, xValue: number, yValue: number): void {
+		if (socketId == this.player1.socket.id) {
+			if (this.leftPaddle.canMove == true){
+				this.leftPaddle.posY = yValue - 50;
+			}
+			this.leftMouseX = xValue;
+			this.leftMouseY = yValue;
+    }
+    if (socketId == this.player2.socket.id) {
+			if (this.rightPaddle.canMove == true){
+      	this.rightPaddle.posY = yValue - 50;
+			}
+			this.rightMouseX = xValue;
+			this.rightMouseY = yValue;
+    }
+	}
+
+	updatePlayerMouse(socketId: string, isMouseDown: boolean): void {
+		if (socketId == this.player1.socket.id){
+			if (this.leftPaddle.canMove == false){
+				if (isMouseDown == false){
+					this.leftPaddle.canMove = true;
+				}
+			}
+			this.leftPaddle.mouseDown = isMouseDown;
+		}
+		if (socketId == this.player2.socket.id){
+			if (this.rightPaddle.canMove == false){
+				if (isMouseDown == false){
+					this.rightPaddle.canMove = true;
+				}
+			}
+			this.rightPaddle.mouseDown = isMouseDown;
+		}
 	}
 
 	getBallQuadrant(){

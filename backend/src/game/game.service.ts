@@ -290,8 +290,8 @@ export class GameService {
         this.userService,
         // player1PowerUp,
         // player2PowerUp
-        PowerUp.SPEED,
-        PowerUp.SPEED,
+        PowerUp.PRECISION,
+        PowerUp.NORMAL,
       );
     } else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
@@ -312,12 +312,12 @@ export class GameService {
     await ROOM.run(server);
   }
 
-  async playerUpdate(client: Socket, roomID: string, value: number) {
+  async playerUpdate(client: Socket, roomID: string, xValue: number, yValue: number) {
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
-    ROOM.updatePlayerPos(client.id, value);
+    ROOM.updatePlayerPos(client.id, xValue, yValue);
   }
 
   async playerMouseUpdate(client: Socket, roomID: string, isMouseDown: boolean) {
@@ -325,7 +325,7 @@ export class GameService {
     if (USER_DATA.error !== undefined) return;
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
-    // ROOM.updatePlayerMouse(client.id, isMouseDown);
+    ROOM.updatePlayerMouse(client.id, isMouseDown);
   }
 
   clearGameRooms() {

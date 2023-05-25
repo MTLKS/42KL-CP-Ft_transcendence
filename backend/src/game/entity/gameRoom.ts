@@ -45,6 +45,10 @@ export class GameRoom {
   Ball: Ball;
   leftPaddle: Paddle;
   rightPaddle: Paddle;
+  leftMouseX: number;
+  leftMouseY: number;
+  rightMouseX: number;
+  rightMouseY: number;
   interval: NodeJS.Timer | null;
   resetTime: number;
   lastWinner: string;
@@ -115,6 +119,7 @@ export class GameRoom {
 
   async run(server: Server) {
     this.resetGame(server);
+    this.startGame();
     await this.countdown(3);
     if (this.interval == null) {
       this.interval = setInterval(async () => {
@@ -123,6 +128,7 @@ export class GameRoom {
           let timer = 2;
           let elapsedTime = (Date.now() - this.resetTime) / 1000;
           if (elapsedTime >= timer) {
+            this.startGame();
             this.gameReset = false;
           }
         } else if (this.gamePaused == true) {
@@ -269,13 +275,20 @@ export class GameRoom {
     }
   }
 
-  updatePlayerPos(socketId: string, value: number) {
+  updatePlayerPos(socketId: string, xValue: number, yValue: number) {
     if (socketId == this.player1.socket.id) {
-      this.leftPaddle.posY = value - 50;
+      this.leftPaddle.posY = yValue - 50;
+      this.leftMouseX = xValue;
+      this.leftMouseY = yValue;
     }
     if (socketId == this.player2.socket.id) {
-      this.rightPaddle.posY = value - 50;
+      this.rightPaddle.posY = yValue - 50;
+      this.rightMouseX = xValue;
+      this.rightMouseY = yValue;
     }
+  }
+
+  updatePlayerMouse(socketId: string, isMouseDown: boolean) {
   }
 
   resumeGame(player: Player) {
@@ -399,23 +412,13 @@ export class GameRoom {
   resetGame(server: Server) {
     this.Ball.posX = this.canvasWidth / 2;
     this.Ball.posY = this.canvasHeight / 2;
+    this.Ball.velX = 0;
+    this.Ball.velY = 0;
     this.Ball.accelX = 0;
     this.Ball.accelY = 0;
     this.Ball.spinY = 0;
-    if (this.lastWinner.length == 0) {
-      this.Ball.velX =
-        this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);
-      this.Ball.velY =
-        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    } else if (this.lastWinner == 'player1') {
-      this.Ball.velX = this.ballInitSpeedX;
-      this.Ball.velY =
-        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    } else if (this.lastWinner == 'player2') {
-      this.Ball.velX = -this.ballInitSpeedX;
-      this.Ball.velY =
-        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    }
+    this.Ball.initialSpeedX = this.ballInitSpeedX;
+    this.Ball.initialSpeedY = this.ballInitSpeedY;
     server
       .to(this.roomID)
       .emit(
@@ -431,6 +434,26 @@ export class GameRoom {
           this.player2Score,
         ),
       );
+  }
+
+  /**
+   * Called when reset timer end.Set the ball velocity based on last winner
+   */
+  startGame(){
+    if (this.lastWinner.length == 0) {
+      this.Ball.velX =
+        this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);
+      this.Ball.velY =
+        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
+    } else if (this.lastWinner == 'player1') {
+      this.Ball.velX = this.ballInitSpeedX;
+      this.Ball.velY =
+        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
+    } else if (this.lastWinner == 'player2') {
+      this.Ball.velX = -this.ballInitSpeedX;
+      this.Ball.velY =
+        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
+    }
   }
 
   async countdown(seconds: number): Promise<void> {
