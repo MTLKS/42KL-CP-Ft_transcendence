@@ -17,6 +17,7 @@ import GameEntity, {
 } from "../model/GameEntities";
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
+import * as PIXI from "pixi.js";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -37,6 +38,8 @@ export class GameData {
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;
+  gameCurrentWidth: number = 1600;
+  gameCurrentHeight: number = 900;
 
   // pong variables
   private _pongPosition: Offset = { x: 800, y: 450 };
@@ -54,6 +57,7 @@ export class GameData {
 
   // game state related variables
   usingLocalTick: boolean = false;
+  localTicker: PIXI.Ticker | undefined = undefined;
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
@@ -153,6 +157,8 @@ export class GameData {
       const newHeight = Math.min(clampedHeight, clampedWidth / aspectRatio);
       const newTop = (window.innerHeight - newHeight) / 2;
       const newLeft = (window.innerWidth - newWidth) / 2;
+      this.gameCurrentWidth = newWidth;
+      this.gameCurrentHeight = newHeight;
       document.documentElement.style.setProperty("--canvas-top", `${newTop}px`);
       document.documentElement.style.setProperty(
         "--canvas-left",
@@ -207,17 +213,30 @@ export class GameData {
     this.gameDisplayed = false;
   }
 
-  endGame() {
+  async endGame() {
     console.log("end game");
     if (!this.gameStarted) return;
+    this._pongPosition = { x: 800, y: 450 };
+    await sleep(3000);
+    this.stopDisplayGame();
     this.gameStarted = false;
     this.setShouldRender?.(false);
-    // this.socketApi.removeListener("gameLoop");
-    // this.socketApi.removeListener("gameState");
-    // this.socketApi.removeListener("gameResponse");
-    // this.leaveQueue();
-    this.gameEntities = [];
+    this._resetVariables();
     if (this.setShouldDisplayGame) this.setShouldDisplayGame?.(false);
+  }
+
+  private _resetVariables() {
+    this.gameType = "";
+    this.leftPaddlePosition = { x: -50, y: 450 };
+    this.rightPaddlePosition = { x: 1650, y: 450 };
+    this.leftPaddleType = PaddleType.boring;
+    this.rightPaddleType = PaddleType.boring;
+
+    this.globalGravityX = 0;
+    this.globalGravityY = 0;
+    this.globalSpeedFactor = 1;
+    this.globalScaleFactor = 1;
+    this.gameEntities = [];
   }
 
   set setSetScale(setScale: (scale: number) => void) {
@@ -253,7 +272,6 @@ export class GameData {
         this.displayGame();
         break;
       case "GameEnd":
-        this.stopDisplayGame();
         this.endGame();
         this.disableLocalTick();
         break;
@@ -359,23 +377,29 @@ export class GameData {
     ];
     await sleep(1000);
     this.setEntities?.(this.gameEntities);
-    this._localTick();
+    this.localTicker = new PIXI.Ticker();
+    this.localTicker.speed = 1;
+    this.localTicker.add(this._localTick.bind(this));
+    this.localTicker.start();
   }
 
   disableLocalTick() {
     this.usingLocalTick = false;
+    if (!this.localTicker) return;
+    this.localTicker.remove(this._localTick.bind(this));
+    this.localTicker.stop();
+    this.localTicker.destroy();
   }
 
-  private _localTick() {
+  private _localTick(delta: number) {
     if (!this.usingLocalTick) return;
     if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1600 - 10)
       this._pongSpeed.x *= -1;
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this._pongSpeed.y *= -1;
 
-    this._pongPosition.x += this.pongSpeed.x;
-    this._pongPosition.y += this.pongSpeed.y;
-    requestAnimationFrame(this._localTick.bind(this));
+    this._pongPosition.x += this.pongSpeed.x * delta;
+    this._pongPosition.y += this.pongSpeed.y * delta;
   }
 
   applGlobalEffectToParticle(particle: GameParticle) {

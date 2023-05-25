@@ -54,8 +54,8 @@ function GameApp(props: GameAppProps) {
     if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
     gameData.updatePlayerPosition(
-      clamp((e.clientY - (window.innerHeight - gameData.gameMaxHeight) * 0.5) / gameData.gameMaxHeight * 900 / scale, 50, 850),
-      clamp((e.clientX - (window.innerWidth - gameData.gameMaxWidth) * 0.5) / gameData.gameMaxWidth * 1600 / scale, 30, 1570),
+      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5) / gameData.gameMaxHeight * 900 / scale, 50, 850),
+      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5) / gameData.gameMaxWidth * 1600 / scale, 30, 1570),
     );
   }
 
