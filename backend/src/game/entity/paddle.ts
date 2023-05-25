@@ -35,8 +35,8 @@ export class Paddle extends Rect {
 		this.sizeIncrement = 1.2;
 		this.speedIncrementX = 3;
 		this.speedIncrementY = 1;
-		this.spinRequirement = 3;
-		this.spinForce = 0.8;
+		this.spinRequirement = 4;
+		this.spinForce = 0.75;
 
 		if (this.powerUp == PowerUp.SIZE){
 			this.height *= this.sizeIncrement;
@@ -75,7 +75,7 @@ export class Paddle extends Rect {
 			case PowerUp.PRECISION:
 				if (this.mouseDown == true){
 					this.canMove = false;
-					ball.attraced = true;
+					ball.attracted = true;
 					ball.spinY = 0;
 				}
 				else{

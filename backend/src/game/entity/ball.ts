@@ -14,7 +14,7 @@ export class Ball extends DynamicRect{
 	hitWall: boolean = false;
 	hitPaddle: boolean = false;
 	energized: boolean = false;
-	attraced: boolean = false;
+	attracted: boolean = false;
 	velocityMagnitude: number;
 
 	constructor (posX: number, posY: number, width: number, height: number, 
@@ -82,6 +82,7 @@ export class Ball extends DynamicRect{
 	}
 
 	update(){
+		// console.log (this.velX, this.velY)
 		if (this.energized == false){
 			this.prevY = this.initialSpeedY;
 		}
@@ -102,7 +103,7 @@ export class Ball extends DynamicRect{
 		this.velX += this.accelX * (1 / 60);
 		this.velY += (this.accelY + this.spinY) * (1 / 60);
 
-		if (this.attraced == true){
+		if (this.attracted == true){
 			this.velX = 0;
 			this.velY = 0;
 		}
@@ -137,7 +138,7 @@ export class Ball extends DynamicRect{
 			let velY = dirY * this.velocityMagnitude;
 			this.initialSpeedX = velX;
 			this.initialSpeedY = velY;
-			this.attraced = false;
+			this.attracted = false;
 			this.velX = velX;
 			this.velY = velY;
 		}

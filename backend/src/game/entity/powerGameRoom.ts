@@ -92,7 +92,7 @@ export class PowerGameRoom extends GameRoom{
 		//BLACKHOLE
 		this.blackHoleRadius = 20;
 		this.blackHoleEffectRadius = 30;
-		this.blackHoleForce = 700;
+		this.blackHoleForce = 550;
 
 		//BLOCK
 		this.blockSize = 200;
@@ -113,7 +113,7 @@ export class PowerGameRoom extends GameRoom{
 		this.leftPaddle.updateDelta();
 		this.rightPaddle.updateDelta();
 
-		if (this.Ball.attraced == true){
+		if (this.Ball.attracted == true){
 			if (this.Ball.posX < this.canvasWidth / 2){
 				this.Ball.posX = this.roomSettings.paddleOffsetX + this.leftPaddle.width;
 				if (this.leftPaddle.mouseDown == false){
@@ -182,6 +182,7 @@ export class PowerGameRoom extends GameRoom{
 			this.paddleTimer = Date.now();
 			this.insideField = false;
 			this.resetGame(server);
+			this.startGame();
 		}
 
 		if (this.circleObject != null){
@@ -202,6 +203,7 @@ export class PowerGameRoom extends GameRoom{
 				this.player1Score, 
 				this.player2Score, 
 				this.Ball.spinY, 
+				this.Ball.attracted,
 				this.blockObject.posX + (this.blockSize/2),
 				this.blockObject.posY + (this.blockSize/2)));
 		}
@@ -215,7 +217,8 @@ export class PowerGameRoom extends GameRoom{
 				this.rightPaddle.posY + (this.rightPaddle.height/2),
 				this.player1Score,
 				this.player2Score,
-				this.Ball.spinY));
+				this.Ball.spinY,
+				this.Ball.attracted));
 		}
 
 	}
@@ -281,15 +284,17 @@ export class PowerGameRoom extends GameRoom{
 			}
 		}
 		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
-			this.Ball.accelerating = true;
-			this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+			if (this.Ball.velX != 0 && this.Ball.velY != 0){
+				this.Ball.accelerating = true;
+				this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+			}
 		}
 		
 	}
 
 	fieldChange(server: Server){
-		// let effect = this.getRandomNum();
-		let effect = 4;
+		let effect = this.getRandomNum();
+		// let effect = 3;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
