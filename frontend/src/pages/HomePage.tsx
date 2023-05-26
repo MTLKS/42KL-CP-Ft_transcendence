@@ -28,6 +28,7 @@ import { ErrorData } from '../model/ErrorData';
 import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
+import Lobby from '../widgets/Lobby/Lobby';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
@@ -37,15 +38,13 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "cowsay" }),
   new CommandOptionData({ command: "tfa", options: ["<OTP>", "set", "unset <OTP>", "forgot"] }),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "display" }),
-  new CommandOptionData({ command: "start" }),
   new CommandOptionData({ command: "queue", options: ["standard", "boring", "death"] }),
   new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
-  new CommandOptionData({ command: "end" }),
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),
   new CommandOptionData({ command: "reset" }),
+  new CommandOptionData({ command: "showlobby" }),
 ];
 
 interface HomePageProps {
@@ -136,24 +135,12 @@ function HomePage(props: HomePageProps) {
       case "cowsay":
         newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
-      case "display":
-        gameData.displayGame();
-        break;
-      case "start":
-        gameData.startGame();
-        gameData.useLocalTick();
-        break;
       case "queue":
         handleQueueCommand(command[1], newList);
         return;
       case "dequeue":
         handleDequeueCommand(newList);
         return;
-      case "end":
-        gameData.stopDisplayGame();
-        gameData.endGame();
-        gameData.disableLocalTick();
-        break;
       case "profile":
         handleProfileCommand(command);
         return;
@@ -181,6 +168,9 @@ function HomePage(props: HomePageProps) {
       case "reset":
         setUpdateUser(true);
         setUserData(userData);
+        break;
+      case "showlobby":
+        setLeftWidget(<Lobby />);
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
