@@ -245,20 +245,20 @@ export class PowerGameRoom extends GameRoom{
 		
 		if (result && result.collided){
 			this.Ball.hitPaddle = true;
-			this.Ball.lastHitTimer = Date.now();
 			this.paddleTimer = Date.now();
 			//Check left paddle
 			if (result.direction == 1){
 				this.leftPaddle.paddleCollisionAction(this.Ball,
 					result.collideTime,
 					result.normalX,result.normalY);
-			}
-			//Check right paddle
-			else if (result.direction == -1){
-				this.rightPaddle.paddleCollisionAction(this.Ball,
-					result.collideTime,
-					result.normalX,result.normalY);
-			}
+				}
+				//Check right paddle
+				else if (result.direction == -1){
+					this.rightPaddle.paddleCollisionAction(this.Ball,
+						result.collideTime,
+						result.normalX,result.normalY);
+					}
+				this.Ball.lastHitTimer = Date.now();
 		}
 		else{
 			this.Ball.hitPaddle = false;
@@ -293,8 +293,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
-		// let effect = 3;
+		// let effect = this.getRandomNum();
+		let effect = 0;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

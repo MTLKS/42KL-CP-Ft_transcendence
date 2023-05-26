@@ -19,10 +19,10 @@ import { Lobby } from './entity/lobby';
 
 export enum PowerUp{
   NORMAL = 0,
-  SPEED,
-  SIZE,
-  PRECISION,
-  SPIN
+  SPEED = 1,
+  SIZE = 2,
+  PRECISION = 3,
+  SPIN = 4
 }
 
 const LOBBY_LOGGING = false;
@@ -299,8 +299,8 @@ export class GameService {
     }
     player1.socket.join(room.roomID);
     player2.socket.join(room.roomID);
-    player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID, player1PowerUp)));
-    player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID, player2PowerUp)));
+    player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID, player1PowerUp, player2PowerUp)));
+    player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID, player1PowerUp, player2PowerUp)));
     this.gameRooms.set(room.roomID, room);
     await room.run(server);
     return room.roomID;

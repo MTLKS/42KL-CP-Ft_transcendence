@@ -44,6 +44,13 @@ export class Paddle extends Rect {
 	}
 
 	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number){
+		if (ball.spinning == true){
+			let elapseTime = Date.now() - ball.lastHitTimer;
+			console.log(elapseTime);
+			if (elapseTime > 500){
+				ball.resetSpin();
+			}
+		}
 		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
 		if (ball.energized == true && this.powerUp != PowerUp.SPEED){
 			ball.resetVelocity();

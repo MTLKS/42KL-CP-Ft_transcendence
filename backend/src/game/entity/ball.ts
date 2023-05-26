@@ -8,7 +8,7 @@ export class Ball extends DynamicRect{
 	initialSpeedY: number;
 	prevY: number = 0;
 	spinY: number = 0;
-	lastHitTimer: number = 0;
+	lastHitTimer: number;
 	accelerating: boolean =false;
 	spinning: boolean = false;
 	hitWall: boolean = false;
@@ -38,7 +38,8 @@ export class Ball extends DynamicRect{
 			this.posX = 0;
 			return 2;
 		}
-		if (this.posX + this.width >= borderWidth){
+		//TODO: remember to change canvas offset
+		if (this.posX + this.width >= borderWidth - 30){
 			this.posX = borderWidth - this.width;
 			return 1;
 		}
@@ -87,11 +88,8 @@ export class Ball extends DynamicRect{
 			this.prevY = this.initialSpeedY;
 		}
 		if (this.spinning == true){
-			let elapseTime = Date.now() - this.lastHitTimer;
-			if (this.hitWall == true || (this.hitPaddle == true && elapseTime > 500)){
-				this.spinning = false;
-				this.spinY = 0;
-				this.velY = this.prevY * Math.sign(this.velY);
+			if (this.hitWall == true){
+				this.resetSpin();
 			}
 		}
 		if (this.accelerating == true){
@@ -124,6 +122,12 @@ export class Ball extends DynamicRect{
 	resetVelocity(){
 		this.velX = Math.sign(this.velX) * this.initialSpeedX;
 		this.velY = Math.sign(this.velY) * this.initialSpeedY;
+	}
+
+	resetSpin(){
+		this.spinning = false;
+		this.spinY = 0;
+		this.velY = this.prevY * Math.sign(this.velY);
 	}
 
 	launchBall(mouseX: number, mouseY: number){

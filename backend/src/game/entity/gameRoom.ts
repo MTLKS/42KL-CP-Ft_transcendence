@@ -419,6 +419,7 @@ export class GameRoom {
     this.Ball.spinY = 0;
     this.Ball.accelerating = false;
     this.Ball.spinning = false;
+    this.Ball.attracted = false;
     this.Ball.initialSpeedX = this.ballInitSpeedX;
     this.Ball.initialSpeedY = this.ballInitSpeedY;
     server
