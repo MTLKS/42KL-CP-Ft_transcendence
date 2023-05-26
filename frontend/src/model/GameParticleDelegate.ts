@@ -8,6 +8,8 @@ class GameParticleDelegate {
   particleCycle: number = 0;
   paddleParticleCycle: number = 0;
   gameData: GameData;
+  spinEffectThreshold: number = 15;
+  speedEffectThreshold: number = 20;
 
   constructor(gameData: GameData) {
     this.gameData = gameData;
@@ -68,7 +70,6 @@ class GameParticleDelegate {
       this.particleCycle = 0;
     else this.particleCycle++;
     if (this.particleCycle !== 0) return this.particles;
-    if (Math.random() > delta) return this.particles;
     this.addTrailingParticle(
       this.particles,
       newPosition,
@@ -79,7 +80,7 @@ class GameParticleDelegate {
 
     if (pongSpeedMagnitude !== 0) {
       let colorIndex = 0;
-      if (this.gameData.pongSpin > 1) {
+      if (this.gameData.pongSpin > this.spinEffectThreshold) {
         this.addSpitParticleRed(
           this.particles,
           newPosition,
@@ -88,7 +89,7 @@ class GameParticleDelegate {
         );
         colorIndex = 4;
       }
-      if (pongSpeedMagnitude > 20) {
+      if (pongSpeedMagnitude > this.speedEffectThreshold) {
         this.addSpitParticleCyan(
           this.particles,
           newPosition,
@@ -97,7 +98,21 @@ class GameParticleDelegate {
         );
         colorIndex = 1;
       }
-      if (this.gameData.pongSpin > 1 && pongSpeedMagnitude > 20) {
+      if (
+        this.gameData.pongSpin > this.spinEffectThreshold ||
+        pongSpeedMagnitude > this.speedEffectThreshold
+      ) {
+        this.addSpitParticle(
+          this.particles,
+          newPosition,
+          newPongSpeed,
+          addSprite
+        );
+      }
+      if (
+        this.gameData.pongSpin > this.spinEffectThreshold &&
+        pongSpeedMagnitude > this.speedEffectThreshold
+      ) {
         colorIndex = 2;
       }
       this.addTrailParticle(
@@ -105,12 +120,6 @@ class GameParticleDelegate {
         newPosition,
         newPongSpeed,
         colorIndex,
-        addSprite
-      );
-      this.addSpitParticle(
-        this.particles,
-        newPosition,
-        newPongSpeed,
         addSprite
       );
     }
@@ -129,15 +138,16 @@ class GameParticleDelegate {
     colorIndex: number,
     addSprite: (sprite: GameParticle) => void
   ) {
-    const numberOfParticles = 4;
+    let numberOfParticles = 4;
+    if (this.gameData.usingLocalTick) numberOfParticles = 1;
     for (let i = 0; i < numberOfParticles; i++) {
       const newParticle = new GameParticle({
         x: newPosition.x - (newSpeed.x * i) / numberOfParticles,
         y: newPosition.y - (newSpeed.y * i) / numberOfParticles,
-        opacity: 1,
+        opacity: 0.6,
         vx: 0.12,
         vy: 0.12,
-        opacityDecay: 0.03,
+        opacityDecay: 0.02,
         sizeDecay: 0.3,
         w: 10,
         h: 10,

@@ -7,6 +7,8 @@ export class GameDTO {
   rightPaddlePosY: number;
   player1Score: number;
   player2Score: number;
+  spin: number;
+  attracted: boolean;
   blockX: number | null;
   blockY: number | null;
 
@@ -19,6 +21,8 @@ export class GameDTO {
     rightPaddlePosY: number,
     player1Score: number,
     player2Score: number,
+    spin: number = 0,
+    attracted: boolean = false,
     blockX: number | null = null,
     blockY: number | null = null
   ) {
@@ -32,5 +36,7 @@ export class GameDTO {
     this.player2Score = player2Score;
     this.blockX = blockX;
     this.blockY = blockY;
+    this.spin = spin;
+    this.attracted = attracted;
   }
 }

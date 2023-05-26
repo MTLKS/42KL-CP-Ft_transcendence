@@ -33,8 +33,8 @@ export class Paddle extends Rect {
 
 		//Config Setting for PowerUp
 		this.sizeIncrement = 1.2;
-		this.speedIncrementX = 3;
-		this.speedIncrementY = 1;
+		this.speedIncrementX = 4;
+		this.speedIncrementY = 2;
 		this.spinRequirement = 4;
 		this.spinForce = 0.75;
 
