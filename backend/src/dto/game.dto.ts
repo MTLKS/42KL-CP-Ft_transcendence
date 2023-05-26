@@ -22,7 +22,7 @@ export class GameDTO{
 		this.rightPaddlePosY = rightPaddlePosY.toFixed(0);
 		this.player1Score = player1Score.toFixed(0);
 		this.player2Score = player2Score.toFixed(0);
-		if (blockX === null || blockY === null){
+		if (blockX != null || blockY != null){
 			this.blockX = blockX.toFixed(0);
 			this.blockY = blockY.toFixed(0);
 		}
