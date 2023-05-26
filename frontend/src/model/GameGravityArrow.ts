@@ -43,7 +43,8 @@ export class GameGravityArrow {
 
   update(
     addSprite: (sprite: GameParticle) => void,
-    removeSprite: (sprite: GameParticle) => void
+    removeSprite: (sprite: GameParticle) => void,
+    delta: number
   ) {
     this.arrowsParticles.forEach((arrowParticle) => {
       if (arrowParticle.y > 1200 || arrowParticle.y < -300) {
@@ -54,7 +55,7 @@ export class GameGravityArrow {
         removeSprite(arrowParticle);
         return;
       }
-      arrowParticle.update();
+      arrowParticle.update({ delta: delta });
     });
     const closeness = Math.random();
     const size = 10 + 30 * closeness;

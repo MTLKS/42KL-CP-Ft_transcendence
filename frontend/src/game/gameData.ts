@@ -31,7 +31,7 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = false;
+  useParticlesFilter: boolean = true;
   useEntitiesFilter: boolean = true;
   usePaddleFilter: boolean = true;
   useHitFilter: boolean = true;
@@ -44,12 +44,13 @@ export class GameData {
   // pong variables
   private _pongPosition: Offset = { x: 800, y: 450 };
   private _pongSpeed: Offset = { x: 12, y: 8 };
-  pongSpin: number = 2;
+  pongSpin: number = 0;
+  attracted: boolean = false;
 
   // player related variables
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
-  leftPaddleType: PaddleType = PaddleType.boring;
+  leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
   rightPaddleType: PaddleType = PaddleType.boring;
   isLeft: boolean = true;
   player1Score: number = 0;
@@ -58,6 +59,7 @@ export class GameData {
   // game state related variables
   usingLocalTick: boolean = false;
   localTicker: PIXI.Ticker | undefined = undefined;
+  localTickerPongSpeed: Offset = { x: 0, y: 0 };
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
@@ -93,8 +95,8 @@ export class GameData {
     this.sendPlayerMove = (y: number, x: number, gameRoom: string) => {
       this.socketApi.sendMessages("playerMove", {
         gameRoom: gameRoom,
-        y: y,
-        x: x,
+        y: y.toFixed(0),
+        x: x.toFixed(0),
       });
     };
     this.sendPlayerClick = (isMouseDown: boolean, gameRoom: string) => {
@@ -138,7 +140,6 @@ export class GameData {
     }
     console.log("start game");
     this.gameStarted = true;
-    this.disableLocalTick();
     if (this.setShouldRender) this.setShouldRender?.(true);
   }
 
@@ -216,7 +217,6 @@ export class GameData {
   async endGame() {
     console.log("end game");
     if (!this.gameStarted) return;
-    this._pongPosition = { x: 800, y: 450 };
     await sleep(3000);
     this.stopDisplayGame();
     this.gameStarted = false;
@@ -265,15 +265,17 @@ export class GameData {
     console.log(state);
     switch (state.type) {
       case "GameStart":
-        this.isLeft = (<GameStartDTO>state.data).isLeft;
-        this.gameRoom = (<GameStartDTO>state.data).gameRoom;
-        this.gameType = (<GameStartDTO>state.data).gameType;
+        const data = <GameStartDTO>state.data;
+        this.isLeft = data.isLeft;
+        this.gameRoom = data.gameRoom;
+        this.gameType = data.gameType;
+        this.leftPaddleType = this.getPaddleType(data.player1PowerUp);
+        this.rightPaddleType = this.getPaddleType(data.player2PowerUp);
         this.startGame();
         this.displayGame();
         break;
       case "GameEnd":
         this.endGame();
-        this.disableLocalTick();
         break;
       case "FieldEffect":
         const fieldEffect = <FieldEffectDTO>state.data;
@@ -327,21 +329,23 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    // console.log(data);
     // console.log(data.ballPosX, data.ballPosY);
     // console.log("isLeft: ", this.isLeft);
-    this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
     if (this.isLeft) {
       this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
     } else {
       this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
     }
-    this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
     this.player1Score = data.player1Score;
     this.player2Score = data.player2Score;
 
     if (data.blockX && data.blockY)
       this.blockPosition = { x: data.blockX, y: data.blockY };
+    if (this.usingLocalTick) return;
+    this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
+    this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
+    this.pongSpin = Math.abs(data.spin);
+    this.attracted = data.attracted;
   };
 
   listenToGameResponse = (data: GameResponseDTO) => {
@@ -361,31 +365,19 @@ export class GameData {
     this.sendPlayerClick?.(isMouseDown, this.gameRoom);
   }
 
-  async useLocalTick() {
+  useLocalTick() {
     this.usingLocalTick = true;
-    this._pongSpeed = { x: 15, y: 5 };
-    this.gameEntities = [
-      new GameTimeZone({ x: 1000, y: 300, w: 500, h: 500 }, 2),
-      new GameBlock({
-        x: 300,
-        y: 400,
-        w: 100,
-        h: 100,
-      }),
-      new GameBlackhole({ x: 900, y: 450, w: 100, h: 100 }, 2),
-      new GameTimeZone({ x: 1000, y: 600, w: 300, h: 300 }, 5),
-    ];
-    await sleep(1000);
-    this.setEntities?.(this.gameEntities);
     this.localTicker = new PIXI.Ticker();
-    this.localTicker.speed = 1;
+    this.tickPerParticlesSpawn = 1;
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
+    this.localTickerPongSpeed = this.pongSpeed;
   }
 
   disableLocalTick() {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
+    this.tickPerParticlesSpawn = 0;
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
@@ -393,13 +385,15 @@ export class GameData {
 
   private _localTick(delta: number) {
     if (!this.usingLocalTick) return;
-    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1600 - 10)
-      this._pongSpeed.x *= -1;
+    if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1590) {
+      this._pongPosition.x = 800;
+      this._pongPosition.y = 450;
+    }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
-      this._pongSpeed.y *= -1;
+      this.localTickerPongSpeed.y *= -1;
 
-    this._pongPosition.x += this.pongSpeed.x * delta;
-    this._pongPosition.y += this.pongSpeed.y * delta;
+    this._pongPosition.x += this.localTickerPongSpeed.x * delta;
+    this._pongPosition.y += this.localTickerPongSpeed.y * delta;
   }
 
   applGlobalEffectToParticle(particle: GameParticle) {
@@ -409,5 +403,22 @@ export class GameData {
     particle.ay *= this.globalSpeedFactor;
     particle.w *= this.globalScaleFactor;
     particle.h *= this.globalScaleFactor;
+  }
+
+  getPaddleType(val: number) {
+    switch (val) {
+      case 0:
+        return PaddleType.boring;
+      case 1:
+        return PaddleType.Vzzzzzzt;
+      case 2:
+        return PaddleType.Ngeeeaat;
+      case 3:
+        return PaddleType.Piiuuuuu;
+      case 4:
+        return PaddleType.Vrooooom;
+      default:
+        return PaddleType.boring;
+    }
   }
 }

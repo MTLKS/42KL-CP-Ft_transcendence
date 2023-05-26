@@ -35,7 +35,7 @@ export class Paddle extends Rect {
 		this.sizeIncrement = 1.2;
 		this.speedIncrementX = 4;
 		this.speedIncrementY = 2;
-		this.spinRequirement = 3;
+		this.spinRequirement = 4;
 		this.spinForce = 0.75;
 
 		if (this.powerUp == PowerUp.SIZE){
