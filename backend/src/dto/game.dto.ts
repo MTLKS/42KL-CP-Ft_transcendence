@@ -1,30 +1,36 @@
 export class GameDTO{
-	ballPosX: number;
-	ballPosY: number;
-	ballVelX: number;
-	ballVelY: number;
-	leftPaddlePosY: number;
-	rightPaddlePosY: number;
-	player1Score: number;
-	player2Score: number;
-	spin: number;
+	ballPosX: string;
+	ballPosY: string;
+	ballVelX: string;
+	ballVelY: string;
+	leftPaddlePosY: string;
+	rightPaddlePosY: string;
+	player1Score: string;
+	player2Score: string;
+	spin: string;
 	attracted: boolean;
-	blockX: number|null;
-	blockY: number|null;
+	blockX: string|null;
+	blockY: string|null;
 
 	constructor(ballPosX: number, ballPosY: number, ballVelX: number, ballVelY: number, leftPaddlePosY: number, rightPaddlePosY: number, player1Score: number, player2Score: number,
 		spin: number = 0, attracted: boolean=false, blockX: number|null = null, blockY: number|null = null){
-		this.ballPosX = ballPosX;
-		this.ballPosY = ballPosY;
-		this.ballVelX = ballVelX;
-		this.ballVelY = ballVelY;
-		this.leftPaddlePosY = leftPaddlePosY;
-		this.rightPaddlePosY = rightPaddlePosY;
-		this.player1Score = player1Score;
-		this.player2Score = player2Score;
-		this.blockX = blockX;
-		this.blockY = blockY;
-		this.spin = spin;
+		this.ballPosX = ballPosX.toFixed(0);
+		this.ballPosY = ballPosY.toFixed(0);
+		this.ballVelX = ballVelX.toFixed(2);
+		this.ballVelY = ballVelY.toFixed(2);
+		this.leftPaddlePosY = leftPaddlePosY.toFixed(0);
+		this.rightPaddlePosY = rightPaddlePosY.toFixed(0);
+		this.player1Score = player1Score.toFixed(0);
+		this.player2Score = player2Score.toFixed(0);
+		if (blockX === null || blockY === null){
+			this.blockX = blockX.toFixed(0);
+			this.blockY = blockY.toFixed(0);
+		}
+		else{
+			this.blockX = null;
+			this.blockY = null;
+		}
+		this.spin = spin.toFixed(2);
 		this.attracted = attracted;
 	}
 }
