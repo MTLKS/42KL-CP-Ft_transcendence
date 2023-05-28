@@ -31,9 +31,9 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = true;
-  useEntitiesFilter: boolean = true;
-  usePaddleFilter: boolean = true;
+  useParticlesFilter: boolean = false;
+  useEntitiesFilter: boolean = false;
+  usePaddleFilter: boolean = false;
   useHitFilter: boolean = true;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
@@ -383,6 +383,8 @@ export class GameData {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
     this.tickPerParticlesSpawn = 0;
+    this._pongSpeed.x = this.localTickerPongSpeed.x;
+    this._pongSpeed.y = this.localTickerPongSpeed.y;
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
@@ -393,6 +395,8 @@ export class GameData {
     if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1590) {
       this._pongPosition.x = 800;
       this._pongPosition.y = 450;
+      this.localTickerPongSpeed.x = 0;
+      this.localTickerPongSpeed.y = 0;
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this.localTickerPongSpeed.y *= -1;
