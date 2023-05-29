@@ -39,7 +39,7 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "cowsay" }),
   new CommandOptionData({ command: "tfa", options: ["<OTP>", "set", "unset <OTP>", "forgot"] }),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death"] }),
+  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death", "practice"] }),
   new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
   new CommandOptionData({ command: "ok" }),

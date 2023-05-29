@@ -69,18 +69,17 @@ export class PowerGameRoom extends GameRoom{
 
 
 
-	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService,
-		Player1PowerUp: PowerUp, Player2PowerUp: PowerUp){
+	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, Player1PowerUp: PowerUp, Player2PowerUp: PowerUp, matchService?: MatchService, userService?: UserService) {
 		super(player1, player2, gameType, setting, matchService, userService);
 		
 		this.leftPaddle.powerUp = Player1PowerUp;
 		this.rightPaddle.powerUp = Player2PowerUp;
 
 		if (Player1PowerUp == PowerUp.SIZE){
-			this.leftPaddle.height = 120;
+			this.leftPaddle.height = 150;
 		}
 		else if (Player2PowerUp == PowerUp.SIZE){
-			this.rightPaddle.height = 120;
+			this.rightPaddle.height = 150;
 		}
 
 		//Config Setting
@@ -299,8 +298,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		// let effect = this.getRandomNum();
-		let effect = 0;
+		let effect = this.getRandomNum();
+		// let effect = 0;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
