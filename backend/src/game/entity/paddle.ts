@@ -60,7 +60,10 @@ export class Paddle extends Rect {
 			}
 		}
 		switch (this.powerUp){
-			case PowerUp.NORMAL || PowerUp.SIZE:
+			case PowerUp.NORMAL:
+				ball.collisionResponse(collideTime, normalX, normalY);
+				break;
+			case PowerUp.SIZE:
 				ball.collisionResponse(collideTime, normalX, normalY);
 				break;
 			case PowerUp.SPEED:
