@@ -21,77 +21,96 @@ export class PracticeGameRoom extends PowerGameRoom {
 
   gameUpdate(server: Server){
     this.elapseTime = (Date.now() - this.startTime) / 1000;
-    this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
-    this.Ball.update();
+		this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
+		this.Ball.update();
 
-    this.rightPaddle.posY = this.Ball.posY - 50;
 
-    this.leftPaddle.updateDelta();
-    this.rightPaddle.updateDelta();
+		this.rightPaddle.posY = this.Ball.posY - 50;
+		
+		this.leftPaddle.updateDelta();
+		this.rightPaddle.updateDelta();
 
-    let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-    if (score != 0){
-      this.Ball.hitWall = true;
-    }
-    else{
-      this.Ball.hitWall = false;
-    }
+		if (this.Ball.attracted == true){
+			if (this.Ball.posX < this.canvasWidth / 2){
+				this.Ball.posX = this.roomSettings.paddleOffsetX + this.leftPaddle.width;
+				if (this.leftPaddle.mouseDown == false){
+					this.Ball.launchBall(this.leftMouseX, this.leftMouseY);
+				}
+			}
+			else{
+				this.Ball.posX = this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width;
+				if (this.rightPaddle.mouseDown == false){
+					this.Ball.launchBall(this.rightMouseX, this.rightMouseY);
+				}
+			}
+		}
 
-    if (score == 1 || score == 2){
-      if (score == 1){
-        this.player1Score++;
-        this.lastWinner = "player1";
-      }
-      else{
-        this.player2Score++;
-        this.lastWinner = "player2";
-      }
-      this.resetTime = Date.now();
-      this.paddleTimer = Date.now();
-      this.insideField = false;
-      this.Ball.energized =false;
-      this.gameReset = true;
-    }
+		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+		if (score != 0){
+			this.Ball.hitWall = true;
+		}
+		else{
+			this.Ball.hitWall = false;
+		}
 
-    if (score == 3){
-      if (this.currentEffect != FieldEffect.GRAVITY){
-        this.Ball.accelX = 0;
-        this.Ball.accelY = 0;
-      }
-    }
+		if (score == 1 || score == 2){
+			if (score == 1){
+				this.player1Score++;
+				this.lastWinner = "player1";
+			}
+			else{
+				this.player2Score++;
+				this.lastWinner = "player2";
+			}
+			this.resetTime = Date.now();
+			this.paddleTimer = Date.now();
+			this.insideField = false;
+			this.Ball.energized =false;
+			this.gameReset = true;
+			this.Ball.accelerating = false;
+			this.Ball.spinning = false;
+		}
 
-    if (this.currentEffect == FieldEffect.GRAVITY){
-      this.Ball.initAcceleration(0, this.gravityPower * this.effectMagnitude);
-    }
-    
-    if (this.elapseTime >= this.fieldEffectTimer){
-      this.fieldChange(server);
-      this.startTime = Date.now();
-      this.fieldEffectTimer = Math.random() * (this.maxTime - this.minTime) + this.minTime;
-      this.needReset = true;
-      this.effectContinuousTimer = this.fieldEffectTimer - 2;
-    }
-    else if (this.elapseTime >= this.effectContinuousTimer && this.needReset == true){
-      this.needReset = false;
-      this.fieldReset(server);
-    }
-    
-    if (this.paddleElapseTime >= this.paddleResetTimer){
-      this.paddleTimer = Date.now();
-      this.insideField = false;
-      this.resetGame(server);
-    }
+		if (score == 3){
+			if (this.currentEffect != FieldEffect.GRAVITY){
+				this.Ball.accelX = 0;
+				this.Ball.accelY = 0;
+			}
+		}
 
-    if (this.circleObject != null){
-      this.fieldEffect();
-    }
+		if (this.currentEffect == FieldEffect.GRAVITY){
+			this.Ball.initAcceleration(0, this.gravityPower * this.effectMagnitude);
+			this.Ball.accelerating = true;
+		}
+		
+		if (this.elapseTime >= this.fieldEffectTimer){
+			this.fieldChange(server);
+			this.startTime = Date.now();
+			this.fieldEffectTimer = Math.random() * (this.maxTime - this.minTime) + this.minTime;
+			this.needReset = true;
+			this.effectContinuousTimer = this.fieldEffectTimer - 2;
+		}
+		else if (this.elapseTime >= this.effectContinuousTimer && this.needReset == true){
+			this.needReset = false;
+			this.fieldReset(server);
+		}
+		
+		if (this.paddleElapseTime >= this.paddleResetTimer){
+			this.paddleTimer = Date.now();
+			this.insideField = false;
+			this.resetGame(server);
+			this.startGame();
+		}
 
-    this.gameCollisionDetection();
-    if (this.blockObject != null){
-      this.blockObject.update();
-      // console.log(this.blockObject.posX, this.blockObject.posY);
-      this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
-      server.to(this.roomID).emit('gameLoop',new GameDTO(
+		if (this.circleObject != null){
+			this.fieldEffect();
+		}
+
+		this.gameCollisionDetection();
+		if (this.blockObject != null){
+			this.blockObject.update();
+			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
+			server.to(this.roomID).emit('gameLoop',new GameDTO(
 				this.Ball.posX, 
 				this.Ball.posY, 
 				this.Ball.velX, 
@@ -104,9 +123,9 @@ export class PracticeGameRoom extends PowerGameRoom {
 				this.Ball.attracted,
 				this.blockObject.posX + (this.blockSize/2),
 				this.blockObject.posY + (this.blockSize/2)));
-    }
-    else{
-      server.to(this.roomID).emit('gameLoop',new GameDTO(
+		}
+		else{
+			server.to(this.roomID).emit('gameLoop',new GameDTO(
 				this.Ball.posX,
 				this.Ball.posY,
 				this.Ball.velX,
@@ -117,12 +136,14 @@ export class PracticeGameRoom extends PowerGameRoom {
 				this.player2Score,
 				this.Ball.spinY,
 				this.Ball.attracted));
-    }
+		}
   }
 
-  updatePlayerPos(socketId: string, value: number) {
+  updatePlayerPos(socketId: string, xValue: number, yValue: number) {
     if (socketId == this.player1.socket.id) {
-      this.leftPaddle.posY = value - 50;
+      this.leftPaddle.posY = yValue - this.leftPaddle.height / 2;
+      this.leftMouseX = xValue;
+      this.leftMouseY = yValue;
     }
   }
 

@@ -226,7 +226,6 @@ export class PowerGameRoom extends GameRoom{
 				this.Ball.spinY,
 				this.Ball.attracted));
 		}
-
 	}
 
 	gameCollisionDetection(){
