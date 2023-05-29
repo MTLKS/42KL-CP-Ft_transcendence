@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react';
 import sleep from '../functions/sleep';
 
@@ -23,7 +23,14 @@ function Card(props: CardProps) {
   const [animation, setAnimation] = useState({ transform: "translateY(50px)", opacity: 0, transition: "all 0.5s" } as CardAnimation);
   const [mounted, setMounted] = useState(false);
 
-  if (!mounted) animate();
+  useEffect(() => {
+    if (mounted) return;
+    setTimeout(() => {
+      setAnimation({ transform: "translateY(0px)", opacity: 1, transition: "all 0.5s" });
+      setMounted(true);
+    }, 5);
+  }, []);
+
   return (
     <div className='w-full h-fit flex flex-row items-center border-t-2 border-highlight/[0.5]'
       style={animation}
@@ -34,12 +41,6 @@ function Card(props: CardProps) {
       </div>
     </div>
   )
-
-  async function animate() {
-    await sleep(10);
-    setAnimation({ transform: "translateY(0px)", opacity: 1, transition: "all 0.5s" });
-    setMounted(true);
-  }
 }
 
 export default Card

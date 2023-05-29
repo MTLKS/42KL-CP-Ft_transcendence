@@ -38,11 +38,15 @@ export class CommandOptionData {
     this.parameter = parameters ?? "";
   }
 
-  isCommand(command: string): boolean {
+  isCommand(command: string, commandLength: number): boolean {
+    if (commandLength > 1)
+      return command === this.command;
     return this.command.startsWith(command);
   }
 
-  findOption(option: string): string | undefined {
+  findOption(option: string, commandLength: number): string | undefined {
+    if (commandLength > 2)
+      return this.options.find((opt) => opt === option);
     return this.options.find((opt) => opt.startsWith(option));
   }
 }
@@ -64,6 +68,14 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
   const splitValue: string[] = value.split(" ");
   const words: string[] = splitValue.filter((word) => word !== "");
   let spansStyles: string[] = [];
+
+  useEffect(() => {
+    setCommandHistory(JSON.parse(localStorage.getItem("commandHistory") ?? "[]"));
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("commandHistory", JSON.stringify(commandHistory));
+  }, [commandHistory]);
 
   useImperativeHandle(ref, () => ({
     focusOnInput() {
@@ -108,11 +120,11 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
   }, [value]);
 
   const { toolTipCommand, toolTipOption, toolTipParameter, toolTipDisplay } = useMemo(() => {
-    const selectCommand = availableCommands.find((command) => command.isCommand(splitValue[0]));
+    const selectCommand = availableCommands.find((command) => command.isCommand(splitValue[0], splitValue.length));
     const toolTipCommand: string | undefined = selectCommand?.command;
 
     let toolTipOption: string | undefined = undefined;
-    if (splitValue.length === 2) toolTipOption = selectCommand?.findOption(splitValue[1]);
+    if (splitValue.length === 2) toolTipOption = selectCommand?.findOption(splitValue[1], splitValue.length);
     let toolTipParameter: string | undefined = undefined;
     if (splitValue.length >= 3) toolTipParameter = selectCommand?.parameter;
 
@@ -177,9 +189,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
   }
 
   function checkValid() {
-
-    let index = 0;
-    splitValue.forEach((element) => {
+    splitValue.forEach((element, index) => {
       if (element === "") {
         spansStyles.push('');
         return;
@@ -187,18 +197,24 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       if (index == 0) {
         let found = false;
         availableCommands.forEach((command) => {
-          if (command.isCommand(element)) {
+          if (command.isCommand(element, splitValue.length)) {
             spansStyles.push(commandClassName ?? '');
             found = true;
-            return;
           }
         });
         if (!found) spansStyles.push(errorClassName ?? "underline decoration-3 decoration-accRed");
-      }
-      else {
+      } else if (index == 1) {
+        let found = false;
+        availableCommands.forEach((command) => {
+          if (command.findOption(element, splitValue.length)) {
+            spansStyles.push(commandClassName ?? '');
+            found = true;
+          }
+        });
+        if (!found) spansStyles.push(errorClassName ?? "underline decoration-3 decoration-accRed");
+      } else {
         spansStyles.push('');
       }
-      index++;
     });
   }
 
@@ -224,13 +240,13 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       e.currentTarget.value = '';
       handleCommands(words, value);
       let newHistory = [...commandHistory];
-      if (commandHistory.length > 20) newHistory = newHistory.slice(1);
-      else if (commandHistory[commandHistory.length - 1] !== value && value) newHistory.push(value);
+      if (commandHistory[commandHistory.length - 1] !== value && value) newHistory.push(value);
+      if (newHistory.length >= 20) newHistory = newHistory.slice(1);
       setCommandHistory(newHistory);
       setValue('');
       setHistoryIndex(-1);
     }
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') e.currentTarget.setSelectionRange(e.currentTarget.value.length, e.currentTarget.value.length);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') e.preventDefault();
     if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && enableHistory) {
       let newHistoryIndex = historyIndex;
       e.preventDefault();

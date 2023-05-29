@@ -20,7 +20,8 @@ function GameText(props: GameTextProps) {
     const textGraphic = new PIXI.Text(text, new PIXI.TextStyle({
       fontFamily: 'JetBrains Mono',
       fontSize: fontSize,
-      fill: ['#ffffff'],
+      fill: '#ffffff',
+      letterSpacing: -20,
     }));
     const box = new PIXI.Graphics();
     box.beginFill(color, opacity);
@@ -39,14 +40,15 @@ function GameText(props: GameTextProps) {
     dropShadowFilter.color = 0xFEF8E2;
     dropShadowFilter.alpha = 0.8;
     dropShadowFilter.blur = 3;
-    dropShadowFilter.offset = new PIXI.Point(10, 5);
-    dropShadowFilter.distance = 0;
+    dropShadowFilter.offset = new PIXI.Point(0, 0);
     dropShadowFilter.padding = 40;
     dropShadowFilter.quality = 5;
     return dropShadowFilter;
   }, []);
   return (
-    <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture} filters={[filter]} />
+    <Sprite anchor={anchor} x={position.x} y={position.y} texture={texture}
+    // filters={[filter]} 
+    />
   )
 }
 

@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Container, Graphics, ParticleContainer, PixiComponent, Sprite, useApp, useTick } from '@pixi/react'
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { DropShadowFilter } from 'pixi-filters';
+import { GameDataCtx } from '../../GameApp';
 
 
 export enum TimeZoneType {
@@ -21,6 +22,7 @@ const svgSizeRatio = 0.5;
 function TimeZone(props: TimeZoneProps) {
   const { position, size, type } = props;
   const app = useApp();
+  const gameData = useContext(GameDataCtx);
 
   const color = useMemo(() => {
     switch (type) {
@@ -60,26 +62,44 @@ function TimeZone(props: TimeZoneProps) {
     dropShadowFilter.color = color;
     dropShadowFilter.alpha = 0.8;
     dropShadowFilter.blur = 3;
-    dropShadowFilter.offset = new PIXI.Point(10, 5);
-    dropShadowFilter.distance = 0;
+    dropShadowFilter.offset = new PIXI.Point(0, 0);
     dropShadowFilter.padding = 40;
     dropShadowFilter.quality = 5;
     return dropShadowFilter;
   }, [type]);
+
+  const ref = useRef<PIXI.Container>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const ticker = app.ticker;
+    ref.current!.alpha = 0;
+
+    const tick = () => {
+      ref.current!.alpha += 0.02;
+      if (ref.current!.alpha >= 1) {
+        ticker.remove(tick);
+      }
+    };
+    ticker.add(tick);
+
+    return () => {
+      ticker.remove(tick);
+      ref.current?.destroy();
+    };
+  }, []);
   return (
-    <>
-      <Sprite anchor={0.5} x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} alpha={0.4} filters={[filter]} />
+    <Container x={position.x} y={position.y} ref={ref}>
+      <Sprite anchor={0.5} width={size.w} height={size.h} texture={texture} alpha={0.4} filters={[filter]} />
       <Sprite
         anchor={0.5}
-        x={position.x}
-        y={position.y}
         width={size.w * svgSizeRatio}
         height={size.h * svgSizeRatio}
         texture={iconTexture}
         alpha={0.4}
-        filters={[filter]}
+        filters={gameData.useEntitiesFilter ? [filter] : undefined}
       />
-    </>
+    </Container>
   )
 }
 

@@ -1,5 +1,6 @@
 import { Ball } from './ball';
 import { Rect } from './rect';
+import { Paddle } from './paddle';
 import { GameSetting } from './gameSetting';
 import { Server } from 'socket.io';
 import { GameDTO } from 'src/dto/game.dto';
@@ -14,17 +15,21 @@ import { MatchService } from 'src/match/match.service';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/entity/users.entity';
 
+//Direction refer to which paddle is checking(1 for left, -1 for right, 0 for other than paddle)
+//It is pass through in constructor.
 export class CollisionResult {
   collided: boolean;
   collideTime: number;
   normalX: number;
   normalY: number;
+  direction: number;
 
-  constructor() {
+  constructor(direction: number) {
     this.collided = false;
     this.collideTime = 0;
     this.normalX = 0;
     this.normalY = 0;
+    this.direction = direction;
   }
 }
 
@@ -38,8 +43,12 @@ export class GameRoom {
   ballInitSpeedX: number;
   ballInitSpeedY: number;
   Ball: Ball;
-  leftPaddle: Rect;
-  rightPaddle: Rect;
+  leftPaddle: Paddle;
+  rightPaddle: Paddle;
+  leftMouseX: number;
+  leftMouseY: number;
+  rightMouseX: number;
+  rightMouseY: number;
   interval: NodeJS.Timer | null;
   resetTime: number;
   lastWinner: string;
@@ -78,14 +87,16 @@ export class GameRoom {
       this.canvasHeight / 2,
       setting.ballSize,
       setting.ballSize,
+      setting.ballSpeedX,
+      setting.ballSpeedY,
     );
-    this.leftPaddle = new Rect(
+    this.leftPaddle = new Paddle(
       setting.paddleOffsetX,
       this.canvasHeight / 2,
       setting.paddleWidth,
       setting.leftPaddleHeight,
     );
-    this.rightPaddle = new Rect(
+    this.rightPaddle = new Paddle(
       this.canvasWidth - setting.paddleOffsetX - setting.paddleWidth,
       this.canvasHeight / 2,
       setting.paddleWidth,
@@ -103,12 +114,12 @@ export class GameRoom {
     this.matchService = matchService;
     this.userService = userService;
 
-    //Check for game mode
     this.roomSettings = setting;
   }
 
   async run(server: Server) {
     this.resetGame(server);
+    this.startGame();
     await this.countdown(3);
     if (this.interval == null) {
       this.interval = setInterval(async () => {
@@ -117,11 +128,18 @@ export class GameRoom {
           let timer = 2;
           let elapsedTime = (Date.now() - this.resetTime) / 1000;
           if (elapsedTime >= timer) {
+            this.startGame();
             this.gameReset = false;
           }
         } else if (this.gamePaused == true) {
           if (Date.now() - this.gamePauseDate > 5000) {
-            // this.endGame(server, this.player1.intraName === this.gamePausePlayer ? this.player2.intraName : this.player1.intraName, "abandon"); // TODO: uncomment this
+            this.endGame(
+              server,
+              this.player1.intraName === this.gamePausePlayer
+                ? this.player2.intraName
+                : this.player1.intraName,
+              'abandon',
+            );
           }
         } else {
           this.gameUpdate(server);
@@ -131,24 +149,14 @@ export class GameRoom {
           this.player1Score === this.roomSettings.scoreToWin ||
           this.player2Score === this.roomSettings.scoreToWin
         ) {
-          // this.endGame(server, this.player1Score === this.roomSettings.scoreToWin ? this.player1.intraName : this.player2.intraName, "score"); // TODO: uncomment this
-        }
-
-        server
-          .to(this.roomID)
-          .emit(
-            'gameLoop',
-            new GameDTO(
-              this.Ball.posX,
-              this.Ball.posY,
-              this.Ball.velX,
-              this.Ball.velY,
-              this.leftPaddle.posY + 50,
-              this.rightPaddle.posY + 50,
-              this.player1Score,
-              this.player2Score,
-            ),
+          this.endGame(
+            server,
+            this.player1Score === this.roomSettings.scoreToWin
+              ? this.player1.intraName
+              : this.player2.intraName,
+            'score',
           );
+        }
       }, 1000 / 60);
     }
   }
@@ -156,7 +164,7 @@ export class GameRoom {
   gameUpdate(server: Server) {
     this.Ball.update();
     let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
-    if (score != 0) {
+    if (score == 1 || score == 2) {
       if (score == 1) {
         this.player1Score++;
         this.lastWinner = 'player1';
@@ -168,16 +176,31 @@ export class GameRoom {
       this.gameReset = true;
     }
     this.gameCollisionDetection();
+    server
+      .to(this.roomID)
+      .emit(
+        'gameLoop',
+        new GameDTO(
+          this.Ball.posX,
+          this.Ball.posY,
+          this.Ball.velX,
+          this.Ball.velY,
+          this.leftPaddle.posY + 50,
+          this.rightPaddle.posY + 50,
+          this.player1Score,
+          this.player2Score,
+        ),
+      );
   }
 
-  objectCollision(ball: Ball, paddle: Rect): CollisionResult {
+  objectCollision(ball: Ball, paddle: Rect, direction: number): CollisionResult {
     let xInvEntry, yInvEntry;
     let xInvExit, yInvExit;
     let xEntry, yEntry;
     let xExit, yExit;
     let entryTime, exitTime;
 
-    let result = new CollisionResult();
+    let result = new CollisionResult(direction);
 
     if (ball.velX > 0) {
       xInvEntry = paddle.posX - (ball.posX + ball.width);
@@ -242,27 +265,30 @@ export class GameRoom {
   gameCollisionDetection() {
     let result = null;
     if (this.Ball.posX > this.canvasWidth * 0.85) {
-      result = this.objectCollision(this.Ball, this.rightPaddle);
+      result = this.objectCollision(this.Ball, this.rightPaddle, -1);
     } else if (this.Ball.posX < this.canvasWidth * 0.15) {
-      result = this.objectCollision(this.Ball, this.leftPaddle);
+      result = this.objectCollision(this.Ball, this.leftPaddle, 1);
     }
 
     if (result && result.collided) {
-      this.Ball.collisionResponse(
-        result.collideTime,
-        result.normalX,
-        result.normalY,
-      );
+      this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
     }
   }
 
-  updatePlayerPos(socketId: string, value: number) {
+  updatePlayerPos(socketId: string, xValue: number, yValue: number) {
     if (socketId == this.player1.socket.id) {
-      this.leftPaddle.posY = value - 50;
+      this.leftPaddle.posY = yValue - 50;
+      this.leftMouseX = xValue;
+      this.leftMouseY = yValue;
     }
     if (socketId == this.player2.socket.id) {
-      this.rightPaddle.posY = value - 50;
+      this.rightPaddle.posY = yValue - 50;
+      this.rightMouseX = xValue;
+      this.rightMouseY = yValue;
     }
+  }
+
+  updatePlayerMouse(socketId: string, isMouseDown: boolean) {
   }
 
   resumeGame(player: Player) {
@@ -321,6 +347,8 @@ export class GameRoom {
       );
     // console.log(`game ${this.roomID} ended`);
     this.gameEnded = true;
+    this.player1.socket.leave(this.roomID);
+    this.player2.socket.leave(this.roomID);
     this.matchService.createNewMatch(
       await this.userService.getUserDataByIntraName(this.player1.accessToken, this.player1.intraName),
       await this.userService.getUserDataByIntraName(this.player2.accessToken, this.player2.intraName),
@@ -357,16 +385,16 @@ export class GameRoom {
       loser = this.player1.intraName;
     }
 
-    // let winnerElo = WINNER.elo;
-    // let loserElo = LOSER.elo;
-    // let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
-    // let change = Math.round(20 * (1 - expected));
+    let winnerElo = WINNER.elo;
+    let loserElo = LOSER.elo;
+    let expected = 1 / (10 ** ((loserElo - winnerElo) / 400) + 1)
+    let change = Math.round(40 * (1 - expected));
 
-    // winnerElo += change;
-    // loserElo -= change;
+    winnerElo += change;
+    loserElo -= change;
 
-    // this.userService.updateUserElo(winner, winnerElo, true);
-    // this.userService.updateUserElo(loser, loserElo, false);
+    this.userService.updateUserElo(loser, loserElo, false);
+    this.userService.updateUserElo(winner, winnerElo, true);
   }
 
   endGameNoMatch() {
@@ -384,20 +412,16 @@ export class GameRoom {
   resetGame(server: Server) {
     this.Ball.posX = this.canvasWidth / 2;
     this.Ball.posY = this.canvasHeight / 2;
-    if (this.lastWinner.length == 0) {
-      this.Ball.velX =
-        this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);
-      this.Ball.velY =
-        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    } else if (this.lastWinner == 'player1') {
-      this.Ball.velX = this.ballInitSpeedX;
-      this.Ball.velY =
-        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    } else if (this.lastWinner == 'player2') {
-      this.Ball.velX = -this.ballInitSpeedX;
-      this.Ball.velY =
-        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    }
+    this.Ball.velX = 0;
+    this.Ball.velY = 0;
+    this.Ball.accelX = 0;
+    this.Ball.accelY = 0;
+    this.Ball.spinY = 0;
+    this.Ball.accelerating = false;
+    this.Ball.spinning = false;
+    this.Ball.attracted = false;
+    this.Ball.initialSpeedX = this.ballInitSpeedX;
+    this.Ball.initialSpeedY = this.ballInitSpeedY;
     server
       .to(this.roomID)
       .emit(
@@ -413,6 +437,26 @@ export class GameRoom {
           this.player2Score,
         ),
       );
+  }
+
+  /**
+   * Called when reset timer end.Set the ball velocity based on last winner
+   */
+  startGame(){
+    if (this.lastWinner.length == 0) {
+      this.Ball.velX =
+        this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);
+      this.Ball.velY =
+        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
+    } else if (this.lastWinner == 'player1') {
+      this.Ball.velX = this.ballInitSpeedX;
+      this.Ball.velY =
+        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
+    } else if (this.lastWinner == 'player2') {
+      this.Ball.velX = -this.ballInitSpeedX;
+      this.Ball.velY =
+        this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
+    }
   }
 
   async countdown(seconds: number): Promise<void> {

@@ -14,6 +14,7 @@ export type Events =
   | "startGame"
   | "gameLoop"
   | "playerMove"
+  | "playerClick"
   | "gameState"
   | "gameResponse"
   | "joinQueue"

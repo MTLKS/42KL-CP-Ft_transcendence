@@ -1,19 +1,25 @@
 export class GameStartDTO {
   opponentIntraName: string;
-  gameType: string;
+  gameType: "boring" | "standard" | "death" | "";
   isLeft: boolean;
   gameRoom: string;
+  player1PowerUp: number;
+  player2PowerUp: number;
 
   constructor(
     opponentIntraName: string,
-    gameType: string,
+    gameType: "boring" | "standard" | "death" | "",
     isLeft: boolean,
-    gameRoom: string
+    gameRoom: string,
+    player1PowerUp: number,
+    player2PowerUp: number
   ) {
     this.opponentIntraName = opponentIntraName;
     this.gameType = gameType;
     this.isLeft = isLeft;
     this.gameRoom = gameRoom;
+    this.player1PowerUp = player1PowerUp;
+    this.player2PowerUp = player2PowerUp;
   }
 }
 

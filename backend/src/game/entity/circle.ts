@@ -17,8 +17,8 @@ export class Circle{
 	}
 
 	pull(rect: DynamicRect, effectRadius: number, force: number){
-		const dx = this.posX - rect.posX;
-		const dy = this.posY - rect.posY;
+		const dx = rect.posX - this.posX;
+		const dy = rect.posY - this.posY;
 		const distance = Math.sqrt(dx * dx + dy * dy);
 
 		if (distance < this.radius * effectRadius && distance > this.radius){

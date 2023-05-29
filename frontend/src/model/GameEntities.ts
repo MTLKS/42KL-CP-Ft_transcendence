@@ -49,9 +49,9 @@ class GameBlock extends GameEntity {
   compressionSpeedY: number;
   constructor({ x, y, vx, vy, w, h }: GameEntityData) {
     super({ x, y, vx, vy, w, h });
+
     this.compressionSpeedX = 0;
     this.compressionSpeedY = 0;
-    this.type = "block";
   }
 
   compressionDecay() {
