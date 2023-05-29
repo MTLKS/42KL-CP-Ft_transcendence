@@ -32,21 +32,15 @@ export class Paddle extends Rect {
 		this.lastPosY = 0;
 
 		//Config Setting for PowerUp
-		this.sizeIncrement = 1.2;
 		this.speedIncrementX = 4;
 		this.speedIncrementY = 2;
 		this.spinRequirement = 4;
 		this.spinForce = 0.75;
-
-		if (this.powerUp == PowerUp.SIZE){
-			this.height *= this.sizeIncrement;
-		}
 	}
 
 	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number){
 		if (ball.spinning == true){
 			let elapseTime = Date.now() - ball.lastHitTimer;
-			console.log(elapseTime);
 			if (elapseTime > 500){
 				ball.resetSpin();
 			}
@@ -66,10 +60,7 @@ export class Paddle extends Rect {
 			}
 		}
 		switch (this.powerUp){
-			case PowerUp.NORMAL:
-				ball.collisionResponse(collideTime, normalX, normalY);
-				break;
-			case PowerUp.SIZE:
+			case PowerUp.NORMAL || PowerUp.SIZE:
 				ball.collisionResponse(collideTime, normalX, normalY);
 				break;
 			case PowerUp.SPEED:
@@ -79,6 +70,7 @@ export class Paddle extends Rect {
 				break;
 			case PowerUp.SPIN:
 				ball.collisionResponse(collideTime, normalX, normalY);
+				break;
 			case PowerUp.PRECISION:
 				if (this.mouseDown == true){
 					this.canMove = false;

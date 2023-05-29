@@ -1,4 +1,5 @@
 import { Player } from "./player";
+import { PowerUp } from "../game.service";
 
 export class Lobby {
 	public player1: Player;

@@ -76,6 +76,13 @@ export class PowerGameRoom extends GameRoom{
 		this.leftPaddle.powerUp = Player1PowerUp;
 		this.rightPaddle.powerUp = Player2PowerUp;
 
+		if (Player1PowerUp == PowerUp.SIZE){
+			this.leftPaddle.height = 120;
+		}
+		else if (Player2PowerUp == PowerUp.SIZE){
+			this.rightPaddle.height = 120;
+		}
+
 		//Config Setting
 		this.minTime = 10;
 		this.maxTime = 20;
@@ -225,7 +232,6 @@ export class PowerGameRoom extends GameRoom{
 
 	gameCollisionDetection(){
 		let result = null;
-
 		if (this.Ball.posX > this.canvasWidth * 0.85){
 			result = this.objectCollision(this.Ball, this.rightPaddle, -1);
 		}
