@@ -1,6 +1,7 @@
 import { createContext } from "react";
 import SocketApi from "../api/socketApi";
 import { ChatroomData, ChatroomMessageData, MemberData } from "../model/ChatRoomData";
+import { NewChannelAction, NewChannelState, newChannelInitialState } from "../widgets/Chat/ChatroomBody/Channel/newChannelReducer";
 
 interface ChatContextType {
   chatSocket: SocketApi,
@@ -11,15 +12,17 @@ interface ChatContextType {
 export const ChatContext = createContext<ChatContextType>({
   chatSocket: new SocketApi("/chat"),
   chatBody: <></>,
-  setChatBody: (newChatBody: JSX.Element) => {},
+  setChatBody: (newChatBody: JSX.Element) => { },
 });
 
-interface NewChatContextType {
-  members: string[],
+interface NewChannelContextType {
+  state: NewChannelState,
+  dispatch: React.Dispatch<NewChannelAction>,
 }
 
-export const NewChatContext = createContext<NewChatContextType>({
-  members: [],
+export const NewChannelContext = createContext<NewChannelContextType>({
+  state: newChannelInitialState,
+  dispatch: () => { },
 });
 
 interface ChatroomContentContextType {
@@ -45,7 +48,7 @@ interface ChatroomMessagesContextType {
 
 export const ChatroomMessagesContext = createContext<ChatroomMessagesContextType>({
   messages: [],
-  setMessages: (newMessages: ChatroomMessageData[]) => {},
+  setMessages: (newMessages: ChatroomMessageData[]) => { },
 })
 
 interface ChatMemberContextType {
@@ -63,5 +66,5 @@ interface ChatroomsContextType {
 
 export const ChatroomsContext = createContext<ChatroomsContextType>({
   unreadChatrooms: [],
-  setUnreadChatrooms: (newUnreadChatrooms: number[]) => {},
+  setUnreadChatrooms: (newUnreadChatrooms: number[]) => { },
 });

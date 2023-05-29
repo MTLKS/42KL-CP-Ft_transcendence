@@ -9,6 +9,8 @@ export class LeaderboardService {
 	constructor(@InjectRepository(User) private userRepository: Repository<User>) {}
 
 	async getLeaderboard(hallOfFame: boolean, perPage?: number, page?: number): Promise<LeaderboardResponseDTO[]> {
+		perPage = Number(perPage);
+		page = Number(page);
 		let take = (perPage !== undefined && perPage > 0) ? (perPage >= 100 ? 100 : perPage) : 100;
 		let skip = (page !== undefined && page >= 0) ? (page * take) : 0;
 

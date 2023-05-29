@@ -12,7 +12,6 @@ export interface ChatroomData {
   owner: UserData | null;
   password: string | null;
   newMessage: boolean;
-  lastActivity: string;
 }
 
 export interface ChannelData {
@@ -22,6 +21,37 @@ export interface ChannelData {
 	password: null | string,
 	isRoom: boolean,
 	channelId: number
+}
+
+export interface CreateChannelData {
+  channelName: string,
+  isPrivate: boolean,
+  password: string | null,
+}
+
+export interface UpdateChannelData {
+  channelId: number,
+  channelName: string,
+  isPrivate: boolean,
+  oldPassword: string | null,
+  newPassword: string | null,
+}
+
+export interface InviteMemberData {
+  channelId: number,
+  intraName: string,
+  isAdmin: boolean,
+  isBanned: boolean,
+  isMuted: boolean,
+  password: string | null,
+}
+
+export interface UpdateMemberData {
+  channelId: number,
+  intraName: string,
+  isAdmin: boolean,
+  isBanned: boolean,
+  isMuted: boolean,
 }
 
 export interface ChatroomMessageData {

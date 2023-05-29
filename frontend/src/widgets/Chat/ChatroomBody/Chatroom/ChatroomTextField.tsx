@@ -46,7 +46,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     if (isTyping || message.length === 0) return ;
 
     if (!isTyping) setIsTyping(true);
-    chatSocket.sendMessages("typing", { intraName: chatroomData.owner!.intraName });
+    chatSocket.sendMessages("typing", { channelId: chatroomData.channelId });
   }, [message]);
 
   useEffect(() => {
@@ -67,10 +67,9 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, [someoneIsTyping]);
 
   const listenForMemberTyping = () => {
-    chatSocket.listen("typing", (data: { intraName: string }) => {
-      if (data.intraName === myProfile.intraName) return;
-      if (typingMembers.includes(data.intraName)) return;
-      setTypingMembers([...typingMembers, data.intraName]);
+    chatSocket.listen("typing", (data: { userName: string }) => {
+      if (typingMembers.includes(data.userName)) return;
+      setTypingMembers([...typingMembers, data.userName]);
       setSomeoneIsTyping(true);
     })
   }
@@ -103,7 +102,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     if (message === '') return;
 
       chatSocket.sendMessages("message", {
-        intraName: chatroomData.owner!.intraName,
+        channelId: chatroomData.channelId,
         message: message,
       });
       // append new message to the top of the list (index 0)
@@ -124,13 +123,10 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           channelId: chatroomData.channelId,
           password: chatroomData.password,
         },
-        // channel: false, // considering DM only for now
-        // channelId: chatroomData.channelId,
         isRoom: chatroomData.isRoom,
         message: message,
         messageId: new Date().getTime(),
         timeStamp: new Date().toISOString(),
-        // user: myProfile,
       };
       const newMessages = [
         newMessage,
@@ -151,8 +147,8 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   return (
-    <div className='w-full flex flex-row bg-dimshadow/0 items-end'>
-      <div className='w-[80%] flex flex-row relative'>
+    <div className='w-full h-[60px] flex flex-row bg-dimshadow/0 items-end'>
+      <div className='w-[80%] h-full flex flex-row relative'>
         { isFocusing && <span className={`text-xs ${message.length === 1024 || textTooLong ? 'bg-accRed text-highlight' : 'bg-highlight text-dimshadow'} h-fit px-[1ch] font-bold absolute -top-3 right-16`}>{textTooLong ? "TEXT TOO LONG!" : `${message.length}/1024`}</span> }
         {
           someoneIsTyping &&

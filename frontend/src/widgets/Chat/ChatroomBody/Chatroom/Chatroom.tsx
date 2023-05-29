@@ -1,9 +1,10 @@
 import React, { useContext } from 'react'
-import { FaUser, FaUsers } from 'react-icons/fa'
+import { FaUser, FaUserSecret, FaUsers } from 'react-icons/fa'
 import ChatMsgIndicator from '../../ChatWidgets/ChatMsgIndicator'
 import { ChatContext } from '../../../../contexts/ChatContext';
 import ChatroomContent from './ChatroomContent';
 import { ChatroomData } from '../../../../model/ChatRoomData';
+import { ImEarth } from 'react-icons/im';
 
 interface ChatroomProps {
   hasUnReadMsg: boolean;
@@ -23,13 +24,12 @@ function Chatroom(props: ChatroomProps) {
       <div className={`${chatroomData.isRoom && 'p-3'} bg-highlight aspect-square h-full`}>
         {
           chatroomData.isRoom
-            ? <FaUsers className='w-full h-full text-dimshadow' />
+            ? (chatroomData.isPrivate ? <FaUserSecret className='text-dimshadow w-full h-full' /> : <ImEarth className='text-dimshadow w-full h-full' />)
             : <img className="h-full aspect-square object-cover" src={chatroomData.owner!.avatar} alt={chatroomData.owner!.userName + `_avatar`} />
         }
-        {/** TODO: Change icon based on the chatroom type "isRoom" */}
       </div>
       <div className='border-box flex flex-row justify-between w-full items-center p-5 border-b-2 border-highlight/50'>
-        <p className='text-highlight font-extrabold text-base truncate group-hover:underline'>{chatroomData.owner!.userName} ({chatroomData.owner!.intraName})</p>
+        <p className='text-highlight font-extrabold text-base truncate group-hover:underline'>{chatroomData.isRoom ? `${chatroomData.channelName}` : `${chatroomData.owner!.userName} (${chatroomData.owner!.intraName})`}</p>
         <ChatMsgIndicator hasNewMessage={hasUnReadMsg} />
       </div>
     </div>

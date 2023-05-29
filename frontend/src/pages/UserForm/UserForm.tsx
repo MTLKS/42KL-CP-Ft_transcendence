@@ -9,7 +9,7 @@ import { ErrorPopup } from '../../components/Popup';
 import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
 import Api from '../../api/api';
 import sleep from '../../functions/sleep';
-import login from '../../functions/login';
+import login from '../../api/loginAPI';
 import { FaArrowLeft } from 'react-icons/fa';
 import UserFormTfa from './UserFormTfa';
 
@@ -94,11 +94,11 @@ function UserForm(props: UserFormProps) {
       <div className='w-full h-fit flex flex-col gap-2 lg:gap-4 items-end z-30 mt-6'>
         {popups}
       </div>
-      { 
+      {
         // extra feature: check if the user actually modified their name and avatar or not. If they did, ask for confirmation before back to homepage
-        isUpdatingUser && 
+        isUpdatingUser &&
         <button className='absolute top-8 left-8 h-fit p-3 rounded-md bg-highlight text-center cursor-pointer flex flex-row gap-x-3 items-center group hover:bg-dimshadow border-highlight border-2 transition-all duration-200 focus:outline-dashed focus:outline-[3px] focus:outline-highlight' onClick={() => setIsUpdatingUser(false)}>
-          <FaArrowLeft className='text-dimshadow font-extrabold text-xl group-hover:text-highlight'/>
+          <FaArrowLeft className='text-dimshadow font-extrabold text-xl group-hover:text-highlight' />
           <span className='font-extrabold text-xl group-hover:text-highlight'>BACK</span>
         </button>
       }
@@ -108,7 +108,7 @@ function UserForm(props: UserFormProps) {
           <p className='uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold'>user info</p>
           <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} />
           <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} />
-          {isVerifyingTFA && <UserFormTfa tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={TFAVerified} setTFAVerified={setTFAVerified} handleSubmit={handleSubmit}/>}
+          {isVerifyingTFA && <UserFormTfa tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={TFAVerified} setTFAVerified={setTFAVerified} handleSubmit={handleSubmit} />}
           <button className={`${isVerifyingTFA && 'hidden'} font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out focus:outline-dimshadow ${isVerifyingTFA && !TFAVerified && 'focus:bg-highlight'}`} onClick={handleSubmit}>
             Submit
           </button>
@@ -150,7 +150,7 @@ function UserForm(props: UserFormProps) {
     if (TFAVerified === false && isTFAEnabled === true) {
       if (isVerifyingTFA === false) {
         setIsVerifyingTFA(true);
-        return ;
+        return;
       }
 
       if (isVerifyingTFA) {

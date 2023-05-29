@@ -5,7 +5,7 @@ export class Player {
   public accessToken: string;
   public socket: Socket;
 
-  constructor(intraName: string, accessToken: string, socket: Socket) {
+  constructor(intraName: string, accessToken?: string, socket?: Socket) {
     this.intraName = intraName;
     this.accessToken = accessToken;
     this.socket = socket;

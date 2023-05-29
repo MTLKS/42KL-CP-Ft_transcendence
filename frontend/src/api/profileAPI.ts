@@ -1,4 +1,4 @@
-import api from "../api/api";
+import api from "./api";
 import { ErrorData } from "../model/ErrorData";
 import { UserData } from "../model/UserData";
 

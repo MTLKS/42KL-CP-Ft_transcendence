@@ -1,4 +1,5 @@
 import { Friendship } from 'src/entity/friendship.entity';
+import { FriendshipDTO } from 'src/dto/friendship.dto';
 import { Channel } from 'src/entity/channel.entity';
 import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -41,33 +42,17 @@ export class FriendshipService {
 
 	// Get all friendship by accessToken
 	async getFriendship(accessToken: string): Promise<any> {
-		return await this.getFriendshipByIntraNAme(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
+		return await this.getFriendshipByIntraName(accessToken, (await this.userService.getMyUserData(accessToken)).intraName);
 	}
 
 	// Gets all friendship by intraName
-	async getFriendshipByIntraNAme(accessToken: string, intraName: string): Promise<any> {
+	async getFriendshipByIntraName(accessToken: string, intraName: string): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const FRIENDSHIP = await this.getFriendshipStatus(accessToken, intraName);
 		if (intraName !== USER_DATA.intraName && FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 			return new ErrorDTO("Invalid friendship - you are blocked by this user");
 		const RECEIVER = await this.friendshipRepository.find({ where: { receiver: { intraName: intraName } }, relations: ['sender', 'receiver'] });
-		for (let receiver of RECEIVER) {
-			const USER = await this.userRepository.findOne({ where: { intraName: receiver.receiver.intraName } });
-			if (USER === null)
-				continue;
-			receiver['userName'] = USER.userName;
-			receiver['elo'] = USER.elo;
-			receiver['avatar'] = USER.avatar;
-		}
 		const SENDER = await this.friendshipRepository.find({ where: { sender: { intraName: intraName } }, relations: ['sender', 'receiver'] });
-		for (let sender of SENDER) {
-			const USER = await this.userRepository.findOne({ where: { intraName: sender.receiver.intraName } });
-			if (USER === null)
-				continue;
-			sender['userName'] = USER.userName;
-			sender['elo'] = USER.elo;
-			sender['avatar'] = USER.avatar;
-		}
 		return this.userService.hideData([...RECEIVER, ...SENDER]);
 	}
 
@@ -97,23 +82,20 @@ export class FriendshipService {
 			return ERROR;
 		const FRIEND_DATA = await this.userRepository.findOne({ where: { intraName: receiverIntraName } });
 		if (FRIEND_DATA === null)
-			return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
+			return new ErrorDTO("Invalid receiverIntraName - user does not exist");
 		const RECEIVER = await this.friendshipRepository.findOne({ where: { sender: { intraName: receiverIntraName }, receiver: { intraName: USER_DATA.intraName } } });
 		if (status.toUpperCase() == "ACCEPTED") {
 			if (RECEIVER === null)
 				return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
 			RECEIVER.status = "ACCEPTED";
-			const MY_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: USER_DATA.intraName }, isRoom: true } });
-			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: MY_CHANNEL } })
-			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: receiverIntraName } } });
-			if (FRIEND_CHANNEL === null)
-				return new ErrorDTO("Invalid receiverIntraName - friendship does not exist");
-			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: FRIEND_DATA.intraName }, channel: FRIEND_CHANNEL } })
+			const MY_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: USER_DATA.intraName }, isRoom: false }, relations: ['owner'] });
+			const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: receiverIntraName } }, relations: ['owner'] });
+			const MY_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: FRIEND_CHANNEL.channelId } } })
+			const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: FRIEND_DATA.intraName }, channel: { channelId: MY_CHANNEL.channelId } } })
 			if (MY_MEMBER === null)
 				await this.memberRepository.save(new Member(USER_DATA, FRIEND_CHANNEL, true, false, false, new Date().toISOString()));
 			if (FRIEND_MEMBER === null)
 				await this.memberRepository.save(new Member(FRIEND_DATA, MY_CHANNEL, true, false, false, new Date().toISOString()));
-			console.log(FRIEND_MEMBER);
 			await this.friendshipRepository.save(RECEIVER)
 			return this.userService.hideData(RECEIVER);
 		}
@@ -148,7 +130,7 @@ export class FriendshipService {
 	}
 
 	// Helper function that returns current friendship with a user
-	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<any> {
+	async getFriendshipStatus(accessToken: string, receiverIntraName: string): Promise<FriendshipDTO> {
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		if (USER_DATA === null || USER_DATA.intraName === receiverIntraName)
 			return null;
