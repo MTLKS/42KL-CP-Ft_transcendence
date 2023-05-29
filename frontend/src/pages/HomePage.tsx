@@ -155,11 +155,8 @@ function HomePage(props: HomePageProps) {
       case "cowsay":
         newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
-      case "queue":
-        handleQueueCommand(command[1], newList);
-        return;
-      case "dequeue":
-        handleDequeueCommand(newList);
+      case "game":
+        handleGameCommand(command, newList);
         return;
       case "profile":
         handleProfileCommand(command);
@@ -521,20 +518,20 @@ function HomePage(props: HomePageProps) {
     setElements(newList);
   }
 
-  async function handleQueueCommand(argument: string, newList: JSX.Element[]) {
-    let response: GameResponseDTO = await gameData.joinQueue(argument);
-    if (response.type === "success")
-      newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-    else
-      newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
-    setElements(newList);
-  }
-
-  async function handleDequeueCommand(newList: JSX.Element[]) {
-    let response: GameResponseDTO = await gameData.leaveQueue();
-    if (response.type === "success")
-      newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-    setElements(newList);
+  async function handleGameCommand(commands: string[], newList: JSX.Element[]) {
+    if (commands[1] == "queue") {
+      let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
+      if (response.type === "success")
+        newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+      else
+        newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+      setElements(newList);
+    } else {
+      let response: GameResponseDTO = await gameData.leaveQueue();
+      if (response.type === "success")
+        newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+      setElements(newList);
+    }
   }
 }
 
