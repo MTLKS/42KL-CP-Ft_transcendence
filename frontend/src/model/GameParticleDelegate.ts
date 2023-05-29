@@ -9,7 +9,7 @@ class GameParticleDelegate {
   paddleParticleCycle: number = 0;
   gameData: GameData;
   spinEffectThreshold: number = 15;
-  speedEffectThreshold: number = 20;
+  speedEffectThreshold: number = 19;
 
   constructor(gameData: GameData) {
     this.gameData = gameData;

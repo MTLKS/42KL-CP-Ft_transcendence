@@ -175,7 +175,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     <Container
       interactiveChildren={false}
       filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
-      filters={gameData.useParticlesFilter ? [bloomFilter] : null}
+      filters={gameData.useParticlesFilter ? [bloomFilter] : undefined}
     >
       <ParticleContainer
         ref={arrowContainerRef}

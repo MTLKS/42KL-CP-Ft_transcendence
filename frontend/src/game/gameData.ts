@@ -31,9 +31,9 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = true;
-  useEntitiesFilter: boolean = true;
-  usePaddleFilter: boolean = true;
+  useParticlesFilter: boolean = false;
+  useEntitiesFilter: boolean = false;
+  usePaddleFilter: boolean = false;
   useHitFilter: boolean = true;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
@@ -89,7 +89,7 @@ export class GameData {
 
   constructor() {
     this.socketApi = new SocketApi("game");
-    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack);
+    this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
     this.sendPlayerMove = (y: number, x: number, gameRoom: string) => {
@@ -140,7 +140,8 @@ export class GameData {
     }
     console.log("start game");
     this.gameStarted = true;
-    if (this.setShouldRender) this.setShouldRender?.(true);
+    if (this.setShouldRender) this.setShouldRender(true);
+    if (this.setUsingTicker) this.setUsingTicker(true);
   }
 
   displayGame() {
@@ -220,7 +221,8 @@ export class GameData {
     await sleep(3000);
     this.stopDisplayGame();
     this.gameStarted = false;
-    this.setShouldRender?.(false);
+    if (this.setShouldRender) this.setShouldRender(false);
+    if (this.setUsingTicker) this.setUsingTicker(false);
     this._resetVariables();
     if (this.setShouldDisplayGame) this.setShouldDisplayGame?.(false);
   }
@@ -332,19 +334,22 @@ export class GameData {
     // console.log(data.ballPosX, data.ballPosY);
     // console.log("isLeft: ", this.isLeft);
     if (this.isLeft) {
-      this.rightPaddlePosition = { x: 1600 - 45, y: data.rightPaddlePosY };
+      this.rightPaddlePosition = {
+        x: 1600 - 45,
+        y: Number(data.rightPaddlePosY),
+      };
     } else {
-      this.leftPaddlePosition = { x: 30, y: data.leftPaddlePosY };
+      this.leftPaddlePosition = { x: 30, y: Number(data.leftPaddlePosY) };
     }
-    this.player1Score = data.player1Score;
-    this.player2Score = data.player2Score;
+    this.player1Score = Number(data.player1Score);
+    this.player2Score = Number(data.player2Score);
 
     if (data.blockX && data.blockY)
-      this.blockPosition = { x: data.blockX, y: data.blockY };
+      this.blockPosition = { x: Number(data.blockX), y: Number(data.blockY) };
     if (this.usingLocalTick) return;
-    this._pongSpeed = { x: data.ballVelX, y: data.ballVelY };
-    this._pongPosition = { x: data.ballPosX, y: data.ballPosY };
-    this.pongSpin = Math.abs(data.spin);
+    this._pongSpeed = { x: Number(data.ballVelX), y: Number(data.ballVelY) };
+    this._pongPosition = { x: Number(data.ballPosX), y: Number(data.ballPosY) };
+    this.pongSpin = Math.abs(Number(data.spin));
     this.attracted = data.attracted;
   };
 
@@ -378,6 +383,8 @@ export class GameData {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
     this.tickPerParticlesSpawn = 0;
+    this._pongSpeed.x = this.localTickerPongSpeed.x;
+    this._pongSpeed.y = this.localTickerPongSpeed.y;
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
@@ -388,6 +395,8 @@ export class GameData {
     if (this._pongPosition.x <= 0 || this._pongPosition.x >= 1590) {
       this._pongPosition.x = 800;
       this._pongPosition.y = 450;
+      this.localTickerPongSpeed.x = 0;
+      this.localTickerPongSpeed.y = 0;
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this.localTickerPongSpeed.y *= -1;
