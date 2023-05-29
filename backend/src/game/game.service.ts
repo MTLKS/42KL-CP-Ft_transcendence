@@ -224,6 +224,10 @@ export class GameService {
     });
   }
 
+  createPrivateLobby(owner: Player){
+    
+  }
+
   joinLobby(player1: Player, player2: Player, gameType: string) {
     let lobby = new Lobby(player1, player2, gameType);
     this.gameLobbies.set(player1.intraName + player2.intraName, lobby);
