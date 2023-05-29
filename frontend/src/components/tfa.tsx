@@ -30,7 +30,7 @@ function help() {
 			<p>
 				tfa set					: Sets and enables Google 2FA<br />
 				tfa unset [OTP code]	: Unsets and disable 2FA (requires OTP code)<br />
-				tfa [OTP code]			: Checks whether code is valid or not<br />
+				tfa check [OTP code]	: Checks whether code is valid or not<br />
 				tfa forgot				: Emails new 2FA secret (may require relogin)<br />
 			</p>
 		</Card>
