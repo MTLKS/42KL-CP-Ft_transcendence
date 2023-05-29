@@ -19,6 +19,7 @@ import ColorTween from './functions/colorInterpolation';
 import { DropShadowFilter, RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
 import InwardShadow from './game_objects/InwardShadow';
 import { clamp, update } from 'lodash';
+import { playGameSound, SoundType } from '../functions/audio';
 
 interface GameProps {
   scale: number;
@@ -196,7 +197,6 @@ function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.Mu
       timeRef.current.length = 0;
     }
   }
-
 }
 
 function ballHitEffect(
@@ -212,20 +212,33 @@ function ballHitEffect(
 ) {
   if (!gameData.useHitFilter) return;
   if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
-    if (player1Score === 9 || player2Score === 9)
+    playGameSound(SoundType.SCORE);
+    if (player1Score === 9 || player2Score === 9) {
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
-    else
+    } else {
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 1);
+    }
   }
-  if (newPosition.y <= 0 || newPosition.y >= 900 - 10) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+
+  if (newPosition.y <= 0 || newPosition.y >= 900 - 10) {
+    playGameSound(SoundType.WALLHIT);
+    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+  }
+
   if (newPosition.x <= leftPaddlePosition.x + 30
     && newPosition.x >= leftPaddlePosition.x - 30
     && newPosition.y >= leftPaddlePosition.y - 60
-    && newPosition.y <= leftPaddlePosition.y + 60) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+    && newPosition.y <= leftPaddlePosition.y + 60) {
+      playGameSound(SoundType.PADDLEHIT);
+      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+  }
   if (newPosition.x <= rightPaddlePosition.x + 30
     && newPosition.x >= rightPaddlePosition.x - 30
     && newPosition.y >= rightPaddlePosition.y - 60
-    && newPosition.y <= rightPaddlePosition.y + 60) ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+    && newPosition.y <= rightPaddlePosition.y + 60) {
+      playGameSound(SoundType.PADDLEHIT);
+      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+  }
 }
 
 async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number) {
