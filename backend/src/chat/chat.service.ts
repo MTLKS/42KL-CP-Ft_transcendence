@@ -374,7 +374,7 @@ export class ChatService {
 		if (CHANNEL === null || CHANNEL.isRoom === false)
 			return new ErrorDTO("Invalid channelId - channel is not found");
 		
-		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } } });
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
 		CHANNEL.memberCount -= 1;
