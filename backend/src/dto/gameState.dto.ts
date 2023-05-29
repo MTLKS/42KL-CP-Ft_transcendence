@@ -1,14 +1,21 @@
+import { PowerUp } from "src/game/game.service";
+
 export class GameStartDTO {
 	opponentIntraName: string;
 	gameType: string;
 	isLeft: boolean;
 	gameRoom: string;
+	player1PowerUp:PowerUp;
+	player2PowerUp:PowerUp;
 
-	constructor(opponentIntraName: string, gameType: string, isLeft: boolean, gameRoom: string) {
+	constructor(opponentIntraName: string, gameType: string, isLeft: boolean, gameRoom: string,
+		player1PowerUp:PowerUp = PowerUp.NORMAL, player2PowerUp:PowerUp = PowerUp.NORMAL) {
 		this.opponentIntraName = opponentIntraName;
 		this.gameType = gameType;
 		this.isLeft = isLeft;
 		this.gameRoom = gameRoom;
+		this.player1PowerUp = player1PowerUp;
+		this.player2PowerUp = player2PowerUp;
 	}
 }
 
@@ -45,12 +52,14 @@ export class FieldEffectDTO {
 }
 
 export class LobbyStartDTO {
+	gameType: string;
 	player1IntraName: string;
 	player2IntraName: string;
 
-	constructor(player1IntraName: string, player2IntraName: string) {
+	constructor(player1IntraName: string, player2IntraName: string, gameType: string) {
 		this.player1IntraName = player1IntraName;
 		this.player2IntraName = player2IntraName;
+		this.gameType = gameType;
 	}
 }
 

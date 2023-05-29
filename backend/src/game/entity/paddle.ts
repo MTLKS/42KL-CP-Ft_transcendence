@@ -22,6 +22,9 @@ export class Paddle extends Rect {
 	prevDeltas: number[] =[];
 	spinRequirement: number;
 	spinForce: number;
+	mouseDown: boolean = false;
+	canMove: boolean = true;
+
 
 	constructor(posX, posY, width, height, mass: number=1, powerUp: PowerUp = PowerUp.NORMAL) {
 		super(posX, posY, width, height, mass);
@@ -29,34 +32,35 @@ export class Paddle extends Rect {
 		this.lastPosY = 0;
 
 		//Config Setting for PowerUp
-		this.sizeIncrement = 1.2;
-		this.speedIncrementX = 5;
-		this.speedIncrementY = 3;
-		this.spinRequirement = 3;
-		this.spinForce = 1.5;
-
-		if (this.powerUp == PowerUp.SIZE){
-			this.height *= this.sizeIncrement;
-		}
+		this.speedIncrementX = 4;
+		this.speedIncrementY = 2;
+		this.spinRequirement = 4;
+		this.spinForce = 0.75;
 	}
 
 	paddleCollisionAction(ball: Ball, collideTime: number, normalX: number, normalY: number){
+		if (ball.spinning == true){
+			let elapseTime = Date.now() - ball.lastHitTimer;
+			if (elapseTime > 500){
+				ball.resetSpin();
+			}
+		}
 		const avgDelta = this.prevDeltas.reduce((a, b) => a + b, 0) / this.prevDeltas.length;
 		if (ball.energized == true && this.powerUp != PowerUp.SPEED){
 			ball.resetVelocity();
 			ball.energized = false;
 		}
 		if (Math.abs(avgDelta) > this.spinRequirement){
-			ball.accelY = -this.spinForce * avgDelta; 
+			ball.spin(-this.spinForce * avgDelta)
 			if (this.powerUp == PowerUp.SPIN){
-				ball.accelY = -this.spinForce * avgDelta * 2;
+				ball.spin(-this.spinForce * avgDelta * 2);
+			}
+			else if (this.powerUp == PowerUp.SPEED){
+				ball.spin(-this.spinForce * avgDelta * 0.5);
 			}
 		}
 		switch (this.powerUp){
-			case PowerUp.NORMAL:
-				ball.collisionResponse(collideTime, normalX, normalY);
-				break;
-			case PowerUp.SIZE:
+			case PowerUp.NORMAL || PowerUp.SIZE:
 				ball.collisionResponse(collideTime, normalX, normalY);
 				break;
 			case PowerUp.SPEED:
@@ -66,15 +70,27 @@ export class Paddle extends Rect {
 				break;
 			case PowerUp.SPIN:
 				ball.collisionResponse(collideTime, normalX, normalY);
+				break;
+			case PowerUp.PRECISION:
+				if (this.mouseDown == true){
+					this.canMove = false;
+					ball.attracted = true;
+					ball.spinY = 0;
+				}
+				else{
+					ball.collisionResponse(collideTime, normalX, normalY);
+				}
+
 		}
 	}
 
-	updateDelta(){
+	updateDelta(): number{
 		let delta = this.posY - this.lastPosY;
 		this.lastPosY = this.posY;
 		this.prevDeltas.push(delta);
 		if (this.prevDeltas.length > 5){
 			this.prevDeltas.shift();
 		}
+		return (delta);
 	}
 }

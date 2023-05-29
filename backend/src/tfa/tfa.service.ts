@@ -46,7 +46,7 @@ export class TFAService{
 				to: INTRA_DATA.email,
 				from: process.env.GOOGLE_EMAIL,
 				subject: "2FA Secret Recovery",
-				html: "<h1>New 2FA Secret Requested!</h1><p>Your new 2FA secret is <b>" + USER_DATA.tfaSecret + "</b></p>",
+				html: "<h1>New 2FA Secret Requested!</h1><p>Your new 2FA secret is <b>" + TFA.secret + "</b></p>",
 				attachments: [{
 						filename: USER_DATA.intraName + "-QR.png",
 						path: USER_DATA.intraName + "-QR.png",

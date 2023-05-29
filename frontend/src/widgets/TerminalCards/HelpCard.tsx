@@ -41,7 +41,7 @@ function HelpCard(props: HelpCardProps) {
     let index: number = 0;
     for (const option of commandOptions) {
       allOptions.push(
-        <CommandOption key={Math.random().toString(36).slice(2) + Date.now().toString(36)} options={option} spaces={maxKeyLength} index={index} />,
+        <CommandOption key={Math.random().toString(36).slice(2) + Date.now().toString(36)} options={option} spaces={maxKeyLength} />,
         <br key={"br"+index}/>
       )
       index++;

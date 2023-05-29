@@ -75,6 +75,13 @@ export class PowerGameRoom extends GameRoom{
 		this.leftPaddle.powerUp = Player1PowerUp;
 		this.rightPaddle.powerUp = Player2PowerUp;
 
+		if (Player1PowerUp == PowerUp.SIZE){
+			this.leftPaddle.height = 120;
+		}
+		else if (Player2PowerUp == PowerUp.SIZE){
+			this.rightPaddle.height = 120;
+		}
+
 		//Config Setting
 		this.minTime = 10;
 		this.maxTime = 20;
@@ -90,8 +97,8 @@ export class PowerGameRoom extends GameRoom{
 
 		//BLACKHOLE
 		this.blackHoleRadius = 20;
-		this.blackHoleEffectRadius = 20;
-		this.blackHoleForce = 500;
+		this.blackHoleEffectRadius = 30;
+		this.blackHoleForce = 550;
 
 		//BLOCK
 		this.blockSize = 200;
@@ -112,12 +119,27 @@ export class PowerGameRoom extends GameRoom{
 		this.leftPaddle.updateDelta();
 		this.rightPaddle.updateDelta();
 
+		if (this.Ball.attracted == true){
+			if (this.Ball.posX < this.canvasWidth / 2){
+				this.Ball.posX = this.roomSettings.paddleOffsetX + this.leftPaddle.width;
+				if (this.leftPaddle.mouseDown == false){
+					this.Ball.launchBall(this.leftMouseX, this.leftMouseY);
+				}
+			}
+			else{
+				this.Ball.posX = this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width;
+				if (this.rightPaddle.mouseDown == false){
+					this.Ball.launchBall(this.rightMouseX, this.rightMouseY);
+				}
+			}
+		}
+
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
 		if (score != 0){
-			this.Ball.hitObstacle = true;
+			this.Ball.hitWall = true;
 		}
 		else{
-			this.Ball.hitObstacle = false;
+			this.Ball.hitWall = false;
 		}
 
 		if (score == 1 || score == 2){
@@ -134,6 +156,8 @@ export class PowerGameRoom extends GameRoom{
 			this.insideField = false;
 			this.Ball.energized =false;
 			this.gameReset = true;
+			this.Ball.accelerating = false;
+			this.Ball.spinning = false;
 		}
 
 		if (score == 3){
@@ -145,6 +169,7 @@ export class PowerGameRoom extends GameRoom{
 
 		if (this.currentEffect == FieldEffect.GRAVITY){
 			this.Ball.initAcceleration(0, this.gravityPower * this.effectMagnitude);
+			this.Ball.accelerating = true;
 		}
 		
 		if (this.elapseTime >= this.fieldEffectTimer){
@@ -163,6 +188,7 @@ export class PowerGameRoom extends GameRoom{
 			this.paddleTimer = Date.now();
 			this.insideField = false;
 			this.resetGame(server);
+			this.startGame();
 		}
 
 		if (this.circleObject != null){
@@ -172,23 +198,39 @@ export class PowerGameRoom extends GameRoom{
 		this.gameCollisionDetection();
 		if (this.blockObject != null){
 			this.blockObject.update();
-			// console.log(this.blockObject.posX, this.blockObject.posY);
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
-			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
+			server.to(this.roomID).emit('gameLoop',new GameDTO(
+				this.Ball.posX, 
+				this.Ball.posY, 
+				this.Ball.velX, 
 				this.Ball.velY,
-				this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), 
-				this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
+				this.leftPaddle.posY + (this.leftPaddle.height/2), 
+				this.rightPaddle.posY + (this.rightPaddle.height/2), 
+				this.player1Score, 
+				this.player2Score, 
+				this.Ball.spinY, 
+				this.Ball.attracted,
+				this.blockObject.posX + (this.blockSize/2),
+				this.blockObject.posY + (this.blockSize/2)));
 		}
 		else{
-			server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-				this.Ball.velY,this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), this.player1Score, this.player2Score));
+			server.to(this.roomID).emit('gameLoop',new GameDTO(
+				this.Ball.posX,
+				this.Ball.posY,
+				this.Ball.velX,
+				this.Ball.velY,
+				this.leftPaddle.posY + (this.leftPaddle.height/2),
+				this.rightPaddle.posY + (this.rightPaddle.height/2),
+				this.player1Score,
+				this.player2Score,
+				this.Ball.spinY,
+				this.Ball.attracted));
 		}
 
 	}
 
 	gameCollisionDetection(){
 		let result = null;
-
 		if (this.Ball.posX > this.canvasWidth * 0.85){
 			result = this.objectCollision(this.Ball, this.rightPaddle, -1);
 		}
@@ -201,27 +243,30 @@ export class PowerGameRoom extends GameRoom{
 			
 			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
 				this.Ball.impulsCollisionResponse(this.blockObject, -BLOCK_COLLISION.normalX, -BLOCK_COLLISION.normalY);
+				this.Ball.collisionResponse(BLOCK_COLLISION.collideTime, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
 				return;
 			}
 		}
 		
 		if (result && result.collided){
+			this.Ball.hitPaddle = true;
 			this.paddleTimer = Date.now();
-			this.Ball.hitObstacle = true;
-			this.Ball.accelX = 0;
-			this.Ball.accelY = 0;
 			//Check left paddle
 			if (result.direction == 1){
 				this.leftPaddle.paddleCollisionAction(this.Ball,
 					result.collideTime,
 					result.normalX,result.normalY);
-			}
-			//Check right paddle
-			else if (result.direction == -1){
-				this.rightPaddle.paddleCollisionAction(this.Ball,
-					result.collideTime,
-					result.normalX,result.normalY);
-			}
+				}
+				//Check right paddle
+				else if (result.direction == -1){
+					this.rightPaddle.paddleCollisionAction(this.Ball,
+						result.collideTime,
+						result.normalX,result.normalY);
+					}
+				this.Ball.lastHitTimer = Date.now();
+		}
+		else{
+			this.Ball.hitPaddle = false;
 		}
 	}
 
@@ -244,14 +289,17 @@ export class PowerGameRoom extends GameRoom{
 			}
 		}
 		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
-			this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+			if (this.Ball.velX != 0 && this.Ball.velY != 0){
+				this.Ball.accelerating = true;
+				this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+			}
 		}
 		
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
-		// let effect = 1;
+		// let effect = this.getRandomNum();
+		let effect = 0;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
@@ -314,6 +362,42 @@ export class PowerGameRoom extends GameRoom{
 		this.Ball.initAcceleration(0,0);
 		this.effectMagnitude = 0;
 		server.emit("gameState", new GameStateDTO("FieldEffect", new FieldEffectDTO("NORMAL", 0,0,0)));
+	}
+
+	updatePlayerPos(socketId: string, xValue: number, yValue: number): void {
+		if (socketId == this.player1.socket.id) {
+			if (this.leftPaddle.canMove == true){
+				this.leftPaddle.posY = yValue - 50;
+			}
+			this.leftMouseX = xValue;
+			this.leftMouseY = yValue;
+    }
+    if (socketId == this.player2.socket.id) {
+			if (this.rightPaddle.canMove == true){
+      	this.rightPaddle.posY = yValue - 50;
+			}
+			this.rightMouseX = xValue;
+			this.rightMouseY = yValue;
+    }
+	}
+
+	updatePlayerMouse(socketId: string, isMouseDown: boolean): void {
+		if (socketId == this.player1.socket.id){
+			if (this.leftPaddle.canMove == false){
+				if (isMouseDown == false){
+					this.leftPaddle.canMove = true;
+				}
+			}
+			this.leftPaddle.mouseDown = isMouseDown;
+		}
+		if (socketId == this.player2.socket.id){
+			if (this.rightPaddle.canMove == false){
+				if (isMouseDown == false){
+					this.rightPaddle.canMove = true;
+				}
+			}
+			this.rightPaddle.mouseDown = isMouseDown;
+		}
 	}
 
 	getBallQuadrant(){

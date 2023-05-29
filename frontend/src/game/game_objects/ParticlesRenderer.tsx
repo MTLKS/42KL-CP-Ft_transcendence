@@ -78,7 +78,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
 
   useTick((delta) => {
     const newPosition = gameData.pongPosition;
-    if (newPosition.x <= 10)
+    if (newPosition.x <= 0)
       gameParticleDelegate.particles.forEach((p) => {
         p.ax = 1 + Math.random() * 3;
         p.vy = (Math.random() - 0.5) * 50;
@@ -86,7 +86,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         p.sizeDecayFactor = 1.03;
         p.opacityDecay = 0.015;
       });
-    else if (newPosition.x >= 1600 - 20)
+    else if (newPosition.x >= 1600 - 10)
       gameParticleDelegate.particles.forEach((p) => {
         p.ax = -1 - Math.random() * 3;
         p.vy = (Math.random() - 0.5) * 50;
@@ -122,8 +122,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         }),);
       }
     }
-    gameParticleDelegate.update(addParticle, removeParticle);
-    gameGravityArrow?.update(addArrowParticle, removeArrowParticle);
+    gameParticleDelegate.update(addParticle, removeParticle, delta);
+    gameGravityArrow?.update(addArrowParticle, removeArrowParticle, delta);
   });
 
   // const trailElementsRef = useRef<JSX.Element[]>([]);
@@ -175,7 +175,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     <Container
       interactiveChildren={false}
       filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
-      filters={gameData.useParticlesFilter ? [bloomFilter] : null}
+      filters={gameData.useParticlesFilter ? [bloomFilter] : undefined}
     >
       <ParticleContainer
         ref={arrowContainerRef}

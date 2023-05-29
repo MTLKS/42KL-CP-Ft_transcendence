@@ -1,11 +1,9 @@
-import { GameRoom,CollisionResult } from "./gameRoom";
+import { GameRoom } from "./gameRoom";
 import { Player }  from "./player"; 
 import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
-import { GameStateDTO, FieldEffectDTO } from "src/dto/gameState.dto";
+import { GameDTO } from "src/dto/game.dto";
 import { MatchService } from "src/match/match.service";
-import { Circle } from "./circle";
-import { Block } from "./block";
 import { UserService } from "src/user/user.service";
 
 export class DeathGameRoom extends GameRoom{
@@ -16,7 +14,17 @@ export class DeathGameRoom extends GameRoom{
 
 	gameUpdate(server: Server){
 		this.Ball.update();
+		
+		this.leftPaddle.updateDelta();
+		this.rightPaddle.updateDelta();
+
 		let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
+		if (score != 0){
+			this.Ball.hitWall = true;
+		}
+		else{
+			this.Ball.hitWall = false;
+		}
 		if (score == 1 || score == 2){
 			if (score == 1){
 				this.player1Score++;
@@ -30,6 +38,17 @@ export class DeathGameRoom extends GameRoom{
 			this.gameReset = true;
 		}
 		this.gameCollisionDetection();
+		server.to(this.roomID).emit('gameLoop',new GameDTO(
+			this.Ball.posX,
+			this.Ball.posY,
+			this.Ball.velX,
+			this.Ball.velY,
+			this.leftPaddle.posY + (this.leftPaddle.height/2),
+			this.rightPaddle.posY + (this.rightPaddle.height/2),
+			this.player1Score,
+			this.player2Score,
+			this.Ball.spinY,
+			this.Ball.attracted));
 	}
 
 	gameCollisionDetection(){
@@ -42,12 +61,22 @@ export class DeathGameRoom extends GameRoom{
 		}
 		
 		if (result && result.collided){
-			console.log(this.Ball.velX);
-			this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
-			if (this.Ball.velX < 0)
-				this.Ball.initAcceleration(-1, 0);
-			else
-				this.Ball.initAcceleration(1, 0);
+			this.Ball.hitPaddle = true;
+			this.Ball.velX = Math.sign(this.Ball.velX) * (Math.abs(this.Ball.velX) + 0.5);
+			this.Ball.velY = Math.sign(this.Ball.velY) * (Math.abs(this.Ball.velY) + 0.5);
+			this.Ball.initialSpeedX = Math.abs(this.Ball.velX);
+			this.Ball.initialSpeedY = Math.abs(this.Ball.velY);
+			if (result.direction == 1){
+				this.leftPaddle.paddleCollisionAction(this.Ball,
+					result.collideTime,
+					result.normalX,result.normalY);
+			}
+			else if (result.direction == -1){
+				this.rightPaddle.paddleCollisionAction(this.Ball,
+					result.collideTime,
+					result.normalX,result.normalY);
+			}
+			this.Ball.lastHitTimer = Date.now();
 		}
 	}
 }

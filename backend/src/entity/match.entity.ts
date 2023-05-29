@@ -1,10 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne } from 'typeorm';
+import { User } from './users.entity';
 
 @Entity( { name: "matches" } )
 export class Match {
-	constructor(player1IntraName: string, player2IntraName: string, player1Score: number, player2Score: number, winner: string, gameType: string, wonBy: string) {
-		this.player1IntraName = player1IntraName;
-		this.player2IntraName = player2IntraName;
+	constructor(player1: User, player2: User, player1Score: number, player2Score: number, winner: string, gameType: string, wonBy: string) {
+		this.player1 = player1;
+		this.player2 = player2;
 		this.player1Score = player1Score;
 		this.player2Score = player2Score;
 		this.winner = winner;
@@ -15,11 +16,11 @@ export class Match {
 	@PrimaryGeneratedColumn()
 	matchId: number;
 
-	@Column()
-	player1IntraName: string;
+	@ManyToOne(() => User)
+	player1: User;
 
-	@Column()
-	player2IntraName: string;
+	@ManyToOne(() => User)
+	player2: User;
 
 	@Column()
 	player1Score: number;

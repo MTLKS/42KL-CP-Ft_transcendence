@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 import Login from "./pages/Login";
-import login, { checkAuth } from "./functions/login";
+import login, { checkAuth } from "./api/loginAPI";
 import HomePage from "./pages/HomePage";
 import UserForm from "./pages/UserForm/UserForm";
-import { getMyProfile } from "./functions/profile";
+import { getMyProfile } from "./api/profileAPI";
 import { UserData } from "./model/UserData";
 
 function App() {
@@ -49,7 +49,7 @@ function App() {
     const queryString: string = window.location.search;
     const urlParams: URLSearchParams = new URLSearchParams(queryString);
     let code: { code: string | null } = { code: urlParams.get('code') };
-
+    
     if (code.code) {
       checkAuth(code.code).then(async (res) => {
         if (res) {
@@ -60,9 +60,9 @@ function App() {
           if ((res as any).data.newUser) {
             setUserData((await getMyProfile()).data as UserData);
             setNewUser(true);
-          }
-          else
+          } else {
             login();
+          }
         }
       }).catch((err) => {
         console.log(err);

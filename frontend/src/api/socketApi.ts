@@ -14,6 +14,7 @@ export type Events =
   | "startGame"
   | "gameLoop"
   | "playerMove"
+  | "playerClick"
   | "gameState"
   | "gameResponse"
   | "joinQueue"
@@ -36,7 +37,7 @@ class SocketApi {
 
   connect() {
     this.socket.on("connect", () => {
-      console.log(this.socket.id);
+      // console.log(this.socket.id);
     });
   }
 

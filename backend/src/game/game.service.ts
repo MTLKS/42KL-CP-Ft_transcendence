@@ -20,10 +20,10 @@ import { PracticeGameRoom } from './entity/practiceGameRoom';
 
 export enum PowerUp{
   NORMAL = 0,
-  SPEED,
-  SIZE,
-  PRECISION,
-  SPIN
+  SPEED = 1,
+  SIZE = 2,
+  PRECISION = 3,
+  SPIN = 4,
 }
 
 const LOBBY_LOGGING = false;
@@ -195,10 +195,7 @@ export class GameService {
       this.queues[clientQueue].splice(i, 1);
       if (LOBBY_LOGGING)
         console.log(`Game start ${otherPlayer.intraName} ${player.intraName}`);
-      // if (clientQueue === "standard")
-      //   this.joinLobby(otherPlayer, player, clientQueue);
-      // else
-        this.joinGame(otherPlayer, player, clientQueue, server);
+      this.joinLobby(otherPlayer, player, clientQueue);
       return;
     }
     this.queues[clientQueue].push(player);
@@ -230,14 +227,16 @@ export class GameService {
   joinLobby(player1: Player, player2: Player, gameType: string) {
     let lobby = new Lobby(player1, player2, gameType);
     this.gameLobbies.set(player1.intraName + player2.intraName, lobby);
-    player1.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName)));
-    player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName)));
+    player1.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+    player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
   getPowerUp(powerUpString: string): PowerUp {
     let powerUp: PowerUp;
     powerUpString = powerUpString.toLowerCase();
-    if (powerUpString === "speed" || powerUpString === "vzzzzzzt")
+    if (powerUpString === "normal")
+      powerUp = PowerUp.NORMAL;
+    else if (powerUpString === "speed" || powerUpString === "vzzzzzzt")
       powerUp = PowerUp.SPEED;
     else if (powerUpString === "precision" || powerUpString === "piiuuuuu")
       powerUp = PowerUp.PRECISION;
@@ -257,7 +256,9 @@ export class GameService {
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
+      let gameType;
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
+        gameType= gameLobby.gameType;
         gameLobby.player1Ready = true;
         gameLobby.player1PowerUp = powerUp;
         if (LOBBY_LOGGING)
@@ -270,7 +271,7 @@ export class GameService {
       }
       if (gameLobby.player1Ready && gameLobby.player2Ready)
       {
-        this.joinGame(gameLobby.player1, gameLobby.player2, "standard", server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
+        this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
         this.gameLobbies.delete(key);
       }
     });
@@ -309,8 +310,8 @@ export class GameService {
     }
     player1.socket.join(room.roomID);
     player2.socket.join(room.roomID);
-    player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID)));
-    player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID)));
+    player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID, player1PowerUp, player2PowerUp)));
+    player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID, player1PowerUp, player2PowerUp)));
     this.gameRooms.set(room.roomID, room);
     await room.run(server);
     return room.roomID;
@@ -322,12 +323,20 @@ export class GameService {
     await ROOM.run(server);
   }
 
-  async playerUpdate(client: Socket, roomID: string, value: number) {
+  async playerUpdate(client: Socket, roomID: string, xValue: number, yValue: number) {
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
-    ROOM.updatePlayerPos(client.id, value);
+    ROOM.updatePlayerPos(client.id, xValue, yValue);
+  }
+
+  async playerMouseUpdate(client: Socket, roomID: string, isMouseDown: boolean) {
+    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    if (USER_DATA.error !== undefined) return;
+    const ROOM = this.gameRooms.get(roomID);
+    if (ROOM === undefined) return;
+    ROOM.updatePlayerMouse(client.id, isMouseDown);
   }
 
   clearGameRooms() {

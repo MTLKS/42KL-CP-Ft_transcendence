@@ -3,6 +3,7 @@ import { GameData } from './game/gameData'
 import { AppProvider, Container } from '@pixi/react';
 import { Application, ICanvas } from 'pixi.js';
 import Game from './game/Game';
+import { clamp } from 'lodash';
 
 interface GameAppProps {
   pixiApp: Application<ICanvas>;
@@ -20,6 +21,7 @@ function GameApp(props: GameAppProps) {
 
   const { pixiApp, gameData } = props;
   useEffect(() => {
+    pixiApp.ticker.maxFPS = 120;
     gameData.setSetShouldRender = setShouldRender;
     gameData.setSetScale = setScale;
     gameData.setSetUsingTicker = setUsingTicker;
@@ -30,9 +32,13 @@ function GameApp(props: GameAppProps) {
 
   useEffect(() => {
     const canvas = document.getElementById('pixi') as HTMLCanvasElement
-    canvas.addEventListener('mousemove', onmousemove);
+    window.addEventListener('mousemove', onmousemove);
+    canvas.addEventListener('mousedown', onmousedown);
+    canvas.addEventListener('mouseup', onmouseup);
     return () => {
-      canvas.removeEventListener('mousemove', onmousemove);
+      window.removeEventListener('mousemove', onmousemove);
+      canvas.removeEventListener('mousedown', onmousedown);
+      canvas.removeEventListener('mouseup', onmouseup);
     }
   }, [scale]);
   return (
@@ -47,7 +53,18 @@ function GameApp(props: GameAppProps) {
     const currentTime = Date.now();
     if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
-    gameData.updatePlayerPosition(e.offsetY / gameData.gameMaxHeight * 900 / scale);
+    gameData.updatePlayerPosition(
+      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5) / gameData.gameMaxHeight * 900 / scale, 50, 850),
+      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5) / gameData.gameMaxWidth * 1600 / scale, 30, 1570),
+    );
+  }
+
+  function onmousedown() {
+    gameData.updatePlayerClick(true);
+  }
+
+  function onmouseup() {
+    gameData.updatePlayerClick(false);
   }
 }
 

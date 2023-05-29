@@ -17,11 +17,7 @@ export class StatusService {
     const USER_DATA = await this.userService.getMyUserData(
       client.handshake.headers.authorization,
     );
-    if (USER_DATA === null || USER_DATA.error !== undefined)
-      return server.emit(
-        'statusRoom',
-        new ErrorDTO('Invalid token - Token not found'),
-      );
+    if (USER_DATA === null || USER_DATA.error !== undefined) return;
     const STATUS = await this.statusRepository.findOne({
       where: { intraName: USER_DATA.intraName },
     });
@@ -31,9 +27,13 @@ export class StatusService {
       STATUS.status = 'ONLINE';
       await this.statusRepository.save(STATUS);
     } else {
-      await this.statusRepository.save(
-        new Status(USER_DATA.intraName, client.id, 'ONLINE'),
-      );
+      try {
+        await this.statusRepository.save(
+          new Status(USER_DATA.intraName, client.id, 'ONLINE'),
+        );
+      } catch {
+        return;
+      }
     }
     server
       .to(USER_DATA.intraName)
@@ -82,18 +82,14 @@ export class StatusService {
         'changeStatus',
         new ErrorDTO('Invalid status - status can only be ONLINE or INGAME'),
       );
-    server
-      .to(STATUS.intraName)
-      .emit('changeStatus', {
-        intraName: STATUS.intraName,
-        status: newStatus.toUpperCase(),
-      });
-    server
-      .to(STATUS.intraName)
-      .emit('statusRoom', {
-        intraName: STATUS.intraName,
-        status: newStatus.toUpperCase(),
-      });
+    server.to(STATUS.intraName).emit('changeStatus', {
+      intraName: STATUS.intraName,
+      status: newStatus.toUpperCase(),
+    });
+    server.to(STATUS.intraName).emit('statusRoom', {
+      intraName: STATUS.intraName,
+      status: newStatus.toUpperCase(),
+    });
     STATUS.status = newStatus.toUpperCase();
     await this.statusRepository.save(STATUS);
   }
@@ -107,11 +103,9 @@ export class StatusService {
   ): Promise<any> {
     if (intraName === undefined) return;
     if (joining === undefined)
-      return server
-        .to(intraName)
-        .emit('statusRoom', {
-          error: 'Invalid body - joining(boolean) is undefined',
-        });
+      return server.to(intraName).emit('statusRoom', {
+        error: 'Invalid body - joining(boolean) is undefined',
+      });
     if (joining === true) {
       const FRIEND_STATUS = await this.statusRepository.findOne({
         where: { intraName: intraName },
@@ -124,12 +118,10 @@ export class StatusService {
             new ErrorDTO('Invalid intraName - IntraName not found'),
           );
       client.join(intraName);
-      server
-        .to(intraName)
-        .emit('statusRoom', {
-          intraName: FRIEND_STATUS.intraName,
-          status: FRIEND_STATUS.status,
-        });
+      server.to(intraName).emit('statusRoom', {
+        intraName: FRIEND_STATUS.intraName,
+        status: FRIEND_STATUS.status,
+      });
     } else {
       client.leave(intraName);
     }
