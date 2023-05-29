@@ -10,7 +10,6 @@ async function getHallOfFame(page: number, perPage: number) {
       userName: user.userName,
       elo: user.elo,
       intraName: user.intraName,
-      intraUrl: "url",
     };
     return item;
   });
@@ -26,7 +25,6 @@ async function getHallOfShame(page: number, perPage: number) {
       userName: user.userName,
       elo: user.elo,
       intraName: user.intraName,
-      intraUrl: "url",
     };
     return item;
   });

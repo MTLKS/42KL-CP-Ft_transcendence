@@ -12,12 +12,13 @@ interface ProfileProps {
 }
 
 function Profile(props: ProfileProps) {
-  const { currentPreviewProfile: myProfile, setPreviewProfileFunction } = useContext(PreviewProfileContext);
+  const { currentPreviewProfile, setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
+  const { myProfile } = useContext(UserContext);
   const [pixelSize, setPixelSize] = useState(400);
   const [expanded, setExpanded] = useState(false);
   const [status, setStatus] = useState("online");
   const [animating, setAnimating] = useState(false);
-  const {defaultSocket} = useContext(UserContext);
+  const { defaultSocket } = useContext(UserContext);
 
   useEffect(() => {
     if (props.expanded) setExpanded(true);
@@ -26,18 +27,18 @@ function Profile(props: ProfileProps) {
 
   useEffect(() => {
     pixelatedToSmooth();
-    if (!myProfile.intraName) return;
-    defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: true });
+    if (!currentPreviewProfile.intraName) return;
+    defaultSocket.sendMessages("statusRoom", { intraName: currentPreviewProfile.intraName, joining: true });
     defaultSocket.listen("statusRoom", (data: any) => {
-      if (data !== undefined && data.status !== undefined && data.intraName === myProfile.intraName)
+      if (data !== undefined && data.status !== undefined && data.intraName === currentPreviewProfile.intraName)
         setStatus((data.status as string).toLowerCase());
     });
 
     return () => {
       defaultSocket.removeListener("statusRoom");
-      defaultSocket.sendMessages("statusRoom", { intraName: myProfile.intraName, joining: false });
+      defaultSocket.sendMessages("statusRoom", { intraName: currentPreviewProfile.intraName, joining: false });
     }
-  }, [myProfile.intraName]);
+  }, [currentPreviewProfile.intraName]);
 
   return (<div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
     <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
@@ -59,6 +60,10 @@ function Profile(props: ProfileProps) {
     if (animating) return;
     handleAnimate();
     setExpanded(!expanded);
+    if (expanded) {
+      setTopWidgetFunction(<Profile />);
+      setPreviewProfileFunction(myProfile);
+    }
     if (pixelSize > 1) return;
     pixelatedToSmooth();
   }

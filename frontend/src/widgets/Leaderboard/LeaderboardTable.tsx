@@ -11,17 +11,16 @@ interface LeaderboardTableRowProps {
   index: number;
   name: string;
   intraId: string;
-  intraURL: string;
   eloRating: number;
 }
 
 function LeaderboardTableTitle() {
   return (
     <>
-      <div className='px-5 flex flex-row uppercase text-lg text-highlight font-extrabold'>
-        <p className='w-[5%]'>#</p>
+      <div className='px-6 flex flex-row uppercase text-lg text-highlight font-extrabold'>
+        <p className='w-[7%]'>#</p>
         <p className='w-[70%] pl-1.5'>name</p>
-        <p className='w-[25%] pr.1.5'>ELO Rating</p>
+        <p className='w-[23%] pr.1.5'>ELO</p>
       </div>
       <div className=' h-[2px] mt-2 w-full bg-highlight' />
     </>
@@ -30,38 +29,50 @@ function LeaderboardTableTitle() {
 
 function LeaderboardTableRow(props: LeaderboardTableRowProps) {
 
-  const { index, name, intraId, intraURL, eloRating } = props;
+  const { index, name, intraId, eloRating } = props;
   const [isHovered, setIsHovered] = useState(false);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
 
-  let color = "transparent";
+  let borderColor: string = "border-transparent";
   if (index === 0) {
-    color = "yellow-500";
+    borderColor = "border-yellow-500";
   } else if (index === 1) {
-    color = "accCyan";
+    borderColor = "border-accCyan";
   } else if (index === 2) {
-    color = "accRed";
-  } else if (isHovered) {
-    color = "highlight";
+    borderColor = "border-accRed";
   }
-  let className: string;
+
+  let bgColor: string = "bg-transparent";
   if (isHovered) {
-    className = "text-dimshadow bg-" + color;
+    if (index === 0) {
+      bgColor = "bg-yellow-500";
+    } else if (index === 1) {
+      bgColor = "bg-accCyan";
+    } else if (index === 2) {
+      bgColor = "bg-accRed";
+    } else {
+      bgColor = "bg-highlight";
+    }
   }
-  else {
-    className = "text-highlight bg-transparent";
+  let textColor: string;
+  if (isHovered) {
+    textColor = "text-dimshadow";
+  } else {
+    textColor = "text-highlight";
   }
-  console.log(className);
 
   return (
-    <div className={`mt-3 snap-center flex flex-row uppercase p-4 border-dashed border-4 transition-all border-${color}  ${className} `}
+    <div className='bg-transparent pt-3 px-1'
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseDown={onMouseDown}
     >
-      <p className='w-[5%]'>{index + 1}</p>
-      <p className='w-[70%]'>{name} <a target='new' className='hover:underline cursor-pointer' href={intraURL}>({intraId})</a></p>
-      <p className='w-[25%]'>{eloRating}</p>
+      <button className={` text-start snap-center flex flex-row w-full uppercase p-4 border-dashed border-4 transition-all ease-linear duration-150 ${borderColor} ${bgColor} ${textColor}`}
+      >
+        <p className='w-[7%]'>{Number(index) + 1}</p>
+        <p className='w-[70%]'>{name} </p>
+        <p className='w-[23%]'>{eloRating}</p>
+      </button>
     </div>
   )
 
@@ -185,7 +196,6 @@ function LeaderboardTable(props: LeaderboardTableProps) {
               index={index}
               name={user.userName}
               intraId={user.intraName}
-              intraURL={user.intraUrl}
               eloRating={user.elo}
             />)
         }
