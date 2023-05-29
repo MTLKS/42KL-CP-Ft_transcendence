@@ -29,6 +29,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('createPrivateLobby')
 	async handleCreatePrivateLobby(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		
 	}
 
 	@SubscribeMessage('ready')

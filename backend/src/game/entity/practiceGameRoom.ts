@@ -31,10 +31,10 @@ export class PracticeGameRoom extends PowerGameRoom {
 
     let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
     if (score != 0){
-      this.Ball.hitObstacle = true;
+      this.Ball.hitWall = true;
     }
     else{
-      this.Ball.hitObstacle = false;
+      this.Ball.hitWall = false;
     }
 
     if (score == 1 || score == 2){
@@ -91,14 +91,32 @@ export class PracticeGameRoom extends PowerGameRoom {
       this.blockObject.update();
       // console.log(this.blockObject.posX, this.blockObject.posY);
       this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
-      server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-        this.Ball.velY,
-        this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), 
-        this.player1Score, this.player2Score, this.blockObject.posX + (this.blockSize/2), this.blockObject.posY + (this.blockSize/2)));
+      server.to(this.roomID).emit('gameLoop',new GameDTO(
+				this.Ball.posX, 
+				this.Ball.posY, 
+				this.Ball.velX, 
+				this.Ball.velY,
+				this.leftPaddle.posY + (this.leftPaddle.height/2), 
+				this.rightPaddle.posY + (this.rightPaddle.height/2), 
+				this.player1Score, 
+				this.player2Score, 
+				this.Ball.spinY, 
+				this.Ball.attracted,
+				this.blockObject.posX + (this.blockSize/2),
+				this.blockObject.posY + (this.blockSize/2)));
     }
     else{
-      server.to(this.roomID).emit('gameLoop',new GameDTO(this.Ball.posX, this.Ball.posY, this.Ball.velX, 
-        this.Ball.velY,this.leftPaddle.posY + (this.leftPaddle.height/2), this.rightPaddle.posY + (this.rightPaddle.height/2), this.player1Score, this.player2Score));
+      server.to(this.roomID).emit('gameLoop',new GameDTO(
+				this.Ball.posX,
+				this.Ball.posY,
+				this.Ball.velX,
+				this.Ball.velY,
+				this.leftPaddle.posY + (this.leftPaddle.height/2),
+				this.rightPaddle.posY + (this.rightPaddle.height/2),
+				this.player1Score,
+				this.player2Score,
+				this.Ball.spinY,
+				this.Ball.attracted));
     }
   }
 
