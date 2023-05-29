@@ -45,7 +45,7 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),
   new CommandOptionData({ command: "reset" }),
-  new CommandOptionData({ command: "logout" })
+  new CommandOptionData({ command: "logout" }),
   new CommandOptionData({ command: "showlobby" }),
 ];
 
