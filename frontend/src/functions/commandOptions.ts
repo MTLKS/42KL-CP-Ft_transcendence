@@ -12,6 +12,7 @@ utilityCommands.set("cowsay <message> ", "Makes a cow say something.");
 utilityCommands.set("help", "Displays this help message.");
 utilityCommands.set("ok", "Ok.");
 utilityCommands.set("sudo", "Admin privilege for debugging.");
+utilityCommands.set("logout", "Logs you out.");
 
 const friendGeneralCommands = new Map<string, string>();
 friendGeneralCommands.set("list", "List all the friends.");

@@ -1,6 +1,6 @@
 import React, { Fragment, Ref, createRef, forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import sleep from '../functions/sleep'
-import login from '../functions/login'
+import login from '../api/loginAPI'
 import rickroll from '../functions/rickroll'
 import { flushSync } from 'react-dom';
 

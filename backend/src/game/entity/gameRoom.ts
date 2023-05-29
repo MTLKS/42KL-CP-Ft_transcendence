@@ -350,8 +350,8 @@ export class GameRoom {
     this.player1.socket.leave(this.roomID);
     this.player2.socket.leave(this.roomID);
     this.matchService.createNewMatch(
-      this.player1.intraName,
-      this.player2.intraName,
+      await this.userService.getUserDataByIntraName(this.player1.accessToken, this.player1.intraName),
+      await this.userService.getUserDataByIntraName(this.player2.accessToken, this.player2.intraName),
       this.player1Score,
       this.player2Score,
       winner,

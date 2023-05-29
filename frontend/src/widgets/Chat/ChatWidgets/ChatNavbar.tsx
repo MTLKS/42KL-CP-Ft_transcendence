@@ -1,6 +1,7 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import ChatButton from './ChatButton'
 import { FaArrowLeft } from 'react-icons/fa'
+import { NewChannelContext } from '../../../contexts/ChatContext';
 
 interface ChatNavbarProps {
   backAction?: () => void;

@@ -1,8 +1,8 @@
 import { OnGatewayConnection, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { ConnectedSocket } from '@nestjs/websockets';
 import { FriendshipService } from './friendship.service';
-import { AuthGuard } from 'src/guard/AuthGuard';
+import { ConnectedSocket } from '@nestjs/websockets';
 import { UseGuards, Body } from '@nestjs/common';
+import { AuthGuard } from 'src/guard/AuthGuard';
 
 @WebSocketGateway({ cors: {origin: '*'}, namespace: '/friendship'})
 export class FriendshipGateway implements OnGatewayConnection {

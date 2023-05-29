@@ -3,12 +3,14 @@ import { User } from './users.entity';
 
 @Entity( { name: 'channel' } )
 export class Channel {
-	constructor(owner: User, channelName: string, isPrivate: boolean, password: string, isRoom: boolean) {
+	constructor(owner: User, channelName: string, isPrivate: boolean, password: string, isRoom: boolean, newMessage: boolean, memberCount: number) {
 		this.owner = owner;
 		this.channelName = channelName;
 		this.isPrivate = isPrivate;
 		this.password = password;
 		this.isRoom = isRoom;
+		this.newMessage = newMessage;
+		this.memberCount = memberCount;
 	}
 
 	@PrimaryGeneratedColumn()
@@ -28,4 +30,10 @@ export class Channel {
 
 	@Column()
 	isRoom: boolean;
+
+	@Column()
+	newMessage: boolean;
+
+	@Column()
+	memberCount: number;
 }

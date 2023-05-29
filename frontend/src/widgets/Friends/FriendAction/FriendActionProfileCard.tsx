@@ -1,5 +1,5 @@
 import PreviewProfileContext from "../../../contexts/PreviewProfileContext";
-import { getProfileOfUser } from "../../../functions/profile";
+import { getProfileOfUser } from "../../../api/profileAPI";
 import { FriendData } from "../../../model/FriendData";
 import { UserData } from "../../../model/UserData";
 import Profile from "../../Profile/Profile";
