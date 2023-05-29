@@ -311,7 +311,7 @@ export class ChatService {
 		if (FRIEND_DATA.error !== undefined)
 			return new ErrorDTO(FRIEND_DATA.error);
 		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_DATA.intraName);
-		if (FRIEND_DATA.intraName !== intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
+		if (FRIEND_DATA.intraName !== MY_MEMBER.intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
 			return new ErrorDTO("Invalid intraName - you are not friends with this user");
 		
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
