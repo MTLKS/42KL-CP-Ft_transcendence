@@ -35,11 +35,20 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
   new CommandOptionData({ command: "profile" }),
   new CommandOptionData({ command: "leaderboard" }),
-  new CommandOptionData({ command: "friend", options: ["add", "list", "block", "unblock", "requests"], parameters: "<username>" }),
+  new CommandOptionData({ command: "friend", options: [
+    new CommandOptionData({command: "add", parameter: "<username>"}),
+    new CommandOptionData({command: "list", parameter: "<username>"}),
+    new CommandOptionData({command: "block", parameter: "<username>"}),
+    new CommandOptionData({command: "requests", parameter: "<username>"})
+  ]}),
   new CommandOptionData({ command: "cowsay" }),
-  new CommandOptionData({ command: "tfa", options: ["<OTP>", "set", "unset <OTP>", "forgot"] }),
+  new CommandOptionData({ command: "tfa", options: [
+    new CommandOptionData({ command: "check", parameter: "<OTP>" }), 
+    new CommandOptionData({ command: "set" }),
+    new CommandOptionData({ command: "unset", parameter: "<OTP>" }),
+    new CommandOptionData({ command: "forgot" })
+  ]}),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death", "practice"] }),
   new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
   new CommandOptionData({ command: "ok" }),
@@ -47,6 +56,15 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "reset" }),
   new CommandOptionData({ command: "logout" }),
   new CommandOptionData({ command: "showlobby" }),
+  new CommandOptionData({ command: "game", options: [
+    new CommandOptionData({ command: "queue", options: [
+      new CommandOptionData({ command: "standard" }), 
+      new CommandOptionData({ command: "boring" }), 
+      new CommandOptionData({ command: "death" }), 
+      new CommandOptionData({ command: "practice" })] 
+    }),
+    new CommandOptionData({ command: "dequeue" })
+  ]}),
 ];
 
 interface HomePageProps {
