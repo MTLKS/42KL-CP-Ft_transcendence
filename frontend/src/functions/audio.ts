@@ -1,4 +1,5 @@
 const messageNotificationSound = new Audio('../../assets/sounds/new-message.wav');
+const blackHoleSound = new Audio('../../assets/sounds/BlackHole.wav');
 
 export enum HitType {
   NONE,
@@ -9,8 +10,7 @@ export enum HitType {
   SLOW_IN,
   SLOW_OUT,
   FAST_IN,
-  FAST_OUT,
-  BH_IN,
+  FAST_OUT
 }
 
 let SoundPath : string[] = [
@@ -21,9 +21,7 @@ let SoundPath : string[] = [
   '../../assets/sounds/Wall.wav',
   '../../assets/sounds/Slow.wav',
   '../../assets/sounds/SlowEnd.wav',
-  '../../assets/sounds/Fast.wav',
-  '',
-  '../../assets/sounds/Slow.wav',
+  '../../assets/sounds/Fast.wav'
 ]
 
 export const playNewMessageSound = () => {
@@ -32,14 +30,15 @@ export const playNewMessageSound = () => {
   });
 }
 
-// let isSoundPLaying: boolean[] = Array(SoundPath.length).fill(false);
 export const playGameSound = (type: HitType) => {
-  // if (isSoundPLaying[type])
-    // return;
-  // isSoundPLaying[type] = true;
-  const audio = new Audio(SoundPath[type]);
-  // audio.addEventListener('ended', () => {
-    // isSoundPLaying[type] = false;
-  // });
-  audio.play();
+  new Audio(SoundPath[type]).play();
+}
+
+export const playBlackHoleSound = () => {
+  blackHoleSound.play();
+}
+
+export const stopBlackHoleSound = () => {
+  blackHoleSound.pause();
+  blackHoleSound.currentTime = 0;
 }

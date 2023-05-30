@@ -17,27 +17,23 @@ export class Circle{
 		return distance < this.radius;
 	}
 
-	pull(rect: DynamicRect, effectRadius: number, force: number): HitType{
+	pull(rect: DynamicRect, effectRadius: number, force: number){
 		const dx = rect.posX - this.posX;
 		const dy = rect.posY - this.posY;
 		const distance = Math.sqrt(dx * dx + dy * dy);
 
 		if (distance < this.radius * effectRadius && distance > this.radius){
 			const theta = Math.atan2(dy, dx);
-			const fg = force * 100 / (distance * distance);
+			const fg = Math.min(force * 500 / (distance * distance), 20);
 
 			let accelX = -fg * Math.cos(theta) * 2;
 			let accelY = -fg * Math.sin(theta) * 2;
 			rect.accelX = accelX;
 			rect.accelY = accelY;
-
-			return HitType.BH_PULL;
 		}
 		else{
 			rect.accelX = 0;
 			rect.accelY = 0;
-
-			return HitType.NONE;
 		}
 	}
 	
