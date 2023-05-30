@@ -107,7 +107,8 @@ function Paddle(props: PaddleProps) {
         break;
       case PaddleType.Vrooooom:
         g.beginFill(0xAD6454);
-        g.drawRect(10, 0, size.w - 10, size.h);
+        if (!left) g.drawRect(0, 0, size.w - 10, size.h);
+        else g.drawRect(10, 0, size.w - 10, size.h);
         g.endFill();
         break;
       default:

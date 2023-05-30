@@ -18,7 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
-import { playGameSound, HitType } from '../functions/audio';
+import { playGameSound, HitType } from "../functions/audio";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -289,6 +289,7 @@ export class GameData {
     switch (state.type) {
       case "GameStart":
         const data = <GameStartDTO>state.data;
+        console.log("GameStart:", data);
         this.isLeft = data.isLeft;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
