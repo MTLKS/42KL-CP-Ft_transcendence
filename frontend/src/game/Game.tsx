@@ -96,6 +96,10 @@ function Game(props: GameProps) {
   }, [scale]);
 
   useEffect(() => {
+    gameData.setBallhit = ballhit;
+  }, [scale]);
+
+  useEffect(() => {
     setMounted(true);
     app.ticker.speed = 1;
     return () => setMounted(false);
