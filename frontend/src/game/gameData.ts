@@ -18,7 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
-import { playGameSound, HitType } from '../functions/audio';
+import { playGameSound, HitType } from "../functions/audio";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -289,6 +289,7 @@ export class GameData {
     switch (state.type) {
       case "GameStart":
         const data = <GameStartDTO>state.data;
+        console.log("GameStart:", data);
         this.isLeft = data.isLeft;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
@@ -352,14 +353,30 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
-    if (data.hitType)
-      playGameSound(data.hitType);
-    console.log(data.hitType, data.hitType === HitType.SCORE)
+    this.pongSpeedMagnitude = Math.sqrt(
+      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
+    );
+    if (data.hitType) playGameSound(data.hitType);
+    console.log(data.hitType, data.hitType === HitType.SCORE);
     if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 9 || data.player2Score == 9) ? 0.5 : 1);
-    } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        1,
+        data.player1Score == 9 || data.player2Score == 9 ? 0.5 : 1
+      );
+    } else if (
+      data.hitType === HitType.WALL ||
+      data.hitType === HitType.PADDLE
+    ) {
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        0.5,
+        1
+      );
     }
     if (this.isLeft) {
       this.rightPaddlePosition = {

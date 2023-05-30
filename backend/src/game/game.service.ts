@@ -202,7 +202,7 @@ export class GameService {
     //TESTING
     var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server);
+    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPEED, PowerUp.SPIN);
   }
 
   async leaveQueue(client: Socket) {
@@ -305,10 +305,10 @@ export class GameService {
         player2,
         gameType,
         ROOM_SETTING,
-        // player1PowerUp,
-        // player2PowerUp
-        PowerUp.SPEED,
-        PowerUp.NORMAL,
+        player1PowerUp,
+        player2PowerUp,
+        // PowerUp.SPEED,
+        // PowerUp.NORMAL,
         this.matchService,
         this.userService,
       );
