@@ -11,7 +11,6 @@ export enum HitType {
   FAST_IN,
   FAST_OUT,
   BH_IN,
-  BH_OUT
 }
 
 let SoundPath : string[] = [
@@ -20,12 +19,11 @@ let SoundPath : string[] = [
   '../../assets/sounds/Paddle.wav',
   '../../assets/sounds/Score.wav',
   '../../assets/sounds/Wall.wav',
-  '../../assets/sounds/SlowIn.wav',
-  '../../assets/sounds/SlowOut.wav',
-  '../../assets/sounds/SlowIn.wav',
-  '../../assets/sounds/SlowOut.wav',
-  '../../assets/sounds/SlowIn.wav',
-  '../../assets/sounds/SlowOut.wav'
+  '../../assets/sounds/Slow.wav',
+  '../../assets/sounds/SlowEnd.wav',
+  '../../assets/sounds/Fast.wav',
+  '',
+  '../../assets/sounds/Slow.wav',
 ]
 
 export const playNewMessageSound = () => {
@@ -34,14 +32,14 @@ export const playNewMessageSound = () => {
   });
 }
 
-let isSoundPLaying: boolean[] = Array(SoundPath.length).fill(false);
+// let isSoundPLaying: boolean[] = Array(SoundPath.length).fill(false);
 export const playGameSound = (type: HitType) => {
-  if (isSoundPLaying[type])
-    return;
-  isSoundPLaying[type] = true;
+  // if (isSoundPLaying[type])
+    // return;
+  // isSoundPLaying[type] = true;
   const audio = new Audio(SoundPath[type]);
-  audio.addEventListener('ended', () => {
-    isSoundPLaying[type] = false;
-  });
+  // audio.addEventListener('ended', () => {
+    // isSoundPLaying[type] = false;
+  // });
   audio.play();
 }
