@@ -97,8 +97,8 @@ export class PowerGameRoom extends GameRoom{
 
 		//BLACKHOLE
 		this.blackHoleRadius = 20;
-		this.blackHoleEffectRadius = 30;
-		this.blackHoleForce = 550;
+		this.blackHoleEffectRadius = 50;
+		this.blackHoleForce = 1500;
 
 		//BLOCK
 		this.blockSize = 200;
@@ -325,7 +325,7 @@ export class PowerGameRoom extends GameRoom{
 
 	fieldChange(server: Server){
 		// let effect = this.getRandomNum();
-		let effect = 4;
+		let effect = 3;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

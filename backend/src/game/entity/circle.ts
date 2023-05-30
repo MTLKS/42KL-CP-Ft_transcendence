@@ -26,15 +26,18 @@ export class Circle{
 			const theta = Math.atan2(dy, dx);
 			const fg = force * 100 / (distance * distance);
 
-			rect.accelX = -fg * Math.cos(theta) * 1.5;
-			rect.accelY = -fg * Math.sin(theta) * 1.5;
+			let accelX = -fg * Math.cos(theta) * 2;
+			let accelY = -fg * Math.sin(theta) * 2;
+			rect.accelX = accelX;
+			rect.accelY = accelY;
+
 			return HitType.BH_PULL;
 		}
 		else{
 			rect.accelX = 0;
 			rect.accelY = 0;
 
-			return HitType.BH_RELEASE;
+			return HitType.NONE;
 		}
 	}
 	

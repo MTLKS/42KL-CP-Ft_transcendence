@@ -44,7 +44,6 @@ export enum HitType {
   FAST_IN = 7,
   FAST_OUT = 8,
   BH_PULL = 9,
-  BH_RELEASE = 10,
 }
 
 export class GameRoom {
@@ -193,7 +192,6 @@ export class GameRoom {
       this.gameReset = true;
     }
     else if (score == 3){
-      console.log("wall");
       this.hitType = HitType.WALL;
     }
     else if (score == 0) {
