@@ -120,8 +120,8 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     let isParameter = false;
     let currentCommand :CommandOptionData;
     splitValue.forEach((word, index) => {
-      if (index !== 0){
-        const found = currentCommand.options.find((command) => command.isCommand(word))!;
+      if (index !== 0) {
+        const found = currentCommand === undefined ? false : currentCommand.options.find((command) => command.isCommand(word))!;
         if (!found){
           if (currentCommand) {
             toolTipCommands.push(currentCommand.parameter);
