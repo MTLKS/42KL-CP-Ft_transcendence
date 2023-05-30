@@ -25,16 +25,12 @@ export class Circle{
 			const theta = Math.atan2(dy, dx);
 			const fg = force * 100 / (distance * distance);
 
-			rect.accelX = -fg * Math.cos(theta);
-			rect.accelY = -fg * Math.sin(theta);
+			rect.accelX = -fg * Math.cos(theta) * 1.5;
+			rect.accelY = -fg * Math.sin(theta) * 1.5;
 		}
 		else{
 			rect.accelX = 0;
 			rect.accelY = 0;
-		}
-		if (distance < this.radius){
-			rect.velX = 0;
-			rect.velY = 0;
 		}
 	}
 	
