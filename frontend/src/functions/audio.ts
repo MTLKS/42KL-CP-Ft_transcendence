@@ -1,6 +1,6 @@
 const messageNotificationSound = new Audio('../../assets/sounds/new-message.wav');
 
-export enum SoundType {
+export enum HitType {
   NONE,
   WALL,
   PADDLE,
@@ -17,8 +17,15 @@ export enum SoundType {
 let SoundPath : string[] = [
   '',
   '../../assets/sounds/Wall.wav',
+  '../../assets/sounds/Paddle.wav',
   '../../assets/sounds/Score.wav',
-  '../../assets/sounds/Paddle.wav'
+  '../../assets/sounds/Wall.wav',
+  '../../assets/sounds/SlowIn.wav',
+  '../../assets/sounds/SlowOut.wav',
+  '../../assets/sounds/SlowIn.wav',
+  '../../assets/sounds/SlowOut.wav',
+  '../../assets/sounds/SlowIn.wav',
+  '../../assets/sounds/SlowOut.wav'
 ]
 
 export const playNewMessageSound = () => {
@@ -28,7 +35,7 @@ export const playNewMessageSound = () => {
 }
 
 let isSoundPLaying: boolean[] = Array(SoundPath.length).fill(false);
-export const playGameSound = (type: SoundType) => {
+export const playGameSound = (type: HitType) => {
   if (isSoundPLaying[type])
     return;
   isSoundPLaying[type] = true;

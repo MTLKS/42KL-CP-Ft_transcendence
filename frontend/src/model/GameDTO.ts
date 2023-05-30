@@ -1,4 +1,4 @@
-import { SoundType } from "../functions/audio";
+import { HitType } from "../functions/audio";
 
 export class GameDTO {
   ballPosX: number;
@@ -13,7 +13,7 @@ export class GameDTO {
   attracted: boolean;
   blockX: number | null;
   blockY: number | null;
-  soundEffect: SoundType;
+  hitType: HitType;
 
   constructor(
     ballPosX: number,
@@ -28,7 +28,7 @@ export class GameDTO {
     attracted: boolean = false,
     blockX: number | null = null,
     blockY: number | null = null,
-    soundEffect: SoundType
+    hitType: HitType
   ) {
     this.ballPosX = ballPosX;
     this.ballPosY = ballPosY;
@@ -42,6 +42,6 @@ export class GameDTO {
     this.blockY = blockY;
     this.spin = spin;
     this.attracted = attracted;
-    this.soundEffect = soundEffect;
+    this.hitType = hitType;
   }
 }
