@@ -18,7 +18,12 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
-import { playGameSound, HitType, playBlackHoleSound, stopBlackHoleSound } from "../functions/audio";
+import {
+  playGameSound,
+  HitType,
+  playBlackHoleSound,
+  stopBlackHoleSound,
+} from "../functions/audio";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -26,6 +31,16 @@ export enum PaddleType {
   "Ngeeeaat",
   "Vrooooom",
   "boring",
+}
+
+interface GameSettings {
+  useParticlesFilter: boolean;
+  useEntitiesFilter: boolean;
+  usePaddleFilter: boolean;
+  useHitFilter: boolean;
+  tickPerParticlesSpawn: number;
+  gameMaxWidth: number;
+  gameMaxHeight: number;
 }
 
 export class GameData {
@@ -100,6 +115,7 @@ export class GameData {
   blur?: () => void;
 
   constructor() {
+    this.loadSettings();
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
     this.socketApi.listen("gameState", this.listenToGameState);
@@ -117,6 +133,70 @@ export class GameData {
         isMouseDown: isMouseDown,
       });
     };
+  }
+
+  private loadSettings() {
+    const gameSettings = localStorage.getItem("gameSettings");
+    if (gameSettings) {
+      const settings: GameSettings = JSON.parse(gameSettings);
+      this.useParticlesFilter = settings.useParticlesFilter;
+      this.useEntitiesFilter = settings.useEntitiesFilter;
+      this.usePaddleFilter = settings.usePaddleFilter;
+      this.useHitFilter = settings.useHitFilter;
+      this.tickPerParticlesSpawn = settings.tickPerParticlesSpawn;
+      this.gameMaxWidth = settings.gameMaxWidth;
+      this.gameMaxHeight = settings.gameMaxHeight;
+    }
+  }
+
+  set setUseParticlesFilter(useParticlesFilter: boolean) {
+    this.useParticlesFilter = useParticlesFilter;
+    this.saveSettings();
+  }
+
+  private saveSettings() {
+    const settings: GameSettings = {
+      useParticlesFilter: this.useParticlesFilter,
+      useEntitiesFilter: this.useEntitiesFilter,
+      usePaddleFilter: this.usePaddleFilter,
+      useHitFilter: this.useHitFilter,
+      tickPerParticlesSpawn: this.tickPerParticlesSpawn,
+      gameMaxWidth: this.gameMaxWidth,
+      gameMaxHeight: this.gameMaxHeight,
+    };
+    localStorage.setItem("gameSettings", JSON.stringify(settings));
+  }
+
+  set setUseEntitiesFilter(useEntitiesFilter: boolean) {
+    this.useEntitiesFilter = useEntitiesFilter;
+    this.saveSettings();
+  }
+
+  set setUsePaddleFilter(usePaddleFilter: boolean) {
+    this.usePaddleFilter = usePaddleFilter;
+    this.saveSettings();
+  }
+
+  set setUseHitFilter(useHitFilter: boolean) {
+    this.useHitFilter = useHitFilter;
+    this.saveSettings();
+  }
+
+  set setTickPerParticlesSpawn(tickPerParticlesSpawn: number) {
+    this.tickPerParticlesSpawn = tickPerParticlesSpawn;
+    this.saveSettings();
+  }
+
+  set setGameMaxWidth(gameMaxWidth: number) {
+    this.gameMaxWidth = gameMaxWidth;
+    this.gameMaxHeight = Math.floor(gameMaxWidth / 16 * 9);
+    this.saveSettings();
+  }
+
+  set setGameMaxHeight(gameMaxHeight: number) {
+    this.gameMaxHeight = gameMaxHeight;
+    this.gameMaxWidth = Math.floor(gameMaxHeight / 9 * 16);
+    this.saveSettings();
   }
 
   get pongPosition() {

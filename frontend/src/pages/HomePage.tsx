@@ -19,7 +19,7 @@ import { FriendsContext, SelectedFriendContext } from '../contexts/FriendContext
 import UserContext from '../contexts/UserContext';
 import { addFriend } from '../api/friendActionAPI';
 import HelpCard from '../widgets/TerminalCards/HelpCard';
-import { allCommands, friendCommands } from '../functions/commandOptions';
+import { allCommands, friendCommands, gameSetCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
@@ -30,24 +30,29 @@ import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
 import login from '../api/loginAPI';
 import Lobby from '../widgets/Lobby/Lobby';
+import { set } from 'lodash';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
   new CommandOptionData({ command: "profile" }),
   new CommandOptionData({ command: "leaderboard" }),
-  new CommandOptionData({ command: "friend", options: [
-    new CommandOptionData({command: "add", parameter: "<username>"}),
-    new CommandOptionData({command: "list", parameter: "<username>"}),
-    new CommandOptionData({command: "block", parameter: "<username>"}),
-    new CommandOptionData({command: "requests", parameter: "<username>"})
-  ]}),
+  new CommandOptionData({
+    command: "friend", options: [
+      new CommandOptionData({ command: "add", parameter: "<username>" }),
+      new CommandOptionData({ command: "list", parameter: "<username>" }),
+      new CommandOptionData({ command: "block", parameter: "<username>" }),
+      new CommandOptionData({ command: "requests", parameter: "<username>" })
+    ]
+  }),
   new CommandOptionData({ command: "cowsay" }),
-  new CommandOptionData({ command: "tfa", options: [
-    new CommandOptionData({ command: "check", parameter: "<OTP>" }), 
-    new CommandOptionData({ command: "set" }),
-    new CommandOptionData({ command: "unset", parameter: "<OTP>" }),
-    new CommandOptionData({ command: "forgot" })
-  ]}),
+  new CommandOptionData({
+    command: "tfa", options: [
+      new CommandOptionData({ command: "check", parameter: "<OTP>" }),
+      new CommandOptionData({ command: "set" }),
+      new CommandOptionData({ command: "unset", parameter: "<OTP>" }),
+      new CommandOptionData({ command: "forgot" })
+    ]
+  }),
   new CommandOptionData({ command: "sudo" }),
   new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
@@ -56,15 +61,28 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "reset" }),
   new CommandOptionData({ command: "logout" }),
   new CommandOptionData({ command: "showlobby" }),
-  new CommandOptionData({ command: "game", options: [
-    new CommandOptionData({ command: "queue", options: [
-      new CommandOptionData({ command: "standard" }), 
-      new CommandOptionData({ command: "boring" }), 
-      new CommandOptionData({ command: "death" }), 
-      new CommandOptionData({ command: "practice" })] 
-    }),
-    new CommandOptionData({ command: "dequeue" })
-  ]}),
+  new CommandOptionData({
+    command: "game", options: [
+      new CommandOptionData({
+        command: "queue", options: [
+          new CommandOptionData({ command: "standard" }),
+          new CommandOptionData({ command: "boring" }),
+          new CommandOptionData({ command: "death" }),
+          new CommandOptionData({ command: "practice" })]
+      }),
+      new CommandOptionData({ command: "dequeue" }),
+      new CommandOptionData({
+        command: "set", options: [
+          new CommandOptionData({ command: "useParticlesFilter" }),
+          new CommandOptionData({ command: "useEntitiesFilter" }),
+          new CommandOptionData({ command: "usePaddleFilter" }),
+          new CommandOptionData({ command: "useHitFilter" }),
+          new CommandOptionData({ command: "tickPerParticlesSpawn" }),
+          new CommandOptionData({ command: "gameMaxWidth" }),
+          new CommandOptionData({ command: "gameMaxHeight" })]
+      }),
+    ]
+  }),
 ];
 
 interface HomePageProps {
@@ -521,7 +539,7 @@ function HomePage(props: HomePageProps) {
     if (commands.length === 1) {
       newList = appendNewCard(
         <Card key={"game" + index} type={CardType.SUCCESS}>
-          <span className='text-xl neonText-white font-bold'>GAME</span><br/>
+          <span className='text-xl neonText-white font-bold'>GAME</span><br />
           <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
           <p className="text-sm">
             game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
@@ -544,12 +562,56 @@ function HomePage(props: HomePageProps) {
       else
         newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
       setElements(newList);
-    } else {
+    } else if (commands[1] == "dequeue") {
       let response: GameResponseDTO = await gameData.leaveQueue();
       if (response.type === "success")
         newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
       setElements(newList);
+    } else if (commands[1] == "set") {
+      handleGameSettingsCommand(commands, newList);
     }
+  }
+
+  function handleGameSettingsCommand(commands: string[], newList: JSX.Element[]) {
+    if (commands.length === 2) {
+      newList = appendNewCard(<HelpCard title="game set" usage="game set <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
+    } else if (commands.length === 3) {
+      newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>nothing, really?</div></Card>);
+    } else if (commands.length === 4) {
+      switch (commands[2]) {
+        case "useParticlesFilter":
+          gameData.setUseParticlesFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        case "useEntitiesFilter":
+          gameData.setUseEntitiesFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        case "usePaddleFilter":
+          gameData.setUsePaddleFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        case "useHitFilter":
+          gameData.setUseHitFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        case "tickPerParticlesSpawn":
+          gameData.setTickPerParticlesSpawn = parseInt(commands[3]);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        case "gameMaxWidth":
+          gameData.setGameMaxWidth = parseInt(commands[3]);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        case "gameMaxHeight":
+          gameData.setGameMaxHeight = parseInt(commands[3]);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          break;
+        default:
+          break;
+      }
+    }
+    setElements(newList);
   }
 }
 
