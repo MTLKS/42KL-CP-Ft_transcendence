@@ -18,7 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
-import { playGameSound, SoundType } from '../functions/audio';
+import { playGameSound, HitType } from '../functions/audio';
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -47,6 +47,7 @@ export class GameData {
   private _pongSpeed: Offset = { x: 12, y: 8 };
   pongSpin: number = 0;
   attracted: boolean = false;
+  pongSpeedMagnitude: number = 0;
 
   // player related variables
   leftPaddlePosition: Offset = { x: -50, y: 450 };
@@ -224,7 +225,7 @@ export class GameData {
   }
 
   async endGame() {
-    console.log("end game");
+    // console.log("end game");
     if (!this.gameStarted) return;
     await sleep(3000);
     this.stopDisplayGame();
@@ -351,8 +352,15 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    if (data.soundEffect)
-      playGameSound(data.soundEffect);
+    this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
+    if (data.hitType)
+      playGameSound(data.hitType);
+    console.log(data.hitType, data.hitType === HitType.SCORE)
+    if (data.hitType === HitType.SCORE) {
+      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 9 || data.player2Score == 9) ? 0.5 : 1);
+    } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE) {
+      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
+    }
     if (this.isLeft) {
       this.rightPaddlePosition = {
         x: 1600 - 45,

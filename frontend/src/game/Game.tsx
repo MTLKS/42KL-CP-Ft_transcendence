@@ -19,7 +19,7 @@ import ColorTween from './functions/colorInterpolation';
 import { DropShadowFilter, RGBSplitFilter, ShockwaveFilter } from 'pixi-filters';
 import InwardShadow from './game_objects/InwardShadow';
 import { clamp, update } from 'lodash';
-import { playGameSound, SoundType } from '../functions/audio';
+import { playGameSound, HitType } from '../functions/audio';
 
 interface GameProps {
   scale: number;
@@ -126,7 +126,7 @@ function Game(props: GameProps) {
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
     zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale);
-    ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
+    // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
 
   const backgoundTexture = useMemo(() => {
@@ -216,7 +216,6 @@ function ballHitEffect(
 ) {
   if (!gameData.useHitFilter) return;
   if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
-    playGameSound(SoundType.SCORE);
     if (player1Score === 9 || player2Score === 9) {
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
     } else {
@@ -225,7 +224,6 @@ function ballHitEffect(
   }
 
   if (newPosition.y <= 0 || newPosition.y >= 900 - 10) {
-    playGameSound(SoundType.WALL);
     ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
 
@@ -233,14 +231,12 @@ function ballHitEffect(
     && newPosition.x >= leftPaddlePosition.x - 30
     && newPosition.y >= leftPaddlePosition.y - 60
     && newPosition.y <= leftPaddlePosition.y + 60) {
-      playGameSound(SoundType.PADDLE);
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
   if (newPosition.x <= rightPaddlePosition.x + 30
     && newPosition.x >= rightPaddlePosition.x - 30
     && newPosition.y >= rightPaddlePosition.y - 60
     && newPosition.y <= rightPaddlePosition.y + 60) {
-      playGameSound(SoundType.PADDLE);
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
 }
