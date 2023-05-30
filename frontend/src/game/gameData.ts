@@ -18,7 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
-import { playGameSound, HitType } from "../functions/audio";
+import { playGameSound, HitType, playBlackHoleSound, stopBlackHoleSound } from "../functions/audio";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -308,6 +308,7 @@ export class GameData {
         this.globalGravityY = 0;
         switch (fieldEffect.type) {
           case "NORMAL":
+            stopBlackHoleSound();
             this.gameEntities = [];
             break;
           case "GRAVITY":
@@ -325,6 +326,7 @@ export class GameData {
             ];
             break;
           case "BLACK_HOLE":
+            playBlackHoleSound();
             this.gameEntities = [
               new GameBlackhole(
                 { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 100, h: 100 },
