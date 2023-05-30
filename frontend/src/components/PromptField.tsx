@@ -24,30 +24,26 @@ interface PromptFieldProps {
 
 interface CommandOptionDataProps {
   command?: string;
-  options?: string[];
-  parameters?: string;
+  options?: CommandOptionData[];
+  parameter?: string;
 }
 
 export class CommandOptionData {
   command: string;
-  options: string[];
+  options: CommandOptionData[];
   parameter: string;
-  constructor({ command, options, parameters }: CommandOptionDataProps) {
+  constructor({ command, options, parameter }: CommandOptionDataProps) {
     this.command = command ?? "";
     this.options = options ?? [];
-    this.parameter = parameters ?? "";
+    this.parameter = parameter ?? "";
   }
 
-  isCommand(command: string, commandLength: number): boolean {
-    if (commandLength > 1)
-      return command === this.command;
+  isCommand(command: string): boolean {
     return this.command.startsWith(command);
   }
 
   findOption(option: string, commandLength: number): string | undefined {
-    if (commandLength > 2)
-      return this.options.find((opt) => opt === option);
-    return this.options.find((opt) => opt.startsWith(option));
+    return commandLength > 2 ? this.options.find((opt) => opt.command === option)?.command : this.options.find((opt) => opt.command.startsWith(option))?.command;
   }
 }
 
@@ -118,25 +114,33 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     }
     inputRef.current!.focus();
   }, [value]);
-
-  const { toolTipCommand, toolTipOption, toolTipParameter, toolTipDisplay } = useMemo(() => {
-    const selectCommand = availableCommands.find((command) => command.isCommand(splitValue[0], splitValue.length));
-    const toolTipCommand: string | undefined = selectCommand?.command;
-
-    let toolTipOption: string | undefined = undefined;
-    if (splitValue.length === 2) toolTipOption = selectCommand?.findOption(splitValue[1], splitValue.length);
-    let toolTipParameter: string | undefined = undefined;
-    if (splitValue.length >= 3) toolTipParameter = selectCommand?.parameter;
-
-    let toolTipDisplay: string | undefined = undefined;
-    if (splitValue.length === 1) toolTipDisplay = toolTipCommand;
-    else if (splitValue.length === 2) toolTipDisplay = toolTipOption;
-    else toolTipDisplay = toolTipParameter;
-
-    return { toolTipCommand, toolTipOption, toolTipParameter, toolTipDisplay };
-  }, [value])
-
-
+  
+  const {toolTips,isParameter} = useMemo(() => {
+    const toolTipCommands: string[] = [];
+    let isParameter = false;
+    let currentCommand :CommandOptionData;
+    splitValue.forEach((word, index) => {
+      if (index !== 0){
+        const found = currentCommand.options.find((command) => command.isCommand(word))!;
+        if (!found){
+          if (currentCommand) {
+            toolTipCommands.push(currentCommand.parameter);
+            isParameter = true;
+          }
+          return ;
+        }
+        else
+          currentCommand  = found;
+        toolTipCommands.push(currentCommand.command);
+        return ;
+      }
+      currentCommand = availableCommands.find((command) => command.isCommand(word))!;
+      if (!currentCommand) return ;
+      toolTipCommands.push(currentCommand.command);
+    });
+    return {toolTips: toolTipCommands, isParameter};
+  }, [value]);
+  
   return (
     <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
     >
@@ -172,11 +176,11 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
         />
         <div className=' absolute opacity-20'
           style={{
-            display: toolTipDisplay && value !== "" && showtip ? "" : "none",
+            display: toolTips.length!=0 && value !== "" && showtip && !(isParameter && splitValue[splitValue.length - 1].length !== 0) ? "" : "none",
             left: toolTipOffset.left, top: toolTipOffset.top
           }}
         >
-          {toolTipDisplay}
+          {toolTips[toolTips.length - 1]}
         </div>
         <div className={'animate-pulse absolute w-2 h-9 bg-highlight top-2'}
           style={{ left: offset.left, top: offset.top }} />
@@ -197,7 +201,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       if (index == 0) {
         let found = false;
         availableCommands.forEach((command) => {
-          if (command.isCommand(element, splitValue.length)) {
+          if (command.isCommand(element)) {
             spansStyles.push(commandClassName ?? '');
             found = true;
           }
@@ -267,17 +271,17 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setValue(newCommand);
       setHistoryIndex(newHistoryIndex);
     }
-    if (e.key === 'Tab' || e.key === 'ArrowRight' && toolTipCommand) {
+    if ((e.key === 'Tab' || e.key === 'ArrowRight') && toolTips.length != 0) {
       e.preventDefault();
-      if (toolTipCommand && splitValue.length === 1) {
-        e.currentTarget.value = toolTipCommand;
-        setValue(toolTipCommand);
-      }
-      else if (toolTipOption && splitValue.length === 2) {
-        const finalString = toolTipCommand + ' ' + toolTipOption;
-        e.currentTarget.value = finalString;
-        setValue(finalString);
-      }
+      let finalString = '';
+      toolTips.forEach((toolTip, index) => {
+        if (index === 0)
+          finalString += toolTip;
+        else
+          finalString += " " + toolTip;
+      })
+      e.currentTarget.value = finalString;
+      setValue(finalString);
     }
   }
 })

@@ -132,7 +132,7 @@ export class GameService {
         );
       client.emit(
         'gameResponse',
-        new GameResponseDTO('error', 'unknown queue'),
+        new GameResponseDTO('error', 'Unknown queue: ' + clientQueue),
       );
       return;
     }
@@ -147,7 +147,7 @@ export class GameService {
           console.log(`${USER_DATA.intraName} is already in a game.`);
         client.emit(
           'gameResponse',
-          new GameResponseDTO('error', 'already in game'),
+          new GameResponseDTO('error', 'Already in game'),
         );
         return;
       }
@@ -164,7 +164,7 @@ export class GameService {
         console.log(`${USER_DATA.intraName} is already in ${IN_QUEUE} queue.`);
       client.emit(
         'gameResponse',
-        new GameResponseDTO('error', 'already in queue'),
+        new GameResponseDTO('error', 'Already in queue'),
       );
       return;
     }
@@ -181,7 +181,7 @@ export class GameService {
     let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
     client.emit(
       'gameResponse',
-      new GameResponseDTO('success', `joined queue ${clientQueue}`),
+      new GameResponseDTO('success', `Joined ${clientQueue} queue`),
     );
 
     // Run queue logic
@@ -199,6 +199,10 @@ export class GameService {
       return;
     }
     this.queues[clientQueue].push(player);
+    //TESTING
+    // var player1 = this.queues[clientQueue].pop();
+    // this.ingame.push(player1);
+    // this.joinGame(player1, player1, clientQueue, server);
   }
 
   async leaveQueue(client: Socket) {
@@ -216,7 +220,7 @@ export class GameService {
         });
         client.emit(
           'gameResponse',
-          new GameResponseDTO('success', `left queue ${queueType}`),
+          new GameResponseDTO('success', `Left the ${queueType} queue`),
         );
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} left ${queueType} queue.`);

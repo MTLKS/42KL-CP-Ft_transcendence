@@ -35,11 +35,20 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
   new CommandOptionData({ command: "profile" }),
   new CommandOptionData({ command: "leaderboard" }),
-  new CommandOptionData({ command: "friend", options: ["add", "list", "block", "unblock", "requests"], parameters: "<username>" }),
+  new CommandOptionData({ command: "friend", options: [
+    new CommandOptionData({command: "add", parameter: "<username>"}),
+    new CommandOptionData({command: "list", parameter: "<username>"}),
+    new CommandOptionData({command: "block", parameter: "<username>"}),
+    new CommandOptionData({command: "requests", parameter: "<username>"})
+  ]}),
   new CommandOptionData({ command: "cowsay" }),
-  new CommandOptionData({ command: "tfa", options: ["<OTP>", "set", "unset <OTP>", "forgot"] }),
+  new CommandOptionData({ command: "tfa", options: [
+    new CommandOptionData({ command: "check", parameter: "<OTP>" }), 
+    new CommandOptionData({ command: "set" }),
+    new CommandOptionData({ command: "unset", parameter: "<OTP>" }),
+    new CommandOptionData({ command: "forgot" })
+  ]}),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death", "practice"] }),
   new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
   new CommandOptionData({ command: "ok" }),
@@ -47,6 +56,15 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "reset" }),
   new CommandOptionData({ command: "logout" }),
   new CommandOptionData({ command: "showlobby" }),
+  new CommandOptionData({ command: "game", options: [
+    new CommandOptionData({ command: "queue", options: [
+      new CommandOptionData({ command: "standard" }), 
+      new CommandOptionData({ command: "boring" }), 
+      new CommandOptionData({ command: "death" }), 
+      new CommandOptionData({ command: "practice" })] 
+    }),
+    new CommandOptionData({ command: "dequeue" })
+  ]}),
 ];
 
 interface HomePageProps {
@@ -137,11 +155,8 @@ function HomePage(props: HomePageProps) {
       case "cowsay":
         newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
-      case "queue":
-        handleQueueCommand(command[1], newList);
-        return;
-      case "dequeue":
-        handleDequeueCommand(newList);
+      case "game":
+        handleGameCommand(command, newList);
         return;
       case "profile":
         handleProfileCommand(command);
@@ -158,7 +173,7 @@ function HomePage(props: HomePageProps) {
         setIndex(newList.length - 1);
         break;
       case "help":
-        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />);
+        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='' commandOptions={allCommands} />);
         break;
       case "ok":
         newList = appendNewCard(<Card key={"ok" + index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
@@ -468,7 +483,6 @@ function HomePage(props: HomePageProps) {
     setElements(appendNewCard(newCards));
   }
 
-
   // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
   // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
   async function handleFriendCommand(command: string[]) {
@@ -503,20 +517,39 @@ function HomePage(props: HomePageProps) {
     setElements(newList);
   }
 
-  async function handleQueueCommand(argument: string, newList: JSX.Element[]) {
-    let response: GameResponseDTO = await gameData.joinQueue(argument);
-    if (response.type === "success")
-      newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-    else
-      newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
-    setElements(newList);
-  }
-
-  async function handleDequeueCommand(newList: JSX.Element[]) {
-    let response: GameResponseDTO = await gameData.leaveQueue();
-    if (response.type === "success")
-      newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-    setElements(newList);
+  async function handleGameCommand(commands: string[], newList: JSX.Element[]) {
+    if (commands.length === 1) {
+      newList = appendNewCard(
+        <Card key={"game" + index} type={CardType.SUCCESS}>
+          <span className='text-xl neonText-white font-bold'>GAME</span><br/>
+          <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
+          <p className="text-sm">
+            game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game</span><br />
+            game dequeue            : <span className="text-highlight/70">Dequeue from the current queue</span><br />
+          </p>
+          <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
+          <p className="text-sm">
+            standard                : <span className="text-highlight/70">Power-Ups enabled</span><br />
+            boring                  : <span className="text-highlight/70">Boring old Pong</span><br />
+            death                   : <span className="text-highlight/70">Score once to win</span><br />
+            practice                : <span className="text-highlight/70">Try to beat the bot (PS. It's possible)</span><br />
+          </p>
+        </Card>
+      );
+      setElements(newList);
+    } else if (commands[1] == "queue") {
+      let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
+      if (response.type === "success")
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+      else
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+      setElements(newList);
+    } else {
+      let response: GameResponseDTO = await gameData.leaveQueue();
+      if (response.type === "success")
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+      setElements(newList);
+    }
   }
 }
 
