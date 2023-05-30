@@ -33,6 +33,20 @@ export class CollisionResult {
   }
 }
 
+export enum HitType {
+  NONE = 0,
+  WALL = 1,
+  PADDLE = 2,
+  SCORE = 3,
+  BLOCK = 4,
+  SLOW_IN = 5,
+  SLOW_OUT = 6,
+  FAST_IN = 7,
+  FAST_OUT = 8,
+  BH_PULL = 9,
+  BH_RELEASE = 10,
+}
+
 export class GameRoom {
   roomID: string;
   gameType: string;
@@ -62,6 +76,7 @@ export class GameRoom {
   gamePausePlayer: string | null;
   _players: Array<string>;
   roomSettings: GameSetting;
+  hitType: HitType = 0;
   matchService: MatchService;
   userService: UserService;
 
@@ -115,6 +130,7 @@ export class GameRoom {
     this.userService = userService;
 
     this.roomSettings = setting;
+    this.hitType = HitType.NONE;
   }
 
   async run(server: Server) {
@@ -165,6 +181,7 @@ export class GameRoom {
     this.Ball.update();
     let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
     if (score == 1 || score == 2) {
+      this.hitType = HitType.SCORE;
       if (score == 1) {
         this.player1Score++;
         this.lastWinner = 'player1';
@@ -174,6 +191,13 @@ export class GameRoom {
       }
       this.resetTime = Date.now();
       this.gameReset = true;
+    }
+    else if (score == 3){
+      console.log("wall");
+      this.hitType = HitType.WALL;
+    }
+    else if (score == 0) {
+      this.hitType = HitType.NONE;
     }
     this.gameCollisionDetection();
     server
@@ -189,6 +213,7 @@ export class GameRoom {
           this.rightPaddle.posY + 50,
           this.player1Score,
           this.player2Score,
+          this.hitType,
         ),
       );
   }
@@ -271,6 +296,7 @@ export class GameRoom {
     }
 
     if (result && result.collided) {
+      this.hitType = HitType.PADDLE;
       this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
     }
   }
@@ -422,6 +448,7 @@ export class GameRoom {
     this.Ball.attracted = false;
     this.Ball.initialSpeedX = this.ballInitSpeedX;
     this.Ball.initialSpeedY = this.ballInitSpeedY;
+    this.hitType = HitType.NONE;
     server
       .to(this.roomID)
       .emit(
@@ -435,6 +462,7 @@ export class GameRoom {
           this.rightPaddle.posY + 50,
           this.player1Score,
           this.player2Score,
+          this.hitType,
         ),
       );
   }
@@ -443,6 +471,7 @@ export class GameRoom {
    * Called when reset timer end.Set the ball velocity based on last winner
    */
   startGame(){
+    this.hitType = HitType.NONE;
     if (this.lastWinner.length == 0) {
       this.Ball.velX =
         this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);

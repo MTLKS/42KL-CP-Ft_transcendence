@@ -1,4 +1,4 @@
-import { GameRoom } from "./gameRoom";
+import { GameRoom, HitType } from "./gameRoom";
 import { Player }  from "./player"; 
 import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
@@ -24,8 +24,10 @@ export class DeathGameRoom extends GameRoom{
 		}
 		else{
 			this.Ball.hitWall = false;
+			this.hitType = HitType.NONE;
 		}
 		if (score == 1 || score == 2){
+			this.hitType = HitType.SCORE;
 			if (score == 1){
 				this.player1Score++;
 				this.lastWinner = "player1";
@@ -37,6 +39,11 @@ export class DeathGameRoom extends GameRoom{
 			this.resetTime = Date.now();
 			this.gameReset = true;
 		}
+
+		if (score == 3){
+			this.hitType = HitType.WALL;
+		}
+
 		this.gameCollisionDetection();
 		server.to(this.roomID).emit('gameLoop',new GameDTO(
 			this.Ball.posX,
@@ -47,6 +54,7 @@ export class DeathGameRoom extends GameRoom{
 			this.rightPaddle.posY + (this.rightPaddle.height/2),
 			this.player1Score,
 			this.player2Score,
+			this.hitType,
 			this.Ball.spinY,
 			this.Ball.attracted));
 	}
@@ -61,6 +69,7 @@ export class DeathGameRoom extends GameRoom{
 		}
 		
 		if (result && result.collided){
+			this.hitType = HitType.PADDLE;
 			this.Ball.hitPaddle = true;
 			this.Ball.velX = Math.sign(this.Ball.velX) * (Math.abs(this.Ball.velX) + 0.5);
 			this.Ball.velY = Math.sign(this.Ball.velY) * (Math.abs(this.Ball.velY) + 0.5);
@@ -77,6 +86,9 @@ export class DeathGameRoom extends GameRoom{
 					result.normalX,result.normalY);
 			}
 			this.Ball.lastHitTimer = Date.now();
+		}
+		else{
+			this.Ball.hitPaddle = false;
 		}
 	}
 }

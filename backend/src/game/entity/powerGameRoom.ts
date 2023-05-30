@@ -1,4 +1,4 @@
-import { GameRoom,CollisionResult } from "./gameRoom";
+import { GameRoom,CollisionResult, HitType } from "./gameRoom";
 import { Player }  from "./player";
 import { Paddle } from "./paddle";
 import { GameSetting } from "./gameSetting";
@@ -33,7 +33,6 @@ enum FieldEffect{
  * @param circleObject Object that represent the field effect(for Timezone, Black Hole)
  * @param blockObject Object that represent the field effect(for Block)
  * @param insideField Boolean to check if the ball is inside the field effect(for time zone and black hole)
- * @param hitBlock Boolean to check if the ball hit the block(Used to send to front end)
  * @param paddleTimer Time where the ball last hit the paddle
  * @param paddleElapseTime Time elapsed since the ball last hit the paddle
  * @param paddleResetTimer Maximum time where the ball will be reset if not touching paddle
@@ -52,7 +51,6 @@ export class PowerGameRoom extends GameRoom{
 	circleObject: Circle = null;
 	blockObject: Block = null;
 	insideField: boolean = false;
-	hitBlock: boolean = false;
 	paddleTimer: number;
 	paddleElapseTime: number = 0;
 	paddleResetTimer: number;
@@ -122,6 +120,7 @@ export class PowerGameRoom extends GameRoom{
 		this.rightPaddle.updateDelta();
 
 		if (this.Ball.attracted == true){
+			this.hitType = HitType.NONE;
 			if (this.Ball.posX < this.canvasWidth / 2){
 				this.Ball.posX = this.roomSettings.paddleOffsetX + this.leftPaddle.width;
 				if (this.leftPaddle.mouseDown == false){
@@ -142,9 +141,11 @@ export class PowerGameRoom extends GameRoom{
 		}
 		else{
 			this.Ball.hitWall = false;
+			this.hitType = HitType.NONE;
 		}
 
 		if (score == 1 || score == 2){
+			this.hitType = HitType.SCORE;
 			if (score == 1){
 				this.player1Score++;
 				this.lastWinner = "player1";
@@ -163,6 +164,7 @@ export class PowerGameRoom extends GameRoom{
 		}
 
 		if (score == 3){
+			this.hitType = HitType.WALL;
 			if (this.currentEffect != FieldEffect.GRAVITY){
 				this.Ball.accelX = 0;
 				this.Ball.accelY = 0;
@@ -210,12 +212,12 @@ export class PowerGameRoom extends GameRoom{
 				this.leftPaddle.posY + (this.leftPaddle.height/2), 
 				this.rightPaddle.posY + (this.rightPaddle.height/2), 
 				this.player1Score, 
-				this.player2Score, 
+				this.player2Score,
+				this.hitType, 
 				this.Ball.spinY, 
 				this.Ball.attracted,
 				this.blockObject.posX + (this.blockSize/2),
-				this.blockObject.posY + (this.blockSize/2),
-				this.hitBlock));
+				this.blockObject.posY + (this.blockSize/2)));
 		}
 		else{
 			server.to(this.roomID).emit('gameLoop',new GameDTO(
@@ -227,6 +229,7 @@ export class PowerGameRoom extends GameRoom{
 				this.rightPaddle.posY + (this.rightPaddle.height/2),
 				this.player1Score,
 				this.player2Score,
+				this.hitType,
 				this.Ball.spinY,
 				this.Ball.attracted));
 		}
@@ -245,18 +248,19 @@ export class PowerGameRoom extends GameRoom{
 			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject, 0);
 			
 			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
-				this.hitBlock = true;
+				this.hitType = HitType.BLOCK;
 				this.Ball.impulsCollisionResponse(this.blockObject, -BLOCK_COLLISION.normalX, -BLOCK_COLLISION.normalY);
 				this.Ball.collisionResponse(BLOCK_COLLISION.collideTime, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
 				return;
 			}
 			else{
-				this.hitBlock = false;
+				this.hitType = HitType.NONE;
 			}
 		}
 		
 		if (result && result.collided){
 			this.Ball.hitPaddle = true;
+			this.hitType = HitType.PADDLE;
 			this.paddleTimer = Date.now();
 			//Check left paddle
 			if (result.direction == 1){
@@ -284,13 +288,28 @@ export class PowerGameRoom extends GameRoom{
 		const BALL_CENTER_X = this.Ball.posX + this.Ball.width / 2;
 		const BALL_CENTER_Y = this.Ball.posY + this.Ball.height / 2;
 		if (this.currentEffect == FieldEffect.TIME_ZONE && this.circleObject != null){
+			if (this.insideField == true){
+				this.hitType = HitType.NONE
+			}
 			if ((this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y)== true) && this.insideField == false){
 				this.insideField = true;
+				if (this.effectMagnitude > 1){
+					this.hitType = HitType.FAST_IN;
+				}
+				else{
+					this.hitType = HitType.SLOW_IN;
+				}
 				this.Ball.velX *= this.effectMagnitude;
 				this.Ball.velY *= this.effectMagnitude;
 			}
 			if((this.circleObject.checkInside(BALL_CENTER_X, BALL_CENTER_Y) == false) && this.insideField == true){
 				this.insideField = false;
+				if (this.effectMagnitude > 1){
+					this.hitType = HitType.FAST_OUT;
+				}
+				else{
+					this.hitType = HitType.SLOW_OUT;
+				}
 				this.Ball.velX /= this.effectMagnitude;
 				this.Ball.velY /= this.effectMagnitude;
 			}
@@ -298,15 +317,18 @@ export class PowerGameRoom extends GameRoom{
 		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
 			if (this.Ball.velX != 0 && this.Ball.velY != 0){
 				this.Ball.accelerating = true;
-				this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+				this.hitType = this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+			}
+			if (this.Ball.accelerating == false){
+				this.hitType = HitType.NONE;
 			}
 		}
 		
 	}
 
 	fieldChange(server: Server){
-		// let effect = this.getRandomNum();
-		let effect = 4;
+		let effect = this.getRandomNum();
+		// let effect = 3;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
