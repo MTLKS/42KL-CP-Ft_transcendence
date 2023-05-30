@@ -96,6 +96,10 @@ function Game(props: GameProps) {
   }, [scale]);
 
   useEffect(() => {
+    gameData.setBallhit = ballhit;
+  }, [scale]);
+
+  useEffect(() => {
     setMounted(true);
     app.ticker.speed = 1;
     return () => setMounted(false);
@@ -229,15 +233,15 @@ function ballHitEffect(
     && newPosition.x >= leftPaddlePosition.x - 30
     && newPosition.y >= leftPaddlePosition.y - 60
     && newPosition.y <= leftPaddlePosition.y + 60) {
-      playGameSound(SoundType.PADDLEHIT);
-      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+    playGameSound(SoundType.PADDLEHIT);
+    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
   if (newPosition.x <= rightPaddlePosition.x + 30
     && newPosition.x >= rightPaddlePosition.x - 30
     && newPosition.y >= rightPaddlePosition.y - 60
     && newPosition.y <= rightPaddlePosition.y + 60) {
-      playGameSound(SoundType.PADDLEHIT);
-      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+    playGameSound(SoundType.PADDLEHIT);
+    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
 }
 

@@ -18,6 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
+import { Ball } from "../../../backend/src/game/entity/ball";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -82,6 +83,13 @@ export class GameData {
   setEntities?: (entities: GameEntity[]) => void;
   private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
   private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
+  ballHit?: (
+    pongSpeedMagnitude: number,
+    hitPosition: Offset,
+    pongSpeed: Offset,
+    strength: number,
+    tickerSpeed: number
+  ) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -261,6 +269,18 @@ export class GameData {
 
   set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
     this.setEntities = setEntities;
+  }
+
+  set setBallhit(
+    ballHit: (
+      pongSpeedMagnitude: number,
+      hitPosition: Offset,
+      pongSpeed: Offset,
+      strength: number,
+      tickerSpeed: number
+    ) => void
+  ) {
+    this.ballHit = ballHit;
   }
 
   listenToGameState = (state: GameStateDTO) => {
