@@ -20,19 +20,19 @@ friendGeneralCommands.set("list", "List all the friends.");
 friendGeneralCommands.set("requests", "Show all incoming friend requests.");
 
 const friendAddCommands = new Map<string, string>();
-friendAddCommands.set("add <username(s)>", "Send friend request(s).");
+friendAddCommands.set("add <intraName(s)>", "Send friend request(s).");
 
 const friendBlockCommands = new Map<string, string>();
 friendBlockCommands.set("block", "List all friends who can be blocked.");
-friendBlockCommands.set("block <username(s)>", "Block friend(s) or stranger(s).");
+friendBlockCommands.set("block <intraName(s)>", "Block friend(s) or stranger(s).");
 
 const friendUnblockCommands = new Map<string, string>();
 friendUnblockCommands.set("unblock", "List all friends who can be unblocked.");
-friendUnblockCommands.set("unblock <username(s)>", "Unblock friend(s).");
+friendUnblockCommands.set("unblock <intraName(s)>", "Unblock friend(s).");
 
 const friendUnfriendCommands = new Map<string, string>();
 friendUnfriendCommands.set("unfriend", "List all friends who can be unfriended.");
-friendUnfriendCommands.set("unfriend <username(s)>", "Unfriend friend(s).");
+friendUnfriendCommands.set("unfriend <intraName(s)>", "Unfriend friend(s).");
 
 const allCommands = [primaryCommands, utilityCommands];
 const friendCommands = [friendGeneralCommands, friendAddCommands, friendBlockCommands, friendUnblockCommands, friendUnfriendCommands];
