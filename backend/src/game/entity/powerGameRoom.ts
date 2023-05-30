@@ -97,7 +97,7 @@ export class PowerGameRoom extends GameRoom{
 
 		//BLACKHOLE
 		this.blackHoleRadius = 20;
-		this.blackHoleEffectRadius = 50;
+		this.blackHoleEffectRadius = 20;
 		this.blackHoleForce = 1500;
 
 		//BLOCK
@@ -452,12 +452,12 @@ export class PowerGameRoom extends GameRoom{
 		let minX, maxX, minY, maxY;
 		
 		if (spawnQuadrant %2 == 0){
-			minX = this.canvasWidth * 0.15 + size + 20;
+			minX = this.canvasWidth * 0.15 + size + 50;
 			maxX = this.canvasWidth * 0.5;
 		}
 		else{
 			minX = this.canvasWidth * 0.5;
-			maxX = this.canvasWidth * 0.85 - size - 20;
+			maxX = this.canvasWidth * 0.85 - size - 50;
 		}
 		if (spawnQuadrant / 2 < 1){
 			minY = 0 + size + 20;

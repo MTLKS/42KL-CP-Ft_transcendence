@@ -24,14 +24,10 @@ export class Circle{
 
 		if (distance < this.radius * effectRadius && distance > this.radius){
 			const theta = Math.atan2(dy, dx);
-			const fg = force * 100 / (distance * distance);
+			const fg = Math.min(force * 500 / (distance * distance), 20);
 
 			let accelX = -fg * Math.cos(theta) * 2;
 			let accelY = -fg * Math.sin(theta) * 2;
-			if (Math.sign(accelX) != Math.sign(rect.velX) && Math.abs(accelY) > Math.abs(rect.velY)){
-				accelX = 0;
-				accelY = 0;
-			}
 			rect.accelX = accelX;
 			rect.accelY = accelY;
 		}
