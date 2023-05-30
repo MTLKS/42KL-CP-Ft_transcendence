@@ -1,4 +1,4 @@
-import { GameData } from "../game/gameData";
+import { GameData, PaddleType } from "../game/gameData";
 import { GameBlackhole, GameTimeZone } from "./GameEntities";
 import { Offset } from "./GameModels";
 import GameParticle from "./GameParticle";
@@ -62,6 +62,18 @@ class GameParticleDelegate {
           finalTimeFactor *= entity.timeFactor;
         }
       });
+      if (
+        this.gameData.leftPaddleSucking ||
+        (this.gameData.attracted &&
+          this.gameData.leftPaddleType === PaddleType.Piiuuuuu)
+      )
+        this.applySuckForPaddle(particle, this.gameData.leftPaddlePosition);
+      if (
+        this.gameData.rightPaddleSucking ||
+        (this.gameData.attracted &&
+          this.gameData.rightPaddleType === PaddleType.Piiuuuuu)
+      )
+        this.applySuckForPaddle(particle, this.gameData.rightPaddlePosition);
       this.gameData.applGlobalEffectToParticle(particle);
       particle.update({ timeFactor: finalTimeFactor, delta: delta });
     });
@@ -131,6 +143,19 @@ class GameParticleDelegate {
     return this.particles;
   }
 
+  private applySuckForPaddle(particle: GameParticle, position: Offset) {
+    if (this.gameData.leftPaddleSucking) {
+      const distance = Math.sqrt(
+        Math.pow(particle.x - position.x, 2) +
+          Math.pow(particle.y - position.y, 2)
+      );
+      if (distance > 1 && distance < 300) {
+        if (distance < 10) particle.opacity = 0;
+        particle.setGravityAccel(position.x, position.y, 5);
+      }
+    }
+  }
+
   addTrailParticle(
     newParticles: GameParticle[],
     newPosition: Offset,
@@ -144,10 +169,10 @@ class GameParticleDelegate {
       const newParticle = new GameParticle({
         x: newPosition.x - (newSpeed.x * i) / numberOfParticles,
         y: newPosition.y - (newSpeed.y * i) / numberOfParticles,
-        opacity: 0.6,
+        opacity: 0.2,
         vx: 0.12,
         vy: 0.12,
-        opacityDecay: 0.02,
+        opacityDecay: 0.0066,
         sizeDecay: 0.3,
         w: 10,
         h: 10,
@@ -299,8 +324,8 @@ class GameParticleDelegate {
       y: leftPaddle.y + 100 * (Math.random() - 0.5),
       opacity: 0.5,
       opacityDecay: 0.02,
-      vx: 6 * (Math.random() - 0.5),
-      vy: 3 * (Math.random() - 0.5),
+      vx: 12 * (Math.random() - 0.5),
+      vy: 6 * (Math.random() - 0.5),
       speedDecayFactor: 0.9,
       w: 5,
       h: 5,
@@ -313,8 +338,8 @@ class GameParticleDelegate {
       y: rightPaddle.y + 100 * (Math.random() - 0.5),
       opacity: 0.5,
       opacityDecay: 0.02,
-      vx: 6 * (Math.random() - 0.5),
-      vy: 3 * (Math.random() - 0.5),
+      vx: 12 * (Math.random() - 0.5),
+      vy: 6 * (Math.random() - 0.5),
       speedDecayFactor: 0.9,
       w: 5,
       h: 5,

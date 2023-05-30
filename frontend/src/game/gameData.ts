@@ -32,9 +32,9 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = false;
-  useEntitiesFilter: boolean = false;
-  usePaddleFilter: boolean = false;
+  useParticlesFilter: boolean = true;
+  useEntitiesFilter: boolean = true;
+  usePaddleFilter: boolean = true;
   useHitFilter: boolean = true;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
@@ -50,6 +50,9 @@ export class GameData {
   pongSpeedMagnitude: number = 0;
 
   // player related variables
+  mousePosition: Offset = { x: 0, y: 0 };
+  leftPaddleSucking: boolean = false;
+  rightPaddleSucking: boolean = false;
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
   leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
@@ -353,13 +356,30 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
-    if (data.hitType)
-      playGameSound(data.hitType);
+    this.pongSpeedMagnitude = Math.sqrt(
+      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
+    );
+    if (data.hitType) playGameSound(data.hitType);
     if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 9 || data.player2Score == 9) ? 0.5 : 1);
-    } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE || data.hitType === HitType.BLOCK) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        1,
+        data.player1Score == 9 || data.player2Score == 9 ? 0.5 : 1
+      );
+    } else if (
+      data.hitType === HitType.WALL ||
+      data.hitType === HitType.PADDLE ||
+      data.hitType === HitType.BLOCK
+    ) {
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        0.5,
+        1
+      );
     }
     if (this.isLeft) {
       this.rightPaddlePosition = {
@@ -391,10 +411,16 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
+    this.mousePosition = { x: x, y: y };
     this.sendPlayerMove?.(y, x, this.gameRoom);
   }
 
   updatePlayerClick(isMouseDown: boolean) {
+    if (this.isLeft) {
+      this.leftPaddleSucking = isMouseDown;
+    } else {
+      this.rightPaddleSucking = isMouseDown;
+    }
     this.sendPlayerClick?.(isMouseDown, this.gameRoom);
   }
 

@@ -6,6 +6,79 @@ import { GameDataCtx } from '../../GameApp';
 import { DropShadowFilter } from 'pixi-filters';
 import { PaddleType } from '../gameData';
 
+const arrowTickSkip = 14;
+
+function Arrow() {
+  const gameData = useContext(GameDataCtx);
+  const ref = useRef<PIXI.Container>(null);
+  const tickRef = useRef<number>(0);
+  const arrowRef = useRef<PIXI.Sprite | null>(null);
+  const dashRef = useRef<PIXI.Sprite[]>([]);
+  const app = useApp();
+
+  const { arrowTexture, dashTexture } = useMemo(() => {
+    const g = new PIXI.Graphics();
+    g.lineStyle({ cap: PIXI.LINE_CAP.ROUND, width: 3, color: 0xFEF8E2, alpha: 1 });
+    g.moveTo(0, 0);
+    g.lineTo(0, 13);
+    const dashTexture = app.renderer.generateTexture(g);
+    g.moveTo(0, 0);
+    g.lineTo(5, 5);
+    g.moveTo(0, 0);
+    g.lineTo(-5, 5);
+    const arrowTexture = app.renderer.generateTexture(g);
+    g.destroy();
+    return { arrowTexture, dashTexture };
+  }, []);
+
+  useEffect(() => {
+    arrowRef.current = new PIXI.Sprite(arrowTexture);
+    for (let i = 0; i < 5; i++) {
+      dashRef.current.push(new PIXI.Sprite(dashTexture));
+    }
+    ref.current?.addChild(arrowRef.current);
+    dashRef.current.forEach((dash, index) => {
+      dash.anchor.set(0.5, 0.5);
+      ref.current?.addChild(dash);
+      dash.alpha = Math.max(1 - index * 0.3, 0);
+    });
+    arrowRef.current.anchor.set(0.5, 0.5);
+  }, []);
+
+  useTick((delta) => {
+    if (ref.current == null || arrowRef.current == null) return;
+    if (!gameData.attracted) {
+      ref.current.x = -1000;
+      ref.current.y = -1000;
+      return;
+    }
+    const container = ref.current;
+    container.x = gameData.pongPosition.x + 7;
+    container.y = gameData.pongPosition.y + 7;
+    const { x, y } = gameData.mousePosition;
+    console.log(x, y);
+    const angle = Math.atan2(y - container.y, x - container.x) + Math.PI / 2;
+    container.rotation = angle;
+    if (tickRef.current++ % arrowTickSkip !== 0) return;
+    const arrow = arrowRef.current;
+    arrow.y -= 25;
+    if (arrow.y < -125) {
+      arrow.y = 0;
+      dashRef.current.forEach((dash, i) => { dash.y = 0; });
+    }
+    else
+      dashRef.current.forEach((dash, i) => {
+        if (i === 0) dash.y = arrow.y + 25;
+        else dash.y = Math.min(dashRef.current[i - 1].y + 25, 0);
+      });
+
+  });
+
+  return (
+    <Container ref={ref} x={-100} y={-100} alpha={0.2} />
+  )
+}
+
 interface PaddleProps {
   left: boolean;
 }
@@ -27,9 +100,11 @@ function Paddle(props: PaddleProps) {
 
   useTick((delta) => {
     if (paddleRef.current == null) return;
+    if (type !== PaddleType.Piiuuuuu) return;
+    if (!gameData.attracted) { rotRef.current = 0; return; }
     paddleRef.current.rotation = Math.sin(rotRef.current) * 0.05;
     rotRef.current += 0.8 * delta;
-  }, false);
+  });
 
   useTick((delta) => {
     if (paddleRef.current == null) return;
@@ -133,14 +208,17 @@ function Paddle(props: PaddleProps) {
   }, []);
 
   return (
-    <Sprite
-      ref={paddleRef}
-      texture={texture}
-      width={size.w}
-      height={size.h}
-      anchor={new PIXI.Point(0.5, 0.5)}
-      filters={gameData.usePaddleFilter ? [filter] : undefined}
-    />
+    <>
+      <Sprite
+        ref={paddleRef}
+        texture={texture}
+        width={size.w}
+        height={size.h}
+        anchor={new PIXI.Point(0.5, 0.5)}
+        filters={gameData.usePaddleFilter ? [filter] : undefined}
+      />
+      <Arrow />
+    </>
   )
 }
 
