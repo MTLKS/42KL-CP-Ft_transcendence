@@ -524,15 +524,15 @@ function HomePage(props: HomePageProps) {
           <span className='text-xl neonText-white font-bold'>GAME</span><br/>
           <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
           <p className="text-sm">
-            game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game</span><br />
-            game dequeue            : <span className="text-highlight/70">Dequeue from the current queue</span><br />
+            game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
+            game dequeue            : <span className="text-highlight/70">Dequeue from the current queue.</span><br />
           </p>
           <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
           <p className="text-sm">
-            standard                : <span className="text-highlight/70">Power-Ups enabled</span><br />
-            boring                  : <span className="text-highlight/70">Boring old Pong</span><br />
-            death                   : <span className="text-highlight/70">Score once to win</span><br />
-            practice                : <span className="text-highlight/70">Try to beat the bot (PS. It's possible)</span><br />
+            standard                : <span className="text-highlight/70">Power-Ups enabled.</span><br />
+            boring                  : <span className="text-highlight/70">Boring old Pong.</span><br />
+            death                   : <span className="text-highlight/70">Score once to win.</span><br />
+            practice                : <span className="text-highlight/70">Try to beat the bot (PS. It's possible).</span><br />
           </p>
         </Card>
       );

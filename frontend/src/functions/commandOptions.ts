@@ -5,7 +5,7 @@ primaryCommands.set("profile", "View my profile.");
 primaryCommands.set("profile <intraName> ", "Displays profile.");
 primaryCommands.set("tfa", "Sets and unsets Google 2-Factor-Authentication.");
 primaryCommands.set("reset", "Resets your profile (Requires TFA if enabled).");
-primaryCommands.set("game", "Queue or dequeue for a game");
+primaryCommands.set("game", "Queue or dequeue for a game.");
 
 const utilityCommands = new Map<string, string>();
 utilityCommands.set("clear", "Clears the terminal.");

@@ -29,10 +29,10 @@ function help() {
 			<span className='text-xl neonText-white font-bold'>TFA</span><br/>
 			<p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
 			<p className="text-sm">
-				tfa set					: <span className="text-highlight/70">Sets and enables Google 2FA</span><br />
-				tfa unset [OTP code]	: <span className="text-highlight/70">Unsets and disable 2FA (requires OTP code)</span><br />
-				tfa check [OTP code]	: <span className="text-highlight/70">Checks whether code is valid or not</span><br />
-				tfa forgot				: <span className="text-highlight/70">Emails new 2FA secret (may require relogin)</span><br />
+				tfa set					: <span className="text-highlight/70">Sets and enables Google 2FA.</span><br />
+				tfa unset [OTP code]	: <span className="text-highlight/70">Unsets and disable 2FA (requires OTP code).</span><br />
+				tfa check [OTP code]	: <span className="text-highlight/70">Checks whether code is valid or not.</span><br />
+				tfa forgot				: <span className="text-highlight/70">Emails new 2FA secret (may require relogin).</span><br />
 			</p>
 		</Card>
 	)
