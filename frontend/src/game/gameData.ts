@@ -299,6 +299,7 @@ export class GameData {
         this.displayGame();
         break;
       case "GameEnd":
+        stopBlackHoleSound();
         this.endGame();
         break;
       case "FieldEffect":
