@@ -120,8 +120,8 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     let isParameter = false;
     let currentCommand :CommandOptionData;
     splitValue.forEach((word, index) => {
-      if (index !== 0){
-        const found = currentCommand.options.find((command) => command.isCommand(word))!;
+      if (index !== 0) {
+        const found = currentCommand === undefined ? false : currentCommand.options.find((command) => command.isCommand(word))!;
         if (!found){
           if (currentCommand) {
             toolTipCommands.push(currentCommand.parameter);
@@ -271,7 +271,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setValue(newCommand);
       setHistoryIndex(newHistoryIndex);
     }
-    if ((e.key === 'Tab' || e.key === 'ArrowRight') && toolTips.length != 0) {
+    if ((e.key === 'Tab' || e.key === 'ArrowRight')) {
       e.preventDefault();
       let finalString = '';
       toolTips.forEach((toolTip, index) => {

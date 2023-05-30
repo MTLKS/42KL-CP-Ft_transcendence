@@ -18,6 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
+import { playGameSound, SoundType } from '../functions/audio';
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -82,6 +83,13 @@ export class GameData {
   setEntities?: (entities: GameEntity[]) => void;
   private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
   private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
+  ballHit?: (
+    pongSpeedMagnitude: number,
+    hitPosition: Offset,
+    pongSpeed: Offset,
+    strength: number,
+    tickerSpeed: number
+  ) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -263,8 +271,20 @@ export class GameData {
     this.setEntities = setEntities;
   }
 
+  set setBallhit(
+    ballHit: (
+      pongSpeedMagnitude: number,
+      hitPosition: Offset,
+      pongSpeed: Offset,
+      strength: number,
+      tickerSpeed: number
+    ) => void
+  ) {
+    this.ballHit = ballHit;
+  }
+
   listenToGameState = (state: GameStateDTO) => {
-    console.log(state);
+    console.log("Field effect:", state);
     switch (state.type) {
       case "GameStart":
         const data = <GameStartDTO>state.data;
@@ -331,8 +351,8 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    // console.log(data.ballPosX, data.ballPosY);
-    // console.log("isLeft: ", this.isLeft);
+    if (data.soundEffect)
+      playGameSound(data.soundEffect);
     if (this.isLeft) {
       this.rightPaddlePosition = {
         x: 1600 - 45,
