@@ -253,9 +253,6 @@ export class PowerGameRoom extends GameRoom{
 				this.Ball.collisionResponse(BLOCK_COLLISION.collideTime, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
 				return;
 			}
-			else{
-				this.hitType = HitType.NONE;
-			}
 		}
 		
 		if (result && result.collided){
@@ -327,8 +324,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
-		// let effect = 3;
+		// let effect = this.getRandomNum();
+		let effect = 4;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
