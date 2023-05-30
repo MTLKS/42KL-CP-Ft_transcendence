@@ -1,15 +1,24 @@
 const messageNotificationSound = new Audio('../../assets/sounds/new-message.wav');
 
 export enum SoundType {
+  NONE,
+  WALL,
+  PADDLE,
   SCORE,
-  WALLHIT,
-  PADDLEHIT
+  BLOCK,
+  SLOW_IN,
+  SLOW_OUT,
+  FAST_IN,
+  FAST_OUT,
+  BH_IN,
+  BH_OUT
 }
 
 let SoundPath : string[] = [
+  '',
+  '../../assets/sounds/Wall.wav',
   '../../assets/sounds/Score.wav',
-  '../../assets/sounds/WallHit.wav',
-  '../../assets/sounds/PaddleHit.wav'
+  '../../assets/sounds/Paddle.wav'
 ]
 
 export const playNewMessageSound = () => {

@@ -221,7 +221,7 @@ function ballHitEffect(
   }
 
   if (newPosition.y <= 0 || newPosition.y >= 900 - 10) {
-    playGameSound(SoundType.WALLHIT);
+    playGameSound(SoundType.WALL);
     ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
 
@@ -229,14 +229,14 @@ function ballHitEffect(
     && newPosition.x >= leftPaddlePosition.x - 30
     && newPosition.y >= leftPaddlePosition.y - 60
     && newPosition.y <= leftPaddlePosition.y + 60) {
-      playGameSound(SoundType.PADDLEHIT);
+      playGameSound(SoundType.PADDLE);
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
   if (newPosition.x <= rightPaddlePosition.x + 30
     && newPosition.x >= rightPaddlePosition.x - 30
     && newPosition.y >= rightPaddlePosition.y - 60
     && newPosition.y <= rightPaddlePosition.y + 60) {
-      playGameSound(SoundType.PADDLEHIT);
+      playGameSound(SoundType.PADDLE);
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
 }

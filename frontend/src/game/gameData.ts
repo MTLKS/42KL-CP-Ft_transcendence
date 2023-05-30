@@ -18,6 +18,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
+import { playGameSound, SoundType } from '../functions/audio';
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -264,7 +265,7 @@ export class GameData {
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log(state);
+    console.log("Field effect:", state);
     switch (state.type) {
       case "GameStart":
         const data = <GameStartDTO>state.data;
@@ -331,8 +332,8 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    // console.log(data.ballPosX, data.ballPosY);
-    // console.log("isLeft: ", this.isLeft);
+    if (data.soundEffect)
+      playGameSound(data.soundEffect);
     if (this.isLeft) {
       this.rightPaddlePosition = {
         x: 1600 - 45,
