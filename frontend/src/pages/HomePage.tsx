@@ -173,7 +173,7 @@ function HomePage(props: HomePageProps) {
         setIndex(newList.length - 1);
         break;
       case "help":
-        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />);
+        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='' commandOptions={allCommands} />);
         break;
       case "ok":
         newList = appendNewCard(<Card key={"ok" + index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
@@ -483,7 +483,6 @@ function HomePage(props: HomePageProps) {
     setElements(appendNewCard(newCards));
   }
 
-
   // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
   // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
   async function handleFriendCommand(command: string[]) {
@@ -519,17 +518,36 @@ function HomePage(props: HomePageProps) {
   }
 
   async function handleGameCommand(commands: string[], newList: JSX.Element[]) {
-    if (commands[1] == "queue") {
+    if (commands.length === 1) {
+      newList = appendNewCard(
+        <Card key={"game" + index} type={CardType.SUCCESS}>
+          <span className='text-xl neonText-white font-bold'>GAME</span><br/>
+          <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
+          <p className="text-sm">
+            game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game</span><br />
+            game dequeue            : <span className="text-highlight/70">Dequeue from the current queue</span><br />
+          </p>
+          <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
+          <p className="text-sm">
+            standard                : <span className="text-highlight/70">Power-Ups enabled</span><br />
+            boring                  : <span className="text-highlight/70">Boring old Pong</span><br />
+            death                   : <span className="text-highlight/70">Score once to win</span><br />
+            practice                : <span className="text-highlight/70">Try to beat the bot (PS. It's possible)</span><br />
+          </p>
+        </Card>
+      );
+      setElements(newList);
+    } else if (commands[1] == "queue") {
       let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
       if (response.type === "success")
-        newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
       else
-        newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
       setElements(newList);
     } else {
       let response: GameResponseDTO = await gameData.leaveQueue();
       if (response.type === "success")
-        newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
       setElements(newList);
     }
   }
