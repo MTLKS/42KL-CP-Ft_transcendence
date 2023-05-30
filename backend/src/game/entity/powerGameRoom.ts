@@ -33,6 +33,7 @@ enum FieldEffect{
  * @param circleObject Object that represent the field effect(for Timezone, Black Hole)
  * @param blockObject Object that represent the field effect(for Block)
  * @param insideField Boolean to check if the ball is inside the field effect(for time zone and black hole)
+ * @param hitBlock Boolean to check if the ball hit the block(Used to send to front end)
  * @param paddleTimer Time where the ball last hit the paddle
  * @param paddleElapseTime Time elapsed since the ball last hit the paddle
  * @param paddleResetTimer Maximum time where the ball will be reset if not touching paddle
@@ -51,6 +52,7 @@ export class PowerGameRoom extends GameRoom{
 	circleObject: Circle = null;
 	blockObject: Block = null;
 	insideField: boolean = false;
+	hitBlock: boolean = false;
 	paddleTimer: number;
 	paddleElapseTime: number = 0;
 	paddleResetTimer: number;
@@ -196,6 +198,7 @@ export class PowerGameRoom extends GameRoom{
 		}
 
 		this.gameCollisionDetection();
+
 		if (this.blockObject != null){
 			this.blockObject.update();
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
@@ -211,7 +214,8 @@ export class PowerGameRoom extends GameRoom{
 				this.Ball.spinY, 
 				this.Ball.attracted,
 				this.blockObject.posX + (this.blockSize/2),
-				this.blockObject.posY + (this.blockSize/2)));
+				this.blockObject.posY + (this.blockSize/2),
+				this.hitBlock));
 		}
 		else{
 			server.to(this.roomID).emit('gameLoop',new GameDTO(
@@ -241,9 +245,13 @@ export class PowerGameRoom extends GameRoom{
 			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject, 0);
 			
 			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
+				this.hitBlock = true;
 				this.Ball.impulsCollisionResponse(this.blockObject, -BLOCK_COLLISION.normalX, -BLOCK_COLLISION.normalY);
 				this.Ball.collisionResponse(BLOCK_COLLISION.collideTime, BLOCK_COLLISION.normalX, BLOCK_COLLISION.normalY);
 				return;
+			}
+			else{
+				this.hitBlock = false;
 			}
 		}
 		
@@ -297,8 +305,8 @@ export class PowerGameRoom extends GameRoom{
 	}
 
 	fieldChange(server: Server){
-		let effect = this.getRandomNum();
-		// let effect = 0;
+		// let effect = this.getRandomNum();
+		let effect = 4;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:
