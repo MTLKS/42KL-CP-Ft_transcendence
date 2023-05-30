@@ -314,7 +314,7 @@ export class PowerGameRoom extends GameRoom{
 		else if (this.currentEffect == FieldEffect.BLACK_HOLE && this.circleObject != null){
 			if (this.Ball.velX != 0 && this.Ball.velY != 0){
 				this.Ball.accelerating = true;
-				this.hitType = this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
+				this.circleObject.pull(this.Ball, this.blackHoleEffectRadius, this.blackHoleForce);
 			}
 			if (this.Ball.accelerating == false){
 				this.hitType = HitType.NONE;

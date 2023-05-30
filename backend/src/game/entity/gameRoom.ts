@@ -43,7 +43,6 @@ export enum HitType {
   SLOW_OUT = 6,
   FAST_IN = 7,
   FAST_OUT = 8,
-  BH_PULL = 9,
 }
 
 export class GameRoom {

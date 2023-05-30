@@ -17,7 +17,7 @@ export class Circle{
 		return distance < this.radius;
 	}
 
-	pull(rect: DynamicRect, effectRadius: number, force: number): HitType{
+	pull(rect: DynamicRect, effectRadius: number, force: number){
 		const dx = rect.posX - this.posX;
 		const dy = rect.posY - this.posY;
 		const distance = Math.sqrt(dx * dx + dy * dy);
@@ -28,16 +28,16 @@ export class Circle{
 
 			let accelX = -fg * Math.cos(theta) * 2;
 			let accelY = -fg * Math.sin(theta) * 2;
+			if (Math.sign(accelX) != Math.sign(rect.velX) && Math.abs(accelY) > Math.abs(rect.velY)){
+				accelX = 0;
+				accelY = 0;
+			}
 			rect.accelX = accelX;
 			rect.accelY = accelY;
-
-			return HitType.BH_PULL;
 		}
 		else{
 			rect.accelX = 0;
 			rect.accelY = 0;
-
-			return HitType.NONE;
 		}
 	}
 	
