@@ -271,7 +271,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
       setValue(newCommand);
       setHistoryIndex(newHistoryIndex);
     }
-    if ((e.key === 'Tab' || e.key === 'ArrowRight') && toolTips.length != 0) {
+    if ((e.key === 'Tab' || e.key === 'ArrowRight')) {
       e.preventDefault();
       let finalString = '';
       toolTips.forEach((toolTip, index) => {
