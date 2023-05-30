@@ -11,9 +11,10 @@ export class GameDTO{
 	attracted: boolean;
 	blockX: string|null;
 	blockY: string|null;
+	hitBlock: boolean;
 
 	constructor(ballPosX: number, ballPosY: number, ballVelX: number, ballVelY: number, leftPaddlePosY: number, rightPaddlePosY: number, player1Score: number, player2Score: number,
-		spin: number = 0, attracted: boolean=false, blockX: number|null = null, blockY: number|null = null){
+		spin: number = 0, attracted: boolean=false, blockX: number|null = null, blockY: number|null = null, hitBlock: boolean = false){
 		this.ballPosX = ballPosX.toFixed(0);
 		this.ballPosY = ballPosY.toFixed(0);
 		this.ballVelX = ballVelX.toFixed(2);
@@ -32,5 +33,6 @@ export class GameDTO{
 		}
 		this.spin = spin.toFixed(2);
 		this.attracted = attracted;
+		this.hitBlock = hitBlock;
 	}
 }
