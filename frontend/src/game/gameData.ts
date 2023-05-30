@@ -353,30 +353,13 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    this.pongSpeedMagnitude = Math.sqrt(
-      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
-    );
-    if (data.hitType) playGameSound(data.hitType);
+    this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
+    if (data.hitType)
+      playGameSound(data.hitType);
     if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(
-        this.pongSpeedMagnitude,
-        this._pongPosition,
-        this._pongSpeed,
-        1,
-        data.player1Score == 9 || data.player2Score == 9 ? 0.5 : 1
-      );
-    } else if (
-      data.hitType === HitType.WALL ||
-      data.hitType === HitType.PADDLE ||
-      data.hitType === HitType.BLOCK
-    ) {
-      this.ballHit?.(
-        this.pongSpeedMagnitude,
-        this._pongPosition,
-        this._pongSpeed,
-        0.5,
-        1
-      );
+      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 9 || data.player2Score == 9) ? 0.5 : 1);
+    } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE || data.hitType === HitType.BLOCK) {
+      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
     }
     if (this.isLeft) {
       this.rightPaddlePosition = {
