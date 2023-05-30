@@ -5,6 +5,7 @@ import { GameMode, GameSetting } from "./gameSetting";
 import { GameDTO } from "src/dto/game.dto";
 import { Server } from "socket.io";
 import { GameEndDTO, GameStateDTO } from "src/dto/gameState.dto";
+import { HitType } from "./gameRoom";
 
 enum FieldEffect{
 	NORMAL = 0,
@@ -19,18 +20,18 @@ export class PracticeGameRoom extends PowerGameRoom {
     super(player, new Player("Bot"), "standard", new GameSetting(100, 100, GameMode.STANDARD), player1PowerUp, PowerUp.NORMAL)
   }
 
-  gameUpdate(server: Server){
-    this.elapseTime = (Date.now() - this.startTime) / 1000;
+  gameUpdate(server: Server){	
+		this.elapseTime = (Date.now() - this.startTime) / 1000;
 		this.paddleElapseTime = (Date.now() - this.paddleTimer) / 1000;
 		this.Ball.update();
 
-
 		this.rightPaddle.posY = this.Ball.posY - 50;
-		
+
 		this.leftPaddle.updateDelta();
 		this.rightPaddle.updateDelta();
 
 		if (this.Ball.attracted == true){
+			this.hitType = HitType.NONE;
 			if (this.Ball.posX < this.canvasWidth / 2){
 				this.Ball.posX = this.roomSettings.paddleOffsetX + this.leftPaddle.width;
 				if (this.leftPaddle.mouseDown == false){
@@ -51,9 +52,11 @@ export class PracticeGameRoom extends PowerGameRoom {
 		}
 		else{
 			this.Ball.hitWall = false;
+			this.hitType = HitType.NONE;
 		}
 
 		if (score == 1 || score == 2){
+			this.hitType = HitType.SCORE;
 			if (score == 1){
 				this.player1Score++;
 				this.lastWinner = "player1";
@@ -72,6 +75,7 @@ export class PracticeGameRoom extends PowerGameRoom {
 		}
 
 		if (score == 3){
+			this.hitType = HitType.WALL;
 			if (this.currentEffect != FieldEffect.GRAVITY){
 				this.Ball.accelX = 0;
 				this.Ball.accelY = 0;
@@ -107,6 +111,7 @@ export class PracticeGameRoom extends PowerGameRoom {
 		}
 
 		this.gameCollisionDetection();
+
 		if (this.blockObject != null){
 			this.blockObject.update();
 			this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
@@ -118,7 +123,8 @@ export class PracticeGameRoom extends PowerGameRoom {
 				this.leftPaddle.posY + (this.leftPaddle.height/2), 
 				this.rightPaddle.posY + (this.rightPaddle.height/2), 
 				this.player1Score, 
-				this.player2Score, 
+				this.player2Score,
+				this.hitType, 
 				this.Ball.spinY, 
 				this.Ball.attracted,
 				this.blockObject.posX + (this.blockSize/2),
@@ -134,6 +140,7 @@ export class PracticeGameRoom extends PowerGameRoom {
 				this.rightPaddle.posY + (this.rightPaddle.height/2),
 				this.player1Score,
 				this.player2Score,
+				this.hitType,
 				this.Ball.spinY,
 				this.Ball.attracted));
 		}
