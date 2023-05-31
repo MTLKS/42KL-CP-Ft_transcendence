@@ -10,7 +10,8 @@ export enum HitType {
   SLOW_IN,
   SLOW_OUT,
   FAST_IN,
-  FAST_OUT
+  FAST_OUT,
+  ENDGAME
 }
 
 let SoundPath : string[] = [
@@ -21,7 +22,9 @@ let SoundPath : string[] = [
   '../../assets/sounds/Wall.wav',
   '../../assets/sounds/Slow.wav',
   '../../assets/sounds/SlowEnd.wav',
-  '../../assets/sounds/Fast.wav'
+  '../../assets/sounds/Fast.wav',
+  '',
+  '../../assets/sounds/EndGame.wav',
 ]
 
 export const playNewMessageSound = () => {
