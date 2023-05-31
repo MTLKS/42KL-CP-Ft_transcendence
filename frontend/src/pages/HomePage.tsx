@@ -73,13 +73,14 @@ const availableCommands: CommandOptionData[] = [
       new CommandOptionData({ command: "dequeue" }),
       new CommandOptionData({
         command: "set", options: [
-          new CommandOptionData({ command: "useParticlesFilter" }),
-          new CommandOptionData({ command: "useEntitiesFilter" }),
-          new CommandOptionData({ command: "usePaddleFilter" }),
-          new CommandOptionData({ command: "useHitFilter" }),
-          new CommandOptionData({ command: "tickPerParticlesSpawn" }),
-          new CommandOptionData({ command: "gameMaxWidth" }),
-          new CommandOptionData({ command: "gameMaxHeight" })]
+          new CommandOptionData({ command: "show" }),
+          new CommandOptionData({ command: "useParticlesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "useEntitiesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "usePaddleFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "useHitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "tickPerParticlesSpawn", parameter: "<int>" }),
+          new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
+          new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]
       }),
     ]
   }),
@@ -576,36 +577,42 @@ function HomePage(props: HomePageProps) {
     if (commands.length === 2) {
       newList = appendNewCard(<HelpCard title="game set" usage="game set <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
     } else if (commands.length === 3) {
-      newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>nothing, really?</div></Card>);
+      if (commands[2] === "show")
+        newList = appendNewCard(
+          <Card key={"game" + index} type={CardType.SUCCESS}>
+            <div className=''>Game Settings:<br />{JSON.stringify(gameData.getSettings).split(",").join(",\n\t").split("{").join("{\n\t").split("}").join("\n}").split(":").join(" : ")}</div>
+          </Card>
+        );
+      else newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>something ain't right...</div></Card>);
     } else if (commands.length === 4) {
       switch (commands[2]) {
         case "useParticlesFilter":
           gameData.setUseParticlesFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useParticlesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
         case "useEntitiesFilter":
           gameData.setUseEntitiesFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useEntitiesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
         case "usePaddleFilter":
           gameData.setUsePaddleFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set usePaddleFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
         case "useHitFilter":
           gameData.setUseHitFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useHitFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
         case "tickPerParticlesSpawn":
           gameData.setTickPerParticlesSpawn = parseInt(commands[3]);
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set tickPerParticlesSpawn to {commands[3]}</div></Card>);
           break;
         case "gameMaxWidth":
           gameData.setGameMaxWidth = parseInt(commands[3]);
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set gameMaxWidth to {commands[3]} and gameMaxHeight to {Math.floor(parseInt(commands[3]) / 16 * 9)}</div></Card>);
           break;
         case "gameMaxHeight":
           gameData.setGameMaxHeight = parseInt(commands[3]);
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set gameMaxHeight to {commands[3]} and gameMaxWidth to {Math.floor(parseInt(commands[3]) / 9 * 16)}</div></Card>);
           break;
         default:
           break;

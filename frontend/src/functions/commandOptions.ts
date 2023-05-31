@@ -41,18 +41,23 @@ gameQueueCommands.set("queue death", "Seriously?!");
 gameQueueCommands.set("queue practice", "Try to beat the bot (PS. It's possible).");
 gameQueueCommands.set("dequeue", "Dequeue from a game.");
 
-const gameSettingsCommands = new Map<string, string>();
-gameSettingsCommands.set("useParticlesFilter <boolean>","blooms!! (default: true)");
-gameSettingsCommands.set("usePaddleFilter <boolean>","Set to false for minimal improvements on your fps. (default: true)");
-gameSettingsCommands.set("useEntitiesFilter <boolean>","Set to false for less than minimal improvements on your fps. (default: true)");
-gameSettingsCommands.set("useHitFilter <boolean>","Set to false to turn off cool hit effects, but gain fps. (default: true)");
-gameSettingsCommands.set("tickPerParticlesSpawn <int>","higher number = less particles, less particle, less cool. (default: 0)");
-gameSettingsCommands.set("gameMaxWidth <int>","max width of the game. (default: 1600)");
-gameSettingsCommands.set("gameMaxHeight <int>","max height of the game. (default: 900) :aspect ratio always maintain 16:9");
+const gameGraphicCommands = new Map<string, string>();
+gameGraphicCommands.set("useParticlesFilter <boolean>","blooms!! (default: true)");
+gameGraphicCommands.set("usePaddleFilter <boolean>","Set to false for minimal improvements on your fps. (default: true)");
+gameGraphicCommands.set("useEntitiesFilter <boolean>","Set to false for less than minimal improvements on your fps. (default: true)");
+gameGraphicCommands.set("useHitFilter <boolean>","Set to false to turn off cool hit effects, but gain fps. (default: true)");
+gameGraphicCommands.set("tickPerParticlesSpawn <int>","higher number = less particles, less particle, less cool. (default: 0)");
+
+const gameSizeCommands = new Map<string, string>();
+gameSizeCommands.set("gameMaxWidth <int>","max width of the game. (default: 1600)");
+gameSizeCommands.set("gameMaxHeight <int>","max height of the game. (default: 900) :aspect ratio always maintain 16:9");
+
+const gameShowSettingsCommands = new Map<string, string>();
+gameShowSettingsCommands.set("show","show current game settings");
 
 const allCommands = [primaryCommands, utilityCommands];
 const friendCommands = [friendGeneralCommands, friendAddCommands, friendBlockCommands, friendUnblockCommands, friendUnfriendCommands];
-const gameSetCommands = [ gameSettingsCommands];
+const gameSetCommands = [gameShowSettingsCommands, gameSizeCommands, gameGraphicCommands];
 
 export {
   allCommands,
