@@ -283,12 +283,6 @@ function HomePage(props: HomePageProps) {
         const newProfileCard = <Profile expanded={true} />;
         setTopWidget(newProfileCard);
         setCurrentPreviewProfile(newPreviewProfile as UserData);
-        setTimeout(() => {
-          if (expandProfile)
-            setExpandProfile(!expandProfile);
-          else
-            setExpandProfile(false);
-        }, 500);
       });
     }
 

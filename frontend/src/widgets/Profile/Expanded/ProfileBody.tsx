@@ -2,10 +2,10 @@ import React, { useContext } from 'react'
 import PixelatedImage from '../../../components/PixelatedImage'
 import ProfileSmall from './ProfileSmall';
 import ProfileElo from './ProfileElo';
-import ProfileStat from './ProfileStat';
 import { UserData } from '../../../model/UserData';
 import UserContext from '../../../contexts/UserContext';
 import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
+import ProfileStat from './ProfileStat';
 
 interface ProfileBodyProps {
   pixelSize: number
@@ -27,7 +27,7 @@ function ProfileBody(props: ProfileBodyProps) {
       </div>
       <ProfileSmall expanded={!expanded} status={status} />
       <div className={expanded ? 'mr-1 bg-dimshadow flex-1 transition-all duration-1000 ease-in-out' : 'h-20 transition-all duration-1000 ease-in-out'}>
-        <ProfileElo expanded={expanded} elo={elo} winning={winning}/>
+        <ProfileElo expanded={expanded} elo={elo} winning={winning} />
       </div>
       <ProfileStat expanded={expanded} />
     </div>
