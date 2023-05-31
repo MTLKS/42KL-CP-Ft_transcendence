@@ -23,8 +23,11 @@ function ProfileStat(props: ProfileStatProps) {
     <div className='flex flex-col aspect-square transition-all duration-1000 ease-in-out box-border overflow-hidden'
       style={expanded ? { flex: '1 1 0%' } : { width: "0px" }}>
       <div className='bg-dimshadow h-full flex flex-col justify-center items-center text-highlight font-bold text-xs xl:text-sm overflow-hidden'>
-        <div>Win: {stats?.win}</div>
-        <div>lose: {stats?.lose}</div>
+        <div>Highest Elo: {stats?.highestElo}</div>
+        <div>Longest Win-Streak: {stats?.winStreak}</div>
+        <div>Total Wins: {stats?.win}</div>
+        <div>Total Losses: {stats?.lose}</div>
+        <br />
         <div
           className='hover:underline truncate text-accRed'
           onMouseOver={() => console.log(`show my worst nightmare`)}
