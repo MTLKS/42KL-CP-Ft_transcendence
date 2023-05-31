@@ -50,7 +50,7 @@ export class GameData {
   particlesFilter: boolean = true;
   entitiesFilter: boolean = true;
   paddleFilter: boolean = true;
-  gitFilter: boolean = true;
+  hitFilter: boolean = true;
   tickPerParticles: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;
@@ -73,6 +73,7 @@ export class GameData {
   leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
   rightPaddleType: PaddleType = PaddleType.boring;
   isLeft: boolean = true;
+  isRight: boolean = true;
   player1Score: number = 0;
   player2Score: number = 0;
 
@@ -109,6 +110,7 @@ export class GameData {
     strength: number,
     tickerSpeed: number
   ) => void;
+  ballHitParticle?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -142,22 +144,22 @@ export class GameData {
       this.particlesFilter = settings.particlesFilter;
       this.entitiesFilter = settings.entitiesFilter;
       this.paddleFilter = settings.paddleFilter;
-      this.gitFilter = settings.gitFilter;
+      this.hitFilter = settings.gitFilter;
       this.tickPerParticles = settings.tickPerParticles;
       this.gameMaxWidth = settings.gameMaxWidth;
       this.gameMaxHeight = settings.gameMaxHeight;
     }
   }
-  get getSettings(){
+  get getSettings() {
     const settings: GameSettings = {
       particlesFilter: this.particlesFilter,
       entitiesFilter: this.entitiesFilter,
       paddleFilter: this.paddleFilter,
-      gitFilter: this.gitFilter,
+      gitFilter: this.hitFilter,
       tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
-    }
+    };
     return settings;
   }
 
@@ -171,7 +173,7 @@ export class GameData {
       particlesFilter: this.particlesFilter,
       entitiesFilter: this.entitiesFilter,
       paddleFilter: this.paddleFilter,
-      gitFilter: this.gitFilter,
+      gitFilter: this.hitFilter,
       tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
@@ -190,7 +192,7 @@ export class GameData {
   }
 
   set setUseHitFilter(gitFilter: boolean) {
-    this.gitFilter = gitFilter;
+    this.hitFilter = gitFilter;
     this.saveSettings();
   }
 
@@ -201,13 +203,13 @@ export class GameData {
 
   set setGameMaxWidth(gameMaxWidth: number) {
     this.gameMaxWidth = gameMaxWidth;
-    this.gameMaxHeight = Math.floor(gameMaxWidth / 16 * 9);
+    this.gameMaxHeight = Math.floor((gameMaxWidth / 16) * 9);
     this.saveSettings();
   }
 
   set setGameMaxHeight(gameMaxHeight: number) {
     this.gameMaxHeight = gameMaxHeight;
-    this.gameMaxWidth = Math.floor(gameMaxHeight / 9 * 16);
+    this.gameMaxWidth = Math.floor((gameMaxHeight / 9) * 16);
     this.saveSettings();
   }
 
@@ -379,13 +381,18 @@ export class GameData {
     this.ballHit = ballHit;
   }
 
+  set setBallHitParticle(ballHitParticle: () => void) {
+    this.ballHitParticle = ballHitParticle;
+  }
+
   listenToGameState = (state: GameStateDTO) => {
     console.log("Field effect:", state);
     switch (state.type) {
       case "GameStart":
         const data = <GameStartDTO>state.data;
         console.log("GameStart:", data);
-        this.isLeft = data.isLeft;
+        if (data.isLeft) this.isLeft = data.isLeft;
+        else this.isRight = true;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
         this.leftPaddleType = this.getPaddleType(data.player1PowerUp);
@@ -451,14 +458,39 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
-    if (data.hitType && !(data.hitType === HitType.SCORE && (data.player1Score == 10 || data.player2Score == 10))) {
+    this.pongSpeedMagnitude = Math.sqrt(
+      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
+    );
+    if (
+      data.hitType &&
+      !(
+        data.hitType === HitType.SCORE &&
+        (data.player1Score == 10 || data.player2Score == 10)
+      )
+    ) {
       playGameSound(data.hitType);
     }
     if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 10 || data.player2Score == 10) ? 0.5 : 1);
-    } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE || data.hitType === HitType.BLOCK) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        1,
+        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
+      );
+    } else if (
+      data.hitType === HitType.WALL ||
+      data.hitType === HitType.PADDLE ||
+      data.hitType === HitType.BLOCK
+    ) {
+      this.ballHitParticle?.();
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        0.5,
+        1
+      );
     }
     if (this.isLeft) {
       this.rightPaddlePosition = {
@@ -487,7 +519,8 @@ export class GameData {
   updatePlayerPosition(y: number, x: number) {
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
-    } else {
+    }
+    if (this.isRight) {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
     this.mousePosition = { x: x, y: y };
@@ -497,7 +530,8 @@ export class GameData {
   updatePlayerClick(isMouseDown: boolean) {
     if (this.isLeft) {
       this.leftPaddleSucking = isMouseDown;
-    } else {
+    }
+    if (this.isRight) {
       this.rightPaddleSucking = isMouseDown;
     }
     this.sendPlayerClick?.(isMouseDown, this.gameRoom);

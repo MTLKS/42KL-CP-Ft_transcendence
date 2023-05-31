@@ -97,7 +97,7 @@ function TimeZone(props: TimeZoneProps) {
         height={size.h * svgSizeRatio}
         texture={iconTexture}
         alpha={0.4}
-        filters={gameData.useEntitiesFilter ? [filter] : undefined}
+        filters={gameData.entitiesFilter ? [filter] : undefined}
       />
     </Container>
   )

@@ -78,7 +78,7 @@ class GameParticleDelegate {
       particle.update({ timeFactor: finalTimeFactor, delta: delta });
     });
     // add particles
-    if (this.particleCycle === this.gameData.tickPerParticlesSpawn)
+    if (this.particleCycle === this.gameData.tickPerParticles)
       this.particleCycle = 0;
     else this.particleCycle++;
     if (this.particleCycle !== 0) return this.particles;
@@ -89,7 +89,26 @@ class GameParticleDelegate {
       addSprite
     );
     this.addBlackholeParticle(this.gameData, this.particles, addSprite);
-
+    if (
+      this.gameData.leftPaddleSucking ||
+      (this.gameData.attracted &&
+        this.gameData.leftPaddleType === PaddleType.Piiuuuuu)
+    )
+      this.addSuctionParticle(
+        this.particles,
+        this.gameData.leftPaddlePosition,
+        addSprite
+      );
+    if (
+      this.gameData.rightPaddleSucking ||
+      (this.gameData.attracted &&
+        this.gameData.rightPaddleType === PaddleType.Piiuuuuu)
+    )
+      this.addSuctionParticle(
+        this.particles,
+        this.gameData.rightPaddlePosition,
+        addSprite
+      );
     if (pongSpeedMagnitude !== 0) {
       let colorIndex = 0;
       if (this.gameData.pongSpin > this.spinEffectThreshold) {
@@ -143,17 +162,103 @@ class GameParticleDelegate {
     return this.particles;
   }
 
+  ballHitParticle(addSprite: (sprite: GameParticle) => void) {
+    let colorIndex: number = 0;
+    // if (this.gameData.gameType === "death") {
+    //   colorIndex = 4;
+    // }
+    for (let i = 0; i < 50; i++) {
+      const isLeft = Math.random() > 0.5;
+      let x = isLeft ? 1600 : 0;
+      let y = Math.random() * 900;
+      let size = Math.random() * 3 + 2;
+      const particle = new GameParticle({
+        x: x,
+        y: y,
+        vx: (isLeft ? -5 : 5) * Math.random(),
+        vy: (Math.random() - 0.5) * 7,
+        w: size,
+        h: size,
+        opacity: 1,
+        opacityDecay: 0.01,
+        affectedByGravity: true,
+        colorIndex: colorIndex,
+        speedDecayFactor: 0.95,
+      });
+      addSprite(particle);
+      this.particles.push(particle);
+    }
+    for (let i = 0; i < 100; i++) {
+      const isTop = Math.random() > 0.5;
+      let x = Math.random() * 1600;
+      let y = isTop ? 900 : 0;
+      let size = Math.random() * 2 + 2;
+      const particle = new GameParticle({
+        x: x,
+        y: y,
+        w: size,
+        h: size,
+        vx: (Math.random() - 0.5) * 7,
+        vy: (isTop ? -5 : 5) * Math.random(),
+        opacity: 1,
+        opacityDecay: 0.01,
+        affectedByGravity: true,
+        colorIndex: colorIndex,
+        speedDecayFactor: 0.95,
+      });
+      addSprite(particle);
+      this.particles.push(particle);
+    }
+  }
+
   private applySuckForPaddle(particle: GameParticle, position: Offset) {
     if (this.gameData.leftPaddleSucking) {
       const distance = Math.sqrt(
         Math.pow(particle.x - position.x, 2) +
           Math.pow(particle.y - position.y, 2)
       );
-      if (distance > 1 && distance < 300) {
+      if (distance > 1 && distance < 80) {
         if (distance < 10) particle.opacity = 0;
-        particle.setGravityAccel(position.x, position.y, 5);
+        particle.setGravityAccel(position.x, position.y, 1);
       }
     }
+  }
+
+  addSuctionParticle(
+    newParticles: GameParticle[],
+    position: Offset,
+    addSprite: (sprite: GameParticle) => void
+  ) {
+    let x = position.x + 90 * (Math.random() - 0.5);
+    let y = position.y + 120 * (Math.random() - 0.5);
+    let size = 2 + 8 * Math.random();
+    let newParticle = new GameParticle({
+      x: x,
+      y: y,
+      opacity: 1,
+
+      opacityDecay: 0.01,
+      w: size,
+      h: size,
+      colorIndex: 1,
+    });
+    addSprite(newParticle);
+    newParticles.push(newParticle);
+    x = position.x + 90 * (Math.random() - 0.5);
+    y = position.y + 120 * (Math.random() - 0.5);
+    size = 2 + 8 * Math.random();
+    newParticle = new GameParticle({
+      x: x,
+      y: y,
+      opacity: 1,
+
+      opacityDecay: 0.01,
+      w: size,
+      h: size,
+      colorIndex: 4,
+    });
+    addSprite(newParticle);
+    newParticles.push(newParticle);
   }
 
   addTrailParticle(
