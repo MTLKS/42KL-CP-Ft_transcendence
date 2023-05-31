@@ -27,11 +27,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.gameService.leaveQueue(client);
 	}
 
-	@SubscribeMessage('createPrivateLobby')
-	async handleCreatePrivateLobby(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		
-	}
-
 	@SubscribeMessage('ready')
 	async handleReady(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
 		this.gameService.handleReady(client, body.powerup, this.server);

@@ -148,6 +148,18 @@ export class GameData {
       this.gameMaxHeight = settings.gameMaxHeight;
     }
   }
+  get getSettings(){
+    const settings: GameSettings = {
+      useParticlesFilter: this.useParticlesFilter,
+      useEntitiesFilter: this.useEntitiesFilter,
+      usePaddleFilter: this.usePaddleFilter,
+      useHitFilter: this.useHitFilter,
+      tickPerParticlesSpawn: this.tickPerParticlesSpawn,
+      gameMaxWidth: this.gameMaxWidth,
+      gameMaxHeight: this.gameMaxHeight,
+    }
+    return settings;
+  }
 
   set setUseParticlesFilter(useParticlesFilter: boolean) {
     this.useParticlesFilter = useParticlesFilter;

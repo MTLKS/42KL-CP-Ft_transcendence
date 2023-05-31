@@ -202,7 +202,7 @@ export class GameService {
     //TESTING
     var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPEED, PowerUp.SPIN);
+    this.joinGame(player1, player1, clientQueue, server, PowerUp.PRECISION, PowerUp.PRECISION);
   }
 
   async leaveQueue(client: Socket) {
@@ -226,10 +226,6 @@ export class GameService {
           console.log(`${USER_DATA.intraName} left ${queueType} queue.`);
       }
     });
-  }
-
-  createPrivateLobby(owner: Player){
-    
   }
 
   joinLobby(player1: Player, player2: Player, gameType: string) {

@@ -174,7 +174,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   return (
     <Container
       interactiveChildren={false}
-      filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
+      filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height) : undefined}
       filters={gameData.useParticlesFilter ? [bloomFilter] : undefined}
     >
       <ParticleContainer

@@ -154,6 +154,17 @@ export class PracticeGameRoom extends PowerGameRoom {
     }
   }
 
+	updatePlayerMouse(socketId: string, isMouseDown: boolean): void {
+		if (socketId == this.player1.socket.id){
+			if (this.leftPaddle.canMove == false){
+				if (isMouseDown == false){
+					this.leftPaddle.canMove = true;
+				}
+			}
+			this.leftPaddle.mouseDown = isMouseDown;
+		}
+	}
+
   togglePause(server: Server, pausePlayer: string) {
     this.endGameNoMatch();
   }
