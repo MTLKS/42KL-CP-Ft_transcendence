@@ -357,10 +357,11 @@ export class GameData {
 
   listenToGameLoopCallBack = (data: GameDTO) => {
     this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
-    if (data.hitType)
+    if (data.hitType && !(data.hitType === HitType.SCORE && (data.player1Score == 10 || data.player2Score == 10))) {
       playGameSound(data.hitType);
+    }
     if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 9 || data.player2Score == 9) ? 0.5 : 1);
+      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 10 || data.player2Score == 10) ? 0.5 : 1);
     } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE || data.hitType === HitType.BLOCK) {
       this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
     }
@@ -402,6 +403,7 @@ export class GameData {
   }
 
   useLocalTick() {
+    playGameSound(HitType.ENDGAME);
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
     this.tickPerParticlesSpawn = 1;
@@ -428,6 +430,7 @@ export class GameData {
       this._pongPosition.y = 450;
       this.localTickerPongSpeed.x = 0;
       this.localTickerPongSpeed.y = 0;
+      // PLay last hit
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this.localTickerPongSpeed.y *= -1;
