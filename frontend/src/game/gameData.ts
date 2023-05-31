@@ -18,7 +18,12 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
-import { playGameSound, HitType, playBlackHoleSound, stopBlackHoleSound } from "../functions/audio";
+import {
+  playGameSound,
+  HitType,
+  playBlackHoleSound,
+  stopBlackHoleSound,
+} from "../functions/audio";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -28,13 +33,23 @@ export enum PaddleType {
   "boring",
 }
 
+interface GameSettings {
+  useParticlesFilter: boolean;
+  useEntitiesFilter: boolean;
+  usePaddleFilter: boolean;
+  useHitFilter: boolean;
+  tickPerParticlesSpawn: number;
+  gameMaxWidth: number;
+  gameMaxHeight: number;
+}
+
 export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = false;
-  useEntitiesFilter: boolean = false;
-  usePaddleFilter: boolean = false;
+  useParticlesFilter: boolean = true;
+  useEntitiesFilter: boolean = true;
+  usePaddleFilter: boolean = true;
   useHitFilter: boolean = true;
   tickPerParticlesSpawn: number = 0;
   gameMaxWidth: number = 1600;
@@ -50,6 +65,9 @@ export class GameData {
   pongSpeedMagnitude: number = 0;
 
   // player related variables
+  mousePosition: Offset = { x: 0, y: 0 };
+  leftPaddleSucking: boolean = false;
+  rightPaddleSucking: boolean = false;
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
   leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
@@ -97,6 +115,7 @@ export class GameData {
   blur?: () => void;
 
   constructor() {
+    this.loadSettings();
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
     this.socketApi.listen("gameState", this.listenToGameState);
@@ -114,6 +133,70 @@ export class GameData {
         isMouseDown: isMouseDown,
       });
     };
+  }
+
+  private loadSettings() {
+    const gameSettings = localStorage.getItem("gameSettings");
+    if (gameSettings) {
+      const settings: GameSettings = JSON.parse(gameSettings);
+      this.useParticlesFilter = settings.useParticlesFilter;
+      this.useEntitiesFilter = settings.useEntitiesFilter;
+      this.usePaddleFilter = settings.usePaddleFilter;
+      this.useHitFilter = settings.useHitFilter;
+      this.tickPerParticlesSpawn = settings.tickPerParticlesSpawn;
+      this.gameMaxWidth = settings.gameMaxWidth;
+      this.gameMaxHeight = settings.gameMaxHeight;
+    }
+  }
+
+  set setUseParticlesFilter(useParticlesFilter: boolean) {
+    this.useParticlesFilter = useParticlesFilter;
+    this.saveSettings();
+  }
+
+  private saveSettings() {
+    const settings: GameSettings = {
+      useParticlesFilter: this.useParticlesFilter,
+      useEntitiesFilter: this.useEntitiesFilter,
+      usePaddleFilter: this.usePaddleFilter,
+      useHitFilter: this.useHitFilter,
+      tickPerParticlesSpawn: this.tickPerParticlesSpawn,
+      gameMaxWidth: this.gameMaxWidth,
+      gameMaxHeight: this.gameMaxHeight,
+    };
+    localStorage.setItem("gameSettings", JSON.stringify(settings));
+  }
+
+  set setUseEntitiesFilter(useEntitiesFilter: boolean) {
+    this.useEntitiesFilter = useEntitiesFilter;
+    this.saveSettings();
+  }
+
+  set setUsePaddleFilter(usePaddleFilter: boolean) {
+    this.usePaddleFilter = usePaddleFilter;
+    this.saveSettings();
+  }
+
+  set setUseHitFilter(useHitFilter: boolean) {
+    this.useHitFilter = useHitFilter;
+    this.saveSettings();
+  }
+
+  set setTickPerParticlesSpawn(tickPerParticlesSpawn: number) {
+    this.tickPerParticlesSpawn = tickPerParticlesSpawn;
+    this.saveSettings();
+  }
+
+  set setGameMaxWidth(gameMaxWidth: number) {
+    this.gameMaxWidth = gameMaxWidth;
+    this.gameMaxHeight = Math.floor(gameMaxWidth / 16 * 9);
+    this.saveSettings();
+  }
+
+  set setGameMaxHeight(gameMaxHeight: number) {
+    this.gameMaxHeight = gameMaxHeight;
+    this.gameMaxWidth = Math.floor(gameMaxHeight / 9 * 16);
+    this.saveSettings();
   }
 
   get pongPosition() {
@@ -395,10 +478,16 @@ export class GameData {
     } else {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
+    this.mousePosition = { x: x, y: y };
     this.sendPlayerMove?.(y, x, this.gameRoom);
   }
 
   updatePlayerClick(isMouseDown: boolean) {
+    if (this.isLeft) {
+      this.leftPaddleSucking = isMouseDown;
+    } else {
+      this.rightPaddleSucking = isMouseDown;
+    }
     this.sendPlayerClick?.(isMouseDown, this.gameRoom);
   }
 
