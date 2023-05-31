@@ -72,18 +72,19 @@ const availableCommands: CommandOptionData[] = [
       }),
       new CommandOptionData({ command: "dequeue" }),
       new CommandOptionData({
-        command: "set", options: [
+        command: "setting", options: [
           new CommandOptionData({ command: "show" }),
-          new CommandOptionData({ command: "useParticlesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "useEntitiesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "usePaddleFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "useHitFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "tickPerParticlesSpawn", parameter: "<int>" }),
+          new CommandOptionData({ command: "particlesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "entitiesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "paddleFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "hitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "tickPerParticles", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]
       }),
     ]
   }),
+  new CommandOptionData({ command: "credits" }),
 ];
 
 interface HomePageProps {
@@ -211,6 +212,11 @@ function HomePage(props: HomePageProps) {
         break;
       case "showlobby":
         setLeftWidget(<Lobby />);
+        break;
+      case "credits":
+        newList = appendNewCard(<Card key={"credits" + index} type={CardType.SUCCESS}>
+
+        </Card>)
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -539,6 +545,7 @@ function HomePage(props: HomePageProps) {
           <p className="text-sm">
             game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
             game dequeue            : <span className="text-highlight/70">Dequeue from the current queue.</span><br />
+            game Settings           : <span className="text-highlight/70">Change game settings.</span><br />
           </p>
           <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
           <p className="text-sm">
@@ -562,14 +569,14 @@ function HomePage(props: HomePageProps) {
       if (response.type === "success")
         newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
       setElements(newList);
-    } else if (commands[1] == "set") {
+    } else if (commands[1] == "setting") {
       handleGameSettingsCommand(commands, newList);
     }
   }
 
   function handleGameSettingsCommand(commands: string[], newList: JSX.Element[]) {
     if (commands.length === 2) {
-      newList = appendNewCard(<HelpCard title="game set" usage="game set <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
+      newList = appendNewCard(<HelpCard title="game set" usage="game setting <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
     } else if (commands.length === 3) {
       if (commands[2] === "show")
         newList = appendNewCard(
@@ -577,26 +584,26 @@ function HomePage(props: HomePageProps) {
             <div className=''>Game Settings:<br />{JSON.stringify(gameData.getSettings).split(",").join(",\n\t").split("{").join("{\n\t").split("}").join("\n}").split(":").join(" : ")}</div>
           </Card>
         );
-      else newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>something ain't right...</div></Card>);
+      else newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>Hold'up... Wait a minute... Something ain't right...</div></Card>);
     } else if (commands.length === 4) {
       switch (commands[2]) {
-        case "useParticlesFilter":
+        case "particlesFilter":
           gameData.setUseParticlesFilter = commands[3] === "true" ? true : false;
           newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useParticlesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "useEntitiesFilter":
+        case "entitiesFilter":
           gameData.setUseEntitiesFilter = commands[3] === "true" ? true : false;
           newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useEntitiesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "usePaddleFilter":
+        case "paddleFilter":
           gameData.setUsePaddleFilter = commands[3] === "true" ? true : false;
           newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set usePaddleFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "useHitFilter":
+        case "hitFilter":
           gameData.setUseHitFilter = commands[3] === "true" ? true : false;
           newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useHitFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "tickPerParticlesSpawn":
+        case "tickPerParticles":
           gameData.setTickPerParticlesSpawn = parseInt(commands[3]);
           newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set tickPerParticlesSpawn to {commands[3]}</div></Card>);
           break;

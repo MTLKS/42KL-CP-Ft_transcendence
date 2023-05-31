@@ -34,11 +34,11 @@ export enum PaddleType {
 }
 
 interface GameSettings {
-  useParticlesFilter: boolean;
-  useEntitiesFilter: boolean;
-  usePaddleFilter: boolean;
-  useHitFilter: boolean;
-  tickPerParticlesSpawn: number;
+  particlesFilter: boolean;
+  entitiesFilter: boolean;
+  paddleFilter: boolean;
+  gitFilter: boolean;
+  tickPerParticles: number;
   gameMaxWidth: number;
   gameMaxHeight: number;
 }
@@ -47,11 +47,11 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = true;
-  useEntitiesFilter: boolean = true;
-  usePaddleFilter: boolean = true;
-  useHitFilter: boolean = true;
-  tickPerParticlesSpawn: number = 0;
+  particlesFilter: boolean = true;
+  entitiesFilter: boolean = true;
+  paddleFilter: boolean = true;
+  gitFilter: boolean = true;
+  tickPerParticles: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;
   gameCurrentWidth: number = 1600;
@@ -139,63 +139,63 @@ export class GameData {
     const gameSettings = localStorage.getItem("gameSettings");
     if (gameSettings) {
       const settings: GameSettings = JSON.parse(gameSettings);
-      this.useParticlesFilter = settings.useParticlesFilter;
-      this.useEntitiesFilter = settings.useEntitiesFilter;
-      this.usePaddleFilter = settings.usePaddleFilter;
-      this.useHitFilter = settings.useHitFilter;
-      this.tickPerParticlesSpawn = settings.tickPerParticlesSpawn;
+      this.particlesFilter = settings.particlesFilter;
+      this.entitiesFilter = settings.entitiesFilter;
+      this.paddleFilter = settings.paddleFilter;
+      this.gitFilter = settings.gitFilter;
+      this.tickPerParticles = settings.tickPerParticles;
       this.gameMaxWidth = settings.gameMaxWidth;
       this.gameMaxHeight = settings.gameMaxHeight;
     }
   }
   get getSettings(){
     const settings: GameSettings = {
-      useParticlesFilter: this.useParticlesFilter,
-      useEntitiesFilter: this.useEntitiesFilter,
-      usePaddleFilter: this.usePaddleFilter,
-      useHitFilter: this.useHitFilter,
-      tickPerParticlesSpawn: this.tickPerParticlesSpawn,
+      particlesFilter: this.particlesFilter,
+      entitiesFilter: this.entitiesFilter,
+      paddleFilter: this.paddleFilter,
+      gitFilter: this.gitFilter,
+      tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
     }
     return settings;
   }
 
-  set setUseParticlesFilter(useParticlesFilter: boolean) {
-    this.useParticlesFilter = useParticlesFilter;
+  set setUseParticlesFilter(particlesFilter: boolean) {
+    this.particlesFilter = particlesFilter;
     this.saveSettings();
   }
 
   private saveSettings() {
     const settings: GameSettings = {
-      useParticlesFilter: this.useParticlesFilter,
-      useEntitiesFilter: this.useEntitiesFilter,
-      usePaddleFilter: this.usePaddleFilter,
-      useHitFilter: this.useHitFilter,
-      tickPerParticlesSpawn: this.tickPerParticlesSpawn,
+      particlesFilter: this.particlesFilter,
+      entitiesFilter: this.entitiesFilter,
+      paddleFilter: this.paddleFilter,
+      gitFilter: this.gitFilter,
+      tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
     };
     localStorage.setItem("gameSettings", JSON.stringify(settings));
   }
 
-  set setUseEntitiesFilter(useEntitiesFilter: boolean) {
-    this.useEntitiesFilter = useEntitiesFilter;
+  set setUseEntitiesFilter(entitiesFilter: boolean) {
+    this.entitiesFilter = entitiesFilter;
     this.saveSettings();
   }
 
-  set setUsePaddleFilter(usePaddleFilter: boolean) {
-    this.usePaddleFilter = usePaddleFilter;
+  set setUsePaddleFilter(paddleFilter: boolean) {
+    this.paddleFilter = paddleFilter;
     this.saveSettings();
   }
 
-  set setUseHitFilter(useHitFilter: boolean) {
-    this.useHitFilter = useHitFilter;
+  set setUseHitFilter(gitFilter: boolean) {
+    this.gitFilter = gitFilter;
     this.saveSettings();
   }
 
-  set setTickPerParticlesSpawn(tickPerParticlesSpawn: number) {
-    this.tickPerParticlesSpawn = tickPerParticlesSpawn;
+  set setTickPerParticlesSpawn(tickPerParticles: number) {
+    this.tickPerParticles = tickPerParticles;
     this.saveSettings();
   }
 
@@ -507,7 +507,7 @@ export class GameData {
     playGameSound(HitType.ENDGAME);
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
-    this.tickPerParticlesSpawn = 1;
+    this.tickPerParticles = 1;
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
     this.localTickerPongSpeed = this.pongSpeed;
@@ -516,7 +516,7 @@ export class GameData {
   disableLocalTick() {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
-    this.tickPerParticlesSpawn = 0;
+    this.tickPerParticles = 0;
     this._pongSpeed.x = this.localTickerPongSpeed.x;
     this._pongSpeed.y = this.localTickerPongSpeed.y;
     this.localTicker.remove(this._localTick.bind(this));
