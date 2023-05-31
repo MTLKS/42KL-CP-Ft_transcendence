@@ -23,6 +23,8 @@ import {
   HitType,
   playBlackHoleSound,
   stopBlackHoleSound,
+  playEngGameSound,
+  stopEngGameSound,
 } from "../functions/audio";
 
 export enum PaddleType {
@@ -538,7 +540,7 @@ export class GameData {
   }
 
   useLocalTick() {
-    playGameSound(HitType.ENDGAME);
+    playEngGameSound();
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
     this.tickPerParticles = 1;
@@ -556,6 +558,7 @@ export class GameData {
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
+    stopEngGameSound();
   }
 
   private _localTick(delta: number) {
@@ -565,7 +568,7 @@ export class GameData {
       this._pongPosition.y = 450;
       this.localTickerPongSpeed.x = 0;
       this.localTickerPongSpeed.y = 0;
-      // PLay last hit
+      playGameSound(HitType.END_GAME);
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this.localTickerPongSpeed.y *= -1;
