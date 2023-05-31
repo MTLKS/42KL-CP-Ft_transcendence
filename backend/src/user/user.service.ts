@@ -162,6 +162,8 @@ export class UserService {
 			return;
 		USER.elo = elo;
 		USER.winning = winning;
+		USER.winStreak = winning ? USER.winStreak + 1 : 0;
+		USER.highestElo = elo > USER.highestElo ? elo : USER.highestElo;
 		this.userRepository.save(USER);
 	}
 }
