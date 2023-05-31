@@ -214,7 +214,7 @@ function Paddle(props: PaddleProps) {
         width={size.w}
         height={size.h}
         anchor={new PIXI.Point(0.5, 0.5)}
-        filters={gameData.paddleFilter ? [filter] : undefined}
+        filters={gameData.paddleFilter ? [filter] : null as unknown as undefined}
       />
       <Arrow />
     </>
