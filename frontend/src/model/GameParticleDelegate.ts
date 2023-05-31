@@ -167,11 +167,11 @@ class GameParticleDelegate {
     // if (this.gameData.gameType === "death") {
     //   colorIndex = 4;
     // }
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 10; i++) {
       const isLeft = Math.random() > 0.5;
       let x = isLeft ? 1600 : 0;
       let y = Math.random() * 900;
-      let size = Math.random() * 3 + 2;
+      let size = Math.random() * 2 + 1;
       const particle = new GameParticle({
         x: x,
         y: y,
@@ -188,11 +188,11 @@ class GameParticleDelegate {
       addSprite(particle);
       this.particles.push(particle);
     }
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 20; i++) {
       const isTop = Math.random() > 0.5;
       let x = Math.random() * 1600;
       let y = isTop ? 900 : 0;
-      let size = Math.random() * 2 + 2;
+      let size = Math.random() * 2 + 1;
       const particle = new GameParticle({
         x: x,
         y: y,
