@@ -14,6 +14,7 @@ utilityCommands.set("help", "Displays this help message.");
 utilityCommands.set("ok", "Ok.");
 utilityCommands.set("sudo", "Admin privilege for debugging.");
 utilityCommands.set("logout", "Logs you out.");
+utilityCommands.set("credits", "Credit page.");
 
 const friendGeneralCommands = new Map<string, string>();
 friendGeneralCommands.set("list", "List all the friends.");

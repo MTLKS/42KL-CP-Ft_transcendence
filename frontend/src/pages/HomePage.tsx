@@ -214,9 +214,7 @@ function HomePage(props: HomePageProps) {
         setLeftWidget(<Lobby />);
         break;
       case "credits":
-        newList = appendNewCard(<Card key={"credits" + index} type={CardType.SUCCESS}>
-
-        </Card>)
+        newList = appendNewCard(generateCredits());
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -620,6 +618,28 @@ function HomePage(props: HomePageProps) {
       }
     }
     setElements(newList);
+  }
+
+  function generateCredits() {
+    return (
+      <Card key={"game" + index} type={CardType.SUCCESS}>
+      <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
+      <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
+      <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
+      <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Rock and Stone.</span></p>
+      <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
+      <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70"></span></p>
+      <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
+      <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
+      <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
+      <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
+      <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
+      <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
+      <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
+      <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
+      <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
+    </Card>
+    );
   }
 }
 
