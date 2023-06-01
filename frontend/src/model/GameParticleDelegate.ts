@@ -164,9 +164,9 @@ class GameParticleDelegate {
 
   ballHitParticle(addSprite: (sprite: GameParticle) => void) {
     let colorIndex: number = 0;
-    // if (this.gameData.gameType === "death") {
-    //   colorIndex = 4;
-    // }
+    if (this.gameData.gameType === "death") {
+      colorIndex = 4;
+    }
     for (let i = 0; i < 10; i++) {
       const isLeft = Math.random() > 0.5;
       let x = isLeft ? 1600 : 0;
@@ -204,6 +204,35 @@ class GameParticleDelegate {
         opacityDecay: 0.01,
         affectedByGravity: true,
         colorIndex: colorIndex,
+        speedDecayFactor: 0.95,
+      });
+      addSprite(particle);
+      this.particles.push(particle);
+    }
+  }
+
+  paddleHitParticle(addSprite: (sprite: GameParticle) => void) {
+    let position: Offset;
+    if (this.gameData.pongPosition.x < 800) {
+      position = this.gameData.leftPaddlePosition;
+    } else {
+      position = this.gameData.rightPaddlePosition;
+    }
+    for (let i = 0; i < 10; i++) {
+      let x = position.x + (Math.random() - 0.5) * 15;
+      let y = position.y + (Math.random() - 0.5) * 100;
+      let size = Math.random() * 3 + 3;
+      const particle = new GameParticle({
+        x: x,
+        y: y,
+        vx: (Math.random() - 0.5) * 20,
+        vy: (Math.random() - 0.5) * 10,
+        w: size,
+        h: size,
+        opacity: 1,
+        opacityDecay: 0.01,
+        affectedByGravity: true,
+        colorIndex: 0,
         speedDecayFactor: 0.95,
       });
       addSprite(particle);
@@ -432,8 +461,8 @@ class GameParticleDelegate {
       vx: 12 * (Math.random() - 0.5),
       vy: 6 * (Math.random() - 0.5),
       speedDecayFactor: 0.9,
-      w: 5,
-      h: 5,
+      w: 2,
+      h: 2,
     });
     addSprite(newParticle);
     newParticles.push(newParticle);
@@ -446,8 +475,8 @@ class GameParticleDelegate {
       vx: 12 * (Math.random() - 0.5),
       vy: 6 * (Math.random() - 0.5),
       speedDecayFactor: 0.9,
-      w: 5,
-      h: 5,
+      w: 2,
+      h: 2,
     });
     addSprite(newParticle);
     newParticles.push(newParticle);

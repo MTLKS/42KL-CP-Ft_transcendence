@@ -113,6 +113,7 @@ export class GameData {
     tickerSpeed: number
   ) => void;
   ballHitParticle?: () => void;
+  paddleHitParticle?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -387,6 +388,10 @@ export class GameData {
     this.ballHitParticle = ballHitParticle;
   }
 
+  set setPaddleHitParticle(paddleHitParticle: () => void) {
+    this.paddleHitParticle = paddleHitParticle;
+  }
+
   listenToGameState = (state: GameStateDTO) => {
     console.log("Field effect:", state);
     switch (state.type) {
@@ -460,40 +465,7 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    this.pongSpeedMagnitude = Math.sqrt(
-      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
-    );
-    if (
-      data.hitType &&
-      !(
-        data.hitType === HitType.SCORE &&
-        (data.player1Score == 10 || data.player2Score == 10)
-      )
-    ) {
-      playGameSound(data.hitType);
-    }
-    if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(
-        this.pongSpeedMagnitude,
-        this._pongPosition,
-        this._pongSpeed,
-        1,
-        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
-      );
-    } else if (
-      data.hitType === HitType.WALL ||
-      data.hitType === HitType.PADDLE ||
-      data.hitType === HitType.BLOCK
-    ) {
-      this.ballHitParticle?.();
-      this.ballHit?.(
-        this.pongSpeedMagnitude,
-        this._pongPosition,
-        this._pongSpeed,
-        0.5,
-        1
-      );
-    }
+    this.hitEffects(data);
     if (this.isLeft) {
       this.rightPaddlePosition = {
         x: 1600 - 45,
@@ -518,6 +490,47 @@ export class GameData {
     // console.log(data);
   };
 
+  private hitEffects(data: GameDTO) {
+    if (
+      data.hitType &&
+      !(
+        data.hitType === HitType.SCORE &&
+        (data.player1Score == 10 || data.player2Score == 10)
+      )
+    ) {
+      playGameSound(data.hitType);
+    }
+    if (!this.hitFilter) return;
+    this.pongSpeedMagnitude = Math.sqrt(
+      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
+    );
+    if (data.hitType === HitType.SCORE) {
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        1,
+        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
+      );
+    } else if (
+      data.hitType === HitType.WALL ||
+      data.hitType === HitType.PADDLE ||
+      data.hitType === HitType.BLOCK
+    ) {
+      this.ballHitParticle?.();
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        0.5,
+        1
+      );
+    }
+    if (data.hitType === HitType.PADDLE) {
+      this.paddleHitParticle?.();
+    }
+  }
+
   updatePlayerPosition(y: number, x: number) {
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
@@ -530,13 +543,18 @@ export class GameData {
   }
 
   updatePlayerClick(isMouseDown: boolean) {
-    if (this.isLeft) {
+    if (this.isLeft && this.leftPaddleType === PaddleType.Piiuuuuu) {
       this.leftPaddleSucking = isMouseDown;
     }
-    if (this.isRight) {
+    if (this.isRight && this.rightPaddleType === PaddleType.Piiuuuuu) {
       this.rightPaddleSucking = isMouseDown;
     }
-    this.sendPlayerClick?.(isMouseDown, this.gameRoom);
+    if (
+      this.leftPaddleType === PaddleType.Piiuuuuu ||
+      this.rightPaddleType === PaddleType.Piiuuuuu
+    ) {
+      this.sendPlayerClick?.(isMouseDown, this.gameRoom);
+    }
   }
 
   useLocalTick() {

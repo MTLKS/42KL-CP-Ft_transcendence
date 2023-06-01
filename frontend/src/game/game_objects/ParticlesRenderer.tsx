@@ -10,6 +10,7 @@ import { filter } from 'lodash';
 import { GameGravityArrow } from '../../model/GameGravityArrow';
 import GameParticleDelegate from '../../model/GameParticleDelegate';
 import { PaddleType } from '../gameData';
+import { Offset } from '../../model/GameModels';
 
 // const gameGraphicWorker = new Worker();
 
@@ -72,6 +73,7 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
 
   useEffect(() => {
     gameData.setBallHitParticle = ballHit;
+    gameData.setPaddleHitParticle = paddleHit;
   }, []);
 
   useEffect(() => {
@@ -329,6 +331,10 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
 
   function ballHit() {
     gameParticleDelegate.ballHitParticle(addParticle);
+  }
+
+  function paddleHit() {
+    gameParticleDelegate.paddleHitParticle(addParticle);
   }
 }
 
