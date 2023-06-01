@@ -74,8 +74,8 @@ export class GameData {
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
   leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
   rightPaddleType: PaddleType = PaddleType.boring;
-  isLeft: boolean = true;
-  isRight: boolean = true;
+  isLeft: boolean = false;
+  isRight: boolean = false;
   player1Score: number = 0;
   player2Score: number = 0;
 
@@ -330,6 +330,8 @@ export class GameData {
     await sleep(3000);
     this.stopDisplayGame();
     this.gameStarted = false;
+    this.isLeft = false;
+    this.isRight = false;
     if (this.setShouldRender) this.setShouldRender(false);
     if (this.setUsingTicker) this.setUsingTicker(false);
     this._resetVariables();
