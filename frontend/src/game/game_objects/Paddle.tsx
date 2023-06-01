@@ -56,7 +56,6 @@ function Arrow() {
     container.x = gameData.pongPosition.x + 7;
     container.y = gameData.pongPosition.y + 7;
     const { x, y } = gameData.mousePosition;
-    console.log(x, y);
     const angle = Math.atan2(y - container.y, x - container.x) + Math.PI / 2;
     container.rotation = angle;
     if (tickRef.current++ % arrowTickSkip !== 0) return;
@@ -182,8 +181,8 @@ function Paddle(props: PaddleProps) {
         break;
       case PaddleType.Vrooooom:
         g.beginFill(0xAD6454);
-        if (!left) g.drawRect(0, 0, size.w - 10, size.h);
-        else g.drawRect(10, 0, size.w - 10, size.h);
+        if (!left) g.drawRect(0, 0, 7, size.h);
+        else g.drawRect(8, 0, size.w - 8, size.h);
         g.endFill();
         break;
       default:
@@ -215,7 +214,7 @@ function Paddle(props: PaddleProps) {
         width={size.w}
         height={size.h}
         anchor={new PIXI.Point(0.5, 0.5)}
-        filters={gameData.usePaddleFilter ? [filter] : undefined}
+        filters={gameData.paddleFilter ? [filter] : null as unknown as undefined}
       />
       <Arrow />
     </>

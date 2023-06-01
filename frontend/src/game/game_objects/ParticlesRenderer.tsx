@@ -71,6 +71,10 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   const arrowContainerRef = useRef<PIXI.ParticleContainer>(null);
 
   useEffect(() => {
+    gameData.setBallHitParticle = ballHit;
+  }, []);
+
+  useEffect(() => {
     if (!gameGravityArrow) {
       arrowContainerRef.current?.removeChildren();
     }
@@ -174,8 +178,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   return (
     <Container
       interactiveChildren={false}
-      filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
-      filters={gameData.useParticlesFilter ? [bloomFilter] : undefined}
+      filterArea={gameData.particlesFilter ? new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height) : null as unknown as undefined}
+      filters={gameData.particlesFilter ? [bloomFilter] : null as unknown as undefined}
     >
       <ParticleContainer
         ref={arrowContainerRef}
@@ -321,6 +325,10 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     if (sprite) {
       sprite.destroy();
     }
+  }
+
+  function ballHit() {
+    gameParticleDelegate.ballHitParticle(addParticle);
   }
 }
 

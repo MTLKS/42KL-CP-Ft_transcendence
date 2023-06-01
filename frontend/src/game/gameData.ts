@@ -23,6 +23,8 @@ import {
   HitType,
   playBlackHoleSound,
   stopBlackHoleSound,
+  playEngGameSound,
+  stopEngGameSound,
 } from "../functions/audio";
 
 export enum PaddleType {
@@ -34,11 +36,11 @@ export enum PaddleType {
 }
 
 interface GameSettings {
-  useParticlesFilter: boolean;
-  useEntitiesFilter: boolean;
-  usePaddleFilter: boolean;
-  useHitFilter: boolean;
-  tickPerParticlesSpawn: number;
+  particlesFilter: boolean;
+  entitiesFilter: boolean;
+  paddleFilter: boolean;
+  gitFilter: boolean;
+  tickPerParticles: number;
   gameMaxWidth: number;
   gameMaxHeight: number;
 }
@@ -47,11 +49,11 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = true;
-  useEntitiesFilter: boolean = true;
-  usePaddleFilter: boolean = true;
-  useHitFilter: boolean = true;
-  tickPerParticlesSpawn: number = 0;
+  particlesFilter: boolean = true;
+  entitiesFilter: boolean = true;
+  paddleFilter: boolean = true;
+  hitFilter: boolean = true;
+  tickPerParticles: number = 0;
   gameMaxWidth: number = 1600;
   gameMaxHeight: number = 900;
   gameCurrentWidth: number = 1600;
@@ -73,6 +75,7 @@ export class GameData {
   leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
   rightPaddleType: PaddleType = PaddleType.boring;
   isLeft: boolean = true;
+  isRight: boolean = true;
   player1Score: number = 0;
   player2Score: number = 0;
 
@@ -109,6 +112,7 @@ export class GameData {
     strength: number,
     tickerSpeed: number
   ) => void;
+  ballHitParticle?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -139,63 +143,75 @@ export class GameData {
     const gameSettings = localStorage.getItem("gameSettings");
     if (gameSettings) {
       const settings: GameSettings = JSON.parse(gameSettings);
-      this.useParticlesFilter = settings.useParticlesFilter;
-      this.useEntitiesFilter = settings.useEntitiesFilter;
-      this.usePaddleFilter = settings.usePaddleFilter;
-      this.useHitFilter = settings.useHitFilter;
-      this.tickPerParticlesSpawn = settings.tickPerParticlesSpawn;
+      this.particlesFilter = settings.particlesFilter;
+      this.entitiesFilter = settings.entitiesFilter;
+      this.paddleFilter = settings.paddleFilter;
+      this.hitFilter = settings.gitFilter;
+      this.tickPerParticles = settings.tickPerParticles;
       this.gameMaxWidth = settings.gameMaxWidth;
       this.gameMaxHeight = settings.gameMaxHeight;
     }
   }
+  get getSettings() {
+    const settings: GameSettings = {
+      particlesFilter: this.particlesFilter,
+      entitiesFilter: this.entitiesFilter,
+      paddleFilter: this.paddleFilter,
+      gitFilter: this.hitFilter,
+      tickPerParticles: this.tickPerParticles,
+      gameMaxWidth: this.gameMaxWidth,
+      gameMaxHeight: this.gameMaxHeight,
+    };
+    return settings;
+  }
 
-  set setUseParticlesFilter(useParticlesFilter: boolean) {
-    this.useParticlesFilter = useParticlesFilter;
+  set setUseParticlesFilter(particlesFilter: boolean) {
+    this.particlesFilter = particlesFilter;
     this.saveSettings();
   }
 
   private saveSettings() {
     const settings: GameSettings = {
-      useParticlesFilter: this.useParticlesFilter,
-      useEntitiesFilter: this.useEntitiesFilter,
-      usePaddleFilter: this.usePaddleFilter,
-      useHitFilter: this.useHitFilter,
-      tickPerParticlesSpawn: this.tickPerParticlesSpawn,
+      particlesFilter: this.particlesFilter,
+      entitiesFilter: this.entitiesFilter,
+      paddleFilter: this.paddleFilter,
+      gitFilter: this.hitFilter,
+      tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
     };
     localStorage.setItem("gameSettings", JSON.stringify(settings));
   }
 
-  set setUseEntitiesFilter(useEntitiesFilter: boolean) {
-    this.useEntitiesFilter = useEntitiesFilter;
+  set setUseEntitiesFilter(entitiesFilter: boolean) {
+    this.entitiesFilter = entitiesFilter;
     this.saveSettings();
   }
 
-  set setUsePaddleFilter(usePaddleFilter: boolean) {
-    this.usePaddleFilter = usePaddleFilter;
+  set setUsePaddleFilter(paddleFilter: boolean) {
+    this.paddleFilter = paddleFilter;
     this.saveSettings();
   }
 
-  set setUseHitFilter(useHitFilter: boolean) {
-    this.useHitFilter = useHitFilter;
+  set setUseHitFilter(gitFilter: boolean) {
+    this.hitFilter = gitFilter;
     this.saveSettings();
   }
 
-  set setTickPerParticlesSpawn(tickPerParticlesSpawn: number) {
-    this.tickPerParticlesSpawn = tickPerParticlesSpawn;
+  set setTickPerParticlesSpawn(tickPerParticles: number) {
+    this.tickPerParticles = tickPerParticles;
     this.saveSettings();
   }
 
   set setGameMaxWidth(gameMaxWidth: number) {
     this.gameMaxWidth = gameMaxWidth;
-    this.gameMaxHeight = Math.floor(gameMaxWidth / 16 * 9);
+    this.gameMaxHeight = Math.floor((gameMaxWidth / 16) * 9);
     this.saveSettings();
   }
 
   set setGameMaxHeight(gameMaxHeight: number) {
     this.gameMaxHeight = gameMaxHeight;
-    this.gameMaxWidth = Math.floor(gameMaxHeight / 9 * 16);
+    this.gameMaxWidth = Math.floor((gameMaxHeight / 9) * 16);
     this.saveSettings();
   }
 
@@ -367,13 +383,18 @@ export class GameData {
     this.ballHit = ballHit;
   }
 
+  set setBallHitParticle(ballHitParticle: () => void) {
+    this.ballHitParticle = ballHitParticle;
+  }
+
   listenToGameState = (state: GameStateDTO) => {
     console.log("Field effect:", state);
     switch (state.type) {
       case "GameStart":
         const data = <GameStartDTO>state.data;
         console.log("GameStart:", data);
-        this.isLeft = data.isLeft;
+        if (data.isLeft) this.isLeft = data.isLeft;
+        else this.isRight = true;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
         this.leftPaddleType = this.getPaddleType(data.player1PowerUp);
@@ -439,14 +460,39 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    this.pongSpeedMagnitude = Math.sqrt(this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2)
-    if (data.hitType && !(data.hitType === HitType.SCORE && (data.player1Score == 10 || data.player2Score == 10))) {
+    this.pongSpeedMagnitude = Math.sqrt(
+      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
+    );
+    if (
+      data.hitType &&
+      !(
+        data.hitType === HitType.SCORE &&
+        (data.player1Score == 10 || data.player2Score == 10)
+      )
+    ) {
       playGameSound(data.hitType);
     }
     if (data.hitType === HitType.SCORE) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 1, (data.player1Score == 10 || data.player2Score == 10) ? 0.5 : 1);
-    } else if (data.hitType === HitType.WALL || data.hitType === HitType.PADDLE || data.hitType === HitType.BLOCK) {
-      this.ballHit?.(this.pongSpeedMagnitude, this._pongPosition, this._pongSpeed, 0.5, 1);
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        1,
+        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
+      );
+    } else if (
+      data.hitType === HitType.WALL ||
+      data.hitType === HitType.PADDLE ||
+      data.hitType === HitType.BLOCK
+    ) {
+      this.ballHitParticle?.();
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        0.5,
+        1
+      );
     }
     if (this.isLeft) {
       this.rightPaddlePosition = {
@@ -475,7 +521,8 @@ export class GameData {
   updatePlayerPosition(y: number, x: number) {
     if (this.isLeft) {
       this.leftPaddlePosition = { x: 30, y: y };
-    } else {
+    }
+    if (this.isRight) {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
     this.mousePosition = { x: x, y: y };
@@ -485,17 +532,18 @@ export class GameData {
   updatePlayerClick(isMouseDown: boolean) {
     if (this.isLeft) {
       this.leftPaddleSucking = isMouseDown;
-    } else {
+    }
+    if (this.isRight) {
       this.rightPaddleSucking = isMouseDown;
     }
     this.sendPlayerClick?.(isMouseDown, this.gameRoom);
   }
 
   useLocalTick() {
-    playGameSound(HitType.ENDGAME);
+    playEngGameSound();
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
-    this.tickPerParticlesSpawn = 1;
+    this.tickPerParticles = 1;
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
     this.localTickerPongSpeed = this.pongSpeed;
@@ -504,12 +552,13 @@ export class GameData {
   disableLocalTick() {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
-    this.tickPerParticlesSpawn = 0;
+    this.tickPerParticles = 0;
     this._pongSpeed.x = this.localTickerPongSpeed.x;
     this._pongSpeed.y = this.localTickerPongSpeed.y;
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
+    stopEngGameSound();
   }
 
   private _localTick(delta: number) {
@@ -519,7 +568,7 @@ export class GameData {
       this._pongPosition.y = 450;
       this.localTickerPongSpeed.x = 0;
       this.localTickerPongSpeed.y = 0;
-      // PLay last hit
+      playGameSound(HitType.END_GAME);
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this.localTickerPongSpeed.y *= -1;

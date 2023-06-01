@@ -227,7 +227,7 @@ export class GameService {
     //TESTING
     var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server, PowerUp.PRECISION, PowerUp.PRECISION);
+    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPIN, PowerUp.SPIN);
   }
 
   async leaveQueue(client: Socket) {

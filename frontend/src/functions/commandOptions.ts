@@ -14,6 +14,7 @@ utilityCommands.set("help", "Displays this help message.");
 utilityCommands.set("ok", "Ok.");
 utilityCommands.set("sudo", "Admin privilege for debugging.");
 utilityCommands.set("logout", "Logs you out.");
+utilityCommands.set("credits", "Credit page.");
 
 const friendGeneralCommands = new Map<string, string>();
 friendGeneralCommands.set("list", "List all the friends.");
@@ -34,25 +35,23 @@ const friendUnfriendCommands = new Map<string, string>();
 friendUnfriendCommands.set("unfriend", "List all friends who can be unfriended.");
 friendUnfriendCommands.set("unfriend <intraName(s)>", "Unfriend friend(s).");
 
-const gameQueueCommands = new Map<string, string>();
-gameQueueCommands.set("queue standard", "Queue for standard, with powerups and more.");
-gameQueueCommands.set("queue boring", "Seriously?");
-gameQueueCommands.set("queue death", "Seriously?!");
-gameQueueCommands.set("queue practice", "Try to beat the bot (PS. It's possible).");
-gameQueueCommands.set("dequeue", "Dequeue from a game.");
+const gameGraphicCommands = new Map<string, string>();
+gameGraphicCommands.set("particlesFilter <boolean>  ", "Blooms!! (default: true)");
+gameGraphicCommands.set("paddleFilter <boolean>", "Set to false for minimal performance improvements. (default: true)");
+gameGraphicCommands.set("entitiesFilter <boolean>", "Set to false for minimal performance improvements. (default: true)");
+gameGraphicCommands.set("hitFilter <boolean>", "Set to false to turn off hit effects. (default: true)");
+gameGraphicCommands.set("tickPerParticles <int>","higher number = less particles; less particle = less cool. (default: 0, range: -1 to 6)");
 
-const gameSettingsCommands = new Map<string, string>();
-gameSettingsCommands.set("useParticlesFilter <boolean>","blooms!! (default: true)");
-gameSettingsCommands.set("usePaddleFilter <boolean>","Set to false for minimal improvements on your fps. (default: true)");
-gameSettingsCommands.set("useEntitiesFilter <boolean>","Set to false for less than minimal improvements on your fps. (default: true)");
-gameSettingsCommands.set("useHitFilter <boolean>","Set to false to turn off cool hit effects, but gain fps. (default: true)");
-gameSettingsCommands.set("tickPerParticlesSpawn <int>","higher number = less particles, less particle, less cool. (default: 0)");
-gameSettingsCommands.set("gameMaxWidth <int>","max width of the game. (default: 1600)");
-gameSettingsCommands.set("gameMaxHeight <int>","max height of the game. (default: 900) :aspect ratio always maintain 16:9");
+const gameSizeCommands = new Map<string, string>();
+gameSizeCommands.set("gameMaxWidth <int>","Max width of the game. (default: 1600) - aspect ratio always maintain 16:9");
+gameSizeCommands.set("gameMaxHeight <int>","Max height of the game. (default: 900) - aspect ratio always maintain 16:9");
+
+const gameShowSettingsCommands = new Map<string, string>();
+gameShowSettingsCommands.set("show","Shows current game settings");
 
 const allCommands = [primaryCommands, utilityCommands];
 const friendCommands = [friendGeneralCommands, friendAddCommands, friendBlockCommands, friendUnblockCommands, friendUnfriendCommands];
-const gameSetCommands = [ gameSettingsCommands];
+const gameSetCommands = [gameShowSettingsCommands, gameSizeCommands, gameGraphicCommands];
 
 export {
   allCommands,

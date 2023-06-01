@@ -72,17 +72,19 @@ const availableCommands: CommandOptionData[] = [
       }),
       new CommandOptionData({ command: "dequeue" }),
       new CommandOptionData({
-        command: "set", options: [
-          new CommandOptionData({ command: "useParticlesFilter" }),
-          new CommandOptionData({ command: "useEntitiesFilter" }),
-          new CommandOptionData({ command: "usePaddleFilter" }),
-          new CommandOptionData({ command: "useHitFilter" }),
-          new CommandOptionData({ command: "tickPerParticlesSpawn" }),
-          new CommandOptionData({ command: "gameMaxWidth" }),
-          new CommandOptionData({ command: "gameMaxHeight" })]
+        command: "setting", options: [
+          new CommandOptionData({ command: "show" }),
+          new CommandOptionData({ command: "particlesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "entitiesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "paddleFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "hitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "tickPerParticles", parameter: "<int>" }),
+          new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
+          new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]
       }),
     ]
   }),
+  new CommandOptionData({ command: "credits" }),
 ];
 
 interface HomePageProps {
@@ -211,6 +213,9 @@ function HomePage(props: HomePageProps) {
       case "showlobby":
         setLeftWidget(<Lobby />);
         break;
+      case "credits":
+        newList = appendNewCard(generateCredits());
+        break;
       default:
         newList = appendNewCard(commandNotFoundCard());
         break;
@@ -282,12 +287,6 @@ function HomePage(props: HomePageProps) {
         const newProfileCard = <Profile expanded={true} />;
         setTopWidget(newProfileCard);
         setCurrentPreviewProfile(newPreviewProfile as UserData);
-        setTimeout(() => {
-          if (expandProfile)
-            setExpandProfile(!expandProfile);
-          else
-            setExpandProfile(false);
-        }, 500);
       });
     }
 
@@ -544,6 +543,7 @@ function HomePage(props: HomePageProps) {
           <p className="text-sm">
             game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
             game dequeue            : <span className="text-highlight/70">Dequeue from the current queue.</span><br />
+            game Settings           : <span className="text-highlight/70">Change game settings.</span><br />
           </p>
           <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
           <p className="text-sm">
@@ -567,51 +567,79 @@ function HomePage(props: HomePageProps) {
       if (response.type === "success")
         newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
       setElements(newList);
-    } else if (commands[1] == "set") {
+    } else if (commands[1] == "setting") {
       handleGameSettingsCommand(commands, newList);
     }
   }
 
   function handleGameSettingsCommand(commands: string[], newList: JSX.Element[]) {
     if (commands.length === 2) {
-      newList = appendNewCard(<HelpCard title="game set" usage="game set <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
+      newList = appendNewCard(<HelpCard title="game set" usage="game setting <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
     } else if (commands.length === 3) {
-      newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>nothing, really?</div></Card>);
+      if (commands[2] === "show")
+        newList = appendNewCard(
+          <Card key={"game" + index} type={CardType.SUCCESS}>
+            <div className=''>Game Settings:<br />{JSON.stringify(gameData.getSettings).split(",").join(",\n\t").split("{").join("{\n\t").split("}").join("\n}").split(":").join(" : ")}</div>
+          </Card>
+        );
+      else newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>Hold'up... Wait a minute... Something ain't right...</div></Card>);
     } else if (commands.length === 4) {
       switch (commands[2]) {
-        case "useParticlesFilter":
+        case "particlesFilter":
           gameData.setUseParticlesFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useParticlesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "useEntitiesFilter":
+        case "entitiesFilter":
           gameData.setUseEntitiesFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useEntitiesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "usePaddleFilter":
+        case "paddleFilter":
           gameData.setUsePaddleFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set usePaddleFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "useHitFilter":
+        case "hitFilter":
           gameData.setUseHitFilter = commands[3] === "true" ? true : false;
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useHitFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
           break;
-        case "tickPerParticlesSpawn":
+        case "tickPerParticles":
           gameData.setTickPerParticlesSpawn = parseInt(commands[3]);
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set tickPerParticlesSpawn to {commands[3]}</div></Card>);
           break;
         case "gameMaxWidth":
           gameData.setGameMaxWidth = parseInt(commands[3]);
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set gameMaxWidth to {commands[3]} and gameMaxHeight to {Math.floor(parseInt(commands[3]) / 16 * 9)}</div></Card>);
           break;
         case "gameMaxHeight":
           gameData.setGameMaxHeight = parseInt(commands[3]);
-          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set</div></Card>);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set gameMaxHeight to {commands[3]} and gameMaxWidth to {Math.floor(parseInt(commands[3]) / 9 * 16)}</div></Card>);
           break;
         default:
           break;
       }
     }
     setElements(newList);
+  }
+
+  function generateCredits() {
+    return (
+      <Card key={"game" + index} type={CardType.SUCCESS}>
+      <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
+      <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
+      <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
+      <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Rock and Stone.</span></p>
+      <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
+      <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
+      <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
+      <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
+      <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
+      <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
+      <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
+      <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
+      <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
+      <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
+      <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
+    </Card>
+    );
   }
 }
 

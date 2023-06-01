@@ -1,33 +1,89 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import ScrollView from '../../components/ScrollView';
+import { LeaderboardUser } from '../../model/leadeboardUser';
+import { getHallOfFame, getHallOfShame } from '../../api/leaderboardAPIs';
+import PreviewProfileContext from '../../contexts/PreviewProfileContext';
+import { getProfileOfUser } from '../../api/profileAPI';
+import { UserData } from '../../model/UserData';
+import Profile from '../Profile/Profile';
 
-interface LeaderboardTableProps {
+interface LeaderboardTableRowProps {
   index: number;
   name: string;
   intraId: string;
-  intraURL: string;
   eloRating: number;
 }
 
 function LeaderboardTableTitle() {
   return (
-    <div className='flex flex-row uppercase text-xs text-highlight font-extrabold mb-4'>
-      <p className='w-[68%] pl-1.5'>name</p>
-      <p className='w-[32%] pr.1.5'>ELO Rating</p>
-    </div>
+    <>
+      <div className='px-6 flex flex-row uppercase text-lg text-highlight font-extrabold'>
+        <p className='w-[7%]'>#</p>
+        <p className='w-[70%] pl-1.5'>name</p>
+        <p className='w-[23%] pr.1.5'>ELO</p>
+      </div>
+      <div className=' h-[2px] mt-2 w-full bg-highlight' />
+    </>
   )
 }
 
-function LeaderboardTableRow(props: LeaderboardTableProps) {
+function LeaderboardTableRow(props: LeaderboardTableRowProps) {
 
-  const { index, name, intraId, intraURL, eloRating } = props;
+  const { index, name, intraId, eloRating } = props;
+  const [isHovered, setIsHovered] = useState(false);
+  const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
+
+  let borderColor: string = "border-transparent";
+  if (index === 0) {
+    borderColor = "border-yellow-500";
+  } else if (index === 1) {
+    borderColor = "border-accCyan";
+  } else if (index === 2) {
+    borderColor = "border-accRed";
+  }
+
+  let bgColor: string = "bg-transparent";
+  if (isHovered) {
+    if (index === 0) {
+      bgColor = "bg-yellow-500";
+    } else if (index === 1) {
+      bgColor = "bg-accCyan";
+    } else if (index === 2) {
+      bgColor = "bg-accRed";
+    } else {
+      bgColor = "bg-highlight";
+    }
+  }
+  let textColor: string;
+  if (isHovered) {
+    textColor = "text-dimshadow";
+  } else {
+    textColor = "text-highlight";
+  }
 
   return (
-    <div className={`mt-3 snap-center flex flex-row uppercase p-4 border-dashed border-4 ${index < 3 ? "border-highlight" : "border-transparent"}`}>
-      <p className='w-[70%]'>{name} <a target='new' className='hover:underline cursor-pointer' href={intraURL}>({intraId})</a></p>
-      <p className='w-[30%]'>{eloRating}</p>
+    <div className='bg-transparent pt-3 px-1'
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={onMouseDown}
+    >
+      <button className={` text-start snap-center flex flex-row w-full uppercase p-4 border-dashed border-4 transition-all ease-linear duration-150 ${borderColor} ${bgColor} ${textColor}`}
+      >
+        <p className='w-[7%]'>{Number(index) + 1}</p>
+        <p className='w-[70%]'>{name} </p>
+        <p className='w-[23%]'>{eloRating}</p>
+      </button>
     </div>
   )
+
+  function onMouseDown() {
+    getProfileOfUser(intraId).then((res) => {
+      if (res.data) {
+        setPreviewProfileFunction(res.data as UserData);
+        setTopWidgetFunction(<Profile expanded={true} />)
+      }
+    });
+  }
 }
 
 // testing
@@ -118,26 +174,51 @@ const users = [
   },
 ]
 
-function LeaderboardTable() {
+interface LeaderboardTableProps {
+  leaderboardUsers: LeaderboardUser[];
+  appendLeaderBoardUsers: (users: LeaderboardUser[]) => void;
+  type: "hallOfFame" | "hallOfShame";
+}
+
+function LeaderboardTable(props: LeaderboardTableProps) {
+  const { leaderboardUsers, type, appendLeaderBoardUsers } = props;
 
   return (
     <div className='text-highlight flex-1 overflow-hidden font-extrabold text-sm flex flex-col'>
       <LeaderboardTableTitle />
-      <div className='overflow-auto w-full flex-1 scrollbar-hide'>
+      <div className='overflow-auto w-full flex-1 scrollbar-hide'
+        onScroll={handleScroll}
+      >
         {
-          users.map((user, index) =>
+          leaderboardUsers.map((user, index) =>
             <LeaderboardTableRow
-              key={user.id}
+              key={index}
               index={index}
-              name={user.name}
-              intraId={user.intraId}
-              intraURL={user.intraURL}
-              eloRating={user.eloRating}
+              name={user.userName}
+              intraId={user.intraName}
+              eloRating={user.elo}
             />)
         }
       </div>
     </div>
   )
+
+  function handleScroll(e: any) {
+    const bottom = e.target.scrollHeight - e.target.scrollTop === e.target.clientHeight;
+    if (leaderboardUsers.length % 30 > 0) return;
+    if (bottom) {
+      if (type === "hallOfFame") {
+        getHallOfFame(Math.floor(leaderboardUsers.length / 30), 30).then((users) => {
+          appendLeaderBoardUsers(users);
+        });
+      }
+      else if (type === "hallOfShame") {
+        getHallOfShame(Math.floor(leaderboardUsers.length / 30), 30).then((users) => {
+          appendLeaderBoardUsers(users);
+        });
+      }
+    }
+  }
 }
 
 export default LeaderboardTable

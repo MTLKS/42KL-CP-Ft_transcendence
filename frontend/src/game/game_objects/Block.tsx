@@ -69,7 +69,7 @@ function Block(props: BlockProps) {
 
   return (
     <Sprite ref={ref} anchor={0.5} x={x} y={y} width={w} height={h} texture={texture}
-      filters={gameData.useEntitiesFilter ? [filter] : undefined}
+      filters={gameData.entitiesFilter ? [filter] : null as unknown as undefined}
     />
   )
 }

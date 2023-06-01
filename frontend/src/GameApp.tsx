@@ -31,14 +31,15 @@ function GameApp(props: GameAppProps) {
   }, []);
 
   useEffect(() => {
-    const canvas = document.getElementById('pixi') as HTMLCanvasElement
+    pixiApp.screen.width = gameData.gameCurrentWidth;
+    pixiApp.screen.height =gameData.gameCurrentHeight;
     window.addEventListener('mousemove', onmousemove);
-    canvas.addEventListener('mousedown', onmousedown);
-    canvas.addEventListener('mouseup', onmouseup);
+    window.addEventListener('mousedown', onmousedown);
+    window.addEventListener('mouseup', onmouseup);
     return () => {
       window.removeEventListener('mousemove', onmousemove);
-      canvas.removeEventListener('mousedown', onmousedown);
-      canvas.removeEventListener('mouseup', onmouseup);
+      window.removeEventListener('mousedown', onmousedown);
+      window.removeEventListener('mouseup', onmouseup);
     }
   }, [scale]);
   return (
@@ -54,8 +55,8 @@ function GameApp(props: GameAppProps) {
     if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
     gameData.updatePlayerPosition(
-      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5) / gameData.gameMaxHeight * 900 / scale, 50, 850),
-      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5) / gameData.gameMaxWidth * 1600 / scale, 30, 1570),
+      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5)/scale, 50, 850),
+      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5)/scale, 30, 1570),
     );
   }
 

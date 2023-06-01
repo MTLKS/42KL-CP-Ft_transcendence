@@ -17,6 +17,7 @@ export class LeaderboardService {
 		const LEADERBOARD_DATA = await this.userRepository.find({
 			select: {
 				userName: true,
+				intraName: true,
 				elo: true
 			},
 			order: {

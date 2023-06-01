@@ -140,7 +140,7 @@ function Game(props: GameProps) {
   if (!shouldRender) return <></>;
   return (
     <>
-      <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto' filters={containerRef.current ? containerRef.current.filters : undefined}>
+      <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto'>
         <Sprite width={1600} height={900} texture={backgoundTexture} />
         <Container ref={shadowRef} alpha={0.5}>
           <InwardShadow />
@@ -214,7 +214,7 @@ function ballHitEffect(
   leftPaddlePosition: Offset,
   rightPaddlePosition: Offset
 ) {
-  if (!gameData.useHitFilter) return;
+  if (!gameData.hitFilter) return;
   if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
     if (player1Score === 9 || player2Score === 9) {
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
@@ -231,13 +231,13 @@ function ballHitEffect(
     && newPosition.x >= leftPaddlePosition.x - 30
     && newPosition.y >= leftPaddlePosition.y - 60
     && newPosition.y <= leftPaddlePosition.y + 60) {
-      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
   if (newPosition.x <= rightPaddlePosition.x + 30
     && newPosition.x >= rightPaddlePosition.x - 30
     && newPosition.y >= rightPaddlePosition.y - 60
     && newPosition.y <= rightPaddlePosition.y + 60) {
-      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
   }
 }
 
