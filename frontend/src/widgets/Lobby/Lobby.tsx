@@ -68,6 +68,7 @@ interface PowerUpButtonProps {
 function PowerUpButton(props: PowerUpButtonProps) {
   const { title, content, onClick, img } = props;
   const [hover, setHover] = React.useState(false);
+  const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const timeRef = React.useRef<number>(0);
   const hoverRef = React.useRef<HTMLDivElement>(null);
@@ -80,13 +81,20 @@ function PowerUpButton(props: PowerUpButtonProps) {
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
     >
-      <img src={img} className=' border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight' />
+      {imgLoaded ? null : <div className=' animate-pulse bg-highlight/50 border-4 rounded-lg aspect-square' />}
+      <img src={img} className={` border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
+        onLoad={() => imgOnLoad()}
+      />
       <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         <h3 className=' text-lg'>{title}</h3>
         <p className=' text-sm font-normal'>{content}</p>
       </div>
     </button>
   )
+
+  function imgOnLoad() {
+    setImgLoaded(true);
+  }
 
   function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     if (buttonRef.current == null || hoverRef.current == null) return;
@@ -128,6 +136,7 @@ interface LobbyButtonProps {
 function LobbyButton(props: LobbyButtonProps) {
   const { title, onClick, color, selected } = props;
   const [hover, setHover] = React.useState(false);
+  const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const timeRef = React.useRef<number>(0);
   const hoverRef = React.useRef<HTMLDivElement>(null);
@@ -170,10 +179,15 @@ function LobbyButton(props: LobbyButtonProps) {
     >
       <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`}>{title}</p>
       <div ref={hoverRef} className={`z-10 font-jbmono p-1 rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] h-[400px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
-        <img src={duck} width={400} className=' bg-clip-content' />
+        {!imgLoaded || <div className='w-full h-full flex justify-center items-center animate-pulse bg-highlight/50' />}
+        <img src={duck} width={400} className=' bg-clip-content rounded-lg' />
       </div>
     </button>
   )
+
+  function imgOnLoad() {
+    setImgLoaded(true);
+  }
 
   function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     if (buttonRef.current == null || hoverRef.current == null) return;
