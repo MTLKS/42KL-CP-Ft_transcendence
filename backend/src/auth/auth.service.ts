@@ -56,6 +56,8 @@ export class AuthService {
 			const GOOGLE_DATA = await apiResponse.json();
 			let accessToken = CryptoJS.AES.encrypt(returnData.access_token, process.env.ENCRYPT_KEY).toString()
 
+			if (GOOGLE_DATA.email === undefined)
+				return new AuthResponseDTO("", false);
 			const ENTITY_USER = await this.userRepository.findOne({ where: { email: GOOGLE_DATA.email } });
 			if (ENTITY_USER !== null) {
 				ENTITY_USER.accessToken = returnData.access_token;
