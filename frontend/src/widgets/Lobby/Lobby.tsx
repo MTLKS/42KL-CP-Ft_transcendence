@@ -73,21 +73,19 @@ function PowerUpButton(props: PowerUpButtonProps) {
   const hoverRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <>
-      <button className='w-full relative'
-        ref={buttonRef}
-        onClick={onClick}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        onMouseMove={(e) => handleMouseMove(e)}
-      >
-        <img src={img} className=' border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight' />
-        <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ${hover ? " opacity-100" : " opacity-0"} `}>
-          <h3 className=' text-lg'>{title}</h3>
-          <p className=' text-sm font-normal'>{content}</p>
-        </div>
-      </button>
-    </>
+    <button className='w-full relative cursor-pointer'
+      ref={buttonRef}
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onMouseMove={(e) => handleMouseMove(e)}
+    >
+      <img src={img} className=' border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight' />
+      <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
+        <h3 className=' text-lg'>{title}</h3>
+        <p className=' text-sm font-normal'>{content}</p>
+      </div>
+    </button>
   )
 
   function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -98,8 +96,8 @@ function PowerUpButton(props: PowerUpButtonProps) {
     const rect = buttonRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    hoverRef.current.style.left = `${x + 15}px`;
-    hoverRef.current.style.top = `${y}px`;
+    hoverRef.current.style.left = `${x + 10}px`;
+    hoverRef.current.style.top = `${y + 10}px`;
   }
 }
 
@@ -130,6 +128,9 @@ interface LobbyButtonProps {
 function LobbyButton(props: LobbyButtonProps) {
   const { title, onClick, color, selected } = props;
   const [hover, setHover] = React.useState(false);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const timeRef = React.useRef<number>(0);
+  const hoverRef = React.useRef<HTMLDivElement>(null);
 
   const bg = useMemo(() => {
     if (color == null && hover) return 'bg-highlight'
@@ -156,20 +157,35 @@ function LobbyButton(props: LobbyButtonProps) {
   }, [color]);
 
   return (
-    <div className=' relative flex-1 box-border'>
-      <button
-        className={`
-        w-full ${bg} cursor-pointer rounded-xl p-4
+    <button
+      ref={buttonRef}
+      className={`relative box-border
+        flex-1 ${bg} cursor-pointer rounded-xl p-4
         group hover:${bg}
         border-[4px] ${border} transition-all duration-200 focus:outline-dimshadow`}
-        onClick={onClick}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-      >
-        <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`}>{title}</p>
-      </button>
-    </div>
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      onMouseMove={(e) => handleMouseMove(e)}
+    >
+      <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`}>{title}</p>
+      <div ref={hoverRef} className={`z-10 font-jbmono p-1 rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] h-[400px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
+        <img src={duck} width={400} className=' bg-clip-content' />
+      </div>
+    </button>
   )
+
+  function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    if (buttonRef.current == null || hoverRef.current == null) return;
+    const now = Date.now();
+    if (now - timeRef.current < 16) return;
+    timeRef.current = now;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    hoverRef.current.style.left = `${x + 20}px`;
+    hoverRef.current.style.top = `${y - 400}px`;
+  }
 }
 
 interface LobbyReadyButtonProps {
