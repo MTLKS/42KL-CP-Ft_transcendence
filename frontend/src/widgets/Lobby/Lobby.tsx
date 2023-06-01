@@ -178,9 +178,9 @@ function LobbyButton(props: LobbyButtonProps) {
       onMouseMove={(e) => handleMouseMove(e)}
     >
       <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`}>{title}</p>
-      <div ref={hoverRef} className={`z-10 font-jbmono p-1 rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] h-[400px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
-        {!imgLoaded || <div className='w-full h-full flex justify-center items-center animate-pulse bg-highlight/50' />}
-        <img src={duck} width={400} className=' bg-clip-content rounded-lg' />
+      <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[400px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
+        {imgLoaded ? null : <div className='w-full h-full flex justify-center rounded-[4px] items-center animate-pulse bg-highlight/50' />}
+        <img src={duck} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
       </div>
     </button>
   )
