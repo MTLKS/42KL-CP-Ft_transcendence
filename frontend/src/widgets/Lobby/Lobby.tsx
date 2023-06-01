@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import PixelatedImage from '../../components/PixelatedImage'
 import ProfileElo from '../Profile/Expanded/ProfileElo'
 import { UserData } from '../../model/UserData'
@@ -14,31 +14,41 @@ let myProfile: UserData = {
   intraName: "wricky-t",
   tfaSecret: null,
   userName: "JOHNDOE",
-  winning: true
+  winning: true,
+  email: "hidden",
 }
 
 function Lobby() {
+  const [selectedMode, setSelectedMode] = React.useState('standard');
+  const [ready, setReady] = React.useState(false);
+
   return (
-    <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10  box-border'>
+    <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
       <h1 className='text-[40px] font-extrabold'>OPPONENT</h1>
       <LobbyProfile />
-      <div className='flex-1  flex flex-row w-full box-border'>
-        <div className=' flex-1 flex flex-col items-center box-border m-10'>
-          <div className=' grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-10 max-h-96'>
-            <img src={duck} className=' border-4 border-highlight rounded-lg' />
-            <img src={duck} className=' border-4 border-highlight rounded-lg' />
-            <img src={duck} className=' border-4 border-highlight rounded-lg' />
-            <img src={duck} className=' border-4 border-highlight rounded-lg' />
+      <div className=' flex-1 flex flex-row w-full box-border'>
+        <div className=' h-full flex-1 flex flex-col items-center box-border m-10 '>
+          <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-16 gap-y-16 max-w-md max-h-md place-items-center box-border'>
+            <PowerUpButton img={duck} title='Vzzzzzzt' content='Faster ball, bigger punch to your opponent.' />
+            <PowerUpButton img={duck} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+            <PowerUpButton img={duck} title='Ngeeeaat' content='longer paddle.' />
+            <PowerUpButton img={duck} title='Vrooooom' content='Stronger spin. ' />
           </div>
-          <h2 className='text-[25px] text-highlight font-extrabold'>gamemode: Sudden Death</h2>
-          <div className='flex flex-row gap-x-5 w-full'>
-            <LobbyButton title='boring' />
-            <LobbyButton title='standard' color='accCyan' />
-            <LobbyButton title='death' color='accRed' selected />
+          <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: {selectedMode}</h2>
+          <div className='mb-10 flex flex-row gap-x-2 w-full h-fit'>
+            <LobbyButton title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
+            <LobbyButton title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
+            <LobbyButton title='death' color='accRed' selected={selectedMode === "sudden death"} onClick={() => setSelectedMode("sudden death")} />
           </div>
         </div>
-        <div className=' flex-2 flex flex-col items-center'>
-          <h2 className='text-[25px] text-highlight font-extrabold'>gamemode: Sudden Death</h2>
+        <div className=' w-64 flex flex-col items-center gap-3'>
+          <div className='flex-1'></div>
+          <LobbyReadyButton >
+            <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}>leave</p>
+          </LobbyReadyButton>
+          <LobbyReadyButton onClick={() => setReady(!ready)} selected={ready}>
+            <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>
+          </LobbyReadyButton>
         </div>
       </div>
     </div>
@@ -46,6 +56,52 @@ function Lobby() {
 }
 
 export default Lobby
+
+interface PowerUpButtonProps {
+  title?: string;
+  content?: string;
+  img?: string;
+  onClick?: () => void;
+}
+
+
+function PowerUpButton(props: PowerUpButtonProps) {
+  const { title, content, onClick, img } = props;
+  const [hover, setHover] = React.useState(false);
+  const buttonRef = React.useRef<HTMLButtonElement>(null);
+  const timeRef = React.useRef<number>(0);
+  const hoverRef = React.useRef<HTMLDivElement>(null);
+
+  return (
+    <>
+      <button className='w-full relative'
+        ref={buttonRef}
+        onClick={onClick}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        onMouseMove={(e) => handleMouseMove(e)}
+      >
+        <img src={img} className=' border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight' />
+        <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ${hover ? " opacity-100" : " opacity-0"} `}>
+          <h3 className=' text-lg'>{title}</h3>
+          <p className=' text-sm font-normal'>{content}</p>
+        </div>
+      </button>
+    </>
+  )
+
+  function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    if (buttonRef.current == null || hoverRef.current == null) return;
+    const now = Date.now();
+    if (now - timeRef.current < 16) return;
+    timeRef.current = now;
+    const rect = buttonRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    hoverRef.current.style.left = `${x + 15}px`;
+    hoverRef.current.style.top = `${y}px`;
+  }
+}
 
 function LobbyProfile() {
   return <div className={` flex flex-row w-fit box-border bg-highlight font-jbmono tracking-normal transition-all duration-300 ease-in-out h-20 cursor-pointer`}>
@@ -73,19 +129,65 @@ interface LobbyButtonProps {
 
 function LobbyButton(props: LobbyButtonProps) {
   const { title, onClick, color, selected } = props;
+  const [hover, setHover] = React.useState(false);
+
+  const bg = useMemo(() => {
+    if (color == null && hover) return 'bg-highlight'
+    if (color == null) return 'bg-highlight/10'
+    if (color === 'accCyan' && hover) return 'bg-accCyan'
+    if (color === 'accCyan') return 'bg-accCyan/10'
+    if (color === 'accRed' && hover) return 'bg-accRed'
+    if (color === 'accRed') return 'bg-accRed/10'
+  }, [color, hover]);
+
+  const border = useMemo(() => {
+    if (color == null && selected) return 'border-highlight'
+    if (color == null) return 'border-highlight/10'
+    if (color === 'accCyan' && selected) return 'border-accCyan'
+    if (color === 'accCyan') return 'border-accCyan/10'
+    if (color === 'accRed' && selected) return 'border-accRed'
+    if (color === 'accRed') return 'border-accRed/10'
+  }, [color, selected]);
+
+  const text = useMemo(() => {
+    if (color == null) return 'text-highlight/60'
+    if (color === 'accCyan') return 'text-accCyan'
+    if (color === 'accRed') return 'text-accRed'
+  }, [color]);
 
   return (
     <div className=' relative flex-1 box-border'>
-      {/* {!selected || <div className={`border-${color ?? "highlight"} border-4 rounded animate-ping w-full h-full absolute top-0 left-0`} />} */}
       <button
         className={`
-        w-full bg-${color ?? "highlight"}/10 cursor-pointer rounded p-2
-        group hover:bg-${color ?? "highlight"}
-        border-[3px] border-${color ?? "highlight"}/${!selected ? 50 : 100} transition-all duration-200 focus:outline-dimshadow`}
+        w-full ${bg} cursor-pointer rounded-xl p-4
+        group hover:${bg}
+        border-[4px] ${border} transition-all duration-200 focus:outline-dimshadow`}
         onClick={onClick}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
       >
-        <p className={`uppercase font-extrabold text-md text-${color ?? "highlight"} group-hover:text-dimshadow text-center`}>{title}</p>
+        <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`}>{title}</p>
       </button>
     </div>
+  )
+}
+
+interface LobbyReadyButtonProps {
+  onClick?: () => void;
+  children?: React.ReactNode;
+  selected?: boolean;
+}
+
+function LobbyReadyButton(props: LobbyReadyButtonProps) {
+  const { onClick, children, selected = false } = props;
+  return (
+    <button
+      className={`
+        w-full ${selected ? "bg-highlight" : "bg-transparent  hover:bg-highlight/70"} cursor-pointer rounded-xl group
+        border-[4px] border-highlight transition-all duration-200 focus:outline-dimshadow`}
+      onClick={onClick}
+    >
+      {children}
+    </button>
   )
 }
