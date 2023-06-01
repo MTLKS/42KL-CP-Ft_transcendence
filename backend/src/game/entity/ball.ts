@@ -6,6 +6,7 @@ import { DynamicRect } from "./dynamicRect";
 export class Ball extends DynamicRect{
 	initialSpeedX: number;
 	initialSpeedY: number;
+	prevX: number = 0;
 	prevY: number = 0;
 	spinY: number = 0;
 	lastHitTimer: number;
@@ -83,8 +84,9 @@ export class Ball extends DynamicRect{
 	}
 
 	update(){
-		// console.log (this.velX, this.velY)
+		console.log (this.velX, this.velY);
 		if (this.energized == false){
+			this.prevX = this.initialSpeedX;
 			this.prevY = this.initialSpeedY;
 		}
 		if (this.spinning == true){
@@ -95,6 +97,7 @@ export class Ball extends DynamicRect{
 		if (this.accelerating == true){
 			if (this.accelY == 0 && (this.hitWall == true || this.hitPaddle == true)){
 				this.accelerating = false;
+				this.velX = this.prevX * Math.sign(this.velX);
 				this.velY = this.prevY * Math.sign(this.velY);
 			}
 		}
@@ -115,6 +118,7 @@ export class Ball extends DynamicRect{
 		if (this.energized == false){
 			this.velX = Math.sign(this.velX) * (Math.abs(this.velX) + incrementX);
 			this.velY = Math.sign(this.velY) * (Math.abs(this.velY) + incrementY);
+			this.prevX = this.initialSpeedX + incrementX;
 			this.prevY = this.initialSpeedY + incrementY;
 		}
 	}
