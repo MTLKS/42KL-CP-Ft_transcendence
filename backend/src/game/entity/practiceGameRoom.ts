@@ -18,7 +18,7 @@ enum FieldEffect{
 export class PracticeGameRoom extends PowerGameRoom {
   constructor(player: Player, player1PowerUp: PowerUp) {
     super(player, new Player("Bot"), "standard", new GameSetting(100, 100, GameMode.STANDARD), player1PowerUp, PowerUp.NORMAL)
-  }
+	}
 
   gameUpdate(server: Server){	
 		this.elapseTime = (Date.now() - this.startTime) / 1000;

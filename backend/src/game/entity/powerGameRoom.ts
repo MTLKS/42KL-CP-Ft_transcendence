@@ -10,6 +10,7 @@ import { Block } from "./block";
 import { UserService } from "src/user/user.service";
 import { GameDTO } from "src/dto/game.dto";
 import { PowerUp } from "../game.service";
+import { cp } from "fs";
 
 enum FieldEffect{
 	NORMAL = 0,
@@ -246,7 +247,6 @@ export class PowerGameRoom extends GameRoom{
 
 		if (this.currentEffect == FieldEffect.BLOCK && this.blockObject != null){
 			const BLOCK_COLLISION = this.objectCollision(this.Ball, this.blockObject, 0);
-			
 			if (BLOCK_COLLISION && BLOCK_COLLISION.collided){
 				this.hitType = HitType.BLOCK;
 				this.Ball.impulsCollisionResponse(this.blockObject, -BLOCK_COLLISION.normalX, -BLOCK_COLLISION.normalY);
@@ -325,7 +325,7 @@ export class PowerGameRoom extends GameRoom{
 
 	fieldChange(server: Server){
 		let effect = this.getRandomNum();
-		// let effect = 3;
+		// let effect = 1;
 		let spawnPos;
 		switch (effect){
 			case FieldEffect.NORMAL:

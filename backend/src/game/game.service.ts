@@ -12,6 +12,7 @@ import {
   GameEndDTO,
   GamePauseDTO,
   LobbyStartDTO,
+  CountdonwDTO,
 } from 'src/dto/gameState.dto';
 import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
@@ -75,8 +76,32 @@ export class GameService {
     this.clearGameRooms();
 
     // If player is ingame, reconnect player to game
-    this.gameRooms.forEach((gameRoom) => {
+    this.gameRooms.forEach(async (gameRoom) =>{
       if (gameRoom._players.includes(USER_DATA.intraName)) {
+        let opponentIntraName = '';
+        if (player.intraName == gameRoom.player1.intraName){
+          gameRoom.player1 = player;
+          opponentIntraName = gameRoom.player2.intraName;
+        } else if (player.intraName == gameRoom.player2.intraName){
+          gameRoom.player2 = player;
+          opponentIntraName = gameRoom.player1.intraName;
+        }
+        player.socket.join(gameRoom.roomID);
+        player.socket.emit(
+          'gameState',
+          new GameStateDTO(
+            'GameStart',
+            new GameStartDTO(
+              opponentIntraName,
+              gameRoom.gameType,
+              player === gameRoom.player1,
+              gameRoom.roomID,
+              gameRoom.leftPaddle.powerUp,
+              gameRoom.rightPaddle.powerUp,
+            ),
+          ),
+        );
+        await this.countdown(3);
         gameRoom.resumeGame(player);
       }
     });
@@ -314,18 +339,24 @@ export class GameService {
     }
     player1.socket.join(room.roomID);
     player2.socket.join(room.roomID);
+    player1.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
+    player2.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
+    await this.countdown(3);
     player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID, player1PowerUp, player2PowerUp)));
     player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID, player1PowerUp, player2PowerUp)));
     this.gameRooms.set(room.roomID, room);
+    player1.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
+    player2.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
+    await this.countdown(3);
     await room.run(server);
     return room.roomID;
   }
 
-  async startGame(roomID: string, server: Server) {
-    const ROOM = this.gameRooms.get(roomID);
-    if (ROOM === undefined) return;
-    await ROOM.run(server);
-  }
+  // async startGame(roomID: string, server: Server) {
+  //   const ROOM = this.gameRooms.get(roomID);
+  //   if (ROOM === undefined) return;
+  //   await ROOM.run(server);
+  // }
 
   async playerUpdate(client: Socket, roomID: string, xValue: number, yValue: number) {
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
@@ -350,5 +381,13 @@ export class GameService {
         if (LOBBY_LOGGING) console.log(`game room ${key} has been deleted.`);
       }
     });
+  }
+
+  async countdown(seconds: number): Promise<void> {
+    let counter = seconds;
+    while (counter >= 0) {
+      counter--;
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
 }

@@ -84,7 +84,7 @@ export class Ball extends DynamicRect{
 	}
 
 	update(){
-		console.log (this.velX, this.velY);
+		// console.log (this.velX, this.velY);
 		if (this.energized == false){
 			this.prevX = this.initialSpeedX;
 			this.prevY = this.initialSpeedY;

@@ -134,7 +134,6 @@ export class GameRoom {
   async run(server: Server) {
     this.resetGame(server);
     this.startGame();
-    await this.countdown(3);
     if (this.interval == null) {
       this.interval = setInterval(async () => {
         if (this.gameReset == true) {
@@ -146,7 +145,7 @@ export class GameRoom {
             this.gameReset = false;
           }
         } else if (this.gamePaused == true) {
-          if (Date.now() - this.gamePauseDate > 5000) {
+          if (Date.now() - this.gamePauseDate > 20000) {
             this.endGame(
               server,
               this.player1.intraName === this.gamePausePlayer
@@ -315,31 +314,10 @@ export class GameRoom {
   }
 
   resumeGame(player: Player) {
-    let opponentIntraName = '';
-    if (player.intraName === this.player1.intraName) {
-      this.player1 = player;
-      opponentIntraName = this.player2.intraName;
-    } else if (player.intraName === this.player2.intraName) {
-      this.player2 = player;
-      opponentIntraName = this.player1.intraName;
-    }
-    player.socket.join(this.roomID);
-    player.socket.emit(
-      'gameState',
-      new GameStateDTO(
-        'GameStart',
-        new GameStartDTO(
-          opponentIntraName,
-          this.gameType,
-          player === this.player1,
-          this.roomID,
-        ),
-      ),
-    );
     this.gamePaused = false;
     this.gamePauseDate = null;
     this.gamePausePlayer = null;
-    // console.log(`${player.intraName} reconnected to ${this.roomID}`);
+    console.log(`${player.intraName} reconnected to ${this.roomID}`);
   }
 
   // TODO: wait for reconnect, abandon game after x seconds
@@ -482,14 +460,6 @@ export class GameRoom {
       this.Ball.velX = -this.ballInitSpeedX;
       this.Ball.velY =
         this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    }
-  }
-
-  async countdown(seconds: number): Promise<void> {
-    let counter = seconds;
-    while (counter >= 0) {
-      counter--;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 }
