@@ -258,6 +258,10 @@ export class GameData {
     });
   }
 
+  async leaveLobby() {
+    this.socketApi.sendMessages("leaveLobby", {});
+  }
+
   startGame() {
     if (this.gameStarted) {
       console.error("game already started");

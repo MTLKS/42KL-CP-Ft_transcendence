@@ -310,9 +310,9 @@ export class GameService {
   }
 
   async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
-    console.log(powerUp);
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
+    console.log(ready, powerUp);
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {

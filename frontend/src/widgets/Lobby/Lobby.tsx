@@ -54,7 +54,9 @@ function Lobby() {
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
           <div className='flex-1'></div>
           <LobbyReadyButton >
-            <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}>leave</p>
+            <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}
+              onClick={() => gameData.leaveLobby()}
+            >leave</p>
           </LobbyReadyButton>
           <LobbyReadyButton onClick={() => sendReady()} selected={ready}>
             <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>
