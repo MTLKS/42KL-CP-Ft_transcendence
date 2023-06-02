@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { FaCheck, FaDoorOpen, FaMinus, FaPlus, FaSkull, FaVolumeMute, FaWalking } from 'react-icons/fa'
 import { FriendData } from '../../../../model/FriendData';
 import UserContext from '../../../../contexts/UserContext';
@@ -6,6 +6,8 @@ import { UserData } from '../../../../model/UserData';
 import { NewChannelContext } from '../../../../contexts/ChatContext';
 import PreviewProfileContext from '../../../../contexts/PreviewProfileContext';
 import Profile from '../../../Profile/Profile';
+import { FriendsContext } from '../../../../contexts/FriendContext';
+import { ModeratorAction } from '../Channel/newChannelReducer';
 
 interface ChatMemberProps {
   isModifyingMember?: boolean;
@@ -18,7 +20,7 @@ interface ChatMemberProps {
 interface ChatMemberRoleTagProps {
   isModifying?: boolean;
   role: 'owner' | 'admin' | 'member';
-  intraName: string;
+  userData: UserData;
 }
 
 function ChatMemberActions() {
@@ -63,7 +65,7 @@ function ChatMemberActions() {
 function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
   const { state, dispatch } = useContext(NewChannelContext);
-  const { isModifying, role, intraName } = props;
+  const { isModifying, role, userData } = props;
   const [isPressed, setIsPressed] = useState(false);
   const currentTimeRef = useRef<number>(0);
   const [gradientPosition, setGradientPosition] = useState(0);
@@ -78,7 +80,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
             style={{ width: `${gradientPosition}%` }}
           ></div>
           <button
-            key={intraName + "-member"}
+            key={userData.intraName + "-member"}
             className={`mix-blend-difference w-[100%] z-[5] text-highlight overflow-hidden border-highlight border-2 border-dashed text-sm uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-[3s]`}
             onMouseDown={confirmAction}
             onMouseUp={promoteMember}
@@ -103,7 +105,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
             style={{ width: `${gradientPosition}%` }}
           ></div>
           <button
-            key={intraName + "-admin"}
+            key={userData.intraName + "-admin"}
             className={`w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 cursor-pointer flex flex-row items-center gap-x-2 transition-all duration-100`}
             onClick={demoteMember}
           >
@@ -115,7 +117,7 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
     } else {
       return (
         <div className='flex flex-row'>
-          <button key={intraName + "-admin"} className={`cursor-default w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 flex flex-row items-center gap-x-2 transition-all duration-100`}>
+          <button key={userData.intraName + "-admin"} className={`cursor-default w-[100%] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 flex flex-row items-center gap-x-2 transition-all duration-100`}>
             <p>admin</p>
           </button>
         </div>
@@ -147,14 +149,26 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
       return;
     }
     if (timeDifference >= 1000) {
-      dispatch({ type: 'ASSIGN_AS_ADMIN', intraName: intraName });
+      if (!state.isNewChannel && (state.isOwner || state.isAdmin)) {
+        const memberInfo = state.members.find(member => member.memberInfo.intraId === userData.intraId);
+        if (!memberInfo) return;
+        dispatch({ type: 'MODERATOR_ACTION', moderatedMemberInfo: memberInfo,  actionType: ModeratorAction.PROMOTE })
+      } else {
+        dispatch({ type: 'ASSIGN_AS_ADMIN', intraName: userData.intraName });
+      }
     }
     currentTimeRef.current = currentTime;
   }
 
   function demoteMember() {
     setGradientPosition(0);
-    dispatch({ type: 'ASSIGN_AS_MEMBER', intraName: intraName });
+    if (!state.isNewChannel && (state.isOwner || state.isAdmin)) {
+      const memberInfo = state.members.find(member => member.memberInfo.intraId === userData.intraId);
+      if (!memberInfo) return;
+      dispatch({ type: 'MODERATOR_ACTION', moderatedMemberInfo: memberInfo,  actionType: ModeratorAction.DEMOTE })
+    } else {
+      dispatch({ type: 'ASSIGN_AS_MEMBER', intraName: userData.intraName });
+    }
   }
 }
 
@@ -164,6 +178,8 @@ function ChatMember(props: ChatMemberProps) {
   const { state, dispatch } = useContext(NewChannelContext);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const [isSelected, setIsSelected] = useState(props.isSelected || false);
+  const { friends } = useContext(FriendsContext);
+  const isBlocked = useMemo(checkIfFriendIsBlocked, [friends]);
 
   return (
     <div
@@ -181,20 +197,27 @@ function ChatMember(props: ChatMemberProps) {
             <FaCheck className={`text-lg text-highlight ${!isSelected && 'group-hover:invisible'}`} />
           </div>
         </div>
-        <p className={`text-sm font-bold ${isSelected ? 'text-highlight' : 'text-highlight/50 group-hover:text-highlight'} transition-all duration-150 ease-in-out' whitespace-pre ${!state.isNewChannel && 'hover:text-highlight cursor-pointer'}`} onClick={viewUserProfile}>{userData.userName} ({userData.intraName})</p>
+        <button className={`text-sm font-bold ${isSelected ? 'text-highlight' :  'text-highlight/50'} transition-all duration-150 ease-in-out ${isBlocked && 'cursor-default'} whitespace-pre ${!state.isNewChannel && 'hover:text-highlight'}`} disabled={isBlocked} onClick={viewUserProfile}>{userData.userName} ({userData.intraName})</button>
       </div>
       <div className={`flex flex-row items-center ${isModifyingMember ? 'w-[35%] justify-between' : ''}`}>
         <div>
           {memberRole !== "owner" && isModifyingMember && <ChatMemberActions />}
         </div>
-        {memberRole !== undefined && <ChatMemberRoleTag isModifying={isModifyingMember} intraName={userData.intraName} role={memberRole} />}
+        {memberRole !== undefined && <ChatMemberRoleTag isModifying={isModifyingMember} userData={userData} role={memberRole} />}
       </div>
     </div>
   )
 
+  function checkIfFriendIsBlocked() {
+    const friendRelationship = friends.find(friend => friend.sender.intraName === userData.intraName || friend.receiver.intraName === userData.intraName);
+    if (friendRelationship === undefined) return false;
+    if (friendRelationship.status.toLowerCase() === 'blocked') return true;
+    return false;
+  }
+
   function viewUserProfile() {
     if (state.isNewChannel) return;
-    // might need to check if this user is blocked or not, whether it's the current user blocking or the other way around
+    if (isBlocked) return;
     setPreviewProfileFunction(userData);
     setTopWidgetFunction(<Profile expanded={true} />);
   }

@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { NewChannelContext } from '../../../../contexts/ChatContext'
 import { FaArrowRight, FaTimes } from 'react-icons/fa';
-import { NewChannelState } from './newChannelReducer';
+import { ModeratorAction, NewChannelState } from './newChannelReducer';
 
 interface ChannelReviewChangesProps {
   previousChannelInfo: NewChannelState;
@@ -16,6 +16,8 @@ enum ChangeType {
   CHANGED_PASSWORD,
   CHANGED_CHANNEL_VISIBILITY,
   WRONG_PASSWORD,
+  PROMOTE,
+  DEMOTE
 }
 
 function ChannelReviewChanges(props: ChannelReviewChangesProps) {
@@ -23,6 +25,7 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
   const { previousChannelInfo, isReviewingChanges, setIsReviewingChanges } = props;
   const { state, dispatch } = useContext(NewChannelContext);
   const [opacity, setOpacity] = useState(0);
+  const logsComponent = useMemo(generateChangesLogs, [state]);
 
   useEffect(() => {
     setOpacity(1);
@@ -37,12 +40,12 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
         <p className='text-lg font-extrabold w-fit mx-auto px-[1ch] text-center text-highlight bg-dimshadow'>CHANGES</p>
       </div>
       <div className='w-full h-full scrollbar-hide overflow-scroll box-border flex flex-col pt-[2ch] px-[1ch] text-xs'>
-        {generateChangesLogs()}
+        {logsComponent}
       </div>
     </div>
   )
 
-  function ChannelLog(type: ChangeType, previousValue: string, newValue: string) {
+  function ChannelLog(type: ChangeType, memberName: string, previousValue: string, newValue: string) {
     switch (type) {
       case ChangeType.CHANGED_CHANNEL_NAME:
         return (<p key={type + Date.now()} className='flex flex-row whitespace-pre text-dimshadow font-bold items-center w-full'>- CHANGED CHANNEL NAME: <span className='bg-accCyan px-[1ch] text-highlight'>{previousValue}</span> to <span className='bg-accGreen px-[1ch] text-highlight'>{newValue}</span></p>)
@@ -60,34 +63,33 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
   }
 
   function generateChangesLogs() {
+    const { channelName, password, newPassword, isPrivate, moderatedList } = state;
     const logs: JSX.Element[] = [];
   
-    if (previousChannelInfo.channelName !== state.channelName) {
-      logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_NAME, previousChannelInfo.channelName, state.channelName));
+    if (previousChannelInfo.channelName !== channelName) {
+      logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_NAME, '', previousChannelInfo.channelName, channelName));
     }
 
     // if previously got password, then changed, cancel
-    if (previousChannelInfo.password !== null && ((state.password === null) || (state.password === null && state.newPassword === null))) {
-      logs.push(ChannelLog(ChangeType.DISABLED_PASSWORD, '', ''));
+    if (previousChannelInfo.password !== null && ((password === null) || (password === null && newPassword === null))) {
+      logs.push(ChannelLog(ChangeType.DISABLED_PASSWORD, '', '', ''));
     }
 
-    if (state.password !== null && state.newPassword !== null && state.password !== state.newPassword) {
-      logs.push(ChannelLog(ChangeType.CHANGED_PASSWORD, '', ''));
+    if (password !== null && newPassword !== null && password !== newPassword) {
+      logs.push(ChannelLog(ChangeType.CHANGED_PASSWORD, '', '', ''));
     }
 
-    if (previousChannelInfo.password === null && state.password !== null) {
-      logs.push(ChannelLog(ChangeType.ENABLED_PASSWORD, '', ''));
+    if (previousChannelInfo.password === null && password !== null) {
+      logs.push(ChannelLog(ChangeType.ENABLED_PASSWORD, '', '', ''));
     }
 
-    if (previousChannelInfo.isPrivate !== state.isPrivate) {
-      logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_VISIBILITY, previousChannelInfo.isPrivate ? 'Private' : 'Public', state.isPrivate ? 'Private' : 'Public'));
+    if (previousChannelInfo.isPrivate !== isPrivate) {
+      logs.push(ChannelLog(ChangeType.CHANGED_CHANNEL_VISIBILITY, '', previousChannelInfo.isPrivate ? 'Private' : 'Public', isPrivate ? 'Private' : 'Public'));
     }
 
     if (logs.length > 0) {
-      dispatch({ type: 'SET_HAS_CHANGES', payload: true });
       return (logs);
     }
-    dispatch({ type: 'SET_HAS_CHANGES', payload: false });
     return ([
       <div key={"No_changes" + Date.now()} className='relative w-full h-full'>
         <p className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-dimshadow text-sm text-center font-bold uppercase underline decoration-wavy decoration-accRed'>No changes were made</p>

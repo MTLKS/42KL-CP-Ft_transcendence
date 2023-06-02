@@ -4,6 +4,8 @@ import { UserData } from "../../../../model/UserData"
 interface ChannelMemberRole {
   memberInfo: UserData,
   role: 'admin' | 'member' | 'owner'
+  isMuted: boolean,
+  isBanned: boolean
 }
 
 export enum NewChannelError {
@@ -14,10 +16,25 @@ export enum NewChannelError {
   WRONG_PASSWORD,
 }
 
+export enum ModeratorAction {
+  KICK,
+  BAN,
+  UNBAN,
+  MUTE,
+  UNMUTE,
+  PROMOTE,
+  DEMOTE
+}
+
+interface ModeratorActionData {
+  memberInfo: ChannelMemberRole,
+  actionType: ModeratorAction,
+}
+
 export interface NewChannelState {
   members: ChannelMemberRole[],
   inviteList: ChannelMemberRole[],
-  moderatedList: ChannelMemberRole[],
+  moderatedList: ModeratorActionData[],
   channelName: string,
   isPrivate: boolean,
   isInviting: boolean,
@@ -68,11 +85,10 @@ export type NewChannelAction =
   | { type: 'SET_CHANNEL_PASSWORD', password: string | null }
   | { type: 'SET_CHANNEL_NEW_PASSWORD', newPassword: string | null }
   | { type: 'SET_CHANNEL_INFO', chatroomData: ChatroomData, members: MemberData[] }
-  | { type: 'SET_HAS_CHANGES', payload: boolean }
   | { type: 'ADD_ERROR', error: NewChannelError }
   | { type: 'INVITE_MEMBER', userInfo: UserData } // by default, invite will just invite as member
   | { type: 'REMOVE_INVITE', userInfo: UserData }
-  | { type: 'MODERATOR_ACTION', userInfo: UserData, action: 'kick' | 'ban' | 'mute' } // no unban and unmute, the action should check if the user is previously banned/muted then do the opposite
+  | { type: 'MODERATOR_ACTION', moderatedMemberInfo: ChannelMemberRole, actionType: ModeratorAction }
   | { type: 'IS_EDIT_CHANNEL' }
   | { type: 'TOGGLE_IS_INVITING', isInviting: boolean }
   | { type: 'IS_OWNER', userInfo: UserData }
@@ -95,6 +111,8 @@ export default function newChannelReducer(state = newChannelInitialState, action
       const memberRole: ChannelMemberRole = {
         memberInfo: action.userInfo,
         role: 'member',
+        isBanned: false,
+        isMuted: false,
       }
       return {
         ...state,
@@ -195,6 +213,8 @@ export default function newChannelReducer(state = newChannelInitialState, action
           const memberRole: ChannelMemberRole = {
             memberInfo: member.user,
             role: role,
+            isBanned: member.isBanned,
+            isMuted: member.isMuted,
           }
           return memberRole;
         })
@@ -232,7 +252,7 @@ export default function newChannelReducer(state = newChannelInitialState, action
       }
       return {
         ...state,
-        inviteList: [...state.inviteList, { memberInfo: action.userInfo, role: 'member' }],
+        inviteList: [...state.inviteList, { memberInfo: action.userInfo, role: 'member', isBanned: false, isMuted: false }],
       }
     }
     case 'REMOVE_INVITE': {
@@ -242,6 +262,47 @@ export default function newChannelReducer(state = newChannelInitialState, action
       return {
         ...state,
         inviteList: state.inviteList.filter(invitation => invitation.memberInfo.intraName !== action.userInfo.intraName),
+      }
+    }
+    case 'MODERATOR_ACTION': {
+      const { moderatedMemberInfo, actionType } = action;
+
+      // handle promote action
+      if (actionType === ModeratorAction.PROMOTE) {
+        const isAlreadyAdmin = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.role === 'admin');
+        if (isAlreadyAdmin) {
+          // pop off the member from the moderated list
+          return {
+            ...state,
+            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+          }
+        }
+        return {
+          ...state,
+          moderatedList: [
+            ...state.moderatedList,
+            { memberInfo: moderatedMemberInfo, actionType: actionType }
+          ]
+        }
+      }
+
+      // handle demote action
+      if (actionType === ModeratorAction.DEMOTE) {
+        const isAlreadyMember = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.role === 'member');
+        if (isAlreadyMember) {
+          // pop off the member from the moderated list
+          return {
+            ...state,
+            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+          }
+        }
+        return {
+          ...state,
+          moderatedList: [
+            ...state.moderatedList,
+            { memberInfo: moderatedMemberInfo, actionType: actionType }
+          ]
+        }
       }
     }
     case 'RESET_ERRORS': {
@@ -254,15 +315,6 @@ export default function newChannelReducer(state = newChannelInitialState, action
       return {
         ...state,
         inviteList: [],
-      }
-    }
-    case 'SET_HAS_CHANGES': {
-      if (state.hasChanges === action.payload) {
-        return state;
-      }
-      return {
-        ...state,
-        hasChanges: action.payload,
       }
     }
     case 'IS_TRYING_TO_LEAVE_CHANNEL': {

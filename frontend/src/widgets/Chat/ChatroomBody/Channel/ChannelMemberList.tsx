@@ -4,6 +4,7 @@ import ChatMember from '../Chatroom/ChatMember'
 import { UserData } from '../../../../model/UserData'
 import { NewChannelContext } from '../../../../contexts/ChatContext'
 import { FaUserPlus } from 'react-icons/fa'
+import { ModeratorAction } from './newChannelReducer'
 
 interface ChannelMemberListProps {
   isScrollable?: boolean,
@@ -40,6 +41,7 @@ function ChannelMemberList(props: ChannelMemberListProps) {
       return (friendList.map(friend => <ChatMember key={friend.intraId} selectable={true} userData={friend} isSelected={state.members.find(member => member.memberInfo.intraName === friend.intraName) !== undefined}/>));
     }
     if (!state.isNewChannel) {
+      // if is existing channel
       const owner = state.members.find(member => member.role === "owner"); // only one owner, so it's fine
       const admins = state.members.filter(member => member.role === "admin");
       const members = state.members.filter(member => member.role === "member");
@@ -49,8 +51,22 @@ function ChannelMemberList(props: ChannelMemberListProps) {
       }
       memberList.push(...admins);
       memberList.push(...members);
-      return (memberList.map(member => <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={member.role} isModifyingMember={modifying} />));
+      return (memberList.map(member => {
+        const moderatedInfo = state.moderatedList.find((moderatedMember) => (moderatedMember.memberInfo.memberInfo.intraId === member.memberInfo.intraId));
+        if (moderatedInfo !== undefined) {
+          const { actionType } = moderatedInfo;
+          if (actionType === ModeratorAction.DEMOTE) {
+            // meaning from admin to member
+            return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={'member'} isModifyingMember={modifying} />
+          } else if (actionType === ModeratorAction.PROMOTE) {
+            // meaning from member to admin
+            return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={'admin'} isModifyingMember={modifying} />
+          }
+        }
+        return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={member.role} isModifyingMember={modifying} /> 
+      }));
     }
+    // if is new channel
     return (state.members.map(member => <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={member.role} isModifyingMember={modifying} />));
   }
 }

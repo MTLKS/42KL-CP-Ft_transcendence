@@ -5,12 +5,12 @@ import ChatButton from '../../ChatWidgets/ChatButton'
 import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext'
 import ChatroomContent from '../Chatroom/ChatroomContent'
 import ChannelInfoForm from './ChannelInfoForm'
-import { ChatroomData, MemberData, UpdateChannelData } from '../../../../model/ChatRoomData'
-import { NewChannelError, NewChannelState } from './newChannelReducer'
+import { ChatroomData, MemberData, UpdateChannelData, UpdateMemberData } from '../../../../model/ChatRoomData'
+import { ModeratorAction, NewChannelError, NewChannelState } from './newChannelReducer'
 import UserContext from '../../../../contexts/UserContext'
 import UserFormTfa from '../../../../pages/UserForm/UserFormTfa'
 import ChannelReviewChanges from './ChannelReviewChanges'
-import { deleteChannel, inviteMemberToChannel, kickMember, updateChannel } from '../../../../api/chatAPIs'
+import { deleteChannel, inviteMemberToChannel, kickMember, updateChannel, updateMemberRole } from '../../../../api/chatAPIs'
 import { ErrorData } from '../../../../model/ErrorData'
 import { FriendsContext } from '../../../../contexts/FriendContext'
 import { UserData } from '../../../../model/UserData'
@@ -43,9 +43,8 @@ function ChannelInfo(props: ChannelInfoProps) {
   }, []);
 
   useEffect(() => {
-    console.log(myProfile.userName+`/`+chatroomData.channelName);
-    console.log(deleteConfirmationText)
-  }, [deleteConfirmationText]);
+    console.log("moderated list: ", state.moderatedList);
+  }, [state.moderatedList]);
 
   return (
     <div className='flex flex-col h-full'>
@@ -242,9 +241,63 @@ function ChannelInfo(props: ChannelInfoProps) {
     dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})
   }
 
+  async function updateMembers() {
+    const { channelId } = chatroomData;
+    const { moderatedList, members } = state;
+  
+    if (moderatedList.length === 0) return;
+    
+    for (const moderatedMember of moderatedList) {
+      const memberInfo = members.find(member => member.memberInfo.intraId === moderatedMember.memberInfo.memberInfo.intraId);
+      if (!memberInfo) continue;
+      let isPromoted: boolean = false;
+      let isBanned: boolean = false;
+      let isMuted: boolean = false;
+
+      if (memberInfo.role === 'admin' && moderatedMember.actionType === ModeratorAction.DEMOTE) {
+        isPromoted = false;
+      } else if (memberInfo.role === 'member' && moderatedMember.actionType === ModeratorAction.PROMOTE) {
+        isPromoted = true;
+      } else {
+        isPromoted = memberInfo.role === 'admin' ? true : false;
+      }
+
+      if (memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.UNBAN) {
+        isBanned = false;
+      } else if (!memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.BAN) {
+        isBanned = true;
+      } else {
+        isBanned = memberInfo.isBanned;
+      }
+
+      if (memberInfo.isMuted && moderatedMember.actionType === ModeratorAction.UNMUTE) {
+        isMuted = false;
+      } else if (!memberInfo.isMuted && moderatedMember.actionType === ModeratorAction.MUTE) {
+        isMuted = true;
+      } else {
+        isMuted = memberInfo.isMuted;
+      }
+
+      const updatedMember: UpdateMemberData = {
+        channelId,
+        intraName: moderatedMember.memberInfo.memberInfo.intraName,
+        isAdmin: isPromoted,
+        isBanned: isBanned,
+        isMuted: isMuted,
+      }
+      // modify member roles
+      const updateMemberResponse = await updateMemberRole(updatedMember);
+      // not sure will encounter any issue here since only owner can modify member roles
+      // tested with different roles and only owner has this option
+      console.log(updateMemberResponse);
+    }
+  }
+
   async function saveChannelEdits() {
     const { channelName, password, newPassword, isPrivate } = state;
     let errorCount = 0;
+
+    updateMembers();
 
     dispatch({ type: 'RESET_ERRORS' });
 
