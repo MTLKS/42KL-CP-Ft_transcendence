@@ -226,9 +226,9 @@ export class GameService {
     }
     this.queues[clientQueue].push(player);
     //TESTING
-    // var player1 = this.queues[clientQueue].pop();
+    var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    // this.joinGame(player1, player1, clientQueue, server, PowerUp.SPIN, PowerUp.SPIN);
+    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPEED, PowerUp.SPIN);
   }
 
   async leaveQueue(client: Socket) {
@@ -310,9 +310,9 @@ export class GameService {
   }
 
   async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
+    console.log(powerUp);
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
-    console.log(powerUp);
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {

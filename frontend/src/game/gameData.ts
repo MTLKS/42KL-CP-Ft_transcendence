@@ -251,6 +251,13 @@ export class GameData {
     });
   }
 
+  async sendReady() {
+    this.socketApi.sendMessages("ready", {
+      ready: true,
+      powerUp: "Ngeeeaat",
+    });
+  }
+
   startGame() {
     if (this.gameStarted) {
       console.error("game already started");

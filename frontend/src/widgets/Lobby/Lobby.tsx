@@ -11,6 +11,7 @@ import spinPNG from '../../../assets/GIFS/SpinPaddle.png'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
 import { PaddleType } from '../../game/gameData'
+import { gameData } from '../../main'
 
 let myProfile: UserData = {
   accessToken: "hidden",
@@ -55,13 +56,18 @@ function Lobby() {
           <LobbyReadyButton >
             <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}>leave</p>
           </LobbyReadyButton>
-          <LobbyReadyButton onClick={() => setReady(!ready)} selected={ready}>
+          <LobbyReadyButton onClick={() => sendReady()} selected={ready}>
             <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>
           </LobbyReadyButton>
         </div>
       </div>
     </div>
   )
+
+  function sendReady() {
+    setReady(!ready);
+    gameData.sendReady();
+  }
 }
 
 export default Lobby
