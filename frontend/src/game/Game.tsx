@@ -106,7 +106,7 @@ function Game(props: GameProps) {
   }, []);
 
   useTick((delta) => {
-    if (!gameData.displayGame || !mounted) return;
+    if (!gameData.gameDisplayed || !mounted) return;
     const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
     const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);

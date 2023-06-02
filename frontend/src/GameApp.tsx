@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, lazy, useEffect, useMemo, useState } from 'react'
 import { GameData } from './game/gameData'
 import { AppProvider, Container } from '@pixi/react';
 import { Application, ICanvas } from 'pixi.js';
@@ -32,7 +32,7 @@ function GameApp(props: GameAppProps) {
 
   useEffect(() => {
     pixiApp.screen.width = gameData.gameCurrentWidth;
-    pixiApp.screen.height =gameData.gameCurrentHeight;
+    pixiApp.screen.height = gameData.gameCurrentHeight;
     window.addEventListener('mousemove', onmousemove);
     window.addEventListener('mousedown', onmousedown);
     window.addEventListener('mouseup', onmouseup);
@@ -55,8 +55,8 @@ function GameApp(props: GameAppProps) {
     if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
     gameData.updatePlayerPosition(
-      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5)/scale, 50, 850),
-      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5)/scale, 30, 1570),
+      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5) / scale, 50, 850),
+      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5) / scale, 30, 1570),
     );
   }
 
