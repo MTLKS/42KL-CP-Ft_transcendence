@@ -4,6 +4,10 @@ import ProfileElo from '../Profile/Expanded/ProfileElo'
 import { UserData } from '../../model/UserData'
 import ProfileSmall from '../Profile/Expanded/ProfileSmall'
 import duck from '../../../assets/duck.png'
+import speedGIF from '../../../assets/GIFS/SpeedPaddle.gif'
+import speedPNG from '../../../assets/GIFS/SpeedPaddle.png'
+import spinGIF from '../../../assets/GIFS/SpinPaddle.gif'
+import spinPNG from '../../../assets/GIFS/SpinPaddle.png'
 import { Active } from '../../../../backend/src/entity/active.entity';
 
 let myProfile: UserData = {
@@ -31,10 +35,10 @@ function Lobby() {
             <LobbyProfile />
           </div>
           <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
-            <PowerUpButton img={duck} title='Vzzzzzzt' content='Faster ball.' />
-            <PowerUpButton img={duck} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton img={duck} title='Ngeeeaat' content='Longer paddle.' />
-            <PowerUpButton img={duck} title='Vrooooom' content='Stronger spin.' />
+            <PowerUpButton gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
+            <PowerUpButton gif={spinGIF} img={spinPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+            <PowerUpButton gif={spinGIF} img={spinPNG} title='Ngeeeaat' content='Longer paddle.' />
+            <PowerUpButton gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
           </div>
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
@@ -62,13 +66,14 @@ export default Lobby
 interface PowerUpButtonProps {
   title?: string;
   content?: string;
+  gif?: string;
   img?: string;
   onClick?: () => void;
 }
 
 
 function PowerUpButton(props: PowerUpButtonProps) {
-  const { title, content, onClick, img } = props;
+  const { title, content, onClick, gif, img } = props;
   const [hover, setHover] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -84,8 +89,8 @@ function PowerUpButton(props: PowerUpButtonProps) {
       onMouseMove={(e) => handleMouseMove(e)}
     >
       {imgLoaded ? null : <div className=' animate-pulse bg-highlight/50 border-4 rounded-lg aspect-square' />}
-      <img src={img} className={` border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
-        onLoad={() => imgOnLoad()}
+      <img src={hover ? gif : img} className={` border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
+        onLoad={() => imgOnLoad()} onMouseOver={() => setHover(true)} onMouseOut={() => setHover(false)}
       />
       <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         <h3 className=' text-lg'>{title}</h3>
