@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { UserService } from 'src/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Match } from 'src/entity/match.entity';
 import { User } from 'src/entity/users.entity';
+import { Injectable } from '@nestjs/common';
 import { Repository, Not } from "typeorm";
 
 @Injectable()
 export class MatchService {
-	constructor(@InjectRepository(Match) private matchRepository: Repository<Match>, @InjectRepository(User) private userRepository: Repository<User>) { }
+	constructor(@InjectRepository(Match) private matchRepository: Repository<Match>, @InjectRepository(User) private userRepository: Repository<User>, private userService: UserService) { }
 
 	async createNewMatch(player1: User, player2: User, player1Score: number, player2Score: number, winner: string, gameType: string, wonBy: string) {
 		let newMatch = new Match(player1, player2, player1Score, player2Score, winner, gameType, wonBy);
@@ -66,10 +67,16 @@ export class MatchService {
 			}
 		}
 
-		const PUNCHING_BAG = this.getMostCommonPlayer(wins);
-		const WORST_NIGHTMARE = this.getMostCommonPlayer(losses);
 		const USER_DATA = await this.userRepository.findOne({ where: { intraName: intraName } });
-		return { winStreak: USER_DATA.winStreak, highestElo: USER_DATA.highestElo, win: WIN_COUNT, lose: LOSE_COUNT, worst_nightmare: WORST_NIGHTMARE, punching_bag: PUNCHING_BAG };
+		const PUNCHING_BAG_NAME = this.getMostCommonPlayer(wins);
+		const WORST_NIGHTMARE_NAME = this.getMostCommonPlayer(losses);
+		let worstNightmare = await this.userRepository.findOne({ where: { intraName: WORST_NIGHTMARE_NAME } });
+		if (worstNightmare === null)
+			worstNightmare = USER_DATA;
+		let punchingBag = await this.userRepository.findOne({ where: { intraName: PUNCHING_BAG_NAME } });
+		if (punchingBag === null)
+			punchingBag = USER_DATA;
+		return { winStreak: USER_DATA.winStreak, highestElo: USER_DATA.highestElo, win: WIN_COUNT, lose: LOSE_COUNT, worst_nightmare: this.userService.hideData(worstNightmare), punching_bag: this.userService.hideData(punchingBag) };
 	}
 
 	private getMostCommonPlayer(players: string[]): string {

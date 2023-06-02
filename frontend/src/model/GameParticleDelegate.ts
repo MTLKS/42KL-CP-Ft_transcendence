@@ -171,7 +171,7 @@ class GameParticleDelegate {
       const isLeft = Math.random() > 0.5;
       let x = isLeft ? 1600 : 0;
       let y = Math.random() * 900;
-      let size = Math.random() * 2 + 1;
+      let size = Math.random() * 5 + 1;
       const particle = new GameParticle({
         x: x,
         y: y,
@@ -179,11 +179,11 @@ class GameParticleDelegate {
         vy: (Math.random() - 0.5) * 7,
         w: size,
         h: size,
-        opacity: 1,
-        opacityDecay: 0.01,
+        opacity: 0.2,
+        opacityDecay: 0.002,
         affectedByGravity: true,
         colorIndex: colorIndex,
-        speedDecayFactor: 0.95,
+        speedDecayFactor: 0.98,
       });
       addSprite(particle);
       this.particles.push(particle);
@@ -192,7 +192,7 @@ class GameParticleDelegate {
       const isTop = Math.random() > 0.5;
       let x = Math.random() * 1600;
       let y = isTop ? 900 : 0;
-      let size = Math.random() * 2 + 1;
+      let size = Math.random() * 5 + 1;
       const particle = new GameParticle({
         x: x,
         y: y,
@@ -200,11 +200,11 @@ class GameParticleDelegate {
         h: size,
         vx: (Math.random() - 0.5) * 7,
         vy: (isTop ? -5 : 5) * Math.random(),
-        opacity: 1,
-        opacityDecay: 0.01,
+        opacity: 0.2,
+        opacityDecay: 0.002,
         affectedByGravity: true,
         colorIndex: colorIndex,
-        speedDecayFactor: 0.95,
+        speedDecayFactor: 0.98,
       });
       addSprite(particle);
       this.particles.push(particle);
