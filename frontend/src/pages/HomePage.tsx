@@ -626,7 +626,7 @@ function HomePage(props: HomePageProps) {
       <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
       <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
       <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
-      <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Rock and Stone.</span></p>
+      <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
       <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
       <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
       <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
