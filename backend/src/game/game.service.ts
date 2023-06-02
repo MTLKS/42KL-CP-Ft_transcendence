@@ -12,6 +12,7 @@ import {
   GameEndDTO,
   GamePauseDTO,
   LobbyStartDTO,
+  LobbyEndDTO,
   CountdonwDTO,
 } from 'src/dto/gameState.dto';
 import { MatchService } from 'src/match/match.service';
@@ -225,9 +226,9 @@ export class GameService {
     }
     this.queues[clientQueue].push(player);
     //TESTING
-    var player1 = this.queues[clientQueue].pop();
+    // var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPIN, PowerUp.SPIN);
+    // this.joinGame(player1, player1, clientQueue, server, PowerUp.SPIN, PowerUp.SPIN);
   }
 
   async leaveQueue(client: Socket) {
@@ -260,6 +261,36 @@ export class GameService {
     player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
+  getLobbyKeyFromIntreNames(intraName: string): string | undefined {
+    for (const KEY in this.gameLobbies.keys){
+      if (KEY.includes(intraName))
+        return KEY;
+    }
+    return undefined;
+  }
+
+  async leaveLobby(client: Socket) {
+    const USER_DATA = await this.userService.getMyUserData(
+      client.handshake.headers.authorization,
+    );
+    if (USER_DATA.error !== undefined) return;
+    const LOBBY_KEY = this.getLobbyKeyFromIntreNames(USER_DATA.intraName);
+    if (LOBBY_KEY != undefined) {
+      const LOBBY = this.gameLobbies.get(LOBBY_KEY);
+      if (LOBBY != undefined) {
+        if (LOBBY.player1.intraName === USER_DATA.intraName) {
+          LOBBY.player1.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "leave")));
+          LOBBY.player2.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO(LOBBY.player1.intraName, "leave")));
+        }
+        else if (LOBBY.player2.intraName === USER_DATA.intraName) {
+          LOBBY.player1.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO(LOBBY.player2.intraName, "leave")));
+          LOBBY.player2.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "leave")));
+        }
+        this.gameLobbies.delete(LOBBY_KEY);
+      }
+    }
+  }
+
   getPowerUp(powerUpString: string): PowerUp {
     let powerUp: PowerUp;
     powerUpString = powerUpString.toLowerCase();
@@ -278,7 +309,7 @@ export class GameService {
     return powerUp;
   }
 
-  async handleReady(client: Socket, powerUp: string, server: Server) {
+  async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
     console.log(powerUp);
@@ -288,17 +319,17 @@ export class GameService {
       let gameType;
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
         gameType= gameLobby.gameType;
-        gameLobby.player1Ready = true;
+        gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       } else {
-        gameLobby.player2Ready = true;
+        gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (LOBBY_LOGGING)
         console.log(`${USER_DATA.intraName} is ready.`);
       }
-      if (gameLobby.player1Ready && gameLobby.player2Ready)
+      if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
         this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
         this.gameLobbies.delete(key);
