@@ -10,6 +10,7 @@ import spinGIF from '../../../assets/GIFS/SpinPaddle.gif'
 import spinPNG from '../../../assets/GIFS/SpinPaddle.png'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
+import { PaddleType } from '../../game/gameData'
 
 let myProfile: UserData = {
   accessToken: "hidden",
@@ -26,6 +27,7 @@ let myProfile: UserData = {
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState('standard');
   const [ready, setReady] = React.useState(false);
+  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
@@ -36,10 +38,10 @@ function Lobby() {
             <LobbyProfile />
           </div>
           <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
-            <PowerUpButton gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
-            <PowerUpButton gif={spinGIF} img={spinPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton gif={spinGIF} img={spinPNG} title='Ngeeeaat' content='Longer paddle.' />
-            <PowerUpButton gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
+            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
+            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={spinGIF} img={spinPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={spinGIF} img={spinPNG} title='Ngeeeaat' content='Longer paddle.' />
+            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
           </div>
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
@@ -69,16 +71,16 @@ interface PowerUpButtonProps {
   content?: string;
   gif?: string;
   img?: string;
+  selected?: boolean;
   onClick?: () => void;
 }
 
 
 function PowerUpButton(props: PowerUpButtonProps) {
-  const { title, content, onClick, gif, img } = props;
+  const { title, content, onClick, gif, img, selected } = props;
   const [hover, setHover] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const timeRef = React.useRef<number>(0);
   const hoverRef = React.useRef<HTMLDivElement>(null);
 
   return (
@@ -90,8 +92,8 @@ function PowerUpButton(props: PowerUpButtonProps) {
       onMouseMove={(e) => handleMouseMove(e)}
     >
       {imgLoaded ? null : <div className=' animate-pulse bg-highlight/50 border-4 rounded-lg aspect-square' />}
-      <img src={hover ? gif : img} className={` border-4 w-full border-highlight/80 rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
-        onLoad={() => imgOnLoad()} onMouseOver={() => setHover(true)} onMouseOut={() => setHover(false)}
+      <img src={hover ? gif : img} className={` border-4 w-full ${ selected ? "border-highlight animate-pulse" : "border-highlight/10"} rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
+        onLoad={() => imgOnLoad()} 
       />
       <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         <h3 className=' text-lg'>{title}</h3>
@@ -106,9 +108,6 @@ function PowerUpButton(props: PowerUpButtonProps) {
 
   function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     if (buttonRef.current == null || hoverRef.current == null) return;
-    const now = Date.now();
-    if (now - timeRef.current < 16) return;
-    timeRef.current = now;
     const rect = buttonRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -146,7 +145,6 @@ function LobbyButton(props: LobbyButtonProps) {
   const [hover, setHover] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const timeRef = React.useRef<number>(0);
   const hoverRef = React.useRef<HTMLDivElement>(null);
 
   const bg = useMemo(() => {
@@ -199,9 +197,6 @@ function LobbyButton(props: LobbyButtonProps) {
 
   function handleMouseMove(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     if (buttonRef.current == null || hoverRef.current == null) return;
-    const now = Date.now();
-    if (now - timeRef.current < 16) return;
-    timeRef.current = now;
     const rect = buttonRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
