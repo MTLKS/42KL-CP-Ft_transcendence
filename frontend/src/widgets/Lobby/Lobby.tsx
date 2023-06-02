@@ -24,24 +24,26 @@ function Lobby() {
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
-      <h1 className='text-[40px] font-extrabold'>OPPONENT</h1>
-      <LobbyProfile />
-      <div className=' flex-1 flex flex-row w-full box-border'>
-        <div className=' h-full flex-1 flex flex-col items-center box-border m-10 '>
-          <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-16 gap-y-16 max-w-md max-h-md place-items-center box-border'>
-            <PowerUpButton img={duck} title='Vzzzzzzt' content='Faster ball, bigger punch to your opponent.' />
-            <PowerUpButton img={duck} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton img={duck} title='Ngeeeaat' content='longer paddle.' />
-            <PowerUpButton img={duck} title='Vrooooom' content='Stronger spin. ' />
+      <div className=' flex flex-row w-full box-border h-full'>
+        <div className=' h-full flex-1 flex flex-col items-center box-border m-10 mt-0'>
+          <h1 className='text-[40px] font-extrabold'>OPPONENT</h1>
+          <div className="mb-12 border-4 rounded border-highlight">
+            <LobbyProfile />
           </div>
-          <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: {selectedMode}</h2>
-          <div className='mb-10 flex flex-row gap-x-2 w-full h-fit'>
+          <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
+            <PowerUpButton img={duck} title='Vzzzzzzt' content='Faster ball.' />
+            <PowerUpButton img={duck} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+            <PowerUpButton img={duck} title='Ngeeeaat' content='Longer paddle.' />
+            <PowerUpButton img={duck} title='Vrooooom' content='Stronger spin.' />
+          </div>
+          <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
+          <div className=' flex flex-row gap-x-2 w-full h-fit'>
             <LobbyButton title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
             <LobbyButton title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
             <LobbyButton title='death' color='accRed' selected={selectedMode === "sudden death"} onClick={() => setSelectedMode("sudden death")} />
           </div>
         </div>
-        <div className=' w-64 flex flex-col items-center gap-3'>
+        <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
           <div className='flex-1'></div>
           <LobbyReadyButton >
             <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}>leave</p>
@@ -160,10 +162,10 @@ function LobbyButton(props: LobbyButtonProps) {
   }, [color, selected]);
 
   const text = useMemo(() => {
-    if (color == null) return 'text-highlight/60'
-    if (color === 'accCyan') return 'text-accCyan'
-    if (color === 'accRed') return 'text-accRed'
-  }, [color]);
+    if (color == null) return selected ? 'text-highlight' : 'text-highlight/20'
+    if (color === 'accCyan') return selected ? 'text-accCyan' : 'text-accCyan/40'
+    if (color === 'accRed') return selected ? 'text-accRed' : 'text-accRed/40'
+  }, [color, selected]);
 
   return (
     <button
@@ -177,7 +179,7 @@ function LobbyButton(props: LobbyButtonProps) {
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
     >
-      <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`}>{title}</p>
+    <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`} style={{ fontSize: "25px" }}>{title}</p>
       <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[400px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         {imgLoaded ? null : <div className='w-full h-full flex justify-center rounded-[4px] items-center animate-pulse bg-highlight/50' />}
         <img src={duck} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
