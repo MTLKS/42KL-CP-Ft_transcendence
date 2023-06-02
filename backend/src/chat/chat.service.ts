@@ -350,6 +350,12 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+
+		if (CHANNEL.owner.intraName === MEMBER.user.intraName)
+			return new ErrorDTO("Invalid intraName - cannot update owner member");
+		if (MEMBER.isAdmin === true && CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
+			return new ErrorDTO("Invalid intraName - cannot update admin member without owner privileges");
+		
 		MEMBER.isAdmin = isAdmin;
 		MEMBER.isBanned = isBanned;
 		MEMBER.isMuted = isMuted;
