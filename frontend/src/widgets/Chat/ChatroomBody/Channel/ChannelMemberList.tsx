@@ -61,6 +61,8 @@ function ChannelMemberList(props: ChannelMemberListProps) {
           } else if (actionType === ModeratorAction.PROMOTE) {
             // meaning from member to admin
             return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={'admin'} isModifyingMember={modifying} />
+          } else if (actionType >= ModeratorAction.KICK && actionType <= ModeratorAction.UNMUTE) {
+            return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberPrivilege={{isMuted: moderatedInfo.memberInfo.isMuted, isBanned: moderatedInfo.memberInfo.isBanned}} memberRole={'admin'} isModifyingMember={modifying} />
           }
         }
         return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={member.role} isModifyingMember={modifying} /> 

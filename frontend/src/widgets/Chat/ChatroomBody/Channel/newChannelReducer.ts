@@ -304,6 +304,44 @@ export default function newChannelReducer(state = newChannelInitialState, action
           ]
         }
       }
+
+      // handle mute action
+      if (actionType === ModeratorAction.MUTE) {
+        const alreadyMuted = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.isMuted);
+        if (alreadyMuted) {
+          // pop off the member from the moderated list
+          return {
+            ...state,
+            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+          }
+        }
+        return {
+          ...state,
+          moderatedList: [
+            ...state.moderatedList,
+            { memberInfo: moderatedMemberInfo, actionType: actionType }
+          ]
+        }
+      }
+
+      // handle unmute action
+      if (actionType === ModeratorAction.UNMUTE) {
+        const alreadyUnmuted = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && !member.isMuted);
+        if (alreadyUnmuted) {
+          // pop off the member from the moderated list
+          return {
+            ...state,
+            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+          }
+        }
+        return {
+          ...state,
+          moderatedList: [
+            ...state.moderatedList,
+            { memberInfo: moderatedMemberInfo, actionType: actionType }
+          ]
+        }
+      }
     }
     case 'RESET_ERRORS': {
       return {

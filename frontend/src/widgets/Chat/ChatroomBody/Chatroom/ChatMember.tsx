@@ -9,12 +9,18 @@ import Profile from '../../../Profile/Profile';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import { ModeratorAction } from '../Channel/newChannelReducer';
 
+interface MemberPrivilege {
+  isMuted: boolean;
+  isBanned: boolean;
+}
+
 interface ChatMemberProps {
   isModifyingMember?: boolean;
   isSelected?: boolean;
   selectable: boolean;
   userData: UserData,
   memberRole?: 'owner' | 'admin' | 'member';
+  memberPrivilege?: MemberPrivilege;
 }
 
 interface ChatMemberRoleTagProps {
@@ -23,29 +29,106 @@ interface ChatMemberRoleTagProps {
   userData: UserData;
 }
 
-function ChatMemberActions() {
+function ChatMemberActions(props: { userData: UserData, memberPrivilege?: MemberPrivilege }) {
+
+  const { userData } = props;
+
   return (
     <div className='flex flex-row uppercase gap-1 items-center'>
       <ActionButton action='mute' />
-      <ActionButton action='kick' />
       <ActionButton action='ban' />
+      <ActionButton action='kick' />
     </div>
   )
 
   function ActionButton(props: { action: string}) {
 
+    const { action } = props;
+    const { state, dispatch } = useContext(NewChannelContext);
     const [isHovered, setIsHovered] = useState(false);
+    const memberInfo = useMemo(() => {
+      const moderatedMemberInfo = state.moderatedList.find(member => member.memberInfo.memberInfo.intraId === userData.intraId);
+      if (moderatedMemberInfo) {
+        console.log("using moderated members", moderatedMemberInfo);
+        return moderatedMemberInfo.memberInfo;
+      }
+      console.log("using state members");
+      return state.members.find(member => member.memberInfo.intraId === userData.intraId);
+    }, []);
+    const [isPressed, setIsPressed] = useState(false);
+    const [buttonText, setButtonText] = useState(action);
+
+    useEffect(() => {
+      if (action === 'mute' && memberInfo?.isMuted) {
+        setIsPressed(true);
+      }
+
+      if (action === 'ban' && memberInfo?.isBanned) {
+        setIsPressed(true);
+      }
+    }, []);
+
+    useEffect(() => {
+      if (action === 'mute' && isPressed) {
+        setButtonText('unmute');
+      } else if (action === 'mute' && !isPressed) {
+        setButtonText('mute');
+      }
+
+      if (action === 'ban' && isPressed) {
+        setButtonText('unban');
+      } else if (action === 'ban' && !isPressed) {
+        setButtonText('ban');
+      }
+    }, [isPressed]);
+
+    if (action === 'kick') {
+      return (
+        <button
+          className={`flex flex-row cursor-default] z-[5] overflow-hidden border-accRed text-accRed hover:text-highlight hover:bg-accRed border-2 border-dashed text-sm uppercase p-2 items-center gap-x-1 transition-all duration-100`}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={handleClick}
+        >
+          {getActionIcon(action)}
+          {isHovered && <span className='h-full text-[10px] font-light transition-all duration-75'>{buttonText}</span>}
+        </button>
+      )
+    }
 
     return (
       <button
-        className={`flex flex-row cursor-default] z-[5] overflow-hidden bg-highlight text-dimshadow border-highlight border-2 border-dashed text-sm uppercase p-2 items-center gap-x-1 transition-all duration-100`}
+        className={`flex flex-row cursor-default] z-[5] overflow-hidden ${isPressed && action !== 'kick' ? 'bg-highlight text-dimshadow' : 'bg-dimshadow text-highlight'} border-highlight border-2 border-dashed text-sm uppercase p-2 items-center gap-x-1 transition-all duration-100`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={handleClick}
       >
-        {getActionIcon(props.action)}
-        {isHovered && <span className='h-full text-[10px] font-light transition-all duration-75'>{props.action}</span>}
+        {getActionIcon(action)}
+        {isHovered && <span className='h-full text-[10px] font-light transition-all duration-75'>{buttonText}</span>}
       </button>
     )
+
+    // the whole kick ban and mute logic will be implemented here
+    function handleClick() {
+      if (!memberInfo) return ;
+      
+      if (action === 'mute' && memberInfo.isMuted) {
+        console.log("unmute this");
+        // dispatch({ type: 'MODERATOR_ACTION', moderatedMemberInfo: memberInfo,  actionType: ModeratorAction.UNMUTE })
+      } else if (action === 'mute' && !memberInfo.isMuted) {
+        console.log("mute this");
+        dispatch({ type: 'MODERATOR_ACTION', moderatedMemberInfo: memberInfo,  actionType: ModeratorAction.MUTE })
+      }
+      
+      if (action === 'ban' && memberInfo.isBanned) {
+        console.log("unban this");
+        // dispatch({ type: 'MODERATOR_ACTION', moderatedMemberInfo: memberInfo,  actionType: ModeratorAction.UNBAN })
+      } else if (action === 'ban' && !memberInfo.isBanned) {
+        console.log("ban this");
+        // dispatch({ type: 'MODERATOR_ACTION', moderatedMemberInfo: memberInfo,  actionType: ModeratorAction.BAN })
+      }
+      setIsPressed(!isPressed);
+    }
   }
 
   function getActionIcon(action: string) {
@@ -71,7 +154,6 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
   const [gradientPosition, setGradientPosition] = useState(0);
 
   if (role === 'member') {
-
     if (state.isNewChannel || (!state.isNewChannel && isModifying && state.isOwner)) {
       return (
         <div className='flex flex-row relative'>
@@ -96,7 +178,6 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
   }
 
   if (role === 'admin') {
-
     if (state.isNewChannel || (!state.isNewChannel && isModifying && state.isOwner)) {
       return (
         <div className='flex flex-row overflow-hidden relative'>
@@ -174,7 +255,8 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
 
 function ChatMember(props: ChatMemberProps) {
 
-  const { isModifyingMember, selectable, userData, memberRole } = props;
+  const { isModifyingMember, selectable, userData, memberRole, memberPrivilege } = props;
+  const { myProfile } = useContext(UserContext);
   const { state, dispatch } = useContext(NewChannelContext);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const [isSelected, setIsSelected] = useState(props.isSelected || false);
@@ -201,7 +283,8 @@ function ChatMember(props: ChatMemberProps) {
       </div>
       <div className={`flex flex-row items-center ${isModifyingMember ? 'w-[35%] justify-between' : ''}`}>
         <div>
-          {memberRole !== "owner" && isModifyingMember && <ChatMemberActions />}
+          {memberRole !== "owner" && memberRole !== "admin" && state.isAdmin && isModifyingMember && <ChatMemberActions userData={userData} memberPrivilege={memberPrivilege} />}
+          {memberRole !== "owner" && myProfile.intraId !== userData.intraId && state.isOwner && isModifyingMember && <ChatMemberActions userData={userData} memberPrivilege={memberPrivilege} />}
         </div>
         {memberRole !== undefined && <ChatMemberRoleTag isModifying={isModifyingMember} userData={userData} role={memberRole} />}
       </div>

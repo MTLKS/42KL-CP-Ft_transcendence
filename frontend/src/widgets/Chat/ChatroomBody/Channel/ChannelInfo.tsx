@@ -297,31 +297,30 @@ function ChannelInfo(props: ChannelInfoProps) {
     const { channelName, password, newPassword, isPrivate } = state;
     let errorCount = 0;
 
-    updateMembers();
-
+    
     dispatch({ type: 'RESET_ERRORS' });
-
+    
     if (!(channelName.length > 0 && channelName.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_CHANNEL_NAME });
       errorCount++;
     }
-
+    
     if (isPrivate && previousChannelInfo.current.password !== null && password !== null && !(password.length > 0 && password.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
       errorCount++;
     }
-
+    
     // when switch to public and is set to password protected, check password validity
     if (!isPrivate && password !== null && !(password.length > 0 && password.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
       errorCount++;
     }
-
+    
     if (!isPrivate && newPassword !== null && !(newPassword.length > 0 && newPassword.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_NEW_PASSWORD });
       errorCount++;
     }
-
+    
     if (errorCount !== 0) return;
 
     const updatedChannelInfo: UpdateChannelData = {
@@ -340,6 +339,7 @@ function ChannelInfo(props: ChannelInfoProps) {
         dispatch({ type: 'ADD_ERROR', error: NewChannelError.WRONG_PASSWORD });
         return ;
       }
+      await updateMembers();
       dispatch({ type: 'RESET' });
       setChatBody(<ChatroomContent chatroomData={(updateChannelResponse.data as ChatroomData)} />);
     }
