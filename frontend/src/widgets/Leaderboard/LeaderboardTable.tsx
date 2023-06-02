@@ -11,7 +11,7 @@ interface LeaderboardTableProps {
 
 function LeaderboardTableTitle() {
   return (
-    <div className='flex flex-row uppercase text-xs text-highlight font-extrabold mb-4'>
+    <div className='flex flex-row mb-4 text-xs font-extrabold uppercase text-highlight'>
       <p className='w-[68%] pl-1.5'>name</p>
       <p className='w-[32%] pr.1.5'>ELO Rating</p>
     </div>
@@ -24,7 +24,7 @@ function LeaderboardTableRow(props: LeaderboardTableProps) {
 
   return (
     <div className={`mt-3 snap-center flex flex-row uppercase p-4 border-dashed border-4 ${index < 3 ? "border-highlight" : "border-transparent"}`}>
-      <p className='w-[70%]'>{name} <a target='new' className='hover:underline cursor-pointer' href={intraURL}>({intraId})</a></p>
+      <p className='w-[70%]'>{name} <a target='new' className='cursor-pointer hover:underline' href={intraURL}>({intraId})</a></p>
       <p className='w-[30%]'>{eloRating}</p>
     </div>
   )
@@ -121,9 +121,9 @@ const users = [
 function LeaderboardTable() {
 
   return (
-    <div className='text-highlight flex-1 overflow-hidden font-extrabold text-sm flex flex-col'>
+    <div className='flex flex-col flex-1 overflow-hidden text-sm font-extrabold text-highlight'>
       <LeaderboardTableTitle />
-      <div className='overflow-auto w-full flex-1 scrollbar-hide'>
+      <div className='flex-1 w-full overflow-auto scrollbar-hide'>
         {
           users.map((user, index) =>
             <LeaderboardTableRow

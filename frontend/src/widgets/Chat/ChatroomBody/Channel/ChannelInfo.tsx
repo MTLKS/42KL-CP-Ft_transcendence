@@ -43,6 +43,14 @@ function ChannelInfo(props: ChannelInfoProps) {
   }, []);
 
   useEffect(() => {
+    if (modifying) {
+      dispatch({ type: 'READY_MODERATED_LIST' });
+    } else {
+      dispatch({ type: 'CLEAR_MODERATED_LIST' });
+    }
+  }, [modifying]);
+
+  useEffect(() => {
     console.log("moderated list: ", state.moderatedList);
   }, [state.moderatedList]);
 
@@ -53,13 +61,13 @@ function ChannelInfo(props: ChannelInfoProps) {
         backAction={backToChatroom}
         nextComponent={modifying ? <ChatButton title='save' onClick={saveChannelEdits} /> : <></>}
       />
-      <div className='w-full h-full relative box-border overflow-y-scroll scrollbar-hide'>
+      <div className='box-border relative w-full h-full overflow-y-scroll scrollbar-hide'>
         { (state.isTryingToDeleteChannel || state.isTryingToLeaveChannel) && showLeaveOrDeleteChannelConfirmation() }
         { state.isInviting && showInviteList() }
         { isReviewingChanges && showChanges() }
         { verifyingTfa && showVerifyTFAForm() }
         { showEditChannelForm() }
-        <div className='w-full h-full mt-6 relative'>
+        <div className='relative w-full h-full mt-6'>
           <ChannelMemberList title="members" modifying={modifying}  isScrollable={false} />
         </div>
       </div>
@@ -89,27 +97,27 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   function showLeaveOrDeleteChannelConfirmation() {
     return (
-      <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
+      <div className='absolute z-20 w-full h-full bg-dimshadow/70'>
         <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-fit mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded flex flex-col'>
-        <button className='absolute border-dimshadow w-fit aspect-square border-2 hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight rounded p-1' onClick={changedMyMind} ><FaTimes /></button>
-          <div className='w-full h-fit p-4 flex flex-col items-center my-auto text-highlight gap-y-2'>
+        <button className='absolute p-1 border-2 rounded border-dimshadow w-fit aspect-square hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight' onClick={changedMyMind} ><FaTimes /></button>
+          <div className='flex flex-col items-center w-full p-4 my-auto h-fit text-highlight gap-y-2'>
             { chatroomData.isPrivate ? <FaUserSecret className='text-3xl' /> : <ImEarth className='text-3xl' /> }
             <p className='text-lg font-extrabold'>{chatroomData.channelName}</p>
             <p className='text-sm'>Created by <span className='bg-accGreen px-[1ch] text-highlight'>{chatroomData.owner?.userName}</span></p>
-            <p className='flex flex-row items-center uppercase gap-x-2 text-sm'><FaUsers /> {chatroomData.memberCount} members</p>
+            <p className='flex flex-row items-center text-sm uppercase gap-x-2'><FaUsers /> {chatroomData.memberCount} members</p>
             {state.isTryingToDeleteChannel && !state.deleteConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_DELETE_CHANNEL' })}>I want to delete this channel</button>}
             {state.isTryingToLeaveChannel && !state.leaveConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_LEAVE_CHANNEL' })}>I want to leave this channel</button>}
             {state.deleteConfirmed && (
-              <div className='gap-y-2 flex flex-col'>
-                <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='text-highlight select-none'>{chatroomData.owner?.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
-                <input type="text" className='w-full h-full p-2 text-sm font-bold rounded border-2 border-accRed bg-dimshadow text-highlight outline-none text-center' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
+              <div className='flex flex-col gap-y-2'>
+                <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='select-none text-highlight'>{chatroomData.owner?.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
+                <input type="text" className='w-full h-full p-2 text-sm font-bold text-center border-2 rounded outline-none border-accRed bg-dimshadow text-highlight' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
                 <button className={`${deleteConfirmationText === chatroomData.owner?.userName+`/`+chatroomData.channelName ? 'bg-accRed hover:text-accRed hover:bg-dimshadow cursor-pointer' : 'cursor-default border-highlight text-highlight opacity-25'} rounded border-2 p-2 border-accRed transition-all duration-100`} disabled={deleteConfirmationText !== chatroomData.owner?.userName+`/`+chatroomData.channelName} onClick={confirmDeleteChannel}>DELETE THIS CHANNEL</button>
               </div>
             )}
             {state.leaveConfirmed && (
-              <div className='gap-y-2 flex flex-col'>
-                <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='text-highlight select-none'>{myProfile.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
-                <input type="text" className='w-full h-full p-2 text-sm font-bold rounded border-2 border-accRed bg-dimshadow text-highlight outline-none text-center' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
+              <div className='flex flex-col gap-y-2'>
+                <p className='text-sm text-center text-highlight/50'>To confirm, type "<span className='select-none text-highlight'>{myProfile.userName+`/`+chatroomData.channelName}</span>" in the box below</p>
+                <input type="text" className='w-full h-full p-2 text-sm font-bold text-center border-2 rounded outline-none border-accRed bg-dimshadow text-highlight' value={deleteConfirmationText} onChange={handleDeleteConfirmationOnChange} />
                 <button className={`${deleteConfirmationText === myProfile.userName+`/`+chatroomData.channelName ? 'bg-accRed hover:text-accRed hover:bg-dimshadow cursor-pointer' : 'cursor-default border-highlight text-highlight opacity-25'} rounded border-2 p-2 border-accRed transition-all duration-100`} disabled={deleteConfirmationText !== myProfile.userName+`/`+chatroomData.channelName} onClick={confirmLeaveChannel}>LEAVE THIS CHANNEL</button>
               </div>
             )}
@@ -133,7 +141,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   function showChanges() {
     return (
-      <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
+      <div className='absolute z-20 w-full h-full bg-dimshadow/70'>
         <div className='top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[75%] h-[60%] mx-auto absolute flex z-20 bg-dimshadow p-2 border-4 border-highlight rounded'>
           <ChannelReviewChanges previousChannelInfo={previousChannelInfo.current} isReviewingChanges={isReviewingChanges} setIsReviewingChanges={setIsReviewingChanges} />
         </div>
@@ -153,16 +161,16 @@ function ChannelInfo(props: ChannelInfoProps) {
     });
 
     return (
-      <div className='w-full h-full bg-dimshadow/70 absolute z-20'>
+      <div className='absolute z-20 w-full h-full bg-dimshadow/70'>
         <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded overflow-hidden'>
-          <div className='relative mb-2 w-full flex flex-row justify-between items-center'>
-            <button className='m-2 border-dimshadow w-fit aspect-square border-2 hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight rounded p-1' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
+          <div className='relative flex flex-row items-center justify-between w-full mb-2'>
+            <button className='p-1 m-2 border-2 rounded border-dimshadow w-fit aspect-square hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
             {state.inviteList.length > 0 && <button className='border-2 border-highlight bg-dimshadow text-highlight hover:text-dimshadow hover:bg-highlight font-extrabold rounded text-sm p-1.5 h-fit' onClick={sendInvites}>SEND INVITES ({state.inviteList.length})</button>}
           </div>
           { friendsButNotMembers.length === 0
             ? (
-              <div className='w-full h-full relative'>
-                <p className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center font-extrabold text-highlight'>{ friendUserData.length === 0 ? 'No friends to choose from...' : 'All you friends are in this channel already!' }</p>
+              <div className='relative w-full h-full'>
+                <p className='absolute font-extrabold text-center -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 text-highlight'>{ friendUserData.length === 0 ? 'No friends to choose from...' : 'All your friends are in this channel already!' }</p>
               </div>
             ) :
             (
@@ -188,11 +196,11 @@ function ChannelInfo(props: ChannelInfoProps) {
       <>
         {
           myProfile.tfaSecret?.toLowerCase() === "enabled" &&
-          <div className='h-full w-full absolute bg-dimshadow/90 z-10 transition-opacity duration-500' style={{opacity: `${opacity}`}}>
-            <div className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2'>
-              <div className='h-fit w-fit flex flex-col bg-dimshadow p-4 border-4 border-highlight rounded m-auto font-extrabold'>
+          <div className='absolute z-10 w-full h-full transition-opacity duration-500 bg-dimshadow/90' style={{opacity: `${opacity}`}}>
+            <div className='absolute -translate-x-1/2 -translate-y-1/2 top-1/3 left-1/2'>
+              <div className='flex flex-col p-4 m-auto font-extrabold border-4 rounded h-fit w-fit bg-dimshadow border-highlight'>
                 <UserFormTfa invert tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={tfaVerified} setTFAVerified={setTfaVerified} handleSubmit={() => console.log("yo")} />
-                <button className='text-accRed hover:text-highlight bg-dimshadow p-2 rounded border-accRed border-2 hover:bg-accRed' onClick={() => setVerifyingTfa(false)}>cancel</button>
+                <button className='p-2 border-2 rounded text-accRed hover:text-highlight bg-dimshadow border-accRed hover:bg-accRed' onClick={() => setVerifyingTfa(false)}>cancel</button>
               </div>
             </div>
           </div>
@@ -248,6 +256,14 @@ function ChannelInfo(props: ChannelInfoProps) {
     if (moderatedList.length === 0) return;
     
     for (const moderatedMember of moderatedList) {
+
+      if (moderatedMember.actionType === ModeratorAction.NONE) continue;
+
+      if (moderatedMember.actionType === ModeratorAction.KICK) {
+        const kickMemberResponse = await kickMember(channelId, moderatedMember.memberInfo.memberInfo.intraName);
+        continue;
+      }
+
       const memberInfo = members.find(member => member.memberInfo.intraId === moderatedMember.memberInfo.memberInfo.intraId);
       if (!memberInfo) continue;
       let isPromoted: boolean = false;
@@ -265,6 +281,9 @@ function ChannelInfo(props: ChannelInfoProps) {
       if (memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.UNBAN) {
         isBanned = false;
       } else if (!memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.BAN) {
+        if (memberInfo.isMuted) {
+          isMuted = false;
+        }
         isBanned = true;
       } else {
         isBanned = memberInfo.isBanned;
@@ -273,6 +292,9 @@ function ChannelInfo(props: ChannelInfoProps) {
       if (memberInfo.isMuted && moderatedMember.actionType === ModeratorAction.UNMUTE) {
         isMuted = false;
       } else if (!memberInfo.isMuted && moderatedMember.actionType === ModeratorAction.MUTE) {
+        if (memberInfo.isBanned) {
+          isBanned = false;
+        }
         isMuted = true;
       } else {
         isMuted = memberInfo.isMuted;

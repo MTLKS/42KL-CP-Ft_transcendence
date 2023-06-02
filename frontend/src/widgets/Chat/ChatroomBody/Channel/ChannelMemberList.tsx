@@ -22,11 +22,11 @@ function ChannelMemberList(props: ChannelMemberListProps) {
 
   return (
     <div className={`w-[95%] ${isScrollable && 'h-full'} mx-auto flex flex-col gap-y-2`}>
-      <div className='flex flex-col gap-y-2 sticky top-0 z-10 bg-dimshadow'>
+      <div className='sticky top-0 z-10 flex flex-col gap-y-2 bg-dimshadow'>
         <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
-        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center gap-x-1 uppercase w-full h-fit border-2 border-accCyan border-dashed text-xs p-2 font-extrabold bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> ADD FRIENDS</button>}
+        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-extrabold uppercase border-2 border-dashed gap-x-1 h-fit border-accCyan bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> ADD FRIENDS</button>}
       </div>
-      <div className='w-full h-full overflow-y-scroll flex flex-col gap-y-2.5 scrollbar-hide scroll-smooth'>
+      <div className='w-full h-full flex flex-col gap-y-2.5 scrollbar-hide scroll-smooth'>
         {displayMemberList()}
       </div>
     </div>
@@ -56,13 +56,9 @@ function ChannelMemberList(props: ChannelMemberListProps) {
         if (moderatedInfo !== undefined) {
           const { actionType } = moderatedInfo;
           if (actionType === ModeratorAction.DEMOTE) {
-            // meaning from admin to member
             return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={'member'} isModifyingMember={modifying} />
           } else if (actionType === ModeratorAction.PROMOTE) {
-            // meaning from member to admin
             return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={'admin'} isModifyingMember={modifying} />
-          } else if (actionType >= ModeratorAction.KICK && actionType <= ModeratorAction.UNMUTE) {
-            return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberPrivilege={{isMuted: moderatedInfo.memberInfo.isMuted, isBanned: moderatedInfo.memberInfo.isBanned}} memberRole={'admin'} isModifyingMember={modifying} />
           }
         }
         return <ChatMember key={member.memberInfo.intraId} selectable={false} userData={member.memberInfo} memberRole={member.role} isModifyingMember={modifying} /> 

@@ -36,11 +36,11 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className='h-fit w-full'>
+    <div className='w-full h-fit'>
       <ChatNavbar backAction={closeChatroom}>
-        <div className='w-3/5 py-2 px-4 text-dimshadow bg-highlight cursor-pointer mx-auto z-20 border-highlight border-2 group hover:bg-dimshadow hover:text-highlight transition-all duration-150' onClick={checkChannelInfo}>
+        <div className='z-20 w-3/5 px-4 py-2 mx-auto border-2 cursor-pointer text-dimshadow bg-highlight border-highlight group hover:bg-dimshadow hover:text-highlight transition-all duration-150' onClick={checkChannelInfo}>
           <div className='flex flex-row items-center gap-3 w-fit mx-auto max-w-[90%]'>
-            <p className='font-extrabold text-xl w-fit truncate'>{chatroomData.channelName}</p>
+            <p className='text-xl font-extrabold truncate w-fit'>{chatroomData.channelName}</p>
             <ChatroomIcon isRoom={chatroomData.isRoom} isPrivate={chatroomData.isPrivate} />
           </div>
         </div>

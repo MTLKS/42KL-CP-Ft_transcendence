@@ -15,7 +15,7 @@ import newChannelReducer, { newChannelInitialState } from '../Channel/newChannel
 
 function ChatroomList() {
 
-  const { chatSocket } = useContext(ChatContext);
+  const { chatSocket, expanded } = useContext(ChatContext);
   const { unreadChatrooms, setUnreadChatrooms } = useContext(ChatroomsContext);
   const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
@@ -47,7 +47,7 @@ function ChatroomList() {
   }, [chatrooms]);
 
   return (
-    <div className='flex flex-col border-box h-0 flex-1 relative'>
+    <div className={`relative ${expanded ? 'flex' : 'hidden'} flex-col flex-1 h-0 border-box`}>
       {chatrooms.length > 0
         ? displayChatroomListBody()
         : <ChatEmptyState />
@@ -92,11 +92,11 @@ function ChatroomList() {
 
   function displayChatroomListBody() {
     return (
-      <div className='h-full w-full'>
-        <div className=' py-3 px-4'>
+      <div className='w-full h-full'>
+        <div className='px-4 py-3 '>
           <ChatTableTitle title={`Chatrooms`} searchable={true} setFilterKeyword={setFilterKeyword} />
         </div>
-        <div className='h-full w-full overflow-y-scroll scrollbar-hide'>
+        <div className='w-full h-full overflow-y-scroll scrollbar-hide'>
           {displayChatrooms()}
         </div>
       </div>

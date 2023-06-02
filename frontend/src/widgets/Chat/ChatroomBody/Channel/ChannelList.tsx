@@ -11,11 +11,11 @@ function ChannelList() {
   const [filterKeyword, setFilterKeyword] = useState("");
 
   return (
-    <div className='text-highlight w-full h-full'>
+    <div className='w-full h-full text-highlight'>
       <ChatNavbar title="channel list" backAction={() => setChatBody(<ChatroomList />)} />
-      <div className='mx-10 gap-y-4 h-full'>
+      <div className='h-full mx-10 gap-y-4'>
         <ChatTableTitle title='channels (4)' searchable={true} setFilterKeyword={setFilterKeyword} />
-        <div className='h-full w-full overflow-y-scroll'>
+        <div className='w-full h-full overflow-y-scroll'>
           <Channel />
         </div>
       </div>

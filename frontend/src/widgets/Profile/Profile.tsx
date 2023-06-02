@@ -39,7 +39,7 @@ function Profile(props: ProfileProps) {
     }
   }, [myProfile.intraName]);
 
-  return (<div className='w-full bg-highlight flex flex-col items-center box-border select-none'>
+  return (<div className='flex flex-col items-center w-full select-none bg-highlight box-border'>
     <ProfileHeader expanded={expanded} status={status} onProfileClick={onProfileClick} />
     <ProfileBody expanded={expanded} pixelSize={pixelSize} status={status} onProfileClick={onProfileClick} />
     <RecentMatches expanded={expanded} />

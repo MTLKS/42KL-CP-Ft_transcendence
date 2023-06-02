@@ -99,13 +99,13 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-              <div className='h-full w-full p-7'>
+              <div className='w-full h-full p-7'>
                 {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-                <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
-                  <div className='h-full flex-1'>
+                <div className='flex flex-row w-full h-full overflow-hidden border-4  bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
+                  <div className='flex-1 h-full'>
                     {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
                   </div>
-                  <div className=' bg-highlight h-full w-1' />
+                  <div className='w-1 h-full  bg-highlight' />
                   <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
                     {topWidget}
                     {midWidget}
@@ -294,26 +294,26 @@ function HomePage(props: HomePageProps) {
             break;
           case friendErrors.USER_NOT_FOUND:
             newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
-              <p>Looks like you're trying to {action} a ghost. User not found: <span className='bg-accRed font-extrabold text-sm text-highlight'>{errAttempt.data as string}</span></p>
+              <p>Looks like you're trying to {action} a ghost. User not found: <span className='text-sm font-extrabold bg-accRed text-highlight'>{errAttempt.data as string}</span></p>
             </Card>)
             break;
           case friendErrors.FRIENDSHIP_EXISTED:
             friend = (errAttempt.data as FriendData);
             friendName = friend.receiver.intraName === userData.intraName ? friend.sender.intraName : friend.receiver.intraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
-              <p>Friendship with <span className="bg-accRed font-extrabold">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
+              <p>Friendship with <span className="font-extrabold bg-accRed">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
             break;
           case friendErrors.INVALID_RELATIONSHIP:
             friend = (errAttempt.data as FriendData);
             friendName = friend.receiver.intraName === userData.intraName ? friend.sender.intraName : friend.receiver.intraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
-              <p>Unable to {action} <span className="bg-accRed font-extrabold">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
+              <p>Unable to {action} <span className="font-extrabold bg-accRed">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
             break;
           case friendErrors.INVALID_OPERATION_ON_STRANGER:
             newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
-              <p>Unable to {action} <span className="bg-accRed font-extrabold">{errAttempt.data as string}</span>. You two are not friends.</p>
+              <p>Unable to {action} <span className="font-extrabold bg-accRed">{errAttempt.data as string}</span>. You two are not friends.</p>
             </Card>)
             break;
         }
@@ -362,7 +362,7 @@ function HomePage(props: HomePageProps) {
       for (const successName of successes) {
         newCards.push(
           <Card key={`${successName}_added` + index} type={CardType.SUCCESS}>
-            <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
+            <p>We've sent your friendship request to <span className='text-sm font-extrabold bg-accGreen text-highlight'>{successName}</span>. Finger crossed!</p>
           </Card>
         )
         sendFriendRequestNotification(successName);

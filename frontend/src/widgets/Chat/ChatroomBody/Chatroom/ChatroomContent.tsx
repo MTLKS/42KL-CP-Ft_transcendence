@@ -81,9 +81,9 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   return (
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
-      <div className='w-full h-0 flex-1 flex flex-col box-border'>
+      <div className='flex flex-col flex-1 w-full h-0 box-border'>
         <ChatroomHeader chatroomData={chatroomData} />
-        <div className='h-full overflow-y-scroll scrollbar-hide flex flex-col-reverse gap-y-4 px-5 pb-4 scroll-smooth box-border' ref={scrollableDivRef}>
+        <div className='flex flex-col-reverse h-full px-5 pb-4 overflow-y-scroll scrollbar-hide gap-y-4 scroll-smooth box-border' ref={scrollableDivRef}>
           {messagesComponent}
         </div>
         <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />

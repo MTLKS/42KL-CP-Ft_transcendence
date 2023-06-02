@@ -16,7 +16,7 @@ function ChatButton(props: ChatButtonProps) {
       onClick={onClick}
     >
       <p className={`text-dimshadow group-hover:text-highlight text-lg ${(icon !== undefined && title !== undefined) && 'mr-2'}`}>{icon}</p>
-      <p className='uppercase font-extrabold text-md text-dimshadow group-hover:text-highlight text-center'>{title}</p>
+      <p className='font-extrabold text-center uppercase text-md text-dimshadow group-hover:text-highlight'>{title}</p>
     </button>
   )
 }

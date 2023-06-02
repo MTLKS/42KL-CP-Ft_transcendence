@@ -25,7 +25,7 @@ function ChatroomMessage(props: ChatroomMessageProps) {
       <p className={`w-full h-fit whitespace-normal break-all ${ isMyMessage ? 'text-right' : 'text-left' } text-base font-medium text-highlight select-text selection:bg-highlight selection:text-dimshadow`}>
         { messageData.message }
       </p>
-      <p className='text-highlight/50 text-xs font-normal'>{ convertDatetoString(messageData.timeStamp) }</p>
+      <p className='text-xs font-normal text-highlight/50'>{ convertDatetoString(messageData.timeStamp) }</p>
     </div>
   )
 

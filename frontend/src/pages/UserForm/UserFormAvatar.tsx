@@ -34,7 +34,7 @@ function UserFormAvatar(props: UserFormAvatarProps) {
     <div className='flex flex-col w-[50%] h-fit max-w-md rounded-2xl overflow-hidden border-highlight border-4'>
       <img className='h-full w-full object-cover aspect-square lg:aspect[0.5/0.5]' src={avatarUrl} alt={`${intraName}'s avatar`} />
       <div
-        className='select-none capitalize text-dimshadow hover:text-highlight bg-highlight hover:bg-dimshadow text-center py-2 lg:py-3 cursor-pointer font-semibold lg:font-extrabold transition hover:ease-in-out'
+        className='py-2 font-semibold text-center capitalize cursor-pointer select-none text-dimshadow hover:text-highlight bg-highlight hover:bg-dimshadow lg:py-3 lg:font-extrabold transition hover:ease-in-out'
         onClick={handleButtonClick}
       >
         Upload new avatar

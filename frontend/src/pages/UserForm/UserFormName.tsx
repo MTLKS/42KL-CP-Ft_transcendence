@@ -13,10 +13,10 @@ function UserFormName(props: UserFormNameProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className='font-semibold text-lg lg:text-xl'>
+      <p className='text-lg font-semibold lg:text-xl'>
         Your {props.awesomeSynonym} name
       </p>
-      <p className='font-normal text-sm text-highlight/60'>
+      <p className='text-sm font-normal text-highlight/60'>
         (Alphanumeric, '-', and '_' only)
       </p>
       <input

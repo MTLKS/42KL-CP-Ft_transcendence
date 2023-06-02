@@ -46,8 +46,8 @@ function FriendActionCard(props: FriendActionCardProps) {
       <div className='flex flex-col'>
         <FriendActionProfileCard isCurrentIndex={isCurrentIndex} friendInfo={friendInfo} friendshipStatus={friend.status} />
         <FriendlistEmptyLine />
-        <div className='flex flex-col text-base w-full text-highlight'>
-          <p>{getFriendActionTitle(action)}'<span className='bg-accCyan select-all'>{friendInfo.userName}</span>'</p>
+        <div className='flex flex-col w-full text-base text-highlight'>
+          <p>{getFriendActionTitle(action)}'<span className='select-all bg-accCyan'>{friendInfo.userName}</span>'</p>
           <p>PONGSH key fingerprint is SHA256: {fakeSHAkeyStr}</p>
           <div className='flex flex-row whitespace-pre'>
             <FriendActionConfirmation />

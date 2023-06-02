@@ -15,12 +15,12 @@ function Channel() {
               <FaLock className='text-[8px] text-accYellow bg-dimshadow'/>
             </div>
           </div>
-          <p className='tracking-wide text-highlight/50 uppercase text-sm ml-5'>public</p>
+          <p className='ml-5 text-sm tracking-wide uppercase text-highlight/50'>public</p>
         </div>
-        <div className='w-full flex flex-row justify-between'>
+        <div className='flex flex-row justify-between w-full'>
           <div className='flex flex-row text-base font-normal'>
             <p className='whitespace-pre'>owner: </p>
-            <p className='bg-accCyan text-base font-normal'>pecking duck</p>
+            <p className='text-base font-normal bg-accCyan'>pecking duck</p>
           </div>
           <div className='flex flex-row items-center gap-x-2'>
             <FaUsers />

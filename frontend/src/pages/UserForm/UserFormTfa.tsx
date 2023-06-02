@@ -16,8 +16,8 @@ function UserFormTFAStatus(props: { tfaVerified: boolean }) {
   // Props
   const { tfaVerified } = props;
 
-  if (tfaVerified) return (<p className='bg-accGreen text-highlight px-3 py-1'>SUCCESS!</p>);
-  return (<p className='bg-accRed text-highlight px-3 py-1'>FAILED!</p>);
+  if (tfaVerified) return (<p className='px-3 py-1 bg-accGreen text-highlight'>SUCCESS!</p>);
+  return (<p className='px-3 py-1 bg-accRed text-highlight'>FAILED!</p>);
 }
 
 function UserFormTfa(props: UserFormTfaProps) {
@@ -60,11 +60,11 @@ function UserFormTfa(props: UserFormTfaProps) {
 
   return (
     <div className='animate-pulse-short'>
-      <div className='flex flex-col gap-y-2 cursor-pointer' onClick={() => tfaCodeInputRef.current?.focus()}>
+      <div className='flex flex-col cursor-pointer gap-y-2' onClick={() => tfaCodeInputRef.current?.focus()}>
         <p className={`w-full ${invert && 'text-highlight'}`}>2FA Verification</p>
-        <p className='text-sm text-highlight/80 font-normal'>Hold on! We need to verify your 2FA code before we proceed.</p>
-        <div className='flex flex-row gap-x-3 items-center h-fit'>
-          <div className='flex flex-row gap-x-1 w-fit text-2xl'>
+        <p className='text-sm font-normal text-highlight/80'>Hold on! We need to verify your 2FA code before we proceed.</p>
+        <div className='flex flex-row items-center gap-x-3 h-fit'>
+          <div className='flex flex-row text-2xl gap-x-1 w-fit'>
             {showTypedCode()}
           </div>
           {hasResult && <UserFormTFAStatus tfaVerified={tfaVerified} />}
@@ -74,7 +74,7 @@ function UserFormTfa(props: UserFormTfaProps) {
         onKeyDown={handleKeyPress}
         onChange={handleOnchange}
         value={tfaCode}
-        className='h-0 w-0'
+        className='w-0 h-0'
         type="text"
         ref={tfaCodeInputRef}
         disabled={tfaVerified}

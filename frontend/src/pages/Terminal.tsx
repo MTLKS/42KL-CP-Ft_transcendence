@@ -25,13 +25,13 @@ function Terminal(pros: TerminalProps) {
   }, []);
 
   return (
-    <div className='h-full flex-1 flex flex-col justify-end relative'
+    <div className='relative flex flex-col justify-end flex-1 h-full'
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <ScrollView reverse={true}>
         {elements}
       </ScrollView>
-      <div className=' bg-highlight h-1 w-full' />
+      <div className='w-full h-1  bg-highlight' />
       <PromptField
         handleCommands={handleCommands}
         availableCommands={availableCommands}

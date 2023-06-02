@@ -18,17 +18,20 @@ export enum NewChannelError {
 
 export enum ModeratorAction {
   KICK,
+  UNKICK,
   BAN,
   UNBAN,
   MUTE,
   UNMUTE,
   PROMOTE,
-  DEMOTE
+  DEMOTE,
+  NONE,
 }
 
 interface ModeratorActionData {
   memberInfo: ChannelMemberRole,
   actionType: ModeratorAction,
+  willBeKicked: boolean,
 }
 
 export interface NewChannelState {
@@ -97,6 +100,8 @@ export type NewChannelAction =
   | { type: 'RESET_INVITE_LIST' }
   | { type: 'RESET' }
   | { type: 'CLONE_STATE', state: NewChannelState }
+  | { type: 'READY_MODERATED_LIST' }
+  | { type: 'CLEAR_MODERATED_LIST' }
   | { type: 'IS_TRYING_TO_DELETE_CHANNEL' }
   | { type: 'IS_TRYING_TO_LEAVE_CHANNEL' }
   | { type: 'CONFIRM_DELETE_CHANNEL' }
@@ -267,79 +272,180 @@ export default function newChannelReducer(state = newChannelInitialState, action
     case 'MODERATOR_ACTION': {
       const { moderatedMemberInfo, actionType } = action;
 
+      function updateRole(previousRole: 'owner' | 'admin' | 'member') {
+        switch (actionType) {
+          case ModeratorAction.PROMOTE:
+            return 'admin';
+          case ModeratorAction.DEMOTE:
+            return 'member';
+          default:
+            return previousRole;
+        }
+      }
+
+      function updateBanStatus() {
+        if (actionType === ModeratorAction.BAN) {
+          return true;
+        } else if (actionType === ModeratorAction.UNBAN) {
+          return false;
+        }
+        return false;
+      }
+
+      function updateMuteStatus() {
+        if (actionType === ModeratorAction.MUTE) {
+          return true;
+        } else if (actionType === ModeratorAction.UNMUTE) {
+          return false;
+        }
+        return false;
+      }
+
+      function updateKickStatus() {
+        if (actionType === ModeratorAction.KICK) {
+          return true;
+        } else if (actionType === ModeratorAction.UNKICK) {
+          return false;
+        }
+        return false;
+      }
+
+      function updateModeratedList(actionType: ModeratorAction) {
+
+        return state.moderatedList.map(moderatedMember => {
+          if (moderatedMember.memberInfo.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId) {
+            const updatedMemberInfo: ChannelMemberRole = {
+              ...moderatedMember.memberInfo,
+              role: updateRole(moderatedMember.memberInfo.role),
+              isBanned: updateBanStatus(),
+              isMuted: updateMuteStatus(),
+            }
+            return {memberInfo: updatedMemberInfo, actionType: actionType, willBeKicked: updateKickStatus()}
+          } else {
+            return moderatedMember;
+          }
+        })
+      }
+
       // handle promote action
       if (actionType === ModeratorAction.PROMOTE) {
-        const isAlreadyAdmin = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.role === 'admin');
+        const isAlreadyAdmin = state.members.find(member => member.memberInfo.intraName === moderatedMemberInfo.memberInfo.intraName && member.role === 'admin');
         if (isAlreadyAdmin) {
-          // pop off the member from the moderated list
           return {
             ...state,
-            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
           }
-        }
-        return {
-          ...state,
-          moderatedList: [
-            ...state.moderatedList,
-            { memberInfo: moderatedMemberInfo, actionType: actionType }
-          ]
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.PROMOTE)
+          }
         }
       }
 
       // handle demote action
       if (actionType === ModeratorAction.DEMOTE) {
-        const isAlreadyMember = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.role === 'member');
+        const isAlreadyMember = state.members.find(member => member.memberInfo.intraName === moderatedMemberInfo.memberInfo.intraName && member.role === 'member');
         if (isAlreadyMember) {
-          // pop off the member from the moderated list
           return {
             ...state,
-            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
           }
-        }
-        return {
-          ...state,
-          moderatedList: [
-            ...state.moderatedList,
-            { memberInfo: moderatedMemberInfo, actionType: actionType }
-          ]
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.DEMOTE)
+          }
         }
       }
 
-      // handle mute action
       if (actionType === ModeratorAction.MUTE) {
         const alreadyMuted = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.isMuted);
         if (alreadyMuted) {
-          // pop off the member from the moderated list
           return {
             ...state,
-            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
           }
-        }
-        return {
-          ...state,
-          moderatedList: [
-            ...state.moderatedList,
-            { memberInfo: moderatedMemberInfo, actionType: actionType }
-          ]
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.MUTE)
+          }
         }
       }
 
-      // handle unmute action
       if (actionType === ModeratorAction.UNMUTE) {
         const alreadyUnmuted = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && !member.isMuted);
         if (alreadyUnmuted) {
-          // pop off the member from the moderated list
           return {
             ...state,
-            moderatedList: state.moderatedList.filter(member => member.memberInfo.memberInfo.intraId !== moderatedMemberInfo.memberInfo.intraId),
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
+          }
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.UNMUTE)
           }
         }
-        return {
-          ...state,
-          moderatedList: [
-            ...state.moderatedList,
-            { memberInfo: moderatedMemberInfo, actionType: actionType }
-          ]
+      }
+
+      if (actionType === ModeratorAction.BAN) {
+        const alreadyBanned = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.isBanned);
+        if (alreadyBanned) {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
+          }
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.BAN)
+          }
+        }
+      }
+
+      if (actionType === ModeratorAction.UNBAN) {
+        const alreadyUnbanned = state.members.find(member => member.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && !member.isBanned);
+        if (alreadyUnbanned) {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
+          }
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.UNBAN)
+          }
+        }
+      }
+
+      if (actionType === ModeratorAction.KICK) {
+        const alreadyKicked = state.moderatedList.find(member => member.memberInfo.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && member.willBeKicked);
+        if (alreadyKicked) {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
+          }
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.KICK)
+          }
+        }
+      }
+
+      if (actionType === ModeratorAction.UNKICK) {
+        const alreadyUnkicked = state.moderatedList.find(member => member.memberInfo.memberInfo.intraId === moderatedMemberInfo.memberInfo.intraId && !member.willBeKicked);
+        if (alreadyUnkicked) {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.NONE)
+          }
+        } else {
+          return {
+            ...state,
+            moderatedList: updateModeratedList(ModeratorAction.UNKICK)
+          }
         }
       }
     }
@@ -381,6 +487,25 @@ export default function newChannelReducer(state = newChannelInitialState, action
     }
     case 'CLONE_STATE': {
       return action.state;
+    }
+    case 'READY_MODERATED_LIST': {
+      const newModeratedList = state.members.map(member =>{
+        return {
+          memberInfo: member,
+          actionType: ModeratorAction.NONE,
+          willBeKicked: false,
+        }
+      });
+      return {
+        ...state,
+        moderatedList: newModeratedList,
+      }
+    }
+    case 'CLEAR_MODERATED_LIST': {
+      return {
+        ...state,
+        moderatedList: [],
+      }
     }
     case 'RESET': {
       return newChannelInitialState;

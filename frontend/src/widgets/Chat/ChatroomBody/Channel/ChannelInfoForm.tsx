@@ -31,69 +31,69 @@ function ChannelInfoForm(props: ChannelInfoProps) {
 
   return (
     <div className='w-[70%] h-fit flex flex-row items-center mx-auto'>
-      <div className='w-full flex flex-row items-center justify-between'>
+      <div className='flex flex-row items-center justify-between w-full'>
         <div className='w-[30%] flex flex-col h-full items-center gap-y-2'>
           <button
             className={`flex flex-col items-center gap-y-1 w-full aspect-square rounded outline-none ${modifying || (modifying && (!state.isNewChannel && state.isOwner)) ? 'hover:border-dashed hover:border-2 hover:border-highlight cursor-pointer' : 'cursor-default'} focus:border-dashed focus:border-2 focus:border-highlight py-3 relative group cursor-default`}
             onClick={toggleChannelVisibility}
           >
             <div className={`hidden ${modifying && (!state.isNewChannel && state.isOwner) ? 'group-hover:flex' : ''} transition-all duration-200 ease-in-out absolute p-2 top-0 w-full h-full bg-highlight/80 overflow-hidden rounded text-xl font-extrabold text-dimshadow`}>
-              <p className='my-auto w-full h-fit uppercase'>Switch to {isPrivate ? 'public' : 'private'}</p>
+              <p className='w-full my-auto uppercase h-fit'>Switch to {isPrivate ? 'public' : 'private'}</p>
             </div>
-            <div className='w-full h-fit flex flex-col items-center my-auto gap-y-2'>
+            <div className='flex flex-col items-center w-full my-auto h-fit gap-y-2'>
               {isPrivate ? <FaUserSecret className='text-highlight text-7xl' /> : <ImEarth className='text-highlight text-7xl' />}
-              <p className='text-highlight text-base font-extrabold uppercase underline'>{isPrivate ? 'private' : 'public'}</p>
+              <p className='text-base font-extrabold underline uppercase text-highlight'>{isPrivate ? 'private' : 'public'}</p>
             </div>
           </button>
-          { !state.isNewChannel && (modifying) && <button className='flex flex-row items-center bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight w-fit h-fit p-2 text-center rounded text-xs font-bold uppercase whitespace-pre' onClick={() => setIsReviewingChanges(!isReviewingChanges)}><TbScript className='text-base' /> Review Changes</button> }
+          { !state.isNewChannel && (modifying) && <button className='flex flex-row items-center p-2 text-xs font-bold text-center uppercase whitespace-pre border-2 rounded bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-highlight w-fit h-fit' onClick={() => setIsReviewingChanges(!isReviewingChanges)}><TbScript className='text-base' /> Review Changes</button> }
         </div>
         <div className={`flex flex-col justify-center h-full ${modifying ? 'gap-y-2' : 'gap-y-4'} w-[60%]`}>
-          <div className='flex flex-col gap-y-1 h-full'>
+          <div className='flex flex-col h-full gap-y-1'>
             <p className={`${modifying ? 'text-highlight' : 'text-highlight/50'} text-sm font-extrabold`}>Channel Name</p>
             {
               modifying && (state.isOwner || state.isNewChannel)
-                ? <input type="text" className='rounded border-2 border-highlight bg-dimshadow text-sm font-extrabold text-center text-highlight py-2 px-4 outline-none w-full cursor-text' autoComplete='off' value={channelName} onChange={handleChannelNameOnChange} onFocus={() => setShowChannelNameNamingRules(true)} onBlur={() => setShowChannelNameNamingRules(false)} />
-                : <p className='text-highlight font-extrabold'>{channelName}</p>
+                ? <input type="text" className='w-full px-4 py-2 text-sm font-extrabold text-center border-2 rounded outline-none border-highlight bg-dimshadow text-highlight cursor-text' autoComplete='off' value={channelName} onChange={handleChannelNameOnChange} onFocus={() => setShowChannelNameNamingRules(true)} onBlur={() => setShowChannelNameNamingRules(false)} />
+                : <p className='font-extrabold text-highlight'>{channelName}</p>
             }
             {
               (state.errors.includes(NewChannelError.INVALID_CHANNEL_NAME) || showChannelNameNamingRules) &&
               <div className='text-xs px-[1ch] text-highlight/50'>
-                <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${channelName.length > 0 && channelName.length <= 16 && 'text-accGreen'}`}>{channelName.length > 0 && channelName.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                <p className='flex flex-row items-center whitespace-pre gap-x-2'><span className={`text-xs ${channelName.length > 0 && channelName.length <= 16 && 'text-accGreen'}`}>{channelName.length > 0 && channelName.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
               </div>
             }
           </div>
           {
             ((!state.isNewChannel && modifying && previousChannelInfo.password !== null && !previousChannelInfo.isPrivate) || (!isPrivate && isPasswordProtected && modifying)) &&
-            <div className='flex flex-col gap-y-1 h-full'>
-              <div className='flex flex-row justify-between items-center'>
-                <p className='text-highlight text-sm font-extrabold'>Password</p>
+            <div className='flex flex-col h-full gap-y-1'>
+              <div className='flex flex-row items-center justify-between'>
+                <p className='text-sm font-extrabold text-highlight'>Password</p>
                 {!state.isNewChannel && !isPasswordProtected && previousChannelInfo.password !== null && <p className='w-fit animate-pulse text-[10px] px-[1ch] text-highlight bg-accRed'>DISABLED AFTER SAVE</p>}
               </div>
              {(!state.isNewChannel && modifying && previousChannelInfo.password !== null && !previousChannelInfo.isPrivate) && <p className='text-[10px] text-highlight/50'>Require password to change channel info</p>}
              {(state.errors.includes(NewChannelError.WRONG_PASSWORD)) && <p className='text-[10px] text-highlight bg-accRed px-[1ch] w-fit'>Wrong password!</p>}
               <div className='flex flex-row items-center h-[40px]'>
-                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text placeholder:text-highlight/40 placeholder:text-sm' placeholder={changePassword ? `Old Password` : `Password`} value={password ? password : ''} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
-                <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
+                <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full px-4 py-2 text-base font-extrabold text-center border-2 border-r-0 rounded rounded-r-none outline-none border-highlight bg-dimshadow text-highlight cursor-text placeholder:text-highlight/40 placeholder:text-sm' placeholder={changePassword ? `Old Password` : `Password`} value={password ? password : ''} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
+                <button className='h-full p-2 font-bold border-2 rounded rounded-l-none bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
               </div>
               {
                 (state.isNewChannel || (state.errors.includes(NewChannelError.INVALID_PASSWORD) || showPasswordRules)) &&
                 <div className='text-xs px-[1ch] text-highlight/50'>
-                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${password && password.length > 0 && password.length <= 16 && 'text-accGreen'}`}>{password && password.length > 0 && password.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                  <p className='flex flex-row items-center whitespace-pre gap-x-2'><span className={`text-xs ${password && password.length > 0 && password.length <= 16 && 'text-accGreen'}`}>{password && password.length > 0 && password.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
                 </div>
               }
             </div>
           }
           {
             changePassword && !state.isNewChannel && !isPrivate && modifying &&
-            <div className='flex flex-col gap-y-2 h-full'>
+            <div className='flex flex-col h-full gap-y-2'>
               <div className='flex flex-row items-center h-[40px]'>
-                <input type="password" id='channel-new-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full rounded rounded-r-none border-2 border-r-0 border-highlight bg-dimshadow text-base font-extrabold text-center text-highlight py-2 px-4 outline-none cursor-text placeholder:text-highlight/40 placeholder:text-sm' placeholder='New Password' value={newPassword ? newPassword : ''} onChange={handleNewPasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
-                <button className='bg-highlight h-full p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out rounded-l-none' onMouseDown={toggleShowNewPassword} onMouseUp={toggleShowNewPassword}><FaEye className='mx-auto' /></button>
+                <input type="password" id='channel-new-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full px-4 py-2 text-base font-extrabold text-center border-2 border-r-0 rounded rounded-r-none outline-none border-highlight bg-dimshadow text-highlight cursor-text placeholder:text-highlight/40 placeholder:text-sm' placeholder='New Password' value={newPassword ? newPassword : ''} onChange={handleNewPasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
+                <button className='h-full p-2 font-bold border-2 rounded rounded-l-none bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onMouseDown={toggleShowNewPassword} onMouseUp={toggleShowNewPassword}><FaEye className='mx-auto' /></button>
               </div>
               {
                 (state.errors.includes(NewChannelError.INVALID_NEW_PASSWORD) || (!state.isNewChannel && showPasswordRules)) &&
                 <div className='text-xs px-[1ch] text-highlight/50'>
-                  <p className='whitespace-pre flex flex-row items-center gap-x-2'><span className={`text-xs ${newPassword && newPassword.length > 0 && newPassword.length <= 16 && 'text-accGreen'}`}>{newPassword && newPassword.length > 0 && newPassword.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
+                  <p className='flex flex-row items-center whitespace-pre gap-x-2'><span className={`text-xs ${newPassword && newPassword.length > 0 && newPassword.length <= 16 && 'text-accGreen'}`}>{newPassword && newPassword.length > 0 && newPassword.length <= 16 ? <FaCheck /> : <FaTimes />}</span> {'>'} 1 & {'<='} 16 characters</p>
                 </div>
               }
             </div>
@@ -101,17 +101,17 @@ function ChannelInfoForm(props: ChannelInfoProps) {
           {
             !state.isNewChannel && !modifying &&
             <div className={`flex flex-row w-full gap-2`}>
-              {(state.isOwner || state.isAdmin) && <button className='text-xs h-fit w-full justify-center bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out flex flex-row gap-x-2 items-center' onClick={toggleEditChannel}><FaToolbox /> MANAGE CHANNEL</button>}
-              {!state.isOwner && <button className='flex flex-row h-fit w-full justify-center gap-x-2 items-center text-xs text-accRed bg-dimshadow p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={tryLeaveChannel}><FaDoorOpen /> LEAVE CHANNEL</button>}
-              {state.isOwner && <button className='flex flex-row w-full h-fit justify-center gap-x-2 items-center text-xs text-highlight bg-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>}
+              {(state.isOwner || state.isAdmin) && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold border-2 rounded h-fit bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out gap-x-2' onClick={toggleEditChannel}><FaToolbox /> MANAGE CHANNEL</button>}
+              {!state.isOwner && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold border-2 rounded h-fit gap-x-2 text-accRed bg-dimshadow border-accRed hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={tryLeaveChannel}><FaDoorOpen /> LEAVE CHANNEL</button>}
+              {state.isOwner && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold border-2 rounded h-fit gap-x-2 text-highlight bg-accRed border-accRed hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>}
             </div>
           }
-          <div className='flex flex-row gap-x-2 items-center'>
-            {modifying && !isPrivate && !isPasswordProtected && (state.isOwner || state.isNewChannel) && <button className='w-full h-fit bg-accGreen text-highlight p-2 text-xs font-bold border-2 border-accGreen rounded hover:bg-dimshadow hover:text-accGreen transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
-            {modifying && !isPrivate && isPasswordProtected && <button className='h-fit w-full bg-highlight p-2 font-bold border-2 border-highlight rounded hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out text-xs' onClick={togglePassword}>DISABLE PASSWORD</button>}
-            {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='h-fit w-full text-xs text-highlight bg-accCyan p-2 font-bold border-2 border-accCyan rounded hover:bg-dimshadow hover:text-accCyan transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE` : `CHANGE PASSWORD`}</button>}
+          <div className='flex flex-row items-center gap-x-2'>
+            {modifying && !isPrivate && !isPasswordProtected && (state.isOwner || state.isNewChannel) && <button className='w-full p-2 text-xs font-bold border-2 rounded h-fit bg-accGreen text-highlight border-accGreen hover:bg-dimshadow hover:text-accGreen transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
+            {modifying && !isPrivate && isPasswordProtected && <button className='w-full p-2 text-xs font-bold border-2 rounded h-fit bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button>}
+            {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='w-full p-2 text-xs font-bold border-2 rounded h-fit text-highlight bg-accCyan border-accCyan hover:bg-dimshadow hover:text-accCyan transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE` : `CHANGE PASSWORD`}</button>}
           </div>
-          {!state.isNewChannel && modifying && <button className='text-sm bg-dimshadow text-accRed p-2 font-bold border-2 border-accRed rounded hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
+          {!state.isNewChannel && modifying && <button className='p-2 text-sm font-bold border-2 rounded bg-dimshadow text-accRed border-accRed hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
         </div>
       </div>
     </div>

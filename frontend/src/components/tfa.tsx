@@ -26,7 +26,7 @@ enum TFACommands {
 function help() {
 	return (
 		<Card type={CardType.SUCCESS}>
-			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
+			<span className='text-2xl font-bold  neonText-white'>TFA</span><br />
 			<p>
 				tfa set					: Sets and enables Google 2FA<br />
 				tfa unset [OTP code]	: Unsets and disable 2FA (requires OTP code)<br />
@@ -94,7 +94,7 @@ function Tfa(props: TFAProps) {
 			<Card type={CardType.SUCCESS}>
 				<figure>
 					<p className='text-center'>Scan QR code with your Google Authenticator app</p>
-					<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
+					<img src={tfa.qr} className='object-cover mx-auto rounded-md'></img>
 					<p className='text-center'> SECRET: {tfa.secret}</p>
 				</figure>
 			</Card>

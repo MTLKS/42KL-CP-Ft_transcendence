@@ -14,7 +14,7 @@ export default {
       },
       fontFamily: {
         jbmono: ["JetBrains Mono", "monospace"],
-        bungee: ["Bungee", "cursive"],
+        bungee: ["Bungee", "monospace"],
       },
       animation: {
         "pulse-short": "pulse 0.3s ease-in-out 1",

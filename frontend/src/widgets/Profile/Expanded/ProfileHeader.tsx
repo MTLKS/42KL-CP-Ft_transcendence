@@ -64,15 +64,15 @@ function ProfileHeader(props: ProfileHeaderProps) {
   };
 
   return (
-    <div className='flex flex-row justify-between overflow-hidden w-full box-border transition-all duration-500 ease-in-out bg-dimshadow  cursor-pointer'
+    <div className='flex flex-row justify-between w-full overflow-hidden cursor-pointer box-border transition-all duration-500 ease-in-out bg-dimshadow '
       style={{ height: height }}
       onClick={onProfileClick}
     >
-      <div className='flex flex-col flex-1 justify-center bg-dimshadow px-5'>
-        <div className=' text-2xl text-highlight font-extrabold'>{userName} <a href={`https://profile.intra.42.fr/users/${intraName}`} className='hover:underline cursor-pointer' target='_blank'>({intraName})</a></div>
-        <div className=' text-xs text-highlight'>{getEloTitle()}</div>
+      <div className='flex flex-col justify-center flex-1 px-5 bg-dimshadow'>
+        <div className='text-2xl font-extrabold  text-highlight'>{userName} <a href={`https://profile.intra.42.fr/users/${intraName}`} className='cursor-pointer hover:underline' target='_blank'>({intraName})</a></div>
+        <div className='text-xs  text-highlight'>{getEloTitle()}</div>
       </div>
-      <div className='flex flex-row w-fit items-center bg-dimshadow p-8'>
+      <div className='flex flex-row items-center p-8 w-fit bg-dimshadow'>
         <StatusIndicator status={status} invert={true} />
       </div>
     </div>

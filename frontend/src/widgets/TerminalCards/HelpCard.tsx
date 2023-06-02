@@ -15,10 +15,10 @@ function HelpCard(props: HelpCardProps) {
 
   return (
     <Card type={CardType.SUCCESS} key={Math.random().toString(36).slice(2) + Date.now().toString(36)}>
-      <p className='text-xl uppercase font-bold'>{title}</p>
-      <p className='text-highlight/60 text-sm'>Usage: {usage}</p>
+      <p className='text-xl font-bold uppercase'>{title}</p>
+      <p className='text-sm text-highlight/60'>Usage: {usage}</p>
       <br />
-      <p className='text-highlight text-md font-bold capitalize'>{option}:</p>
+      <p className='font-bold capitalize text-highlight text-md'>{option}:</p>
       {
         displayAllOptions()
       }
