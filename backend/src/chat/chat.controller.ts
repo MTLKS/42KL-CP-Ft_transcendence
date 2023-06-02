@@ -88,8 +88,8 @@ export class ChatController {
 
 	@Patch('room/member')
 	@UseGuards(AuthGuard)
-	@ApiCommonHeader(["Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean) and isMuted(boolean)", "Invalid channelId - requires admin privileges", "Invalid channelId - channel is not found", "Invalid intraName - user is not a member of this channel"])
-	@ApiOkResponse({ description: "Returns the updated member (requires admin privileges)", type: MemberDTO })
+	@ApiCommonHeader(["Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean) and isMuted(boolean)", "Invalid channelId - requires admin privileges", "Invalid channelId - channel is not found", "Invalid intraName - user is not a member of this channel", "Invalid intraName - cannot update owner member", "Invalid intraName - cannot update admin member without owner privileges"])
+	@ApiOkResponse({ description: "Returns the updated member (requires admin privileges)", type: MemberDTO})
 	updateMember(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomMemberBodyDTO): any {
 		return this.chatService.updateMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted);
 	}

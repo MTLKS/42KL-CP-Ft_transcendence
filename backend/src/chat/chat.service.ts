@@ -13,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class ChatService {
-	constructor(@InjectRepository(Channel) private channelRepository: Repository<Channel>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Message) private messageRepository: Repository<Message>, @InjectRepository(Friendship) private friendshipRepository: Repository<Friendship>, private userService: UserService, private friendshipService: FriendshipService) { }
+	constructor(@InjectRepository(Channel) private channelRepository: Repository<Channel>, @InjectRepository(Member) private memberRepository: Repository<Member>, @InjectRepository(Message) private messageRepository: Repository<Message>, private userService: UserService, private friendshipService: FriendshipService) { }
 
 	// Used to connect to own channel
 	async userConnect(client: any): Promise<any> {
@@ -310,7 +310,7 @@ export class ChatService {
 		if (FRIEND_DATA.error !== undefined)
 			return new ErrorDTO(FRIEND_DATA.error);
 		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_DATA.intraName);
-		if (FRIEND_DATA.intraName !== intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
+		if (FRIEND_DATA.intraName !== MY_MEMBER.intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
 			return new ErrorDTO("Invalid intraName - you are not friends with this user");
 
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
@@ -349,6 +349,12 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
+
+		if (CHANNEL.owner.intraName === MEMBER.user.intraName)
+			return new ErrorDTO("Invalid intraName - cannot update owner member");
+		if (MEMBER.isAdmin === true && CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
+			return new ErrorDTO("Invalid intraName - cannot update admin member without owner privileges");
+		
 		MEMBER.isAdmin = isAdmin;
 		MEMBER.isBanned = isBanned;
 		MEMBER.isMuted = isMuted;
@@ -372,8 +378,8 @@ export class ChatService {
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL === null || CHANNEL.isRoom === false)
 			return new ErrorDTO("Invalid channelId - channel is not found");
-
-		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel'] });
+		
+		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO("Invalid intraName - user is not a member of this channel");
 		CHANNEL.memberCount -= 1;
