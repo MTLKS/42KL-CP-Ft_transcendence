@@ -2,22 +2,55 @@ import React, { useContext, useEffect, useState } from 'react'
 import PreviewProfileContext from '../../../contexts/PreviewProfileContext';
 import { UserStats } from '../../../model/UserStats';
 import { getProfileStat } from '../../../api/profileAPI';
+import Triangle from '../../../components/Triangle';
 
 interface ProfileStatProps {
   expanded: boolean;
+}
+
+interface SmallStatProfileProps {
+  userData: any;
+}
+
+const SmallStatProfile = (props: SmallStatProfileProps) => {
+  const { userData } = props;
+  if (!userData)
+    return (<div></div>)
+  return (
+    <div className="absolute bg-highlight p-2 w-52 h-28 top-[130px] rounded shadow-md transition-all">
+      <div className="flex justify-between">
+        <div>
+          <img src={userData.avatar} alt="User Avatar" className="w-20 h-20 ml-1 pb-0 pl-0 rounded" />
+        </div>
+        <div className="flex items-center justify-center m-auto pl-4">
+          <span className="absolute text-dimshadow text-center font-extrabold" style={{
+            textShadow: '-0.06em 0 0 #fef8e2, 0 0.06em 0 #fef8e2, 0.06em 0 0  #fef8e2, 0 -0.06em 0 #fef8e2',
+            fontSize: '40px'
+            }}>
+            {userData.elo}
+          </span>
+          <Triangle w={70} h={70} color="fill-dimshadow" direction={userData.winning ? 'top' : 'bottom'}></Triangle>
+        </div>
+      </div>
+      <div className="pt-1 ml-1">
+        <span className="text-dimshadow">{userData.userName}    ({userData.intraName})</span>
+      </div>
+    </div>
+  );
 }
 
 function ProfileStat(props: ProfileStatProps) {
   const { expanded } = props;
   const { currentPreviewProfile } = useContext(PreviewProfileContext);
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [showWorstNightmare, setShowWorstNightmare] = useState<boolean>(false);
+  const [showPunchingBag, setShowPunchingBag] = useState<boolean>(false);
 
   useEffect(() => {
     getProfileStat(currentPreviewProfile.intraName).then((data) => {
       setStats(data.data);
     });
   }, [currentPreviewProfile.intraName]);
-
 
   return (
     <div className='flex flex-col aspect-square transition-all duration-1000 ease-in-out box-border overflow-hidden'
@@ -28,17 +61,19 @@ function ProfileStat(props: ProfileStatProps) {
         <div>Total Wins: {stats?.win}</div>
         <div>Total Losses: {stats?.lose}</div>
         <br />
+        {showWorstNightmare && <SmallStatProfile userData={stats?.worst_nightmare}></SmallStatProfile>}
         <div
-          className='hover:underline truncate text-accRed'
-          onMouseOver={() => console.log(`show my worst nightmare`)}
-          onMouseLeave={() => console.log(`hide my worst nightmare`)}
+          className='hover:bg-accRed hover:text-highlight truncate text-accRed'
+          onMouseOver={() => setShowWorstNightmare(true)}
+          onMouseLeave={() => setShowWorstNightmare(false)}
         >
           WORST NIGHTMARE
         </div>
+        {showPunchingBag && <SmallStatProfile userData={stats?.punching_bag}/>}
         <div
-          className='hover:underline text-accCyan'
-          onMouseOver={() => console.log(`show my punching bag`)}
-          onMouseLeave={() => console.log(`hide my punching bag`)}
+          className='hover:bg-accCyan hover:text-highlight text-accCyan'
+          onMouseOver={() => setShowPunchingBag(true)}
+          onMouseLeave={() => setShowPunchingBag(false)}
         >
           PUNCHING BAG
         </div>
