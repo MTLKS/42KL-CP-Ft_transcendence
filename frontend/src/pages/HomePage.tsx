@@ -108,11 +108,22 @@ function HomePage(props: HomePageProps) {
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const defaultSocket = useMemo(() => new SocketApi(), []);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
+  const [scaleX, setScaleX] = useState("scale-x-[0.1]");
+  const [scaleY, setScaleY] = useState("scale-y-0");
+  const [showWidget, setShowWidget] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
 
   let incomingRequests: FriendData[] = useMemo(
     () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.sender.intraName !== userData.intraName),
     [myFriends]
   );
+
+  useEffect(() => {
+    setScaleX("scale-x-100");
+    setTimeout(() => setScaleY("scale-y-100"), 500);
+    setTimeout(() => setShowWidget(true), 1000);
+    setTimeout(() => setShowTerminal(true), 1500);
+  }, [userData]);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -136,14 +147,13 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-              <div className='h-full w-full p-7'>
+              <div className={`h-full w-full p-7 transition-transform duration-500 ${scaleX} ${scaleY}`}>
                 {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
                 <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
                   <div className='h-full flex-1'>
-                    {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+                    {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
                   </div>
-                  <div className=' bg-highlight h-full w-1' />
-                  <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+                  <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
                     {midWidget}
                     {botWidget}
@@ -623,22 +633,22 @@ function HomePage(props: HomePageProps) {
   function generateCredits() {
     return (
       <Card key={"game" + index} type={CardType.SUCCESS}>
-      <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
-      <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
-      <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
-      <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
-      <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
-      <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
-      <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
-      <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
-      <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
-      <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
-      <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
-      <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
-      <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
-      <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
-      <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
-    </Card>
+        <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
+        <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
+        <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
+        <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
+        <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
+        <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
+        <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
+        <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
+        <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
+        <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
+        <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
+        <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
+        <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
+        <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
+        <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
+      </Card>
     );
   }
 }
