@@ -1,4 +1,4 @@
-import { lazy, useEffect, useState } from "react";
+import { lazy, useEffect, useRef, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 // import Login from "./pages/Login";
 import login, { checkAuth } from "./api/loginAPI";
@@ -25,7 +25,7 @@ function App() {
     checkIfLoggedIn();
   }, []);
 
-  let page = <></>;
+  let page = <Loading />;
   if ((newUser || updateUser) && userFormLoaded) {
     page = <UserForm userData={userData} isUpdatingUser={updateUser} setIsUpdatingUser={setUpdateUser} />;
   }
@@ -73,3 +73,39 @@ function App() {
 }
 
 export default App
+
+
+function Loading() {
+  const [expended, setExpended] = useState(false);
+  const [skewed, setSkewed] = useState(false);
+  const [index, setIndex] = useState(0);
+  const tickRef = useRef(10);
+
+  useEffect(() => {
+    setExpended(true);
+    setTimeout(() => {
+      setSkewed(true);
+    }, 500);
+  }, []);
+
+  useEffect(() => {
+    if (skewed) {
+      const interval = setInterval(() => {
+        tickRef.current++;
+        if (tickRef.current === 26) tickRef.current = 1;
+        setIndex(tickRef.current);
+      }, 150);
+      return () => clearInterval(interval);
+    }
+  }, [skewed]);
+  return (
+    <div className="relative h-full w-full">
+      <div className=' absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row h-fit items-center'>
+        <div className={`${expended ? (index === 1 || index === 25 ? "h-10" : "h-16") : "h-0"} ${skewed ? "-skew-x-[18deg]" : " -translate-x-3"} ease-out transition-all duration-500 bg-accRed w-9 mx-1 `} />
+        <div className={`${expended ? (index === 2 || index === 1 ? "h-10" : "h-16") : "h-0"} ${skewed ? "-skew-x-[18deg]" : " -translate-x-3"} ease-out transition-all duration-500 bg-accCyan w-9 mx-1 `} />
+        <div className={`${expended ? (index === 3 || index === 2 ? "h-10" : "h-16") : "h-0"} ${skewed ? "-skew-x-[18deg]" : " -translate-x-3"} ease-out transition-all duration-500 bg-accYellow w-9 mx-1 `} />
+        <div className={`${expended ? (index === 4 || index === 3 ? "h-10" : "h-16") : "h-0"} ${skewed ? "-skew-x-[18deg]" : " -translate-x-3"} ease-out transition-all duration-500 bg-accBlue w-9 mx-1 `} />
+      </div>
+    </div>
+  )
+}
