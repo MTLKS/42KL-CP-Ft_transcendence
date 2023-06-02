@@ -29,7 +29,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('ready')
 	async handleReady(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.gameService.handleReady(client, body.powerup, this.server);
+		this.gameService.handleReady(client, body.ready, body.powerup, this.server);
 	}
 
 	@SubscribeMessage('playerMove')
