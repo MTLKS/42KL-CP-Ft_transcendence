@@ -8,6 +8,7 @@ import speedGIF from '../../../assets/GIFS/SpeedPaddle.gif'
 import speedPNG from '../../../assets/GIFS/SpeedPaddle.png'
 import spinGIF from '../../../assets/GIFS/SpinPaddle.gif'
 import spinPNG from '../../../assets/GIFS/SpinPaddle.png'
+import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
 
 let myProfile: UserData = {
@@ -185,9 +186,9 @@ function LobbyButton(props: LobbyButtonProps) {
       onMouseMove={(e) => handleMouseMove(e)}
     >
     <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`} style={{ fontSize: "25px" }}>{title}</p>
-      <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[400px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
+      <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[228px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         {imgLoaded ? null : <div className='w-full h-full flex justify-center rounded-[4px] items-center animate-pulse bg-highlight/50' />}
-        <img src={duck} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
+        <img src={standardGIF} height={200} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
       </div>
     </button>
   )
@@ -205,7 +206,7 @@ function LobbyButton(props: LobbyButtonProps) {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     hoverRef.current.style.left = `${x + 20}px`;
-    hoverRef.current.style.top = `${y - 400}px`;
+    hoverRef.current.style.top = `${y - 228}px`;
   }
 }
 
