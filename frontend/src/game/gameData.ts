@@ -39,7 +39,7 @@ interface GameSettings {
   particlesFilter: boolean;
   entitiesFilter: boolean;
   paddleFilter: boolean;
-  gitFilter: boolean;
+  hitFilter: boolean;
   tickPerParticles: number;
   gameMaxWidth: number;
   gameMaxHeight: number;
@@ -147,7 +147,7 @@ export class GameData {
       this.particlesFilter = settings.particlesFilter;
       this.entitiesFilter = settings.entitiesFilter;
       this.paddleFilter = settings.paddleFilter;
-      this.hitFilter = settings.gitFilter;
+      this.hitFilter = settings.hitFilter;
       this.tickPerParticles = settings.tickPerParticles;
       this.gameMaxWidth = settings.gameMaxWidth;
       this.gameMaxHeight = settings.gameMaxHeight;
@@ -158,7 +158,7 @@ export class GameData {
       particlesFilter: this.particlesFilter,
       entitiesFilter: this.entitiesFilter,
       paddleFilter: this.paddleFilter,
-      gitFilter: this.hitFilter,
+      hitFilter: this.hitFilter,
       tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
@@ -176,7 +176,7 @@ export class GameData {
       particlesFilter: this.particlesFilter,
       entitiesFilter: this.entitiesFilter,
       paddleFilter: this.paddleFilter,
-      gitFilter: this.hitFilter,
+      hitFilter: this.hitFilter,
       tickPerParticles: this.tickPerParticles,
       gameMaxWidth: this.gameMaxWidth,
       gameMaxHeight: this.gameMaxHeight,
@@ -194,8 +194,8 @@ export class GameData {
     this.saveSettings();
   }
 
-  set setUseHitFilter(gitFilter: boolean) {
-    this.hitFilter = gitFilter;
+  set setUseHitFilter(hitFilter: boolean) {
+    this.hitFilter = hitFilter;
     this.saveSettings();
   }
 
