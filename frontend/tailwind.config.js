@@ -13,8 +13,8 @@ export default {
         accGreen: "rgb(var(--accent-green))",
       },
       fontFamily: {
-        jbmono: ["JetBrains Mono", "monospace"],
-        bungee: ["Bungee", "cursive"],
+        jbmono: ["JetBrains Mono"],
+        bungee: ["Bungee"],
       },
       animation: {
         "pulse-short": "pulse 0.3s ease-in-out 1",
