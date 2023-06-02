@@ -66,7 +66,14 @@ function Lobby() {
 
   function sendReady() {
     setReady(!ready);
-    gameData.sendReady();
+    if (selectedPowerUp === PaddleType.Ngeeeaat)
+      gameData.sendReady(ready, "Ngeeeaat");
+    else if (selectedPowerUp === PaddleType.Piiuuuuu)
+      gameData.sendReady(ready, "Piiuuuuu");
+    else if (selectedPowerUp === PaddleType.Vrooooom)
+      gameData.sendReady(ready, "Vrooooom");
+    else if (selectedPowerUp === PaddleType.Vzzzzzzt)
+      gameData.sendReady(ready, "Vzzzzzzt");
   }
 }
 

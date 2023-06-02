@@ -251,10 +251,10 @@ export class GameData {
     });
   }
 
-  async sendReady() {
+  async sendReady(ready: boolean, powerUp: string) {
     this.socketApi.sendMessages("ready", {
-      ready: true,
-      powerUp: "Ngeeeaat",
+      ready: ready,
+      powerUp: powerUp,
     });
   }
 
