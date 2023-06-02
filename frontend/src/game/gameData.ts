@@ -49,15 +49,15 @@ export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  particlesFilter: boolean = true;
-  entitiesFilter: boolean = true;
-  paddleFilter: boolean = true;
-  hitFilter: boolean = true;
-  tickPerParticles: number = 0;
-  gameMaxWidth: number = 1600;
-  gameMaxHeight: number = 900;
-  gameCurrentWidth: number = 1600;
-  gameCurrentHeight: number = 900;
+  particlesFilter: boolean;
+  entitiesFilter: boolean;
+  paddleFilter: boolean;
+  hitFilter: boolean;
+  tickPerParticles: number;
+  gameMaxWidth: number;
+  gameMaxHeight: number;
+  gameCurrentWidth: number;
+  gameCurrentHeight: number;
 
   // pong variables
   private _pongPosition: Offset = { x: 800, y: 450 };
@@ -120,6 +120,15 @@ export class GameData {
   blur?: () => void;
 
   constructor() {
+    this.particlesFilter = true;
+    this.entitiesFilter = true;
+    this.paddleFilter = true;
+    this.hitFilter = true;
+    this.tickPerParticles = 0;
+    this.gameMaxWidth = 1600;
+    this.gameMaxHeight = 900;
+    this.gameCurrentWidth = 1600;
+    this.gameCurrentHeight = 900;
     this.loadSettings();
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
@@ -144,13 +153,13 @@ export class GameData {
     const gameSettings = localStorage.getItem("gameSettings");
     if (gameSettings) {
       const settings: GameSettings = JSON.parse(gameSettings);
-      this.particlesFilter = settings.particlesFilter;
-      this.entitiesFilter = settings.entitiesFilter;
-      this.paddleFilter = settings.paddleFilter;
-      this.hitFilter = settings.hitFilter;
-      this.tickPerParticles = settings.tickPerParticles;
-      this.gameMaxWidth = settings.gameMaxWidth;
-      this.gameMaxHeight = settings.gameMaxHeight;
+      this.particlesFilter = settings.particlesFilter ?? true;
+      this.entitiesFilter = settings.entitiesFilter ?? true;
+      this.paddleFilter = settings.paddleFilter ?? true;
+      this.hitFilter = settings.hitFilter ?? true;
+      this.tickPerParticles = settings.tickPerParticles ?? 0;
+      this.gameMaxWidth = settings.gameMaxWidth ?? 1600;
+      this.gameMaxHeight = settings.gameMaxHeight ?? 900;
     }
   }
   get getSettings() {
@@ -563,7 +572,7 @@ export class GameData {
     playEngGameSound();
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
-    this.tickPerParticles = 1;
+    this.tickPerParticles = Math.floor(this.tickPerParticles * 2 + 1);
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
     this.localTickerPongSpeed = this.pongSpeed;
@@ -572,7 +581,7 @@ export class GameData {
   disableLocalTick() {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
-    this.tickPerParticles = 0;
+    this.tickPerParticles = Math.floor((this.tickPerParticles - 1) / 2);
     this._pongSpeed.x = this.localTickerPongSpeed.x;
     this._pongSpeed.y = this.localTickerPongSpeed.y;
     this.localTicker.remove(this._localTick.bind(this));
