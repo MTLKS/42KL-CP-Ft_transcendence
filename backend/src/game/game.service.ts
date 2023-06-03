@@ -197,7 +197,7 @@ export class GameService {
 
     if (clientQueue === "practice") {
       let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
-      this.joinPractice(server, player);
+      this.joinPracticeLobby(player);
       return;
     }
 
@@ -252,6 +252,14 @@ export class GameService {
           console.log(`${USER_DATA.intraName} left ${queueType} queue.`);
       }
     });
+  }
+
+  joinPracticeLobby(player: Player) {
+    let lobby = new Lobby(player, player, "practice");
+    this.gameLobbies.set(player.intraName, lobby);
+    lobby.player2Ready = true;
+    lobby.player2PowerUp = "normal";
+    player.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player.intraName, "bot", "practice")));
   }
 
   joinLobby(player1: Player, player2: Player, gameType: string) {
@@ -310,9 +318,9 @@ export class GameService {
   }
 
   async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
+    console.log(ready, powerUp);
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
-    console.log(ready, powerUp);
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
@@ -364,7 +372,11 @@ export class GameService {
         this.matchService,
         this.userService,
       );
-    } else {
+    } else if (gameType === 'practice') {
+      await this.joinPractice(server, player1);
+      return;
+    }
+    else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
       room = new DeathGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     }
