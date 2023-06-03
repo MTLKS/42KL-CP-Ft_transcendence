@@ -1,26 +1,60 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import Channel from './Channel'
 import { ChatContext } from '../../../../contexts/ChatContext';
 import ChatroomList from '../Chatroom/ChatroomList';
+import { getAllPublicChannels } from '../../../../api/chatAPIs';
+import { ChatroomData } from '../../../../model/ChatRoomData';
+import { FaSadCry } from 'react-icons/fa';
+
+const CHANNEL_FETCH_LIMIT = 20;
 
 function ChannelList() {
 
   const { setChatBody } = useContext(ChatContext);
   const [filterKeyword, setFilterKeyword] = useState("");
+  const [channelComponents, setChannelComponents] = useState<JSX.Element[]>([]);
+  const [page, setPage] = useState<number>(1);
+
+  useEffect(() => {
+    getPublicChannels();
+  }, []);
 
   return (
     <div className='w-full h-full text-highlight'>
       <ChatNavbar title="channel list" backAction={() => setChatBody(<ChatroomList />)} />
-      <div className='h-full mx-10 gap-y-4'>
-        <ChatTableTitle title='channels (4)' searchable={true} setFilterKeyword={setFilterKeyword} />
-        <div className='w-full h-full overflow-y-scroll'>
-          <Channel />
-        </div>
+      <div className='box-border relative w-full h-full px-10 gap-y-4'>
+        { 
+          channelComponents.length > 0
+          ? <>
+              <ChatTableTitle title='channels' searchable={true} setFilterKeyword={setFilterKeyword} />
+              <div className='w-full h-full overflow-y-scroll scrollbar-hide'>
+                {channelComponents}
+              </div>
+            </>
+          : emptyChannelList()
+        }
       </div>
     </div>
   )
+
+  function emptyChannelList() {
+    return (
+      <div className='absolute flex flex-col items-center -translate-x-1/2 gap-y-2 w-fit -translate-y-1/3 top-1/3 left-1/2'>
+        <span className='w-full text-center'>There's no channel for you to join right now...</span>
+        <FaSadCry className='text-xl'/>
+      </div>
+    )
+  }
+
+  async function getPublicChannels() {
+    const channels = (await getAllPublicChannels(CHANNEL_FETCH_LIMIT, page)).data as ChatroomData[];
+    const channelComponents = channels.map((channel) => {
+      return <Channel key={channel.channelId} channelInfo={channel} />
+    });
+    setChannelComponents(channelComponents);
+  }
 }
 
 export default ChannelList

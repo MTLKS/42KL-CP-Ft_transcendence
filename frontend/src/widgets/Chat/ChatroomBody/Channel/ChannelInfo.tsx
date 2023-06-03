@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChannelMemberList from './ChannelMemberList'
 import ChatButton from '../../ChatWidgets/ChatButton'
@@ -18,6 +18,7 @@ import { FaTimes, FaUserSecret, FaUsers } from 'react-icons/fa'
 import { ImEarth } from 'react-icons/im'
 import ChatroomList from '../Chatroom/ChatroomList'
 import { AxiosResponse } from 'axios'
+import { ErrorPopup } from '../../../../components/Popup'
 
 interface ChannelInfoProps {
   chatroomData: ChatroomData;
@@ -37,11 +38,33 @@ function ChannelInfo(props: ChannelInfoProps) {
   const [verifyingTfa, setVerifyingTfa] = useState<boolean>(false);
   const [isReviewingChanges, setIsReviewingChanges] = useState<boolean>(false);
   const [deleteConfirmationText, setDeleteConfirmationText] = useState<string>("");
+  const [errorResponses, setErrorResponses] = useState<string[]>([]);
+  const [errorPopups, setErrorPopups] = useState<JSX.Element[]>([]);
 
   useEffect(() => {
     dispatch({ type: 'IS_OWNER', userInfo: myProfile });
     dispatch({ type: 'IS_ADMIN', userInfo: myProfile });
   }, []);
+
+  useEffect(() => {
+    if (errorResponses.length > 0) {
+      const errorPopups = new Array<JSX.Element>();
+      for (const error of errorResponses) {
+        errorPopups.push(<ErrorPopup key={errorPopups.length} text={error} />);
+      }
+      setErrorPopups(errorPopups);
+    }
+  }, [errorResponses]);
+
+  // after errorPopups are rendered, pop off the first item of errorResponses
+  // which will then trigger useEffect to render the next errorPopup
+  useEffect(() => {
+    if (errorPopups.length > 0) {
+      setTimeout(() => {
+        setErrorPopups(errorPopups.slice(1));
+      }, 3000);
+    }
+  }, [errorPopups]);
 
   useEffect(() => {
     if (modifying) {
@@ -51,12 +74,11 @@ function ChannelInfo(props: ChannelInfoProps) {
     }
   }, [modifying]);
 
-  useEffect(() => {
-    console.log("moderated list: ", state.moderatedList);
-  }, [state.moderatedList]);
-
   return (
-    <div className='flex flex-col h-full'>
+    <div className='relative flex flex-col h-full'>
+      <div className='absolute right-0 top-[5%] z-10 flex flex-col gap-y-1 transition-all duration-75'>
+        { errorPopups }
+      </div>
       <ChatNavbar
         title='channel info'
         backAction={backToChatroom}
@@ -254,6 +276,7 @@ function ChannelInfo(props: ChannelInfoProps) {
   async function updateMembers() {
     const { channelId } = chatroomData;
     const { moderatedList, members } = state;
+    const newErrorResponses: string[] = [];
   
     if (moderatedList.length === 0) return;
     
@@ -264,6 +287,17 @@ function ChannelInfo(props: ChannelInfoProps) {
       // kick and unban are the same action
       if (moderatedMember.actionType === ModeratorAction.KICK || moderatedMember.actionType === ModeratorAction.UNBAN) {
         const kickMemberResponse = await kickMember(channelId, moderatedMember.memberInfo.memberInfo.intraName);
+        
+        const errorString = (kickMemberResponse.data as ErrorData).error;
+        if (errorString) {
+          if (errorString === "Invalid channelId - requires admin privileges") {
+            newErrorResponses.push("Ha! You think you have admin privileges?");
+          } else if (errorString === "Invalid channelId - channel is not found") {
+            newErrorResponses.push("This channel doesn't exist anymore!");
+          } else if (errorString === "Invalid intraName - user is not a member of this channel") {
+            newErrorResponses.push(`${moderatedMember.memberInfo.memberInfo.userName} who???`);
+          }
+        }
         continue;
       }
 
@@ -314,50 +348,55 @@ function ChannelInfo(props: ChannelInfoProps) {
       // tested with different roles and only owner has this option
       console.log(updateMemberResponse);
     }
+    return newErrorResponses;
   }
 
   async function saveChannelEdits() {
     const { channelName, password, newPassword, isPrivate } = state;
-    let errorCount = 0;
+    let modifyChannelErrors = 0;
+    const errorResponses: string[] = [];
     
+    if (errorResponses.length > 0) {
+      setErrorResponses([]);
+    }
+
     dispatch({ type: 'RESET_ERRORS' });
     
     if (!(channelName.length > 0 && channelName.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_CHANNEL_NAME });
-      errorCount++;
+      modifyChannelErrors++;
     }
     
     if (isPrivate && previousChannelInfo.current.password !== null && password !== null && !(password.length > 0 && password.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
-      errorCount++;
+      modifyChannelErrors++;
     }
     
     // when switch to public and is set to password protected, check password validity
     if (!isPrivate && password !== null && !(password.length > 0 && password.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
-      errorCount++;
+      modifyChannelErrors++;
     }
     
     if (!isPrivate && newPassword !== null && !(newPassword.length > 0 && newPassword.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_NEW_PASSWORD });
-      errorCount++;
+      modifyChannelErrors++;
     }
     
-    if (errorCount !== 0) return;
+    if (modifyChannelErrors !== 0) return;
 
     let updatedChatroomData: ChatroomData | null = null;
 
+    const updatedChannelInfo: UpdateChannelData = {
+      channelId: chatroomData.channelId,
+      channelName: channelName,
+      oldPassword: password,
+      newPassword: state.newPassword,
+      isPrivate: isPrivate,
+    }
+
+    // MODIFY CHANNEL INFO FLOW
     if (state.isOwner) {
-      // MODIFY CHANNEL INFO FLOW
-      // only owner can modify channel name and password
-      const updatedChannelInfo: UpdateChannelData = {
-        channelId: chatroomData.channelId,
-        channelName: channelName,
-        oldPassword: password,
-        newPassword: state.newPassword,
-        isPrivate: isPrivate,
-      }
-      
       // check request response
       const updateChannelResponse = await updateChannel(updatedChannelInfo);
       if (updateChannelResponse.status === 200) {
@@ -371,16 +410,24 @@ function ChannelInfo(props: ChannelInfoProps) {
 
     // MODIFY MEMBER ROLES FLOW
     if (state.isOwner || state.isAdmin) {
-      await updateMembers();
+      const errors = await updateMembers();
+      if (errors && errors.length > 0) {
+        errorResponses.push(...errors);
+      }
     }
 
-    dispatch({ type: 'RESET' });
+    // if updatedChatroomData is null, it means only member roles are modified
+    // set chatroomData to previous chatroomData
     if (updatedChatroomData === null) {
-      // if updatedChatroomData is null, it means only member roles are modified
-      // set chatroomData to previous chatroomData
       updatedChatroomData = chatroomData;
     }
-    setChatBody(<ChatroomContent chatroomData={updatedChatroomData} />);
+    
+    if (errorResponses.length === 0) {
+      dispatch({ type: 'RESET' });
+      setChatBody(<ChatroomContent chatroomData={updatedChatroomData} />);
+    } else {
+      setErrorResponses(errorResponses);
+    }
   }
 }
 

@@ -93,7 +93,7 @@ function ChatroomList() {
   function displayChatroomListBody() {
     return (
       <div className='w-full h-full'>
-        <div className='px-4 py-3 '>
+        <div className='px-4 py-3'>
           <ChatTableTitle title={`Chatrooms`} searchable={true} setFilterKeyword={setFilterKeyword} />
         </div>
         <div className='w-full h-full overflow-y-scroll scrollbar-hide'>
