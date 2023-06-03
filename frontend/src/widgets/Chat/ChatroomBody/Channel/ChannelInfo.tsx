@@ -17,6 +17,7 @@ import { UserData } from '../../../../model/UserData'
 import { FaTimes, FaUserSecret, FaUsers } from 'react-icons/fa'
 import { ImEarth } from 'react-icons/im'
 import ChatroomList from '../Chatroom/ChatroomList'
+import { AxiosResponse } from 'axios'
 
 interface ChannelInfoProps {
   chatroomData: ChatroomData;
@@ -90,7 +91,6 @@ function ChannelInfo(props: ChannelInfoProps) {
     if (leaveChannelResponse.status === 400) {
       return ;
     }
-    console.log(leaveChannelResponse.data);
     dispatch({ type: 'RESET' });
     setChatBody(<ChatroomList />);
   }
@@ -151,7 +151,9 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   function showInviteList() {
 
-    const friendUserData = friends.map(friend => {
+    const notBlockedFriends = friends.filter(friend => friend.status.toLowerCase() !== 'blocked');
+
+    const friendUserData = notBlockedFriends.map(friend => {
       return friend.sender.intraId === myProfile.intraId ? friend.receiver : friend.sender;
     });
 
@@ -259,7 +261,8 @@ function ChannelInfo(props: ChannelInfoProps) {
 
       if (moderatedMember.actionType === ModeratorAction.NONE) continue;
 
-      if (moderatedMember.actionType === ModeratorAction.KICK) {
+      // kick and unban are the same action
+      if (moderatedMember.actionType === ModeratorAction.KICK || moderatedMember.actionType === ModeratorAction.UNBAN) {
         const kickMemberResponse = await kickMember(channelId, moderatedMember.memberInfo.memberInfo.intraName);
         continue;
       }
@@ -278,9 +281,7 @@ function ChannelInfo(props: ChannelInfoProps) {
         isPromoted = memberInfo.role === 'admin' ? true : false;
       }
 
-      if (memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.UNBAN) {
-        isBanned = false;
-      } else if (!memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.BAN) {
+      if (!memberInfo.isBanned && moderatedMember.actionType === ModeratorAction.BAN) {
         if (memberInfo.isMuted) {
           isMuted = false;
         }
@@ -318,7 +319,6 @@ function ChannelInfo(props: ChannelInfoProps) {
   async function saveChannelEdits() {
     const { channelName, password, newPassword, isPrivate } = state;
     let errorCount = 0;
-
     
     dispatch({ type: 'RESET_ERRORS' });
     
@@ -345,26 +345,42 @@ function ChannelInfo(props: ChannelInfoProps) {
     
     if (errorCount !== 0) return;
 
-    const updatedChannelInfo: UpdateChannelData = {
-      channelId: chatroomData.channelId,
-      channelName: channelName,
-      oldPassword: password,
-      newPassword: state.newPassword,
-      isPrivate: isPrivate,
-    }
+    let updatedChatroomData: ChatroomData | null = null;
 
-    const updateChannelResponse = await updateChannel(updatedChannelInfo);
-
-    if (updateChannelResponse.status === 200) {
-
-      if ((updateChannelResponse.data as ErrorData).error) {
-        dispatch({ type: 'ADD_ERROR', error: NewChannelError.WRONG_PASSWORD });
-        return ;
+    if (state.isOwner) {
+      // MODIFY CHANNEL INFO FLOW
+      // only owner can modify channel name and password
+      const updatedChannelInfo: UpdateChannelData = {
+        channelId: chatroomData.channelId,
+        channelName: channelName,
+        oldPassword: password,
+        newPassword: state.newPassword,
+        isPrivate: isPrivate,
       }
-      await updateMembers();
-      dispatch({ type: 'RESET' });
-      setChatBody(<ChatroomContent chatroomData={(updateChannelResponse.data as ChatroomData)} />);
+      
+      // check request response
+      const updateChannelResponse = await updateChannel(updatedChannelInfo);
+      if (updateChannelResponse.status === 200) {
+        if ((updateChannelResponse.data as ErrorData).error) {
+          dispatch({ type: 'ADD_ERROR', error: NewChannelError.WRONG_PASSWORD });
+          return ;
+        }
+        updatedChatroomData = updateChannelResponse.data as ChatroomData;
+      }
     }
+
+    // MODIFY MEMBER ROLES FLOW
+    if (state.isOwner || state.isAdmin) {
+      await updateMembers();
+    }
+
+    dispatch({ type: 'RESET' });
+    if (updatedChatroomData === null) {
+      // if updatedChatroomData is null, it means only member roles are modified
+      // set chatroomData to previous chatroomData
+      updatedChatroomData = chatroomData;
+    }
+    setChatBody(<ChatroomContent chatroomData={updatedChatroomData} />);
   }
 }
 

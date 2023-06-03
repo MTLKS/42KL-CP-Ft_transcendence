@@ -39,7 +39,7 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
   return (
     <div
       style={{opacity: `${opacity}`}}
-      className='relative flex flex-col w-full h-full p-3 overflow-hidden rounded box-border bg-highlight transition-opacity duration-700'>
+      className='box-border relative flex flex-col w-full h-full p-3 overflow-hidden transition-opacity duration-700 rounded bg-highlight'>
       <div>
         <button className='absolute p-1 border-2 rounded border-dimshadow hover:bg-highlight hover:text-dimshadow aspect-square bg-dimshadow text-highlight' onClick={() => setIsReviewingChanges(!isReviewingChanges)} ><FaTimes /></button>
         <p className='text-lg font-extrabold w-fit mx-auto px-[1ch] text-center text-highlight bg-dimshadow'>CHANGES</p>
@@ -108,7 +108,7 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
 
     for (const moderated of moderatedList) {
       if (moderated.actionType === ModeratorAction.NONE) continue ;
-      console.log(moderated);
+
       switch (moderated.actionType) {
         case ModeratorAction.PROMOTE:
           logs.push(ChannelLog(ChangeType.PROMOTE, moderated.memberInfo.memberInfo.userName, '', ''));
@@ -134,7 +134,6 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
         default:
           break;
       }
-      console.log(logs);
     }
 
     if (logs.length > 0) {
@@ -142,7 +141,7 @@ function ChannelReviewChanges(props: ChannelReviewChangesProps) {
     }
     return ([
       <div key={"No_changes" + Date.now()} className='relative w-full h-full'>
-        <p className='absolute text-sm font-bold text-center underline uppercase top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-dimshadow decoration-wavy decoration-accRed'>No changes were made</p>
+        <p className='absolute text-sm font-bold text-center underline uppercase -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 text-dimshadow decoration-wavy decoration-accRed'>No changes were made</p>
       </div>
     ])
   }
