@@ -22,14 +22,16 @@ function ChannelList() {
   }, []);
 
   return (
-    <div className='w-full h-full text-highlight'>
+    <div className='flex flex-col flex-1 h-0 border-box text-highlight'>
       <ChatNavbar title="channel list" backAction={() => setChatBody(<ChatroomList />)} />
-      <div className='box-border relative w-full h-full px-10 gap-y-4'>
+      <div className='relative w-full h-full px-10 overflow-y-scroll scrollbar-hide'>
         { 
           channelComponents.length > 0
           ? <>
-              <ChatTableTitle title='channels' searchable={true} setFilterKeyword={setFilterKeyword} />
-              <div className='w-full h-full overflow-y-scroll scrollbar-hide'>
+              <div className='sticky top-0 z-50'>
+                <ChatTableTitle title='channels' searchable={true} setFilterKeyword={setFilterKeyword} />
+              </div>
+              <div className='w-full h-full -z-10'>
                 {channelComponents}
               </div>
             </>
