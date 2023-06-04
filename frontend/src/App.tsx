@@ -25,7 +25,7 @@ function App() {
     checkIfLoggedIn();
   }, []);
 
-  let page = <Loading />;
+  let page = <></>;
   if ((newUser || updateUser) && userFormLoaded) {
     page = <UserForm userData={userData} isUpdatingUser={updateUser} setIsUpdatingUser={setUpdateUser} />;
   }

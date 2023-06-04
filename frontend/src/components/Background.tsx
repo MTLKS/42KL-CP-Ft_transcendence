@@ -11,7 +11,7 @@ export function PolkaDotContainer(props: ContainerProps) {
     setMounted(true);
   }, []);
   return (
-    <div className={`polka-dot transition-all duration-700 ${mouted ? "rounded-3xl border-[4px]" : ""}`}>
+    <div className={`polka-dot transition-all duration-700 overflow-hidden ${mouted ? "rounded-3xl border-[4px]" : ""}`}>
       {props.children}
     </div>
   )

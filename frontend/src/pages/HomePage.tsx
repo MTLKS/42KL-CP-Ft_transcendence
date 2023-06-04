@@ -100,7 +100,7 @@ function HomePage(props: HomePageProps) {
   const [index, setIndex] = useState(0);
   const [shouldDisplayGame, setShouldDisplayGame] = useState(false);
   const [topWidget, setTopWidget] = useState(<Profile />);
-  const [midWidget, setMidWidget] = useState(<MatrixRain />);
+  const [midWidget, setMidWidget] = useState(<div className='flex-1'></div>);
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = useState(false);
@@ -108,7 +108,6 @@ function HomePage(props: HomePageProps) {
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const defaultSocket = useMemo(() => new SocketApi(), []);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
-  const [scaleX, setScaleX] = useState("scale-x-[0.1]");
   const [scaleY, setScaleY] = useState("scale-y-0");
   const [showWidget, setShowWidget] = useState(false);
   const [showTerminal, setShowTerminal] = useState(false);
@@ -119,10 +118,9 @@ function HomePage(props: HomePageProps) {
   );
 
   useEffect(() => {
-    setScaleX("scale-x-100");
-    setTimeout(() => setScaleY("scale-y-100"), 500);
-    setTimeout(() => setShowWidget(true), 1000);
-    setTimeout(() => setShowTerminal(true), 1500);
+    setScaleY("scale-y-100");
+    setTimeout(() => setShowWidget(true), 500);
+    setTimeout(() => { setShowTerminal(true); setMidWidget(<MatrixRain />); }, 1000);
   }, [userData]);
 
   const pageRef = useRef<HTMLDivElement>(null);
@@ -147,13 +145,13 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-              <div className={`h-full w-full p-7 transition-transform duration-500 ${scaleX} ${scaleY}`}>
+              <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
                 {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
                 <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
                   <div className='h-full flex-1'>
                     {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
                   </div>
-                  <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
+                  <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-in-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
                     {midWidget}
                     {botWidget}
