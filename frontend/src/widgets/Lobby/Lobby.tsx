@@ -66,9 +66,9 @@ function Lobby() {
           </div>
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
-            <LobbyButton title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
-            <LobbyButton title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
-            <LobbyButton title='death' color='accRed' selected={selectedMode === "sudden death"} onClick={() => setSelectedMode("sudden death")} />
+            <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
+            <LobbyButton active={standardButtonActive} title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
+            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "sudden death"} onClick={() => setSelectedMode("sudden death")} />
           </div>
         </div>
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
@@ -124,7 +124,7 @@ function PowerUpButton(props: PowerUpButtonProps) {
     <button className='w-full relative cursor-pointer'
       ref={buttonRef}
       onClick={onClick}
-      onMouseEnter={() => setHover(true)}
+      onMouseEnter={() => setHover(active ? true : false)}
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
       disabled={!active}
@@ -273,16 +273,16 @@ function LobbyButton(props: LobbyButtonProps) {
     <button
       ref={buttonRef}
       className={`relative box-border
-        flex-1 ${bg} cursor-pointer rounded-xl p-4
+        flex-1 ${bg} ${active && "cursor-pointer"} rounded-xl p-4
         group hover:${bg}
         border-[4px] ${border} transition-all duration-200 focus:outline-dimshadow`}
       onClick={onClick}
-      onMouseEnter={() => setHover(true)}
+      onMouseEnter={() => setHover(active ? true : false)}
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
       disabled={!active}
     >
-      <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`} style={{ fontSize: "25px" }}>{title}</p>
+      <p className={`uppercase font-extrabold text-lg ${text} ${active && "group-hover:text-dimshadow"} text-center`} style={{ fontSize: "25px" }}>{title}</p>
       <div ref={hoverRef} className={`z-10 pointer-events-none font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[228px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         {imgLoaded ? null : <div className='w-full h-full flex justify-center rounded-[4px] items-center animate-pulse bg-highlight/50' />}
         <img src={standardGIF} height={200} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />

@@ -354,6 +354,7 @@ export class GameData {
   async endGame() {
     // console.log("end game");
     if (!this.gameStarted) return;
+    this.leaveLobby();
     await sleep(3000);
     this.stopDisplayGame();
     this.gameStarted = false;
