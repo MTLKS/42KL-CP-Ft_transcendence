@@ -6,6 +6,7 @@ import { Application } from 'pixi.js';
 
 import { GameData } from './game/gameData';
 import GameApp from './GameApp';
+import React from 'react';
 
 const reactApp = document.getElementById('root') as HTMLElement
 const reactRoot = ReactDOM.createRoot(reactApp)
