@@ -132,6 +132,9 @@ export class GameService {
       }
     });
 
+    // If player is in a lobby, leave the lobby
+    this.leaveLobby(client);
+
     // If player is ingame, pause game
     this.gameRooms.forEach((gameRoom) => {
       if (gameRoom._players.includes(USER_DATA.intraName)) {
