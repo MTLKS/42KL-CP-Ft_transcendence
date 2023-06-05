@@ -268,8 +268,8 @@ export class GameService {
     player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
-  getLobbyKeyFromIntreNames(intraName: string): string | undefined {
-    for (const KEY in this.gameLobbies.keys){
+  getLobbyKeyFromIntraNames(intraName: string): string | undefined {
+    for (const KEY of this.gameLobbies.keys()){
       if (KEY.includes(intraName))
         return KEY;
     }
@@ -281,7 +281,7 @@ export class GameService {
       client.handshake.headers.authorization,
     );
     if (USER_DATA.error !== undefined) return;
-    const LOBBY_KEY = this.getLobbyKeyFromIntreNames(USER_DATA.intraName);
+    const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
     if (LOBBY_KEY != undefined) {
       const LOBBY = this.gameLobbies.get(LOBBY_KEY);
       if (LOBBY != undefined) {
@@ -393,12 +393,6 @@ export class GameService {
     await room.run(server);
     return room.roomID;
   }
-
-  // async startGame(roomID: string, server: Server) {
-  //   const ROOM = this.gameRooms.get(roomID);
-  //   if (ROOM === undefined) return;
-  //   await ROOM.run(server);
-  // }
 
   async playerUpdate(client: Socket, roomID: string, xValue: number, yValue: number) {
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
