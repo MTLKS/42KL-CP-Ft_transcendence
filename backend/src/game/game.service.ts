@@ -225,10 +225,6 @@ export class GameService {
       return;
     }
     this.queues[clientQueue].push(player);
-    //TESTING
-    var player1 = this.queues[clientQueue].pop();
-    // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPEED, PowerUp.SPIN);
   }
 
   async leaveQueue(client: Socket) {
@@ -382,14 +378,14 @@ export class GameService {
     }
     player1.socket.join(room.roomID);
     player2.socket.join(room.roomID);
-    player1.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
-    player2.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
+    player1.socket.emit('gameState', new GameStateDTO('LobbyCountdown', new CountdonwDTO(3)));
+    player2.socket.emit('gameState', new GameStateDTO('LobbyCountdown', new CountdonwDTO(3)));
     await this.countdown(3);
     player1.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player2.intraName, gameType, true, room.roomID, player1PowerUp, player2PowerUp)));
     player2.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO(player1.intraName, gameType, false, room.roomID, player1PowerUp, player2PowerUp)));
     this.gameRooms.set(room.roomID, room);
-    player1.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
-    player2.socket.emit('gameState', new GameStateDTO('Countdown', new CountdonwDTO(3)));
+    player1.socket.emit('gameState', new GameStateDTO('GameCountdown', new CountdonwDTO(3)));
+    player2.socket.emit('gameState', new GameStateDTO('GameCountdown', new CountdonwDTO(3)));
     await this.countdown(3);
     await room.run(server);
     return room.roomID;
