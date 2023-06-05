@@ -17,7 +17,7 @@ export class ChatController {
 	@ApiCommonHeader(["Invalid channelId - member is not found in that channelId"])
 	@ApiOkResponse({ description: "Returns the member data of the user in the channel", type: MemberDTO})
 	getMyMemberData(@Headers('Authorization') accessToken: string, @Param('channelId') channelId: string): Promise<any> {
-		return this.chatService.getMyMemberData(accessToken, Number(channelId));
+		return this.chatService.getMyMemberData(true, accessToken, Number(channelId));
 	}
 
 	@Get('channel')
