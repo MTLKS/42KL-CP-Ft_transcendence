@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useContext, useEffect, useMemo } from 'react'
 import PixelatedImage from '../../components/PixelatedImage'
 import ProfileElo from '../Profile/Expanded/ProfileElo'
 import { UserData } from '../../model/UserData'
@@ -12,23 +12,43 @@ import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
 import { PaddleType } from '../../game/gameData'
 import { gameData } from '../../main'
+import { getProfileOfUser } from '../../api/profileAPI'
+import { ErrorData } from '../../model/ErrorData';
+import UserContext from '../../contexts/UserContext'
+import sleep from '../../functions/sleep'
 
-let myProfile: UserData = {
-  accessToken: "hidden",
-  avatar: "",
-  elo: 400,
-  intraId: 130305,
-  intraName: "wricky-t",
-  tfaSecret: null,
-  userName: "JOHNDOE",
-  winning: true,
-  email: "hidden",
-}
+
 
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState('standard');
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
+  const myProfile = useContext(UserContext).myProfile;
+
+  const opponent = useMemo(() => {
+    if (gameData.player1IntraId === myProfile.intraName) {
+      return gameData.player2IntraId;
+    } else {
+      return gameData.player1IntraId;
+    }
+  }, []);
+
+  const { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive } = useMemo(() => {
+    let powerButtonActive = false;
+    let boringButtonActive = false;
+    let standardButtonActive = false;
+    let deathButtonActive = false;
+
+    if (gameData.gameType === '') {
+      powerButtonActive = true;
+      boringButtonActive = true;
+      standardButtonActive = true;
+      deathButtonActive = true;
+    } else if (gameData.gameType === 'standard') {
+      powerButtonActive = true;
+    }
+    return { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive };
+  }, []);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
@@ -36,13 +56,13 @@ function Lobby() {
         <div className=' h-full flex-1 flex flex-col items-center box-border m-10 mt-0'>
           <h1 className='text-[40px] font-extrabold'>OPPONENT</h1>
           <div className="mb-12 border-4 rounded border-highlight">
-            <LobbyProfile />
+            <LobbyProfile playerIntraId={opponent} />
           </div>
           <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
-            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
-            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={spinGIF} img={spinPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={spinGIF} img={spinPNG} title='Ngeeeaat' content='Longer paddle.' />
-            <PowerUpButton onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
+            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
+            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={spinGIF} img={spinPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={spinGIF} img={spinPNG} title='Ngeeeaat' content='Longer paddle.' />
+            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
           </div>
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
@@ -67,15 +87,16 @@ function Lobby() {
   )
 
   function sendReady() {
-    setReady(!ready);
+    const newReady = !ready;
+    setReady(newReady);
     if (selectedPowerUp === PaddleType.Ngeeeaat)
-      gameData.sendReady(ready, "Ngeeeaat");
+      gameData.sendReady(newReady, "Ngeeeaat");
     else if (selectedPowerUp === PaddleType.Piiuuuuu)
-      gameData.sendReady(ready, "Piiuuuuu");
+      gameData.sendReady(newReady, "Piiuuuuu");
     else if (selectedPowerUp === PaddleType.Vrooooom)
-      gameData.sendReady(ready, "Vrooooom");
+      gameData.sendReady(newReady, "Vrooooom");
     else if (selectedPowerUp === PaddleType.Vzzzzzzt)
-      gameData.sendReady(ready, "Vzzzzzzt");
+      gameData.sendReady(newReady, "Vzzzzzzt");
   }
 }
 
@@ -88,11 +109,12 @@ interface PowerUpButtonProps {
   img?: string;
   selected?: boolean;
   onClick?: () => void;
+  active?: boolean;
 }
 
 
 function PowerUpButton(props: PowerUpButtonProps) {
-  const { title, content, onClick, gif, img, selected } = props;
+  const { title, content, onClick, gif, img, selected, active = true } = props;
   const [hover, setHover] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -105,6 +127,7 @@ function PowerUpButton(props: PowerUpButtonProps) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
+      disabled={!active}
     >
       {imgLoaded ? null : <div className=' animate-pulse bg-highlight/50 border-4 rounded-lg aspect-square' />}
       <img src={hover ? gif : img} className={` border-4 w-full ${selected ? "border-highlight animate-pulse" : "border-highlight/10"} rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
@@ -131,21 +154,80 @@ function PowerUpButton(props: PowerUpButtonProps) {
   }
 }
 
-function LobbyProfile() {
+function LobbyProfile(props: { playerIntraId: string }) {
+  const { playerIntraId } = props;
+  const [userData, setUserData] = React.useState<UserData | null>(null);
+  const [pixelSize, setPixelSize] = React.useState(200);
+
+  useEffect(() => {
+    getProfileOfUser(playerIntraId).then((data) => {
+      setUserData(data.data as UserData);
+      pixelatedToSmooth();
+    });
+  }, [playerIntraId]);
+
+  const titles: { [key: string]: string } = {
+    '0': 'DISAPPOINTMENT',
+    '100': 'UH OH',
+    '200': 'PADDLE MADE IN CHINA',
+    '300': 'IT WAS THE LAG',
+    '400': 'BEGINNER PADDLE',
+    '500': 'BALL SCRATCHER',
+    '600': 'PADDLE WIZARD',
+    '700': 'SIR BOUNCE-A-LOT',
+    '800': 'PING PONG CONNOISSEUR',
+    '900': 'THE SPINNER',
+    '1000': 'SUPREME PADDLE WARRIOR',
+    '1100': 'GRANDMASTER OF THE TABLE',
+    '1200': 'LEGENDARY BALLER',
+    '1300': 'PADDLE HACKER',
+    '1400': 'PING CHILLING',
+    '1500': 'BASH GURU',
+    '1600': 'SULTAN OF SWAT',
+    '1700': 'NO PING SPIKE',
+    '1800': 'AGROSTOPHOBIA',
+    '1900': 'PONG GOD',
+    '2000': 'PONG KHONVOUM',
+  };
+
+  const getEloTitle = (userData: UserData) => {
+    let currentTitle = 'HOW IS THIS POSSIBLE';
+
+    for (const range in titles) {
+      if (userData.elo >= parseInt(range)) {
+        currentTitle = titles[range];
+      } else {
+        break;
+      }
+    }
+    return currentTitle;
+  };
+
+  if (userData == null) return <div className=' h-20'></div>;
   return <div className={` flex flex-row w-fit box-border bg-highlight font-jbmono tracking-normal transition-all duration-300 ease-in-out h-20 cursor-pointer`}>
     <div className={'w-20 h-20 aspect-square transition-all'}>
-      <PixelatedImage src={duck} pixelSize={1} className='w-full' />
+      <PixelatedImage src={userData.avatar} pixelSize={pixelSize} className='w-full' />
     </div>
     <div className={`flex flex-row overflow-hidden items-center transition-all duration-500 ease-in-out w-fit h-20`}>
       <div className='flex flex-col justify-center mx-5'>
-        <div className=' text-2xl text-dimshadow font-extrabold'>{myProfile.userName}</div>
-        <div className=' text-xs text-dimshadow'>THE BLACKHOLE DESTROYER</div>
+        <div className=' text-2xl text-dimshadow font-extrabold'>{userData.userName}</div>
+        <div className=' text-xs text-dimshadow'>{getEloTitle(userData)}</div>
       </div>
     </div>
     <div className={'h-20 transition-all duration-1000 ease-in-out'}>
-      <ProfileElo expanded={false} elo={200} winning={true} />
+      <ProfileElo expanded={false} elo={userData.elo} winning={userData.winning} />
     </div>
   </div>
+
+  async function pixelatedToSmooth(start: number = 200) {
+    let tmp = start;
+    while (tmp > 1) {
+      tmp = Math.floor(tmp / 1.05);
+      if (tmp < 1) tmp = 1;
+      setPixelSize(tmp);
+      await sleep(10);
+    }
+  }
 }
 
 interface LobbyButtonProps {
@@ -153,10 +235,11 @@ interface LobbyButtonProps {
   onClick?: () => void;
   color?: string;
   selected?: boolean;
+  active?: boolean;
 }
 
 function LobbyButton(props: LobbyButtonProps) {
-  const { title, onClick, color, selected } = props;
+  const { title, onClick, color, selected, active = true } = props;
   const [hover, setHover] = React.useState(false);
   const [imgLoaded, setImgLoaded] = React.useState(false);
   const buttonRef = React.useRef<HTMLButtonElement>(null);
@@ -197,6 +280,7 @@ function LobbyButton(props: LobbyButtonProps) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
+      disabled={!active}
     >
       <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`} style={{ fontSize: "25px" }}>{title}</p>
       <div ref={hoverRef} className={`z-10 pointer-events-none font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[228px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>

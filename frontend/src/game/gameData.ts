@@ -7,6 +7,9 @@ import {
   GameEndDTO,
   GamePauseDTO,
   FieldEffectDTO,
+  LobbyStartDTO,
+  LobbyEndDTO,
+  CountdonwDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -74,6 +77,8 @@ export class GameData {
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
   leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
   rightPaddleType: PaddleType = PaddleType.boring;
+  player1IntraId: string = "";
+  player2IntraId: string = "";
   isLeft: boolean = false;
   isRight: boolean = false;
   player1Score: number = 0;
@@ -100,6 +105,8 @@ export class GameData {
 
   setScale?: (scale: number) => void;
   setUsingTicker?: (usingTicker: boolean) => void;
+  displayLobby?: () => void;
+  stopDisplayLobby?: () => void;
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
@@ -251,14 +258,14 @@ export class GameData {
     });
   }
 
-  async sendReady(ready: boolean, powerUp: string) {
+  sendReady(ready: boolean, powerUp: string) {
     this.socketApi.sendMessages("ready", {
       ready: ready,
       powerUp: powerUp,
     });
   }
 
-  async leaveLobby() {
+  leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
   }
 
@@ -303,7 +310,7 @@ export class GameData {
     };
     this.focus = async () => {
       this.inFocus = true;
-      this.setUsingTicker?.(true);
+      // this.setUsingTicker?.(true);
       for (let i = 0; i < 20; i++) {
         if (!this.inFocus) return;
         this.globalSpeedFactor += 0.05;
@@ -321,7 +328,7 @@ export class GameData {
         this.globalScaleFactor -= 0.02;
         await sleep(50);
       }
-      this.setUsingTicker?.(false);
+      // this.setUsingTicker?.(false);
     };
     window.addEventListener("resize", this.resize);
     window.addEventListener("focus", this.focus);
@@ -415,8 +422,27 @@ export class GameData {
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log("Field effect:", state);
+    console.log("GameStateDto:", state);
     switch (state.type) {
+      case "LobbyStart":
+        const lobbyStartData = <LobbyStartDTO>state.data;
+        this.gameType = lobbyStartData.gameType;
+        this.player1IntraId = lobbyStartData.player1IntraName;
+        this.player2IntraId = lobbyStartData.player2IntraName;
+        this.displayLobby!();
+        break;
+      case "LobbyEnd":
+        const lobbyEndData = <LobbyEndDTO>state.data;
+        this.stopDisplayLobby!();
+        break;
+      case "LobbyCountdown":
+        const lobbyCountdownData = <CountdonwDTO>state.data;
+        console.log("LobbyCountdown:", lobbyCountdownData);
+        break;
+      case "GameCountdown":
+        const gameCountdownData = <CountdonwDTO>state.data;
+        console.log("GameCountdown:", gameCountdownData);
+        break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
         console.log("GameStart:", data);
