@@ -8,7 +8,6 @@ import Pong from './Pong'
 import sleep from '../functions/sleep'
 import Clock from '../widgets/Clock'
 import Game from '../game/Game'
-import GameWindow from '../game/GameWindow'
 import Queue from '../widgets/Queue'
 
 interface TerminalProps {

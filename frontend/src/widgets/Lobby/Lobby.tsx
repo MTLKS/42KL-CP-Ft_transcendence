@@ -107,10 +107,10 @@ function PowerUpButton(props: PowerUpButtonProps) {
       onMouseMove={(e) => handleMouseMove(e)}
     >
       {imgLoaded ? null : <div className=' animate-pulse bg-highlight/50 border-4 rounded-lg aspect-square' />}
-      <img src={hover ? gif : img} className={` border-4 w-full ${ selected ? "border-highlight animate-pulse" : "border-highlight/10"} rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
-        onLoad={() => imgOnLoad()} 
+      <img src={hover ? gif : img} className={` border-4 w-full ${selected ? "border-highlight animate-pulse" : "border-highlight/10"} rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
+        onLoad={() => imgOnLoad()}
       />
-      <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
+      <div ref={hoverRef} className={`z-10 pointer-events-none font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         <h3 className=' text-lg'>{title}</h3>
         <p className=' text-sm font-normal'>{content}</p>
       </div>
@@ -198,8 +198,8 @@ function LobbyButton(props: LobbyButtonProps) {
       onMouseLeave={() => setHover(false)}
       onMouseMove={(e) => handleMouseMove(e)}
     >
-    <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`} style={{ fontSize: "25px" }}>{title}</p>
-      <div ref={hoverRef} className={`z-10 font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[228px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
+      <p className={`uppercase font-extrabold text-lg ${text} group-hover:text-dimshadow text-center`} style={{ fontSize: "25px" }}>{title}</p>
+      <div ref={hoverRef} className={`z-10 pointer-events-none font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[228px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         {imgLoaded ? null : <div className='w-full h-full flex justify-center rounded-[4px] items-center animate-pulse bg-highlight/50' />}
         <img src={standardGIF} height={200} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
       </div>
