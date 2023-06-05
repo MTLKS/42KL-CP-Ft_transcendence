@@ -298,7 +298,8 @@ export class ChatService {
 	async addMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean, password: string): Promise<any> {
 		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined || password === undefined)
 			return new ErrorDTO("Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean), isMuted(boolean) and password(null | string)");
-
+		
+		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
 		MY_MEMBER["isAdmin"] = MY_MEMBER.error !== undefined ? false : MY_MEMBER.isAdmin;
 
@@ -310,10 +311,8 @@ export class ChatService {
 		if (FRIEND_DATA.error !== undefined)
 			return new ErrorDTO(FRIEND_DATA.error);
 		const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(accessToken, FRIEND_DATA.intraName);
-		if (FRIEND_DATA.intraName !== MY_MEMBER.intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
+		if (FRIEND_DATA.intraName !== USER_DATA.intraName && (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED"))
 			return new ErrorDTO("Invalid intraName - you are not friends with this user");
-
-		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		if (MY_MEMBER.isAdmin === false && (isAdmin === true || isBanned === true || isMuted === true))
 			return new ErrorDTO("Invalid channelId - requires admin privileges");
 
