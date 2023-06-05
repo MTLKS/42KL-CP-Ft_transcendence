@@ -12,6 +12,7 @@ import {
   GameEndDTO,
   GamePauseDTO,
   LobbyStartDTO,
+  LobbyEndDTO,
   CountdonwDTO,
 } from 'src/dto/gameState.dto';
 import { MatchService } from 'src/match/match.service';
@@ -196,7 +197,7 @@ export class GameService {
 
     if (clientQueue === "practice") {
       let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
-      this.joinPractice(server, player);
+      this.joinPracticeLobby(player);
       return;
     }
 
@@ -227,7 +228,7 @@ export class GameService {
     //TESTING
     var player1 = this.queues[clientQueue].pop();
     // this.ingame.push(player1);
-    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPIN, PowerUp.SPIN);
+    this.joinGame(player1, player1, clientQueue, server, PowerUp.SPEED, PowerUp.SPIN);
   }
 
   async leaveQueue(client: Socket) {
@@ -253,11 +254,49 @@ export class GameService {
     });
   }
 
+  joinPracticeLobby(player: Player) {
+    let lobby = new Lobby(player, player, "practice");
+    this.gameLobbies.set(player.intraName, lobby);
+    lobby.player2Ready = true;
+    lobby.player2PowerUp = "normal";
+    player.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player.intraName, "bot", "practice")));
+  }
+
   joinLobby(player1: Player, player2: Player, gameType: string) {
     let lobby = new Lobby(player1, player2, gameType);
     this.gameLobbies.set(player1.intraName + player2.intraName, lobby);
     player1.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
     player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+  }
+
+  getLobbyKeyFromIntreNames(intraName: string): string | undefined {
+    for (const KEY in this.gameLobbies.keys){
+      if (KEY.includes(intraName))
+        return KEY;
+    }
+    return undefined;
+  }
+
+  async leaveLobby(client: Socket) {
+    const USER_DATA = await this.userService.getMyUserData(
+      client.handshake.headers.authorization,
+    );
+    if (USER_DATA.error !== undefined) return;
+    const LOBBY_KEY = this.getLobbyKeyFromIntreNames(USER_DATA.intraName);
+    if (LOBBY_KEY != undefined) {
+      const LOBBY = this.gameLobbies.get(LOBBY_KEY);
+      if (LOBBY != undefined) {
+        if (LOBBY.player1.intraName === USER_DATA.intraName) {
+          LOBBY.player1.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "leave")));
+          LOBBY.player2.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO(LOBBY.player1.intraName, "leave")));
+        }
+        else if (LOBBY.player2.intraName === USER_DATA.intraName) {
+          LOBBY.player1.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO(LOBBY.player2.intraName, "leave")));
+          LOBBY.player2.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "leave")));
+        }
+        this.gameLobbies.delete(LOBBY_KEY);
+      }
+    }
   }
 
   getPowerUp(powerUpString: string): PowerUp {
@@ -278,27 +317,27 @@ export class GameService {
     return powerUp;
   }
 
-  async handleReady(client: Socket, powerUp: string, server: Server) {
+  async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
+    console.log(ready, powerUp);
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
-    console.log(powerUp);
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
       let gameType;
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
         gameType= gameLobby.gameType;
-        gameLobby.player1Ready = true;
+        gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       } else {
-        gameLobby.player2Ready = true;
+        gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (LOBBY_LOGGING)
         console.log(`${USER_DATA.intraName} is ready.`);
       }
-      if (gameLobby.player1Ready && gameLobby.player2Ready)
+      if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
         this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
         this.gameLobbies.delete(key);
@@ -333,7 +372,11 @@ export class GameService {
         this.matchService,
         this.userService,
       );
-    } else {
+    } else if (gameType === 'practice') {
+      await this.joinPractice(server, player1);
+      return;
+    }
+    else {
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
       room = new DeathGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     }

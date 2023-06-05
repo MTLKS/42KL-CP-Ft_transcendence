@@ -63,6 +63,16 @@ export class LobbyStartDTO {
 	}
 }
 
+export class LobbyEndDTO {
+	culprit: string;
+	reason: string;
+
+	constructor(culprit: string, reason: string) {
+		this.culprit = culprit;
+		this.reason = reason;
+	}
+}
+
 export class CountdonwDTO{
 	countdown: number;
 
@@ -72,11 +82,11 @@ export class CountdonwDTO{
 }
 
 export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "Countdown";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | CountdonwDTO;
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "Countdown";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "Countdown",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | CountdonwDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "Countdown",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO) {
 		this.type = type;
 		this.data = data;
 	}

@@ -251,6 +251,17 @@ export class GameData {
     });
   }
 
+  async sendReady(ready: boolean, powerUp: string) {
+    this.socketApi.sendMessages("ready", {
+      ready: ready,
+      powerUp: powerUp,
+    });
+  }
+
+  async leaveLobby() {
+    this.socketApi.sendMessages("leaveLobby", {});
+  }
+
   startGame() {
     if (this.gameStarted) {
       console.error("game already started");

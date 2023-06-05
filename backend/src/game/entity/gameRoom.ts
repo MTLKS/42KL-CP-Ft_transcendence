@@ -317,7 +317,7 @@ export class GameRoom {
     this.gamePaused = false;
     this.gamePauseDate = null;
     this.gamePausePlayer = null;
-    console.log(`${player.intraName} reconnected to ${this.roomID}`);
+    // console.log(`${player.intraName} reconnected to ${this.roomID}`);
   }
 
   // TODO: wait for reconnect, abandon game after x seconds
