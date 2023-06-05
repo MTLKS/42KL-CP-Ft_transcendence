@@ -41,7 +41,7 @@ export class ChatService {
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO(false, "Invalid channelId - channel is not found"));
-		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, CHANNEL.channelId)
+		const MY_MEMBER = await this.getMyMemberData(false, client.handshake.headers.authorization, CHANNEL.channelId)
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("message", new ErrorDTO(false, MY_MEMBER.error));
 		if (MY_MEMBER.isMuted === true || MY_MEMBER.isBanned === true)
@@ -76,7 +76,7 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO(false, "Invalid channelId - channel is not found"));
 		
-		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId)
+		const MY_MEMBER = await this.getMyMemberData(false, client.handshake.headers.authorization, channelId)
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO(false, "Invalid channelId - you are not a member of this channel"));
 		if (MY_MEMBER.isBanned === true)
@@ -101,7 +101,7 @@ export class ChatService {
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO(false, "Invalid channelId - channel is not found" ));
 		
-		const MY_MEMBER = await this.getMyMemberData(client.handshake.headers.authorization, channelId);
+		const MY_MEMBER = await this.getMyMemberData(false, client.handshake.headers.authorization, channelId);
 		if (MY_MEMBER.error !== undefined)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO(false, "Invalid channelId - you are not a member of this channel"));
 		if (MY_MEMBER.isBanned === true)
@@ -122,12 +122,12 @@ export class ChatService {
 	}
 
 	// Retrives user's member data of that channel
-	async getMyMemberData(accessToken: string, channelId: number): Promise<any> {
+	async getMyMemberData(status: boolean, accessToken: string, channelId: number): Promise<any> {
     if (Number.isNaN(channelId))
-      new ErrorDTO(true, "Invalid channelId - you are not a member of this channel")
+      new ErrorDTO(status, "Invalid channelId - you are not a member of this channel")
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MEMBER_DATA = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
-		return MEMBER_DATA === null ? new ErrorDTO(true, "Invalid channelId - you are not a member of this channel") : this.userService.hideData(MEMBER_DATA);
+		return MEMBER_DATA === null ? new ErrorDTO(status, "Invalid channelId - you are not a member of this channel") : this.userService.hideData(MEMBER_DATA);
 	}
 
 	// Retrives all channel of the user
@@ -167,7 +167,7 @@ export class ChatService {
 			if (startWith !== undefined && publicChannel.channelName.toLowerCase().startsWith(startWith.toLowerCase()) === false)
 				continue;
 			try {
-				await this.getMyMemberData(accessToken, publicChannel.channelId);
+				await this.getMyMemberData(true, accessToken, publicChannel.channelId);
 			} catch {
 				channel.push(publicChannel);
 			}
@@ -181,7 +181,7 @@ export class ChatService {
 	async getAllChannelMember(accessToken: string, channelId: number): Promise<any> {
     if (Number.isNaN(channelId) === true)
       return [];
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		const MY_MEMBER = await this.getMyMemberData(false, accessToken, channelId);
 		if (MY_MEMBER.error !== undefined || MY_MEMBER.isBanned === true)
 			return [];
 		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
@@ -205,9 +205,7 @@ export class ChatService {
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return new ErrorDTO(true, "Invalid channelId - you are not friends with this user");
 		}
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(true, MY_MEMBER.error);
+		const MY_MEMBER = await this.getMyMemberData(true, accessToken, channelId);
 		if (MY_MEMBER.isBanned === true)
 			return new ErrorDTO(true, "Invalid channelId - you are banned from this channel");
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: MY_MEMBER.user.intraName, isRoom: false }, relations: ['owner'] });
@@ -267,9 +265,7 @@ export class ChatService {
 			newPassword = await bcrypt.hash(newPassword, await bcrypt.genSalt(10));
 		}
 
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(true, MY_MEMBER.error);
+		const MY_MEMBER = await this.getMyMemberData(true, accessToken, channelId);
 		if (CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
 			return new ErrorDTO(true, "Invalid channelId - requires owner privileges");
 		
@@ -286,9 +282,7 @@ export class ChatService {
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: true }, relations: ['owner'] });
 		if (CHANNEL === null || CHANNEL.isRoom === false)
 			return new ErrorDTO(true, "Invalid channelId - channel is not found");
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(true, MY_MEMBER.error);
+		const MY_MEMBER = await this.getMyMemberData(true, accessToken, channelId);
 		if (CHANNEL.owner.intraName !== MY_MEMBER.user.intraName)
 			return new ErrorDTO(true, "Invalid channelId - requires owner privileges");
 		await this.memberRepository.delete({ channel: { channelId: channelId } });
@@ -303,7 +297,7 @@ export class ChatService {
 			return new ErrorDTO(true, "Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean), isMuted(boolean) and password(null | string)");
 		
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
+		const MY_MEMBER = await this.getMyMemberData(false, accessToken, channelId);
 		MY_MEMBER["isAdmin"] = MY_MEMBER.error !== undefined ? false : MY_MEMBER.isAdmin;
 
 		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
@@ -338,9 +332,7 @@ export class ChatService {
 	async updateMember(accessToken: string, channelId: number, intraName: string, isAdmin: boolean, isBanned: boolean, isMuted: boolean): Promise<any> {
 		if (channelId === undefined || intraName === undefined || isAdmin === undefined || isBanned === undefined || isMuted === undefined)
 			return new ErrorDTO(true, "Invalid body - body must include channelId(number), intraName(string), isAdmin(boolean), isBanned(boolean) and isMuted(boolean)");
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(true, MY_MEMBER.error);
+		const MY_MEMBER = await this.getMyMemberData(true, accessToken, channelId);
 		if (MY_MEMBER.isAdmin === false)
 			return new ErrorDTO(true, "Invalid channelId - requires admin privileges");
 
@@ -371,9 +363,7 @@ export class ChatService {
 	async deleteMember(accessToken: string, channelId: number, intraName: string): Promise<any> {
 		if (Number.isNaN(channelId) === true || intraName === undefined)
 			return new ErrorDTO(true, "Invalid body - body must include channelId(number) and intraName(string)");
-		const MY_MEMBER = await this.getMyMemberData(accessToken, channelId);
-		if (MY_MEMBER.error !== undefined)
-			return new ErrorDTO(true, MY_MEMBER.error);
+		const MY_MEMBER = await this.getMyMemberData(true, accessToken, channelId);
 		if (MY_MEMBER.user.intraName !== intraName && MY_MEMBER.isAdmin === false)
 			return new ErrorDTO(true, "Invalid channelId - requires admin privileges");
 
