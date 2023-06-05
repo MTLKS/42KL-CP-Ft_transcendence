@@ -166,9 +166,11 @@ export class ChatService {
 		for (let publicChannel of PUBLIC_CHANNELS) {
 			if (startWith !== undefined && publicChannel.channelName.toLowerCase().startsWith(startWith.toLowerCase()) === false)
 				continue;
-			const MEMBER = await this.getMyMemberData(accessToken, publicChannel.channelId);
-			if (MEMBER.error !== undefined)
+			try {
+				await this.getMyMemberData(accessToken, publicChannel.channelId);
+			} catch {
 				channel.push(publicChannel);
+			}
 		}
 		channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
     channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
