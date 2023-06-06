@@ -508,14 +508,14 @@ export class PowerGameRoom extends GameRoom {
   updatePlayerPos(socketId: string, xValue: number, yValue: number): void {
     if (socketId == this.player1.socket.id) {
       if (this.leftPaddle.canMove == true) {
-        this.leftPaddle.posY = yValue - 50;
+        this.leftPaddle.posY = yValue - this.leftPaddle.height / 2;
       }
       this.leftMouseX = xValue;
       this.leftMouseY = yValue;
     }
     if (socketId == this.player2.socket.id) {
       if (this.rightPaddle.canMove == true) {
-        this.rightPaddle.posY = yValue - 50;
+        this.rightPaddle.posY = yValue - this.rightPaddle.height / 2;
       }
       this.rightMouseX = xValue;
       this.rightMouseY = yValue;
