@@ -84,10 +84,10 @@ export class PowerGameRoom extends GameRoom {
 
     if (Player1PowerUp == PowerUp.SIZE) {
       this.leftPaddle.height = 150;
-    } else if (Player2PowerUp == PowerUp.SIZE) {
+    }
+    if (Player2PowerUp == PowerUp.SIZE) {
       this.rightPaddle.height = 150;
     }
-
     //Config Setting
     this.minTime = 10;
     this.maxTime = 20;

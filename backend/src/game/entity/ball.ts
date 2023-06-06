@@ -39,7 +39,6 @@ export class Ball extends DynamicRect{
 			this.posX = 0;
 			return 2;
 		}
-		//TODO: remember to change canvas offset
 		if (this.posX + this.width >= borderWidth - 30){
 			this.posX = borderWidth - this.width;
 			return 1;
@@ -148,6 +147,7 @@ export class Ball extends DynamicRect{
 			this.attracted = false;
 			this.velX = velX;
 			this.velY = velY;
+			console.log(this.velX, this.velY)
 		}
 	}
 }

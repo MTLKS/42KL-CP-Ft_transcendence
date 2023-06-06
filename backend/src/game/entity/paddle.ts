@@ -4,7 +4,6 @@ import { PowerUp } from "../game.service";
 
 /**
  * @param powerUp current powerUp for paddle
- * @param sizeIncrement size increment when using using size powerUp
  * @param energized boolean variable to check the paddle is energized
  * @param speedIncrementX speed increment in x direction when using speed powerUp
  * @param speedIncrementY speed increment in y direction when using speed powerUp
@@ -15,7 +14,6 @@ import { PowerUp } from "../game.service";
  */
 export class Paddle extends Rect {
 	powerUp: PowerUp;
-	sizeIncrement: number;
 	speedIncrementX: number;
 	speedIncrementY: number;
 	lastPosY: number;
