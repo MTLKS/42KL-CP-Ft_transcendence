@@ -162,6 +162,9 @@ export class GameRoom {
           this.player1Score === this.roomSettings.scoreToWin ||
           this.player2Score === this.roomSettings.scoreToWin
         ) {
+          console.log("trigger end game");
+          console.log("player Score ", this.player1Score, this.player2Score);
+          console.log("room setting ", this.roomSettings.scoreToWin);
           this.endGame(
             server,
             this.player1Score === this.roomSettings.scoreToWin

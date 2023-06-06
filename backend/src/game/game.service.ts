@@ -317,7 +317,6 @@ export class GameService {
   }
 
   async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
-    console.log(ready, powerUp);
     const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
     if (USER_DATA.error !== undefined) return;
     if (this.getPowerUp(powerUp) === null) return;
@@ -325,21 +324,22 @@ export class GameService {
     this.gameLobbies.forEach((gameLobby, key) => {
       let gameType;
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
-        gameType= gameLobby.gameType;
+        gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       } else {
+        gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (LOBBY_LOGGING)
-        console.log(`${USER_DATA.intraName} is ready.`);
+          console.log(`${USER_DATA.intraName} is ready.`);
       }
       if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
-        this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
         this.gameLobbies.delete(key);
+        this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
       }
     });
   }
@@ -366,8 +366,6 @@ export class GameService {
         ROOM_SETTING,
         player1PowerUp,
         player2PowerUp,
-        // PowerUp.SPEED,
-        // PowerUp.NORMAL,
         this.matchService,
         this.userService,
       );
@@ -375,7 +373,7 @@ export class GameService {
       await this.joinPractice(server, player1);
       return;
     }
-    else {
+    else if (gameType === 'death'){
       const ROOM_SETTING = new GameSetting(100, 100, GameMode.DEATH, 1);
       room = new DeathGameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
     }
