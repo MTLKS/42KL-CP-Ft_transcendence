@@ -1,17 +1,17 @@
 import React, { useContext, useState } from 'react'
 import { ImEarth } from 'react-icons/im'
 import ChatNavbar from '../../ChatWidgets/ChatNavbar'
-import { ChatContext, ChatroomContentContext, NewChannelContext } from '../../../../contexts/ChatContext';
+import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import ChatroomList from './ChatroomList';
 import { FaUser, FaUserSecret } from 'react-icons/fa';
 import { ChatroomData } from '../../../../model/ChatRoomData';
 import PreviewProfileContext from '../../../../contexts/PreviewProfileContext';
 import Profile from '../../../Profile/Profile';
-import NewChatInfo from '../Channel/NewChatInfo';
 import ChannelInfo from '../Channel/ChannelInfo';
 
 interface ChatroomHeaderProps {
   chatroomData: ChatroomData;
+  viewMemberListButton: () => React.ReactNode;
 }
 
 function ChatroomIcon(props: { isRoom: boolean, isPrivate: boolean }) {
@@ -29,7 +29,7 @@ function ChatroomIcon(props: { isRoom: boolean, isPrivate: boolean }) {
 
 function ChatroomHeader(props: ChatroomHeaderProps) {
 
-  const { chatroomData } = props;
+  const { chatroomData, viewMemberListButton } = props;
   const { dispatch } = useContext(NewChannelContext);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
   const { setChatBody } = useContext(ChatContext);
@@ -37,8 +37,8 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
 
   return (
     <div className='w-full h-fit'>
-      <ChatNavbar backAction={closeChatroom}>
-        <div className='z-20 w-3/5 px-4 py-2 mx-auto border-2 cursor-pointer text-dimshadow bg-highlight border-highlight group hover:bg-dimshadow hover:text-highlight transition-all duration-150' onClick={checkChannelInfo}>
+      <ChatNavbar backAction={closeChatroom} nextComponent={chatroomData.isRoom && viewMemberListButton()}>
+        <div className='z-20 w-3/5 px-4 py-2 mx-auto transition-all duration-150 border-2 cursor-pointer text-dimshadow bg-highlight border-highlight group hover:bg-dimshadow hover:text-highlight' onClick={checkChannelInfo}>
           <div className='flex flex-row items-center gap-3 w-fit mx-auto max-w-[90%]'>
             <p className='text-xl font-extrabold truncate w-fit'>{chatroomData.channelName}</p>
             <ChatroomIcon isRoom={chatroomData.isRoom} isPrivate={chatroomData.isPrivate} />

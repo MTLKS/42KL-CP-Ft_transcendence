@@ -8,6 +8,9 @@ import UserContext from '../../../../contexts/UserContext';
 import { ChatContext, ChatroomMessagesContext, ChatroomsContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import { playNewMessageSound } from '../../../../functions/audio';
 import ChatUnreadSeparator from './ChatUnreadSeparator';
+import { FaTimes, FaUsers } from 'react-icons/fa';
+import ChatButton from '../../ChatWidgets/ChatButton';
+import ChannelMemberOnlineList from '../Channel/ChannelMemberOnlineList';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
@@ -37,6 +40,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [page, setPage] = useState<number>(1);
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
+  const [viewMemberList, setViewMemberList] = useState<boolean>(false);
   const { state, dispatch } = useContext(NewChannelContext);
 
   useEffect(() => {
@@ -81,16 +85,25 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   return (
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
-      <div className='flex flex-col flex-1 w-full h-0 box-border'>
-        <ChatroomHeader chatroomData={chatroomData} />
-        <div className='flex flex-col-reverse h-full px-5 pb-4 overflow-y-scroll scrollbar-hide gap-y-4 scroll-smooth box-border' ref={scrollableDivRef}>
+      <div className='box-border relative flex flex-col flex-1 w-full h-0'>
+        <ChatroomHeader chatroomData={chatroomData} viewMemberListButton={ViewMemberOnlineListButton}/>
+        <div className='box-border flex flex-col-reverse h-full px-5 pb-4 overflow-y-scroll scrollbar-hide gap-y-4 scroll-smooth' ref={scrollableDivRef}>
           {messagesComponent}
         </div>
+        {viewMemberList && <ChannelMemberOnlineList />}
         <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
       </div>
     </ChatroomMessagesContext.Provider>
   )
 
+  function ViewMemberOnlineListButton() {
+    return (
+      <div className='z-50 transition-all duration-150'>
+        <ChatButton icon={viewMemberList ? <FaTimes /> : <FaUsers />} title={viewMemberList ? undefined : "members"} onClick={() => setViewMemberList(!viewMemberList)}/>
+      </div>
+    )
+  }
+  
   function setChannelInfo(members: MemberData[]) {
     if (!chatroomData.isRoom) return;
     dispatch({ type: 'SET_CHANNEL_INFO', chatroomData: chatroomData, members: members});
