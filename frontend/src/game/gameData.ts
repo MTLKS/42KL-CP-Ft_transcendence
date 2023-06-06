@@ -584,10 +584,10 @@ export class GameData {
   }
 
   updatePlayerPosition(y: number, x: number) {
-    if (this.isLeft) {
+    if (this.isLeft && !this.attracted) {
       this.leftPaddlePosition = { x: 30, y: y };
     }
-    if (this.isRight) {
+    if (this.isRight && !this.attracted) {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
     this.mousePosition = { x: x, y: y };
