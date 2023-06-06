@@ -65,13 +65,15 @@ class GameParticleDelegate {
       if (
         this.gameData.leftPaddleSucking ||
         (this.gameData.attracted &&
-          this.gameData.leftPaddleType === PaddleType.Piiuuuuu)
+          this.gameData.leftPaddleType === PaddleType.Piiuuuuu &&
+          newPosition.x < this.gameData.gameCurrentWidth / 2)
       )
         this.applySuckForPaddle(particle, this.gameData.leftPaddlePosition);
       if (
         this.gameData.rightPaddleSucking ||
         (this.gameData.attracted &&
-          this.gameData.rightPaddleType === PaddleType.Piiuuuuu)
+          this.gameData.rightPaddleType === PaddleType.Piiuuuuu &&
+          newPosition.x > this.gameData.gameCurrentWidth / 2)
       )
         this.applySuckForPaddle(particle, this.gameData.rightPaddlePosition);
       this.gameData.applGlobalEffectToParticle(particle);
@@ -92,7 +94,8 @@ class GameParticleDelegate {
     if (
       this.gameData.leftPaddleSucking ||
       (this.gameData.attracted &&
-        this.gameData.leftPaddleType === PaddleType.Piiuuuuu)
+        this.gameData.leftPaddleType === PaddleType.Piiuuuuu &&
+        newPosition.x < this.gameData.gameCurrentWidth / 2)
     )
       this.addSuctionParticle(
         this.particles,
@@ -102,7 +105,8 @@ class GameParticleDelegate {
     if (
       this.gameData.rightPaddleSucking ||
       (this.gameData.attracted &&
-        this.gameData.rightPaddleType === PaddleType.Piiuuuuu)
+        this.gameData.rightPaddleType === PaddleType.Piiuuuuu &&
+        newPosition.x > this.gameData.gameCurrentWidth / 2)
     )
       this.addSuctionParticle(
         this.particles,
@@ -241,15 +245,13 @@ class GameParticleDelegate {
   }
 
   private applySuckForPaddle(particle: GameParticle, position: Offset) {
-    if (this.gameData.leftPaddleSucking) {
-      const distance = Math.sqrt(
-        Math.pow(particle.x - position.x, 2) +
-          Math.pow(particle.y - position.y, 2)
-      );
-      if (distance > 1 && distance < 80) {
-        if (distance < 10) particle.opacity = 0;
-        particle.setGravityAccel(position.x, position.y, 1);
-      }
+    const distance = Math.sqrt(
+      Math.pow(particle.x - position.x, 2) +
+        Math.pow(particle.y - position.y, 2)
+    );
+    if (distance > 1 && distance < 80) {
+      if (distance < 10) particle.opacity = 0;
+      particle.setGravityAccel(position.x, position.y, 1);
     }
   }
 

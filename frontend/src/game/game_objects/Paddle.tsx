@@ -100,7 +100,9 @@ function Paddle(props: PaddleProps) {
   useTick((delta) => {
     if (paddleRef.current == null) return;
     if (type !== PaddleType.Piiuuuuu) return;
-    if (!gameData.attracted) { rotRef.current = 0; return; }
+    if (!gameData.attracted) { paddleRef.current.rotation = 0; rotRef.current = 0; return; }
+    if (!left && gameData.pongPosition.x < gameData.gameCurrentWidth / 2) { paddleRef.current.rotation = 0; rotRef.current = 0; return; }
+    if (left && gameData.pongPosition.x > gameData.gameCurrentWidth / 2) { paddleRef.current.rotation = 0; rotRef.current = 0; return; }
     paddleRef.current.rotation = Math.sin(rotRef.current) * 0.05;
     rotRef.current += 0.8 * delta;
   });
@@ -140,8 +142,7 @@ function Paddle(props: PaddleProps) {
         g.endFill();
 
         g.beginFill(0x5F928F);
-        if (left) g.drawRect(0, size.h - 30, size.w, 30);
-        else g.drawRect(0, 0, size.w, 30);
+        g.drawRect(0, size.h - 30, size.w, 30);
         g.endFill();
 
         t1.text = "M";
