@@ -47,8 +47,14 @@ function Lobby() {
     } else if (gameData.gameType === 'standard') {
       powerButtonActive = true;
     }
+    if (ready) {
+      powerButtonActive = false;
+      boringButtonActive = false;
+      standardButtonActive = false;
+      deathButtonActive = false;
+    }
     return { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive };
-  }, []);
+  }, [ready, gameData.gameType]);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
@@ -130,7 +136,7 @@ function PowerUpButton(props: PowerUpButtonProps) {
       disabled={!active}
     >
       {imgLoaded ? null : <div className=' animate-pulse bg-highlight/50 border-4 rounded-lg aspect-square' />}
-      <img src={hover ? gif : img} className={` border-4 w-full ${selected ? "border-highlight animate-pulse" : "border-highlight/10"} rounded-lg transition-colors hover:border-highlight ${imgLoaded ? " opacity-100" : " opacity-0"}`}
+      <img src={hover ? gif : img} className={` border-4 w-full ${selected ? "border-highlight animate-pulse" : "border-highlight/10"} rounded-lg transition-colors ${active && "hover:border-highlight"} ${imgLoaded ? " opacity-100" : " opacity-0"}`}
         onLoad={() => imgOnLoad()}
       />
       <div ref={hoverRef} className={`z-10 pointer-events-none font-jbmono rounded-lg border-highlight border-2 text-start bg-dimshadow absolute w-[400px] p-2 transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>

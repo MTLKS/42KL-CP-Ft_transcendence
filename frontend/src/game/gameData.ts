@@ -436,6 +436,7 @@ export class GameData {
         break;
       case "LobbyEnd":
         const lobbyEndData = <LobbyEndDTO>state.data;
+        this.gameType = "";
         this.stopDisplayLobby!();
         break;
       case "LobbyCountdown":
