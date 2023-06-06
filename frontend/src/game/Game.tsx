@@ -20,6 +20,7 @@ import { DropShadowFilter, RGBSplitFilter, ShockwaveFilter } from 'pixi-filters'
 import InwardShadow from './game_objects/InwardShadow';
 import { clamp, update } from 'lodash';
 import { playGameSound, HitType } from '../functions/audio';
+import GameEndText from './game_objects/GameEndText';
 
 interface GameProps {
   scale: number;
@@ -37,6 +38,7 @@ function Game(props: GameProps) {
   const [bgColor, setBgColor] = useState(0x242424);
   const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(undefined);
   const app = useApp();
+  const [gameEndText, setGameEndText] = useState<JSX.Element>(<></>);
 
   const timeRef = useRef<number[]>([]);
   const fpsTextRef = useRef<PIXI.Text>(null);
@@ -125,7 +127,7 @@ function Game(props: GameProps) {
     setGameGravityArrow(newGameGravityArrow);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale);
+    zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
     // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
 
@@ -157,6 +159,7 @@ function Game(props: GameProps) {
         <ParticlesRenderer key={"particle renderer"} gameGravityArrow={gameGravityArrow} />
         <Paddle left={true} />
         <Paddle left={false} />
+        {gameEndText}
       </Container>
       <Text ref={fpsTextRef} style={new PIXI.TextStyle({ fill: 0xB3A183, fontSize: 16 })} x={10} y={5} />
     </>
@@ -181,7 +184,35 @@ function Game(props: GameProps) {
     }
     return newGameGravityArrow;
   }
+
+  function displayGameEndText(win: boolean) {
+    const random = Math.floor(Math.random() * 5);
+    if (win) {
+      setGameEndText(<GameEndText text={winPhrase[random]} winner />)
+    } else {
+      setGameEndText(<GameEndText text={losePhrase[random]} />)
+    }
+    setTimeout(() => {
+      setGameEndText(<></>)
+    }, 5000);
+  }
 }
+
+const winPhrase = [
+  'YOU WIN',
+  'So good, so smooth.',
+  'Victory',
+  'Not bad, Indeed.',
+  'What a shot!!',
+]
+
+const losePhrase = [
+  'YOU LOSE',
+  'So bad, so sad.',
+  'Defeat',
+  'Not good, Indeed.',
+  'What a shame!!',
+]
 
 export default Game
 
@@ -241,7 +272,7 @@ function ballHitEffect(
   }
 }
 
-async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number) {
+async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
   if (!((newPosition.x <= 40 || newPosition.x >= 1600 - 50)
     && ((player1Score === 9 && newPosition.x >= 1600 - 50) || (player2Score === 9 && newPosition.x <= 40))
     && zoomSlowMoRef.current === null)) return;
@@ -278,6 +309,7 @@ async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, p
       containerRef.current.position.x = 0;
       containerRef.current.position.y = 0;
       app.ticker.speed = 1;
+      displayGameEndText((gameData.player1Score === 10 && gameData.isLeft) || (gameData.player2Score === 10 && gameData.isRight));
       zoomSlowMoRef.current.remove(tickerCallback);
       zoomSlowMoRef.current.stop();
       if (gameData.localTicker)

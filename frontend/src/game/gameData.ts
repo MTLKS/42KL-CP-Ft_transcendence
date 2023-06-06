@@ -355,7 +355,7 @@ export class GameData {
     // console.log("end game");
     if (!this.gameStarted) return;
     this.stopDisplayLobby!();
-    await sleep(3000);
+    await sleep(7000);
     this.stopDisplayGame();
     this.gameStarted = false;
     this.isLeft = false;
