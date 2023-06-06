@@ -31,21 +31,22 @@ export class GameService {
 	//Lobby functions 
 	async handleConnection(client: Socket) {
 		const ACCESS_TOKEN = client.handshake.headers.authorization;
-		const USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
-		if (USER_DATA.error !== undefined) {
-			// client.disconnect(true);
+		let userData: any;
+		try {
+			userData = await this.userService.getMyUserData(ACCESS_TOKEN);
+		} catch {
 			return;
 		}
 
 		// Checks if user is already connected, if they are then send error and disconnect
-		if (this.connected.find((e: Player) => e.intraName === USER_DATA.intraName)) {
+		if (this.connected.find((e: Player) => e.intraName === userData.intraName)) {
 			client.emit('gameResponse', new GameResponseDTO('error', 'already connected'));
 			client.disconnect(true);
 			return;
 		}
 
 		// Keeps track of users that are connected
-		let player = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+		let player = new Player(userData.intraName, ACCESS_TOKEN, client);
 		this.connected.push(player);
 
 		// Clear any ended game rooms
@@ -53,47 +54,52 @@ export class GameService {
 
 		// If player is ingame, reconnect player to game
 		this.gameRooms.forEach((gameRoom) => {
-			if (gameRoom._players.includes(USER_DATA.intraName)) {
+			if (gameRoom._players.includes(userData.intraName)) {
 				gameRoom.resumeGame(player);
 			}
 		})
 	}
 
 	async handleDisconnect(server: Server, client: Socket) {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
+		let userData: any;
+		try {
+			userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		} catch {
 			return;
+		}
 
 		Object.keys(this.queues).forEach(queueType => {
-			if (this.queues[queueType].find((e: Player) => e.intraName === USER_DATA.intraName && e.socket.id === client.id)) {
-				this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== USER_DATA.intraName });
+			if (this.queues[queueType].find((e: Player) => e.intraName === userData.intraName && e.socket.id === client.id)) {
+				this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== userData.intraName });
 
 				if (LOBBY_LOGGING)
-					console.log(`${USER_DATA.intraName} left ${queueType} queue due to disconnect.`);
+					console.log(`${userData.intraName} left ${queueType} queue due to disconnect.`);
 			}
 		});
 
 		// If player is ingame, pause game 
 		this.gameRooms.forEach((gameRoom) => {
-			if (gameRoom._players.includes(USER_DATA.intraName)) {
-				gameRoom.togglePause(server, USER_DATA.intraName);
+			if (gameRoom._players.includes(userData.intraName)) {
+				gameRoom.togglePause(server, userData.intraName);
 			}
 		})
 
 		// Removes user from connection tracking
-		this.connected = this.connected.filter(function(e) { return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id});
+		this.connected = this.connected.filter(function(e) { return e.intraName !== userData.intraName || e.socket.id !== client.id});
 	}
 
 	async joinQueue(client: Socket, clientQueue: string, server: Server) {
-		const ACESS_TOKEN = client.handshake.headers.authorization;
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
+		let userData: any;
+		try {
+			userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		} catch {
 			return;
+		}
 
 		// Check if queue is known
 		if (!(clientQueue in this.queues)) {
 			if (LOBBY_LOGGING)
-				console.log(`${USER_DATA.intraName} tried to join unknown queue "${clientQueue}".`);
+				console.log(`${userData.intraName} tried to join unknown queue "${clientQueue}".`);
 			client.emit('gameResponse', new GameResponseDTO('error', 'unknown queue'));
 			return;
 		}
@@ -103,9 +109,9 @@ export class GameService {
 
 		// Check if player is already in a game
 		this.gameRooms.forEach((gameRoom) => {
-			if (gameRoom._players.includes(USER_DATA.intraName)) {
+			if (gameRoom._players.includes(userData.intraName)) {
 				if (LOBBY_LOGGING)
-				console.log(`${USER_DATA.intraName} is already in a game.`);
+				console.log(`${userData.intraName} is already in a game.`);
 			client.emit('gameResponse', new GameResponseDTO('error', 'already in game'));
 			return;
 			}
@@ -113,19 +119,19 @@ export class GameService {
 
 		// Check if player if already in a queue
 		const IN_QUEUE = Object.keys(this.queues).find(queueType => {
-			return (this.queues[queueType].find(e => e.intraName === USER_DATA.intraName))
+			return (this.queues[queueType].find(e => e.intraName === userData.intraName))
 		});
 		if (IN_QUEUE !== undefined) {
 			if (LOBBY_LOGGING)
-				console.log(`${USER_DATA.intraName} is already in ${IN_QUEUE} queue.`);
+				console.log(`${userData.intraName} is already in ${IN_QUEUE} queue.`);
 			client.emit('gameResponse', new GameResponseDTO('error', 'already in queue'));
 			return;
 		}
 
 		// Puts player in the queue
 		if (LOBBY_LOGGING)
-			console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
-		let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
+			console.log(`${userData.intraName} joins ${clientQueue} queue.`);
+		let player = new Player(userData.intraName, client.handshake.headers.authorization, client);
 		this.queues[clientQueue].push(player);
 		client.emit('gameResponse', new GameResponseDTO('success', `joined queue ${clientQueue}`));
 		
@@ -148,22 +154,25 @@ export class GameService {
 	}
 
 	async leaveQueue(client: Socket) {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-			if (USER_DATA.error !== undefined)
-				return;
+		let userData: any;
+		try {
+			userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		} catch {
+			return;
+		}
 
 		Object.keys(this.queues).forEach(queueType => {
-			if (this.queues[queueType].find(e => e.intraName === USER_DATA.intraName)) {
-				this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== USER_DATA.intraName });
+			if (this.queues[queueType].find(e => e.intraName === userData.intraName)) {
+				this.queues[queueType] = this.queues[queueType].filter(function(e) { return e.intraName !== userData.intraName });
 				client.emit('gameResponse', new GameResponseDTO('success', `left queue ${queueType}`));
 				if (LOBBY_LOGGING)
-					console.log(`${USER_DATA.intraName} left ${queueType} queue.`);
+					console.log(`${userData.intraName} left ${queueType} queue.`);
 			}
 		})
 	}
 
 	async joinGame(player1: Player, player2: Player, gameType: string, server: Server): Promise<string>{
-		let room;
+		let room: GameRoom;
 		if (gameType === "boring") {
 			const ROOM_SETTING = new GameSetting(100,100,GameMode.BORING);
 			room = new GameRoom(player1, player2, gameType, ROOM_SETTING, this.matchService, this.userService);
@@ -190,10 +199,13 @@ export class GameService {
 		await ROOM.run(server);
 	}
 
-	async playerUpdate(client: Socket, roomID: string, value: number){
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA.error !== undefined)
+	async playerUpdate(client: Socket, roomID: string, value: number) {
+		let userData: any;
+		try {
+			userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+		} catch {
 			return;
+		}
 		const ROOM = this.gameRooms.get(roomID);
 		if (ROOM === undefined)
 			return;
