@@ -174,9 +174,9 @@ function Paddle(props: PaddleProps) {
         g.clear();
         g.beginFill(0xFEF8E2);
         g.moveTo(0, 0);
-        g.bezierCurveTo(6, size.h, 6, size.h, 0, size.h * 2);
+        g.bezierCurveTo(10, size.h, 10, size.h, 0, size.h * 2);
         g.lineTo(size.w * 2, size.h * 2);
-        g.bezierCurveTo(size.w * 2 - 6, size.h, size.w * 2 - 6, size.h, size.w * 2, 0);
+        g.bezierCurveTo(size.w * 2 - 10, size.h, size.w * 2 - 10, size.h, size.w * 2, 0);
         g.closePath();
         g.endFill();
         break;
