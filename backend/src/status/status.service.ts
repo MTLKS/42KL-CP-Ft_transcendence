@@ -11,23 +11,21 @@ export class StatusService {
 
 	// New user connection
 	async userConnect(client: any, server: any): Promise<any> {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		if (USER_DATA === null || USER_DATA.error !== undefined)
-			return;
-		const STATUS = await this.statusRepository.findOne({ where: {intraName: USER_DATA.intraName} });
-		client.join(USER_DATA.intraName);
-		if (STATUS !== null) {
-			STATUS.clientId = client.id;
-			STATUS.status = "ONLINE";
-			await this.statusRepository.save(STATUS);
-		} else {
-			try {
+		try {
+			const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+			const STATUS = await this.statusRepository.findOne({ where: {intraName: USER_DATA.intraName} });
+			client.join(USER_DATA.intraName);
+			if (STATUS !== null) {
+				STATUS.clientId = client.id;
+				STATUS.status = "ONLINE";
+				await this.statusRepository.save(STATUS);
+			} else {
 				await this.statusRepository.save(new Status(USER_DATA.intraName, client.id, "ONLINE"));
-			} catch {
-				return;
 			}
+			server.to(USER_DATA.intraName).emit('statusRoom', { "intraName": USER_DATA.intraName, "status": "ONLINE" });
+		} catch {
+			return;
 		}
-		server.to(USER_DATA.intraName).emit('statusRoom', { "intraName": USER_DATA.intraName, "status": "ONLINE" });
 	}
 	
 	// User disconnection
