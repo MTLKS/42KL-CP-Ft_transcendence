@@ -378,6 +378,8 @@ export class GameData {
     this.globalSpeedFactor = 1;
     this.globalScaleFactor = 1;
     this.gameEntities = [];
+    this.player1Score = 0;
+    this.player2Score = 0;
   }
 
   set setSetScale(setScale: (scale: number) => void) {
