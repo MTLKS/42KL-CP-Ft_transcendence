@@ -8,19 +8,27 @@ import { getAllPublicChannels } from '../../../../api/chatAPIs';
 import { ChatroomData } from '../../../../model/ChatRoomData';
 import { FaEye, FaFlushed, FaHandPaper, FaSadCry, FaTimes } from 'react-icons/fa';
 
-const CHANNEL_FETCH_LIMIT = 10;
+const CHANNEL_FETCH_LIMIT = 5;
+
+enum FetchChannelType {
+  ALL,
+  FILTERED,
+  FILTERED_SCROLL
+}
 
 function ChannelList() {
 
   const { setChatBody } = useContext(ChatContext);
   const [filterKeyword, setFilterKeyword] = useState("");
   const [channelComponents, setChannelComponents] = useState<JSX.Element[]>([]);
+  const [filteredChannelComponents, setFilteredChannelComponents] = useState<JSX.Element[]>([]);
   const [page, setPage] = useState<number>(1);
-  const [askForPassword, setAskForPassword] = useState<boolean>(false);
-  const [password, setPassword] = useState<string>("");
+  const [filteredPage, setFilteredPage] = useState<number>(1);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
+  const [canBeFetchedFiltered, setCanBeFetchedFiltered] = useState<boolean>(true);
   const scrollableDivRef = useRef<HTMLDivElement>(null);
+  const [listFiltered, setListFiltered] = useState<boolean>(false); 
 
   useEffect(() => {
     getPublicChannels();
@@ -34,25 +42,36 @@ function ChannelList() {
   }, []);
 
   useEffect(() => {
-    if (isAtBottom) getPublicChannels();
+    let shouldListFiltered = false;
+    if (filterKeyword === "") {
+      shouldListFiltered = false;
+    } else {
+      setFilteredChannelComponents([]);
+      setCanBeFetchedFiltered(true);
+      setFilteredPage(1);
+      shouldListFiltered = true;
+    }
+    getPublicChannels((shouldListFiltered ? FetchChannelType.FILTERED : FetchChannelType.ALL), 1);
+    setListFiltered(shouldListFiltered);
+  }, [filterKeyword]);
+
+  useEffect(() => {
+    if (isAtBottom) {
+      getPublicChannels((listFiltered ? FetchChannelType.FILTERED_SCROLL : FetchChannelType.ALL), filteredPage);
+    }
   }, [isAtBottom]);
 
   return (
     <div className='flex flex-col flex-1 h-0 border-box text-highlight'>
       <ChatNavbar title="channel list" backAction={() => setChatBody(<ChatroomList />)} />
       <div className='relative w-full h-full px-10 overflow-y-scroll scrollbar-hide' ref={scrollableDivRef}>
-        { 
-          channelComponents.length > 0
-          ? <>
-              <div className='sticky top-0 z-10 bg-dimshadow'>
-                <ChatTableTitle title={`channels (${channelComponents.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
-              </div>
-              <div className='w-full h-full -z-10'>
-                {channelComponents}
-              </div>
-            </>
-          : emptyChannelList()
-        }
+        <div className='sticky top-0 z-10 bg-dimshadow'>
+          <ChatTableTitle title={`channels`} searchable={true} setFilterKeyword={setFilterKeyword} />
+        </div>
+        <div className='w-full h-full'>
+          {listFiltered ? filteredChannelComponents : channelComponents}
+          {(listFiltered ? filteredChannelComponents : channelComponents).length === 0 && emptyChannelList()}
+        </div>
       </div>
     </div>
   )
@@ -69,25 +88,40 @@ function ChannelList() {
   function emptyChannelList() {
     return (
       <div className='absolute flex flex-col items-center -translate-x-1/2 gap-y-2 w-fit -translate-y-1/3 top-1/3 left-1/2'>
-        <span className='w-full text-center'>There's no channel for you to join right now...</span>
+        {
+          filterKeyword !== ""
+            ? <span className='w-full text-center'>Hmm... Maybe try another keyword?</span>
+            : <span className='w-full text-center'>There's no channel for you to join right now...</span>
+        }
         <FaSadCry className='text-xl'/>
       </div>
     )
   }
 
-  async function getPublicChannels() {
-
-    if (!canBeFetched) return;
-
-    const channels = (await getAllPublicChannels(CHANNEL_FETCH_LIMIT, page)).data as ChatroomData[];
+  async function getPublicChannels(channelType: FetchChannelType = FetchChannelType.ALL, pageNumber: number = 1) {
+    
+    if ((channelType === FetchChannelType.ALL && !canBeFetched) || (channelType === FetchChannelType.FILTERED_SCROLL && !canBeFetchedFiltered)) return;
+    
+    const channels = (await getAllPublicChannels(CHANNEL_FETCH_LIMIT, (channelType === FetchChannelType.ALL ? page : pageNumber), filterKeyword)).data as ChatroomData[];
     if (channels.length < CHANNEL_FETCH_LIMIT) {
-      setCanBeFetched(false);
+      (channelType === FetchChannelType.ALL && setCanBeFetched(false));
+      (channelType === FetchChannelType.FILTERED_SCROLL && setCanBeFetchedFiltered(false));
     }
-    const newChannelComponents = channels.map((channel) => {
+
+    const newChannelComponents: JSX.Element[] = channels.map((channel) => {
       return <Channel key={channel.channelId} channelInfo={channel} />
     });
-    setChannelComponents([...channelComponents, ...newChannelComponents]);
-    setPage(page + 1);
+
+    if (channelType === FetchChannelType.ALL) {
+      setPage(page + 1);
+      setChannelComponents([...channelComponents, ...newChannelComponents]);
+    } else {
+      setFilteredPage(pageNumber + 1);
+      if (pageNumber === 1)
+        setFilteredChannelComponents(newChannelComponents);
+      else
+        setFilteredChannelComponents([...filteredChannelComponents, ...newChannelComponents]);
+    }
   }
 }
 

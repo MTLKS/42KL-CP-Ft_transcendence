@@ -8,6 +8,9 @@ import UserContext from '../../../../contexts/UserContext';
 import { UserData } from '../../../../model/UserData';
 import Profile from '../../../Profile/Profile';
 import { inviteMemberToChannel } from '../../../../api/chatAPIs';
+import { ErrorData } from '../../../../model/ErrorData';
+import { ChatContext } from '../../../../contexts/ChatContext';
+import ChatroomList from '../Chatroom/ChatroomList';
 
 interface ChannelProps {
   channelInfo: ChatroomData;
@@ -19,9 +22,12 @@ function Channel(props: ChannelProps) {
   const { channelName, owner, memberCount, password } = channelInfo;
   const { myProfile } = useContext(UserContext);
   const { friends } = useContext(FriendsContext);
+  const { setChatBody } = useContext(ChatContext);
   const [joinPassword, setJoinPassword] = useState<string>('');
   const [askForPassword, setAskForPassword] = useState<boolean>(false);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
+  const [hasErrorJoining, setHasErrorJoining] = useState<boolean>(false);
+  const [joinChannelErrorMsg, setJoinChannelErrorMsg] = useState<string>('');
 
   return (
     <>
@@ -51,6 +57,7 @@ function Channel(props: ChannelProps) {
   )
 
   function askForPasswordForm() {
+
     return (
       <div className='absolute z-20 flex flex-col items-center justify-center w-full h-full transition-all duration-100 -translate-x-1/2 bg-dimshadow/70 gap-y-2 -translate-y-1/3 top-1/3 left-1/2'>
         <div className='w-[70%] h-fit bg-dimshadow border-2 border-highlight rounded p-3 flex flex-col gap-y-3'>
@@ -59,6 +66,7 @@ function Channel(props: ChannelProps) {
             <img src="../../../../../assets/images/megamind.png" className='w-[60%] select-none' alt="no password?" />
             <p className='absolute w-full font-extrabold text-center uppercase top-1'>No password?</p>
           </div>
+          {hasErrorJoining && <p className='text-xs text-center bg-accRed px-[1ch] mx-auto w-fit'>{joinChannelErrorMsg}</p>}
           <div className='flex flex-col items-center w-[60%] mx-auto gap-y-2'>
             <div className='flex flex-row w-full'>
               <input id="channel-password" type="password" placeholder='Password' className='flex-1 p-1 text-center border-2 border-r-0 rounded-l outline-none border-highlight placeholder:text-center placeholder:text-highlight/50 bg-dimshadow' value={joinPassword} onChange={handlePasswordOnChange} />
@@ -98,6 +106,7 @@ function Channel(props: ChannelProps) {
   }
 
   async function sendJoinRequest(password: string | null) {
+    
     const joinRequest: InviteMemberData = {
       channelId: channelInfo.channelId,
       intraName: myProfile.intraName,
@@ -106,8 +115,23 @@ function Channel(props: ChannelProps) {
       isMuted: false,
       password: password
     }
-    const joinRequestResponse = await inviteMemberToChannel(joinRequest);
-    console.log(joinRequestResponse);
+
+    try {
+      const joinRequestResponse = await inviteMemberToChannel(joinRequest);
+      if (joinRequestResponse.status === 201) {
+        setChatBody(<ChatroomList />);
+      }
+    } catch (err: any) {
+      const errorMessage = err.response.data as ErrorData;
+      if (errorMessage) {
+        setHasErrorJoining(true);
+        if (errorMessage.error === "Invalid password - password does not match") {
+          setJoinChannelErrorMsg("Wrong password!");
+        } else if (errorMessage.error === "Invalid channelId - channel is not found") {
+          setJoinChannelErrorMsg("Channel not found :( Refresh and try again!");
+        }
+      }
+    }
   }
 
   async function joinChannelWithPassword() {

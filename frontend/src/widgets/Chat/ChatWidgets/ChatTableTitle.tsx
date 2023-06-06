@@ -1,7 +1,6 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import ChatSearchBar from './ChatSearchBar';
-import { NewChannelContext } from '../../../contexts/ChatContext';
-import { FaUserPlus } from 'react-icons/fa';
+
 
 interface ChatTableTitleProps {
   title?: string;
@@ -11,7 +10,6 @@ interface ChatTableTitleProps {
 
 function ChatTableTitle(props: ChatTableTitleProps) {
 
-  const { state } = useContext(NewChannelContext);
   const { title, searchable, setFilterKeyword } = props;
 
   return (
