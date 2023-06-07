@@ -146,7 +146,6 @@ function ChatroomContent(props: ChatroomContentProps) {
   }
 
   function pingServerToUpdateLastRead() {
-    console.log(chatroomData.channelId);
     chatSocket.sendMessages("read", { channelId: chatroomData.channelId });
   }
 

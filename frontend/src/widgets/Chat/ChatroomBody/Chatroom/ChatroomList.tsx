@@ -88,7 +88,6 @@ function ChatroomList() {
       })
     }
     return filteredChatrooms.map(chatroom => {
-      console.log(chatroom);
       return <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />
     });
   }

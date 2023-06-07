@@ -47,7 +47,6 @@ function ChatMemberActions(props: { userData: UserData }) {
       setCurrentStatus('ban');
       setBgColor('bg-accRed');
     } else if (memberInfo.willBeKicked) {
-      console.log("will be kicked");
       setCurrentStatus('kick');
       setBgColor('bg-accBriYellow');
     } else {
