@@ -230,7 +230,7 @@ export class GameService {
     this.queues[clientQueue].push(player);
 
     //TESTING
-    this.joinLobby(player, player, clientQueue);
+    // this.joinLobby(player, player, clientQueue);
   }
 
   async leaveQueue(client: Socket) {
@@ -332,8 +332,9 @@ export class GameService {
         gameLobby.player1PowerUp = powerUp;
 
         //TESTING
-        gameLobby.player2Ready = ready;
-        gameLobby.player2PowerUp = powerUp;
+        // gameLobby.player2Ready = ready;
+        // gameLobby.player2PowerUp = powerUp;
+        
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       } else {
