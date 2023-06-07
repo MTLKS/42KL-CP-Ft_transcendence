@@ -54,7 +54,6 @@ const availableCommands: CommandOptionData[] = [
     ]
   }),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),

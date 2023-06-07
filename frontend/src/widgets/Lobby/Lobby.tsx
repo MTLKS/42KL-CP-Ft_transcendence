@@ -8,6 +8,10 @@ import speedGIF from '../../../assets/GIFS/SpeedPaddle.gif'
 import speedPNG from '../../../assets/GIFS/SpeedPaddle.png'
 import spinGIF from '../../../assets/GIFS/SpinPaddle.gif'
 import spinPNG from '../../../assets/GIFS/SpinPaddle.png'
+import longGIF from '../../../assets/GIFS/LongPaddle.gif'
+import longPNG from '../../../assets/GIFS/LongPaddle.png'
+import magnetPNG from '../../../assets/GIFS/MagnetPaddle.png'
+import magnetGIF from '../../../assets/GIFS/MagnetPaddle.gif'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
 import { PaddleType } from '../../game/gameData'
@@ -66,8 +70,8 @@ function Lobby() {
           </div>
           <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
             <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={spinGIF} img={spinPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={spinGIF} img={spinPNG} title='Ngeeeaat' content='Longer paddle.' />
+            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={magnetGIF} img={magnetPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={longGIF} img={longPNG} title='Ngeeeaat' content='Longer paddle.' />
             <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
           </div>
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
@@ -291,7 +295,7 @@ function LobbyButton(props: LobbyButtonProps) {
       <p className={`uppercase font-extrabold text-lg ${text} ${active && "group-hover:text-dimshadow"} text-center`} style={{ fontSize: "25px" }}>{title}</p>
       <div ref={hoverRef} className={`z-10 pointer-events-none font-jbmono rounded-lg border-highlight border-4 text-start bg-dimshadow absolute w-[400px] h-[228px] transition-opacity ease-in duration-200 ${hover ? " opacity-100" : " opacity-0"} `}>
         {imgLoaded ? null : <div className='w-full h-full flex justify-center rounded-[4px] items-center animate-pulse bg-highlight/50' />}
-        <img src={standardGIF} height={200} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
+        <img src={title === 'boring' ? standardGIF : title === 'standard' ? standardGIF : standardGIF} height={200} width={400} className={` bg-clip-content rounded-[4px] ${imgLoaded ? "" : "hidden"}`} onLoad={() => imgOnLoad()} />
       </div>
     </button>
   )
