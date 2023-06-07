@@ -40,7 +40,7 @@ function ChatroomHeader(props: ChatroomHeaderProps) {
       <ChatNavbar backAction={closeChatroom} nextComponent={chatroomData.isRoom && viewMemberListButton()}>
         <div className='z-20 w-3/5 px-4 py-2 mx-auto transition-all duration-150 border-2 cursor-pointer text-dimshadow bg-highlight border-highlight group hover:bg-dimshadow hover:text-highlight' onClick={checkChannelInfo}>
           <div className='flex flex-row items-center gap-3 w-fit mx-auto max-w-[90%]'>
-            <p className='text-xl font-extrabold truncate w-fit'>{chatroomData.channelName}</p>
+            <p className='text-xl font-extrabold truncate w-fit'>{chatroomData.isRoom ? chatroomData.channelName : chatroomData.owner?.userName}</p>
             <ChatroomIcon isRoom={chatroomData.isRoom} isPrivate={chatroomData.isPrivate} />
           </div>
         </div>
