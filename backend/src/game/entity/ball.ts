@@ -142,12 +142,11 @@ export class Ball extends DynamicRect{
 
 			let velX = dirX * this.velocityMagnitude;
 			let velY = dirY * this.velocityMagnitude;
-			this.initialSpeedX = velX;
-			this.initialSpeedY = velY;
+			this.initialSpeedX = Math.abs(velX);
+			this.initialSpeedY = Math.abs(velY);
 			this.attracted = false;
 			this.velX = velX;
 			this.velY = velY;
-			console.log(this.velX, this.velY)
 		}
 	}
 }
