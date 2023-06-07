@@ -30,18 +30,17 @@ export class StatusService {
 	
 	// User disconnection
 	async userDisconnect(client: any, server: any): Promise<any> {
-		let userData: any;
 		try {
-			userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+			const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+			const STATUS = await this.statusRepository.findOne({ where: {clientId: client.id} });
+			if (STATUS === null)
+				return server.emit('statusRoom', new ErrorDTO(false, "Invalid client id - Client ID not found"));
+			server.to(USER_DATA.intraName).emit('statusRoom', { "intraName": STATUS.intraName, "status": "OFFLINE" });
+			STATUS.status = "OFFLINE";
+			await this.statusRepository.save(STATUS);
 		} catch {
 			return;
 		}
-		const STATUS = await this.statusRepository.findOne({ where: {clientId: client.id} });
-		if (STATUS === null)
-			return server.emit('statusRoom', new ErrorDTO(false, "Invalid client id - Client ID not found"));
-		server.to(userData.intraName).emit('statusRoom', { "intraName": STATUS.intraName, "status": "OFFLINE" });
-		STATUS.status = "OFFLINE";
-		await this.statusRepository.save(STATUS);
 	}
 
 	// User status change

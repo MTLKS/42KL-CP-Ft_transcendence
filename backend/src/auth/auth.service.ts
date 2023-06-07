@@ -33,7 +33,11 @@ export class AuthService {
 			const PATH = 'avatar/' + intraName;
 			const ROUTE = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/";
 			const response = await axios.get(url, { responseType: 'stream' });
-			response.data.pipe(fs.createWriteStream(PATH));
+			await new Promise((resolve, reject) => {
+				response.data.pipe(fs.createWriteStream(PATH))
+					.on('finish', resolve)
+					.on('error', reject);
+			});
 			return ROUTE + PATH;
 		}
 

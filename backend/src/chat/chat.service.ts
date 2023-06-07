@@ -17,11 +17,15 @@ export class ChatService {
 
 	// Used to connect to own channel
 	async userConnect(client: any): Promise<any> {
-		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-		let dmRoom = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false } });
-		if (dmRoom === null)
-			dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, false, 1));
-		client.join(dmRoom.channelId);
+		try {
+			const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+			let dmRoom = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false } });
+			if (dmRoom === null)
+				dmRoom = await this.channelRepository.save(new Channel(USER_DATA, USER_DATA.intraName, true, null, false, false, 1));
+			client.join(dmRoom.channelId);
+		} catch {
+			return;
+		}
 	}
 
 	// Used to send message to a channel
@@ -70,7 +74,7 @@ export class ChatService {
 	async read(client: any, server: any, channelId: number): Promise<any> {
 		const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
-		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId, isRoom: false }, relations: ['owner'] });
+		const CHANNEL = await this.channelRepository.findOne({ where: { channelId: channelId }, relations: ['owner'] });
 		if (CHANNEL === null)
 			return server.to(MY_CHANNEL.channelId).emit("read", new ErrorDTO(false, "Invalid channelId - channel is not found"));
 		
@@ -371,7 +375,8 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO(true, "Invalid intraName - user is not a member of this channel");
-		CHANNEL.memberCount -= 1;
+		if (MEMBER.isBanned !== true)
+			CHANNEL.memberCount -= 1;
 		await this.channelRepository.save(CHANNEL);
 		console.log(MEMBER);
 		await this.memberRepository.delete(MEMBER);

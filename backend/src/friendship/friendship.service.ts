@@ -15,7 +15,11 @@ export class FriendshipService {
 
 	// User connect to friendship socket
 	async userConnect(client: any): Promise<any> {
-		client.join((await this.userService.getMyUserData(client.handshake.headers.authorization)).intraName);
+		try {
+			client.join((await this.userService.getMyUserData(client.handshake.headers.authorization)).intraName);
+		} catch {
+			return;
+		}
 	}
 
 	// User send friend request to friendship room
