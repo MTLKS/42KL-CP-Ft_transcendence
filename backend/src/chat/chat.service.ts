@@ -120,7 +120,7 @@ export class ChatService {
 			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
 			if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
 				continue;
-			server.to(MEMBER_CHANNEL.channelId).emit("typing", { senderChannel: MY_CHANNEL.channelId });
+			server.to(MEMBER_CHANNEL.channelId).emit("typing", { senderChannel: MY_CHANNEL });
 		}
 	}
 
