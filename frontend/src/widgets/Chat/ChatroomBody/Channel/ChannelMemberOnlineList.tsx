@@ -64,13 +64,20 @@ function ChannelMemberOnlineProfile(props: ChannelMemberOnlineProfileProps) {
 function ChannelMemberOnlineList() {
 
   const { state } = useContext(NewChannelContext);
+  const members = useMemo(() => {
+    return state.members.sort((a, b) => {
+      if (a.memberInfo.userName < b.memberInfo.userName) return -1;
+      if (a.memberInfo.userName > b.memberInfo.userName) return 1;
+      return 0;
+    });
+  }, [state.members]);
 
   return (
     <div className='absolute z-30 flex flex-col items-end w-full h-full transition-all duration-150 bg-dimshadow/60'>
       <div className='w-[60%] h-[75%] text-highlight bg-dimshadow my-auto border-4 border-highlight border-r-0 flex flex-col p-5 gap-y-2'>
         <p className='text-sm font-extrabold'>MEMBERS {`(${state.members.length})`}</p>
         <div className="box-border flex flex-col w-full h-full overflow-y-scroll gap-y-2 scrollbar-hide">
-          {state.members.map((member) => {
+          {members.map((member) => {
             return (<ChannelMemberOnlineProfile memberInfo={member.memberInfo} />);
           })}
         </div>
