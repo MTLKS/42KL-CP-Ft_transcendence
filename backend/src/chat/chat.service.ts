@@ -372,7 +372,8 @@ export class ChatService {
 		const MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: intraName }, channel: { channelId: channelId } }, relations: ['user', 'channel', 'channel.owner'] });
 		if (MEMBER === null)
 			return new ErrorDTO(true, "Invalid intraName - user is not a member of this channel");
-		CHANNEL.memberCount -= 1;
+		if (MEMBER.isBanned !== true)
+			CHANNEL.memberCount -= 1;
 		await this.channelRepository.save(CHANNEL);
 		await this.memberRepository.delete(MEMBER);
 		return this.userService.hideData(MEMBER);
