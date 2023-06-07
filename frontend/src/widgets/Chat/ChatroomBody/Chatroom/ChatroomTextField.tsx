@@ -11,6 +11,11 @@ interface ChatroomTextFieldProps {
   setIsFirstLoad: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+enum MessageType {
+  MESSAGE,
+  INVITE
+}
+
 function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const { chatroomData, pingServer, setIsFirstLoad } = props;
@@ -101,51 +106,51 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     setMessage(value);
   }
 
-  const sendMessage = () => {
-    if (message === '') return;
-
-      chatSocket.sendMessages("message", {
-        channelId: chatroomData.channelId,
-        message: message,
-      });
-      // append new message to the top of the list (index 0)
-      const newMessage: ChatroomMessageData = {
-        senderChannel: {
-          owner: myProfile,
-          channelName: myProfile.intraName,
-          isPrivate: true,
-          isRoom: false,
-          channelId: myProfile.intraId,
-          password: null
-        },
-        receiverChannel: {
-          owner: chatroomData.owner!,
-          channelName: chatroomData.channelName,
-          isPrivate: chatroomData.isPrivate,
-          isRoom: chatroomData.isRoom,
-          channelId: chatroomData.channelId,
-          password: chatroomData.password,
-        },
+  const sendMessage = (type: MessageType) => {
+    if (message === '' && type === MessageType.MESSAGE) return;
+    
+    chatSocket.sendMessages("message", {
+      channelId: chatroomData.channelId,
+      message: (type === MessageType.MESSAGE) ? message : "/invite",
+    });
+    // append new message to the top of the list (index 0)
+    const newMessage: ChatroomMessageData = {
+      senderChannel: {
+        owner: myProfile,
+        channelName: myProfile.intraName,
+        isPrivate: true,
+        isRoom: false,
+        channelId: myProfile.intraId,
+        password: null
+      },
+      receiverChannel: {
+        owner: chatroomData.owner!,
+        channelName: chatroomData.channelName,
+        isPrivate: chatroomData.isPrivate,
         isRoom: chatroomData.isRoom,
-        message: message,
-        messageId: new Date().getTime(),
-        timeStamp: new Date().toISOString(),
-      };
-      const newMessages = [
-        newMessage,
-        ...messages,
-      ];
-      setMessages(newMessages);
-      setMessage('');
-      setRows(1);
-      setIsFirstLoad(false);
-      pingServer();
+        channelId: chatroomData.channelId,
+        password: chatroomData.password,
+      },
+      isRoom: chatroomData.isRoom,
+      message: (type === MessageType.MESSAGE) ? message : "/invite",
+      messageId: new Date().getTime(),
+      timeStamp: new Date().toISOString(),
+    };
+    const newMessages = [
+      newMessage,
+      ...messages,
+    ];
+    setMessages(newMessages);
+    setMessage('');
+    setRows(1);
+    setIsFirstLoad(false);
+    pingServer();
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      sendMessage(MessageType.MESSAGE);
     }
   }
 
@@ -169,12 +174,12 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           onKeyDown={handleKeyPress}
         >
         </textarea>
-        <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={sendMessage}>
+        <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={() => sendMessage(MessageType.MESSAGE)}>
           <FaPaperPlane className='w-full h-full -ml-1 text-3xl text-dimshadow aspect-square' />
         </button>
       </div>
       <div className='w-[20%] h-[60px] px-4 bg-dimshadow'>
-        <button className='bg-highlight w-full h-[60px] rounded-t-md px-3 cursor-pointer'>
+        <button className='bg-highlight w-full h-[60px] rounded-t-md px-3 cursor-pointer' onClick={() => sendMessage(MessageType.INVITE)}>
           <span className='relative w-fit h-fit'>
             <FaGamepad className='w-fit h-full text-[53px] mx-auto text-dimshadow'/>
             <span className='absolute z-20 flex flex-row h-5 rounded-full bg-highlight aspect-square bottom-3 right-1 justify-evenly'>
