@@ -11,8 +11,8 @@ function FriendRequestContent(props: FriendRequestProps) {
   let totalRequest = (props.total > 99 ? 99 : props.total);
 
   return (
-    <div className='w-full h-fit bg-dimshadow flex flex-col items-center mt-5 select-none'>
-      <p className='text-lg text-accCyan font-bold'>({totalRequest}) New Friend Request</p>
+    <div className='flex flex-col items-center w-full mt-5 select-none h-fit bg-dimshadow'>
+      <p className='text-lg font-bold text-accCyan'>({totalRequest}) New Friend Request</p>
       <p className='text-sm text-highlight/50 animate-pulse'>Please check your friendlist!</p>
     </div>
   )

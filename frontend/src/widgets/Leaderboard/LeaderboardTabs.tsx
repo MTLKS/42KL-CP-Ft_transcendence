@@ -12,7 +12,7 @@ function LeaderboardTabs(props: LeaderboardTabsProps) {
   const [isActive, setIsActive] = useState(true);
 
   return (
-    <div className='flex flex-row justify-end uppercase font-bold text-sm text-highlight'>
+    <div className='flex flex-row justify-end text-sm font-bold uppercase text-highlight'>
       <button type='button' className='p-2 active:bg-highlight active:text-dimshadow hover:bg-highlight hover:text-dimshadow'>HALL OF FAME</button>
       <button type='button' className='p-2 active:bg-highlight active:text-dimshadow hover:bg-highlight hover:text-dimshadow'>HALL OF SHAME</button>
     </div>

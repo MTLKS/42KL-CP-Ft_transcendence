@@ -17,11 +17,19 @@ export function getMemberData(channelId: number): Promise<AxiosResponse> {
   return api.get(`${NAMESPACE}/member/${channelId}`);
 }
 
+export function getAllPublicChannels(perPage: number, page: number, startWith: string): Promise<AxiosResponse> {
+  console.log("Params:", {perPage: perPage, page: page, startWith: startWith});
+  return api.get(`${NAMESPACE}/channel/public/?perPage=${perPage}&page=${page}&startWith=${startWith}`);
+}
+
 export function createChannel(createChannelData: CreateChannelData) {
   return api.post(`${CHANNEL_NAMESPACE}`, createChannelData);
 }
 
-export function updateChannel(updateChannelData: UpdateChannelData) {
+export function updateChannel(updateChannelData: UpdateChannelData, tfaCode: string) {
+  if (tfaCode !== "") {
+    api.updateToken("otp", tfaCode);
+  }
   return api.patch(`${CHANNEL_NAMESPACE}`, updateChannelData);
 }
 
@@ -31,4 +39,19 @@ export function inviteMemberToChannel(inviteMemberData: InviteMemberData) {
 
 export function updateMemberRole(updateMemberData: UpdateMemberData) {
   return api.patch(`${CHANNEL_NAMESPACE}/member`, updateMemberData);
+}
+
+export function getChannelMemberData(channelId: number): Promise<AxiosResponse> {
+  return api.get(`${NAMESPACE}/channel/member/${channelId}`);
+}
+
+export function deleteChannel(channelId: number, tfaCode: string) {
+  if (tfaCode !== "") {
+    api.updateToken("otp", tfaCode);
+  }
+  return api.delete(`${CHANNEL_NAMESPACE}/${channelId}`);
+}
+
+export function kickMember(channelId: number, intraName: string) {
+  return api.delete(`${CHANNEL_NAMESPACE}/member/${channelId}/${intraName}`)
 }

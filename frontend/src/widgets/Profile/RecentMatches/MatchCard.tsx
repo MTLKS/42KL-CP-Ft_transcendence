@@ -10,9 +10,9 @@ interface MatchCardProps {
 
 function MatchCard(props: MatchCardProps) {
   return (
-    <div className='flex flex-row justify-between w-full h-fit py-2 px-4 border-2 border-highlight border-dashed text-highlight font-extrabold text-lg uppercase'>
+    <div className='flex flex-row justify-between w-full px-4 py-2 text-lg font-extrabold uppercase border-2 border-dashed h-fit border-highlight text-highlight'>
       <p className='w-[30%] text-center truncate font-bold'>{props.ply1}</p>
-      <p className='text-center text-2xl flex-1'>{props.ply1score}:{props.ply2score}</p>
+      <p className='flex-1 text-2xl text-center'>{props.ply1score}:{props.ply2score}</p>
       <p className='w-[30%] text-center truncate font-bold'>{props.ply2}</p>
     </div>
   )

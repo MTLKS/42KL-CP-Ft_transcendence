@@ -45,11 +45,11 @@ function RecentMatches(props: RecentMatchesProps) {
   }, [expanded]);
 
   return (
-    <div className='flex flex-col overflow-hidden border-box bg-dimshadow mb-1 w-full transition-all duration-500 ease-in-out gap-2'
+    <div className='flex flex-col w-full mb-1 overflow-hidden border-box bg-dimshadow transition-all duration-500 ease-in-out gap-2'
       style={{ height: height }}
     >
       <div className='w-[80%] mx-auto'>
-        <p className='uppercase text-sm text-highlight font-normal mx-auto mt-8 mb-2'>recent matches</p>
+        <p className='mx-auto mt-8 mb-2 text-sm font-normal uppercase text-highlight'>recent matches</p>
         <div className='flex flex-col mx-auto gap-y-4'>
           {matchCards}
         </div>

@@ -44,7 +44,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   useEffect(() => {
     if (isTyping || message.length === 0) return ;
-
+    
     if (!isTyping) setIsTyping(true);
     chatSocket.sendMessages("typing", { channelId: chatroomData.channelId });
   }, [message]);
@@ -157,7 +157,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           </div>
         }
         <textarea
-          className='resize-none text-xl outline-none flex-1 border-highlight border-4 border-l-0 border-b-0 bg-dimshadow text-highlight p-3 scrollbar-hide whitespace-pre-line cursor-text selection:bg-highlight selection:text-dimshadow'
+          className='flex-1 p-3 text-xl whitespace-pre-line border-4 border-b-0 border-l-0 outline-none resize-none border-highlight bg-dimshadow text-highlight scrollbar-hide cursor-text selection:bg-highlight selection:text-dimshadow'
           rows={rows}
           value={message}
           onBlur={() => { setRows(1); setIsFocusing(false); }}
@@ -167,15 +167,15 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
         >
         </textarea>
         <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={sendMessage}>
-          <FaPaperPlane className='text-dimshadow w-full h-full aspect-square text-3xl -ml-1' />
+          <FaPaperPlane className='w-full h-full -ml-1 text-3xl text-dimshadow aspect-square' />
         </button>
       </div>
       <div className='w-[20%] h-[60px] px-4 bg-dimshadow'>
         <button className='bg-highlight w-full h-[60px] rounded-t-md px-3 cursor-pointer'>
-          <span className='w-fit h-fit relative'>
+          <span className='relative w-fit h-fit'>
             <FaGamepad className='w-fit h-full text-[53px] mx-auto text-dimshadow'/>
-            <span className='rounded-full bg-highlight aspect-square absolute bottom-3 right-1 h-5 z-20 flex flex-row justify-evenly'>
-              <FaPlusCircle className='h-full w-fullaspect-square text-accGreen rounded-full'/>
+            <span className='absolute z-20 flex flex-row h-5 rounded-full bg-highlight aspect-square bottom-3 right-1 justify-evenly'>
+              <FaPlusCircle className='h-full rounded-full w-fullaspect-square text-accGreen'/>
             </span>
           </span>
         </button>

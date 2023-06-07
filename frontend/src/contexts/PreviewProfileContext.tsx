@@ -10,6 +10,7 @@ let myProfile: UserData = {
 	tfaSecret: null,
 	userName: "JOHNDOE",
 	winning: false,
+	email: "",
 }
 
 interface ProfileContextProps {
@@ -18,7 +19,7 @@ interface ProfileContextProps {
 	setTopWidgetFunction: (func: any) => void;
 }
 
-const PreviewProfileContext = createContext<ProfileContextProps>({
+export const PreviewProfileContext = createContext<ProfileContextProps>({
 	currentPreviewProfile: myProfile,
 	setPreviewProfileFunction: (func) => { },
 	setTopWidgetFunction: (func) => { },

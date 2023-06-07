@@ -10,8 +10,8 @@ import { TFAGuard } from "src/guard/TFAGuard";
 @ApiTags("Chat")
 @Controller("chat")
 export class ChatController {
-	constructor (private readonly chatService: ChatService) {}
-	
+	constructor(private readonly chatService: ChatService) { }
+
 	@Get('member/:channelId')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid channelId - member is not found in that channelId"])
@@ -23,7 +23,7 @@ export class ChatController {
 	@Get('channel')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader()
-	@ApiOkResponse({ description: "Returns all the DM channels of the user", type: [ChannelDTO]})
+	@ApiOkResponse({ description: "Returns all the DM channels of the user", type: [ChannelDTO] })
 	getAllChannel(@Headers('Authorization') accessToken: string, @Query() query: GetChannelQueryDTO): Promise<[ChannelDTO]> {
 		return this.chatService.getAllChannel(accessToken, query.startWith, Number(query.perPage), Number(query.page));
 	}
@@ -55,7 +55,7 @@ export class ChatController {
 	@Post('room')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid password - password must be between 1-16 characters", "Invalid channelName - channelName must be between 1-16 characters"])
-	@ApiCreatedResponse({ description: "Returns the newly created room", type: ChannelDTO})
+	@ApiCreatedResponse({ description: "Returns the newly created room", type: ChannelDTO })
 	createRoom(@Headers('Authorization') accessToken: string, @Body() body: PostRoomBodyDTO): any {
 		return this.chatService.createRoom(accessToken, body.channelName, body.isPrivate, body.password);
 	}
@@ -64,7 +64,7 @@ export class ChatController {
 	@UseGuards(TFAGuard)
 	@ApiHeader({ name: 'OTP', description: 'OTP 6 digit code (eg. 123456)', required: true })
 	@ApiCommonHeader(["Invalid body - body must include channelName(string), isPrivate(boolean) and password(null | string)", "Invalid body - password must be null if isPrivate is true", "Invalid channelName - channelName must be between 1-16 characters", "Invalid channelId - channel is not found", "Invalid password - password does not match", "Invalid password - password must be between 1-16 characters", "Invalid channelId - requires owner privileges"])
-	@ApiOkResponse({ description: "Returns the updated room (requires owner privileges, TFA if enabled)", type: ChannelDTO})
+	@ApiOkResponse({ description: "Returns the updated room (requires owner privileges, TFA if enabled)", type: ChannelDTO })
 	updateRoom(@Headers('Authorization') accessToken: string, @Body() body: PatchRoomBodyDTO): any {
 		return this.chatService.updateRoom(accessToken, body.channelId, body.channelName, body.isPrivate, body.oldPassword, body.newPassword);
 	}
@@ -81,7 +81,7 @@ export class ChatController {
 	@Post('room/member')
 	@UseGuards(AuthGuard)
 	@ApiCommonHeader(["Invalid channelId - channel is not found", "Invalid channelId - requires admin privileges", "Invalid intraName - you are not friends with this user", "Invalid intraName - user is already a member of this channel"])
-	@ApiCreatedResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO})
+	@ApiCreatedResponse({ description: "Returns the newly added member. RULES: 1. Private rooms - you need to be admin to invite 2. Public invite - member options must all be set to false for self-join. 3. Public password - self join require password", type: MemberDTO })
 	addMember(@Headers('Authorization') accessToken: string, @Body() body: PostRoomMemberBodyDTO): any {
 		return this.chatService.addMember(accessToken, body.channelId, body.intraName, body.isAdmin, body.isBanned, body.isMuted, body.password);
 	}

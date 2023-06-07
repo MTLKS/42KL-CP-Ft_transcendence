@@ -8,17 +8,17 @@ interface ErrorPopupProps {
 
 export function CookiePopup() {
   return (
-    <div className='w-fit h-fit rounded-2xl bg-dimshadow text-highlight border-highlight border-4 overflow-hidden'>
+    <div className='overflow-hidden border-4 w-fit h-fit rounded-2xl bg-dimshadow text-highlight border-highlight'>
       <div className='p-8'> 
         <div className='flex flex-row items-center text-3xl'>
-          <p className='highlight relative font-extrabold capitalize z-10'>
+          <p className='relative z-10 font-extrabold capitalize highlight'>
             we uses cookies
           </p>
           <FaTableTennis className='ml-3.5 text-2xl'/>
         </div>
-        <p className='font-normal text-base mt-4'>Accepting cookies is the secret to becoming a ping pong champion. Trust us, we're the experts!</p>
+        <p className='mt-4 text-base font-normal'>Accepting cookies is the secret to becoming a ping pong champion. Trust us, we're the experts!</p>
       </div>
-      <div className='overflow-hidden flex flex-row divide-highlight divide-x-4 border-t-4 border-highlight'>
+      <div className='flex flex-row overflow-hidden border-t-4 divide-highlight divide-x-4 border-highlight'>
         <Button
           title='Nahhh'
           textTransform='uppercase'
@@ -53,13 +53,13 @@ export function ErrorPopup(props: ErrorPopupProps) {
 
   return (
     <div
-      className='w-fit h-fit flex flex-row items-center rounded-l-xl bg-dimshadow border-solid border-2 lg:border-3 border-highlight overflow-hidden transition-transform transform duration-200 ease-in-out'
+      className='flex flex-row items-center overflow-hidden border-2 border-solid w-fit h-fit rounded-l-xl bg-dimshadow lg:border-3 border-highlight transition-transform transform duration-200 ease-in-out'
       style={{ transform: `translateX(${position}%)`}}
     >
       <div className='p-2.5 text-xl lg:text-2xl text-dimshadow bg-highlight'>
         <FaDizzy className='animate-spin' />
       </div>
-      <p className='text-highlight text-sm lg:text-lg text-center flex-grow px-6 w-fit uppercase'>{text}</p>
+      <p className='flex-grow px-6 text-sm text-center uppercase text-highlight lg:text-lg w-fit'>{text}</p>
     </div>
   )
 }

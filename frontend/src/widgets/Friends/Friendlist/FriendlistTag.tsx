@@ -28,7 +28,7 @@ function FriendlistTag(props: FriendlistTagType) {
     <div className='flex flex-row gap-x-[1ch]'>
       <div className={`${style} text-center w-fit uppercase px-[1ch]`}>
         <>
-          <p>{ type.toLowerCase() === "accepted" ? "friend" : type }{total !== undefined ? <span className='text-highlight/50 whitespace-pre'>  {total}</span> : ''}</p>
+          <p>{ type.toLowerCase() === "accepted" ? "friend" : type }{total !== undefined ? <span className='whitespace-pre text-highlight/50'>  {total}</span> : ''}</p>
         </>
       </div>
     </div>

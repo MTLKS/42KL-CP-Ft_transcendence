@@ -113,9 +113,10 @@ export class ChatService {
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO(false, "Invalid channelId - you are not a member of this channel"));
 		}
-		
-		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] });
+		const MEMBERS = CHANNEL.isRoom === true ? await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] }) : await this.memberRepository.find({ where: { channel: { channelId: MY_CHANNEL.channelId } }, relations: ['user', 'channel'] });
 		for (let member of MEMBERS) {
+			if (member.user.intraName === USER_DATA.intraName)
+				continue;
 			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
 			if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
 				continue;
@@ -134,10 +135,10 @@ export class ChatService {
 
 	// Retrives all channel of the user
 	async getAllChannel(accessToken: string, startWith: string, perPage: number = 50, page: number = 1): Promise<[ChannelDTO]> {
-    if (Number.isNaN(perPage) === true)
-      perPage = 50;
-    if (Number.isNaN(page) === true)
-      page = 1;
+		if (Number.isNaN(perPage) === true)
+			perPage = 50;
+		if (Number.isNaN(page) === true)
+			page = 1;
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
 		const MY_MEMBERS = await this.memberRepository.find({ where: { user: { intraName: USER_DATA.intraName } }, relations: ['user', 'channel', 'channel.owner'] });
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
@@ -152,8 +153,8 @@ export class ChatService {
 			member.channel.owner.accessToken = LAST_MESSAGE === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : LAST_MESSAGE.timeStamp;
 			channel.push(member.channel);
 		}
-    channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
-    channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
+		channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
+		channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
 		return this.userService.hideData(channel);
 	}
 
@@ -175,7 +176,7 @@ export class ChatService {
 			}
 		}
 		channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
-    channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
+		channel = channel.length - (page * perPage) < 0 ? channel.slice(0, Math.max(0, perPage + channel.length - (page * perPage))) : channel.slice(channel.length - (page * perPage), channel.length - ((page - 1) * perPage))
 		return this.userService.hideData(channel);
 	}
 
@@ -192,10 +193,10 @@ export class ChatService {
 
 	// Retrives all messages from a channel
 	async getAllChannelMessage(accessToken: string, channelId: number, perPage: number = 100, page: number = 1): Promise<any> {
-    if (Number.isNaN(perPage) === true)
-      perPage = 100;
-    if (Number.isNaN(page) === true)
-      page = 1;
+		if (Number.isNaN(perPage) === true)
+			perPage = 100;
+		if (Number.isNaN(page) === true)
+			page = 1;
 		if (Number.isNaN(channelId) === true)
 			return new ErrorDTO(true, "Invalid body - body must include channelId(number)");
 		
@@ -211,11 +212,11 @@ export class ChatService {
 		if (MY_MEMBER.isBanned === true)
 			return new ErrorDTO(true, "Invalid channelId - you are banned from this channel");
 		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: MY_MEMBER.user.intraName, isRoom: false }, relations: ['owner'] });
-		let messages = CHANNEL.isRoom === false 
-			? await this.messageRepository.find({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: channelId } }, { receiverChannel: { channelId: channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] }) 
+		let messages = CHANNEL.isRoom === false
+			? await this.messageRepository.find({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId }, senderChannel: { channelId: channelId } }, { receiverChannel: { channelId: channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }], relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] })
 			: await this.messageRepository.find({ where: { receiverChannel: { channelId: channelId } }, relations: ['senderChannel', 'receiverChannel', 'senderChannel.owner', 'receiverChannel.owner'] });
 		messages = messages.length - (page * perPage) < 0 ? messages.slice(0, Math.max(0, perPage + messages.length - (page * perPage))) : messages.slice(messages.length - (page * perPage), messages.length - ((page - 1) * perPage))
-		
+
 		const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: channelId } }, relations: ['user', 'channel'] });
 		const BLOCKED_INTRA_NAME = [];
 		for (let member of MEMBERS) {
@@ -223,7 +224,7 @@ export class ChatService {
 			if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
 				BLOCKED_INTRA_NAME.push(member.user.intraName);
 		}
-		for (let message of messages )
+		for (let message of messages)
 			message["hidden"] = BLOCKED_INTRA_NAME.includes(message.senderChannel.owner.intraName)
 		return this.userService.hideData(messages);
 	}
@@ -379,6 +380,7 @@ export class ChatService {
 		if (MEMBER.isBanned !== true)
 			CHANNEL.memberCount -= 1;
 		await this.channelRepository.save(CHANNEL);
+		console.log(MEMBER);
 		await this.memberRepository.delete(MEMBER);
 		return this.userService.hideData(MEMBER);
 	}

@@ -9,12 +9,13 @@ export default {
         accRed: "rgb(var(--accent-red))",
         accCyan: "rgb(var(--accent-cyan))",
         accYellow: "rgb(var(--accent-yellow))",
+        accBriYellow: "rgb(var(--accent-bri-yellow))",
         accBlue: "rgb(var(--accent-blue))",
         accGreen: "rgb(var(--accent-green))",
       },
       fontFamily: {
         jbmono: ["JetBrains Mono", "monospace"],
-        bungee: ["Bungee", "cursive"],
+        bungee: ["Bungee", "monospace"],
       },
       animation: {
         "pulse-short": "pulse 0.3s ease-in-out 1",

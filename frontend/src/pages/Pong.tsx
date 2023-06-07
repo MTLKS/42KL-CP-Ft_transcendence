@@ -50,13 +50,13 @@ function Pong() {
       <div className='relative'
         style={{ width: "100%", height: "100%" }}
       >
-        <div className='absolute opacity-80 bg-highlight rounded-sm'
+        <div className='absolute rounded-sm opacity-80 bg-highlight'
           style={{
             top: `${player1.position}%`, left: "1%", width: "1.3%", height: "30%", transition: "all 0.15s",
             boxShadow: "0 0 20px 0 #fef8e2,0 0 5px 0 #fef8e2"
           }}
         />
-        <div className='absolute opacity-80 bg-highlight rounded-sm'
+        <div className='absolute rounded-sm opacity-80 bg-highlight'
           style={{
             top: `${player2.position}%`, right: "1%", width: "1.3%", height: "30%", transition: "all 0.15s",
             boxShadow: "0 0 20px 0 #fef8e2,0 0 5px 0 #fef8e2"

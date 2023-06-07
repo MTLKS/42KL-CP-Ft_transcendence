@@ -69,9 +69,9 @@ function FriendAction(props: FriendActionProps) {
     <FriendActionContext.Provider value={action}>
       <ActionCardsContext.Provider value={{ actionCards, selectedIndex, setSelectedIndex }}>
         <ActionFunctionsContext.Provider value={{ yesAction: handleYesAction, noAction: handleNoAction, alternativeAction: blockStrangerAction }}>
-          <div className='w-full h-full flex flex-col justify-end overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
+          <div className='flex flex-col justify-end w-full h-full overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
             <input
-              className='w-0 h-0 absolute'
+              className='absolute w-0 h-0'
               onBlur={() => setIsInputFocused(false)}
               onKeyDown={handleKeyDown}
               onChange={handleInput}
@@ -90,13 +90,13 @@ function FriendAction(props: FriendActionProps) {
               }
             </div>
             <div className='flex-col'>
-              <p className='flex-row flex justify-between'>
+              <p className='flex flex-row justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:N</span> No to all</span>
                 {action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span> : <></>}
                 <span></span>
               </p>
-              <p className='flex-row flex justify-between'>
+              <p className='flex flex-row justify-between'>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:y</span> yes to current</span>
                 <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:n</span> no to current</span>
                 {action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span> : <></>}

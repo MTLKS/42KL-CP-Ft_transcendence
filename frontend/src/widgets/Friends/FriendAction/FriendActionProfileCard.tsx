@@ -22,12 +22,12 @@ function FriendActionProfileCard(props: FriendActionProfileCardProps) {
       disabled={friendshipStatus.toLowerCase() === "blocked"}
     >
       <img
-        className="aspect-square h-full object-cover"
+        className="object-cover h-full aspect-square"
         src={friendInfo.avatar}
         alt={friendInfo.userName + "'s avatar"}
       />
       <div className='group-hover:bg-highlight h-full p-3.5'>
-        <p className='text-highlight group-hover:text-dimshadow font-extrabold text-base w-full h-full select-none'>{friendInfo.userName} ({friendInfo.intraName})</p>
+        <p className='w-full h-full text-base font-extrabold select-none text-highlight group-hover:text-dimshadow'>{friendInfo.userName} ({friendInfo.intraName})</p>
       </div>
     </button>
   )

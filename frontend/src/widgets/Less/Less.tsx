@@ -61,13 +61,13 @@ function Less(props: LessProps) {
   return (
     <div className='w-full h-full flex flex-col overflow-hidden text-base uppercase bg-dimshadow px-[2ch] relative' onClick={focusOnInput}>
       <input
-        className='w-0 h-0 absolute'
+        className='absolute w-0 h-0'
         onKeyDown={handleKeyDown}
         onChange={handleInput}
         value={inputValue}
         ref={inputRef}
       />
-      <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
+      <div className='flex flex-col w-full h-full overflow-hidden' ref={divRef}>
         {content}
       </div>
       <div className={`absolute bottom-0 left-0 flex flex-row ${dataLength === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>

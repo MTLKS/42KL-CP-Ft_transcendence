@@ -7,12 +7,14 @@ interface ChatContextType {
   chatSocket: SocketApi,
   chatBody: JSX.Element,
   setChatBody: (newChatBody: JSX.Element) => void,
+  expanded: boolean,
 }
 
 export const ChatContext = createContext<ChatContextType>({
   chatSocket: new SocketApi("/chat"),
   chatBody: <></>,
   setChatBody: (newChatBody: JSX.Element) => { },
+  expanded: false,
 });
 
 interface NewChannelContextType {
@@ -38,6 +40,7 @@ export const ChatroomContentContext = createContext<ChatroomContentContextType>(
     password: null,
     owner: null,
     newMessage: false,
+    memberCount: 0,
   },
 });
 

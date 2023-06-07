@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { UserData } from '../../model/UserData'
 
 interface UserFormNameProps {
@@ -11,12 +11,19 @@ function UserFormName(props: UserFormNameProps) {
 
   const [userName, setUsername] = useState(props.user.userName);
 
+  useEffect(() => {
+    if (userName[0] === '@') {
+      setUsername(userName.substring(1));
+      props.updateName(userName.substring(1));
+    }
+  }, []);
+
   return (
     <div className="flex flex-col gap-2">
-      <p className='font-semibold text-lg lg:text-xl'>
+      <p className='text-lg font-semibold lg:text-xl'>
         Your {props.awesomeSynonym} name
       </p>
-      <p className='font-normal text-sm text-highlight/60'>
+      <p className='text-sm font-normal text-highlight/60'>
         (Alphanumeric, '-', and '_' only)
       </p>
       <input

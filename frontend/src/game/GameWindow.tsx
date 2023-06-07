@@ -29,7 +29,7 @@ function GameWindow() {
     return () => observer.unobserve(currentDiv);
   }, []);
   return (
-    <div ref={ref} className=' absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full aspect-video overflow-hidden rounded-md border-highlight border-4 max-w-7xl' />
+    <div ref={ref} className='absolute w-full overflow-hidden border-4  top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 aspect-video rounded-md border-highlight max-w-7xl' />
   )
 }
 
