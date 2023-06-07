@@ -119,7 +119,7 @@ export class ChatService {
 			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
 			if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
 				continue;
-			server.to(MEMBER_CHANNEL.channelId).emit("typing", { userName: USER_DATA.userName });
+			server.to(MEMBER_CHANNEL.channelId).emit("typing", { senderChannel: MY_CHANNEL.channelId });
 		}
 	}
 
@@ -149,7 +149,7 @@ export class ChatService {
 			const CHANNEL_ID = MEMBERS.map(member => member.channel.channelId);
 			const LAST_MESSAGE = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: MY_CHANNEL.channelId}, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: MY_CHANNEL.channelId } }], order: { timeStamp: "DESC" } });
 			member.channel.newMessage  = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > member.lastRead;
-			member.channel.owner.accessToken = LAST_MESSAGE === null ? member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString() : LAST_MESSAGE.timeStamp;
+			member.channel.owner.accessToken = LAST_MESSAGE === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : LAST_MESSAGE.timeStamp;
 			channel.push(member.channel);
 		}
     channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
