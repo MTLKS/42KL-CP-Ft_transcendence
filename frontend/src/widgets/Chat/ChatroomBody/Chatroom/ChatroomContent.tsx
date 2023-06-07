@@ -151,6 +151,7 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
+      if (newMessage.receiverChannel.channelId !== chatroomData.channelId) return;
       setAllMessages((messages) => appendNewMessage(newMessage, messages));
       playNewMessageSound();
     });
