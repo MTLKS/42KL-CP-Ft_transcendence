@@ -26,7 +26,10 @@ export function createChannel(createChannelData: CreateChannelData) {
   return api.post(`${CHANNEL_NAMESPACE}`, createChannelData);
 }
 
-export function updateChannel(updateChannelData: UpdateChannelData) {
+export function updateChannel(updateChannelData: UpdateChannelData, tfaCode: string) {
+  if (tfaCode !== "") {
+    api.updateToken("otp", tfaCode);
+  }
   return api.patch(`${CHANNEL_NAMESPACE}`, updateChannelData);
 }
 
@@ -42,7 +45,10 @@ export function getChannelMemberData(channelId: number): Promise<AxiosResponse> 
   return api.get(`${NAMESPACE}/channel/member/${channelId}`);
 }
 
-export function deleteChannel(channelId: number) {
+export function deleteChannel(channelId: number, tfaCode: string) {
+  if (tfaCode !== "") {
+    api.updateToken("otp", tfaCode);
+  }
   return api.delete(`${CHANNEL_NAMESPACE}/${channelId}`);
 }
 

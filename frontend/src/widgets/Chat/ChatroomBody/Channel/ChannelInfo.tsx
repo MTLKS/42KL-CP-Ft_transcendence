@@ -45,7 +45,7 @@ function ChannelInfo(props: ChannelInfoProps) {
     dispatch({ type: 'IS_OWNER', userInfo: myProfile });
     dispatch({ type: 'IS_ADMIN', userInfo: myProfile });
   }, []);
-
+  
   useEffect(() => {
     if (errorResponses.length > 0) {
       const errorPopups = new Array<JSX.Element>();
@@ -98,7 +98,13 @@ function ChannelInfo(props: ChannelInfoProps) {
   )
 
   async function confirmDeleteChannel() {
-    const deleteChannelResponse = await deleteChannel(chatroomData.channelId);
+
+    if (myProfile.tfaSecret?.toLowerCase() === "enabled" && !tfaVerified) {
+      setVerifyingTfa(true);
+      return ;
+    }
+
+    const deleteChannelResponse = await deleteChannel(chatroomData.channelId, tfaCode);
 
     if (deleteChannelResponse.status === 400) {
       return ;
@@ -209,26 +215,16 @@ function ChannelInfo(props: ChannelInfoProps) {
   }
 
   function showVerifyTFAForm() {
-
-    const [opacity, setOpacity] = useState<number>(0);
-
-    useEffect(() => {
-      setOpacity(100);
-    }, []);
-
     return (
       <>
-        {
-          myProfile.tfaSecret?.toLowerCase() === "enabled" &&
-          <div className='absolute z-10 w-full h-full transition-opacity duration-500 bg-dimshadow/90' style={{opacity: `${opacity}`}}>
-            <div className='absolute -translate-x-1/2 -translate-y-1/2 top-1/3 left-1/2'>
-              <div className='flex flex-col p-4 m-auto font-extrabold border-4 rounded h-fit w-fit bg-dimshadow border-highlight'>
-                <UserFormTfa invert tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={tfaVerified} setTFAVerified={setTfaVerified} handleSubmit={() => console.log("yo")} />
-                <button className='p-2 border-2 rounded text-accRed hover:text-highlight bg-dimshadow border-accRed hover:bg-accRed' onClick={() => setVerifyingTfa(false)}>cancel</button>
-              </div>
+        <div className='absolute z-30 w-full h-full transition-opacity duration-500 bg-dimshadow/90'>
+          <div className='absolute -translate-x-1/2 -translate-y-1/2 top-1/3 left-1/2'>
+            <div className='flex flex-col p-4 m-auto font-extrabold border-4 rounded h-fit w-fit bg-dimshadow border-highlight'>
+              <UserFormTfa invert tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={tfaVerified} setTFAVerified={setTfaVerified} handleSubmit={(state.isTryingToDeleteChannel ? confirmDeleteChannel : saveChannelEdits)} />
+              <button className='p-2 border-2 rounded text-accRed hover:text-highlight bg-dimshadow border-accRed hover:bg-accRed' onClick={() => setVerifyingTfa(false)}>cancel</button>
             </div>
           </div>
-        }
+        </div>
       </>
     )
   }
@@ -344,8 +340,6 @@ function ChannelInfo(props: ChannelInfoProps) {
       }
       // modify member roles
       const updateMemberResponse = await updateMemberRole(updatedMember);
-      // not sure will encounter any issue here since only owner can modify member roles
-      // tested with different roles and only owner has this option
       console.log(updateMemberResponse);
     }
     return newErrorResponses;
@@ -385,6 +379,11 @@ function ChannelInfo(props: ChannelInfoProps) {
     
     if (modifyChannelErrors !== 0) return;
 
+    if (myProfile.tfaSecret?.toLowerCase() === "enabled" && !tfaVerified) {
+      setVerifyingTfa(true);
+      return ;
+    }
+
     let updatedChatroomData: ChatroomData | null = null;
 
     const updatedChannelInfo: UpdateChannelData = {
@@ -398,13 +397,20 @@ function ChannelInfo(props: ChannelInfoProps) {
     // MODIFY CHANNEL INFO FLOW
     if (state.isOwner) {
       // check request response
-      const updateChannelResponse = await updateChannel(updatedChannelInfo);
-      if (updateChannelResponse.status === 200) {
-        if ((updateChannelResponse.data as ErrorData).error) {
-          dispatch({ type: 'ADD_ERROR', error: NewChannelError.WRONG_PASSWORD });
-          return ;
-        }
+      try {
+        const updateChannelResponse = await updateChannel(updatedChannelInfo, tfaCode);
         updatedChatroomData = updateChannelResponse.data as ChatroomData;
+      } catch (err: any) {
+        const errorStr = (err.response.data as ErrorData).error;
+        if (errorStr === "Invalid password - password does not match") {
+          dispatch({ type: 'ADD_ERROR', error: NewChannelError.WRONG_PASSWORD });
+          if (verifyingTfa) {
+            setVerifyingTfa(false);
+            setTfaVerified(false);
+            setTfaCode("");
+          }
+          return;
+        }
       }
     }
 

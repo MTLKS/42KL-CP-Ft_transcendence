@@ -73,7 +73,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
              {(state.errors.includes(NewChannelError.WRONG_PASSWORD)) && <p className='text-[10px] text-highlight bg-accRed px-[1ch] w-fit'>Wrong password!</p>}
               <div className='flex flex-row items-center h-[40px]'>
                 <input type="password" id='channel-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full px-4 py-2 text-base font-extrabold text-center border-2 border-r-0 rounded rounded-r-none outline-none border-highlight bg-dimshadow text-highlight cursor-text placeholder:text-highlight/40 placeholder:text-sm' placeholder={changePassword ? `Old Password` : `Password`} value={password ? password : ''} onChange={handlePasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
-                <button className='h-full p-2 font-bold border-2 rounded rounded-l-none bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
+                <button className='h-full p-2 font-bold transition-all duration-150 ease-in-out border-2 rounded rounded-l-none bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight' onMouseDown={toggleShowPassword} onMouseUp={toggleShowPassword}><FaEye className='mx-auto' /></button>
               </div>
               {
                 (state.isNewChannel || (state.errors.includes(NewChannelError.INVALID_PASSWORD) || showPasswordRules)) &&
@@ -88,7 +88,7 @@ function ChannelInfoForm(props: ChannelInfoProps) {
             <div className='flex flex-col h-full gap-y-2'>
               <div className='flex flex-row items-center h-[40px]'>
                 <input type="password" id='channel-new-password' autoComplete='off' autoCorrect='disabled' className='w-full h-full px-4 py-2 text-base font-extrabold text-center border-2 border-r-0 rounded rounded-r-none outline-none border-highlight bg-dimshadow text-highlight cursor-text placeholder:text-highlight/40 placeholder:text-sm' placeholder='New Password' value={newPassword ? newPassword : ''} onChange={handleNewPasswordOnChange} onFocus={() => setShowPasswordRules(true)} onBlur={() => setShowPasswordRules(false)} />
-                <button className='h-full p-2 font-bold border-2 rounded rounded-l-none bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onMouseDown={toggleShowNewPassword} onMouseUp={toggleShowNewPassword}><FaEye className='mx-auto' /></button>
+                <button className='h-full p-2 font-bold transition-all duration-150 ease-in-out border-2 rounded rounded-l-none bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight' onMouseDown={toggleShowNewPassword} onMouseUp={toggleShowNewPassword}><FaEye className='mx-auto' /></button>
               </div>
               {
                 (state.errors.includes(NewChannelError.INVALID_NEW_PASSWORD) || (!state.isNewChannel && showPasswordRules)) &&
@@ -101,17 +101,17 @@ function ChannelInfoForm(props: ChannelInfoProps) {
           {
             !state.isNewChannel && !modifying &&
             <div className={`flex flex-row w-full gap-2`}>
-              {(state.isOwner || state.isAdmin) && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold border-2 rounded h-fit bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out gap-x-2' onClick={toggleEditChannel}><FaToolbox /> MANAGE CHANNEL</button>}
-              {!state.isOwner && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold border-2 rounded h-fit gap-x-2 text-accRed bg-dimshadow border-accRed hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={tryLeaveChannel}><FaDoorOpen /> LEAVE CHANNEL</button>}
-              {state.isOwner && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold border-2 rounded h-fit gap-x-2 text-highlight bg-accRed border-accRed hover:bg-dimshadow hover:text-accRed transition-all duration-150 ease-in-out' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>}
+              {(state.isOwner || state.isAdmin) && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold transition-all duration-150 ease-in-out border-2 rounded h-fit bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight gap-x-2' onClick={toggleEditChannel}><FaToolbox /> MANAGE CHANNEL</button>}
+              {!state.isOwner && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold transition-all duration-150 ease-in-out border-2 rounded h-fit gap-x-2 text-accRed bg-dimshadow border-accRed hover:bg-accRed hover:text-highlight' onClick={tryLeaveChannel}><FaDoorOpen /> LEAVE CHANNEL</button>}
+              {state.isOwner && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-bold transition-all duration-150 ease-in-out border-2 rounded h-fit gap-x-2 text-highlight bg-accRed border-accRed hover:bg-dimshadow hover:text-accRed' onClick={tryDeleteChannel}><FaTrash /> DELETE CHANNEL</button>}
             </div>
           }
           <div className='flex flex-row items-center gap-x-2'>
-            {modifying && !isPrivate && !isPasswordProtected && (state.isOwner || state.isNewChannel) && <button className='w-full p-2 text-xs font-bold border-2 rounded h-fit bg-accGreen text-highlight border-accGreen hover:bg-dimshadow hover:text-accGreen transition-all duration-150 ease-in-out' onClick={togglePassword}>ENABLE PASSWORD</button>}
-            {modifying && !isPrivate && isPasswordProtected && <button className='w-full p-2 text-xs font-bold border-2 rounded h-fit bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight transition-all duration-150 ease-in-out' onClick={togglePassword}>DISABLE PASSWORD</button>}
-            {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying) && <button className='w-full p-2 text-xs font-bold border-2 rounded h-fit text-highlight bg-accCyan border-accCyan hover:bg-dimshadow hover:text-accCyan transition-all duration-150 ease-in-out' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE` : `CHANGE PASSWORD`}</button>}
+            {modifying && !isPrivate && !isPasswordProtected && ((state.isOwner && !state.isNewChannel) || state.isNewChannel) && <button className='w-full p-2 text-xs font-bold transition-all duration-150 ease-in-out border-2 rounded h-fit bg-accGreen text-highlight border-accGreen hover:bg-dimshadow hover:text-accGreen' onClick={togglePassword}>ENABLE PASSWORD</button>}
+            {modifying && !isPrivate && isPasswordProtected && (state.isOwner && !state.isNewChannel) && <button className='w-full p-2 text-xs font-bold transition-all duration-150 ease-in-out border-2 rounded h-fit bg-highlight border-highlight hover:bg-dimshadow hover:text-highlight' onClick={togglePassword}>DISABLE PASSWORD</button>}
+            {isPrivate || (!previousChannelInfo.isPrivate && previousChannelInfo.password !== null && modifying && (state.isOwner)) && <button className='w-full p-2 text-xs font-bold transition-all duration-150 ease-in-out border-2 rounded h-fit text-highlight bg-accCyan border-accCyan hover:bg-dimshadow hover:text-accCyan' onClick={changeChannelPassword}>{changePassword ? `CANCEL CHANGE` : `CHANGE PASSWORD`}</button>}
           </div>
-          {!state.isNewChannel && modifying && <button className='p-2 text-sm font-bold border-2 rounded bg-dimshadow text-accRed border-accRed hover:bg-accRed hover:text-highlight transition-all duration-150 ease-in-out' onClick={toggleEditChannel}>CANCEL</button>}
+          {!state.isNewChannel && modifying && <button className='p-2 text-sm font-bold transition-all duration-150 ease-in-out border-2 rounded bg-dimshadow text-accRed border-accRed hover:bg-accRed hover:text-highlight' onClick={toggleEditChannel}>CANCEL</button>}
         </div>
       </div>
     </div>
