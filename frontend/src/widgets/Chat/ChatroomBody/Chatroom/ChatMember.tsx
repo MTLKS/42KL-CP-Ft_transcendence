@@ -41,17 +41,18 @@ function ChatMemberActions(props: { userData: UserData }) {
   useEffect(() => {
     if (memberInfo === undefined) return;
     if (memberInfo.memberInfo.isMuted) {
-      setCurrentStatus('muted');
+      setCurrentStatus('mute');
       setBgColor('bg-accCyan');
     } else if (memberInfo.memberInfo.isBanned) {
-      setCurrentStatus('banned');
+      setCurrentStatus('ban');
       setBgColor('bg-accRed');
     } else if (memberInfo.willBeKicked) {
-       setCurrentStatus('kicked');
-       setBgColor('bg-dimshadow');
+      console.log("will be kicked");
+      setCurrentStatus('kick');
+      setBgColor('bg-accBriYellow');
     } else {
       setCurrentStatus('action');
-      setBgColor('bg-highlight/50');
+      setBgColor('bg-dimshadow');
     }
   }, [state.moderatedList]);
 

@@ -9,6 +9,7 @@ export default {
         accRed: "rgb(var(--accent-red))",
         accCyan: "rgb(var(--accent-cyan))",
         accYellow: "rgb(var(--accent-yellow))",
+        accBriYellow: "rgb(var(--accent-bri-yellow))",
         accBlue: "rgb(var(--accent-blue))",
         accGreen: "rgb(var(--accent-green))",
       },

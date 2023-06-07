@@ -91,7 +91,7 @@ function UserForm(props: UserFormProps) {
 
   return (
     <div className=''>
-      <div className='z-30 flex flex-col items-end w-full mt-6 h-fit gap-2 lg:gap-4'>
+      <div className='z-30 flex flex-col items-end w-full gap-2 mt-6 h-fit lg:gap-4'>
         {popups}
       </div>
       {

@@ -5,13 +5,12 @@ import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChannel from '../Channel/NewChannel';
-import { ChatContext, ChatroomsContext, NewChannelContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../api/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
 import ChannelList from '../Channel/ChannelList';
-import newChannelReducer, { newChannelInitialState } from '../Channel/newChannelReducer';
 
 function ChatroomList() {
 
@@ -25,9 +24,10 @@ function ChatroomList() {
   useEffect(() => {
     const newUnreadChatrooms: number[] = [...unreadChatrooms];
     chatSocket.listen("message", (data: ChatroomMessageData) => {
+      const channelInfo = (data.isRoom ? data.receiverChannel : data.senderChannel);
       getAllChatrooms();
-      if (unreadChatrooms.includes(data.senderChannel.channelId)) return;
-      newUnreadChatrooms.push(data.senderChannel.channelId);
+      if (unreadChatrooms.includes(channelInfo.channelId)) return;
+      newUnreadChatrooms.push(channelInfo.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
     return () => chatSocket.removeListener("message");
@@ -87,7 +87,10 @@ function ChatroomList() {
         return false;
       })
     }
-    return filteredChatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />);
+    return filteredChatrooms.map(chatroom => {
+      console.log(chatroom);
+      return <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />
+    });
   }
 
   function displayChatroomListBody() {

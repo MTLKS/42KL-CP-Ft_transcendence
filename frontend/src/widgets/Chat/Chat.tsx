@@ -26,8 +26,9 @@ function Chat() {
     const newUnreadChatrooms: number[] = [];
     chatSocket.connect();
     chatSocket.listen("message", (data: ChatroomMessageData) => {
-      if (unreadChatrooms.includes(data.senderChannel.channelId)) return;
-      newUnreadChatrooms.push(data.senderChannel.channelId);
+      const channelInfo = (data.isRoom ? data.receiverChannel : data.senderChannel);
+      if (unreadChatrooms.includes(channelInfo.channelId)) return;
+      newUnreadChatrooms.push(channelInfo.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
     return () => chatSocket.removeListener("message");
