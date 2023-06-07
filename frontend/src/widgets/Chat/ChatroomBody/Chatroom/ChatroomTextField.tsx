@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { FaPaperPlane, FaGamepad, FaPlusCircle } from 'react-icons/fa'
 import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
-import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
+import { ChannelData, ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import UserContext from '../../../../contexts/UserContext';
 import ChatroomTypingStatus from './ChatroomTypingStatus';
 
@@ -67,9 +67,12 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, [someoneIsTyping]);
 
   const listenForMemberTyping = () => {
-    chatSocket.listen("typing", (data: { userName: string }) => {
-      if (typingMembers.includes(data.userName)) return;
-      setTypingMembers([...typingMembers, data.userName]);
+    chatSocket.listen("typing", (data: ChannelData) => {
+      console.log(data);
+      if (data.channelId !== chatroomData.channelId) return ;
+      const typist = data.owner.userName;
+      if (typingMembers.includes(typist)) return;
+      setTypingMembers([...typingMembers, typist]);
       setSomeoneIsTyping(true);
     })
   }
