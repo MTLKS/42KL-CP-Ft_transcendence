@@ -382,48 +382,6 @@ export class GameData {
     this.player2Score = 0;
   }
 
-  set setSetScale(setScale: (scale: number) => void) {
-    this.setScale = setScale;
-  }
-
-  set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
-    this.setShouldRender = setShouldRender;
-  }
-
-  set setSetShouldDisplayGame(
-    setShouldDisplayGame: (startMatch: boolean) => void
-  ) {
-    this.setShouldDisplayGame = setShouldDisplayGame;
-  }
-
-  set setSetUsingTicker(setUsingTicker: (usingTicker: boolean) => void) {
-    this.setUsingTicker = setUsingTicker;
-  }
-
-  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
-    this.setEntities = setEntities;
-  }
-
-  set setBallhit(
-    ballHit: (
-      pongSpeedMagnitude: number,
-      hitPosition: Offset,
-      pongSpeed: Offset,
-      strength: number,
-      tickerSpeed: number
-    ) => void
-  ) {
-    this.ballHit = ballHit;
-  }
-
-  set setBallHitParticle(ballHitParticle: () => void) {
-    this.ballHitParticle = ballHitParticle;
-  }
-
-  set setPaddleHitParticle(paddleHitParticle: () => void) {
-    this.paddleHitParticle = paddleHitParticle;
-  }
-
   listenToGameState = (state: GameStateDTO) => {
     console.log("GameStateDto:", state);
     switch (state.type) {

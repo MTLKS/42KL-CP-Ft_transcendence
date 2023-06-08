@@ -98,7 +98,7 @@ function Game(props: GameProps) {
   }, [scale]);
 
   useEffect(() => {
-    gameData.setBallhit = ballhit;
+    gameData.ballHit = ballhit;
   }, [scale]);
 
   useEffect(() => {
