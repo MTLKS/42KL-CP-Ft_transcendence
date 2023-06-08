@@ -129,7 +129,13 @@ function Game(props: GameProps) {
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
     if (gameData.gameType === "death") setNumberHits(gameData.numberHits);
-    zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
+    if (gameData.gameType !== "boring") zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
+    else {
+      if ((player1Score === 10 && gameData.isLeft) || (player2Score === 10 && gameData.isRight))
+        setGameEndText(<GameText text='Win' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
+      else if (player1Score === 10 || player2Score === 10)
+        setGameEndText(<GameText text='Lose' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
+    }
     // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
 
