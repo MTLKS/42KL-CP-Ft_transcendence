@@ -37,7 +37,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     return () => {
       chatSocket.removeListener("typing");
     }
-  }, []);
+  }, [typingMembers]);
 
   useEffect(() => {
     if (textTooLong) {
@@ -64,19 +64,30 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   useEffect(() => {
     if (someoneIsTyping) {
-      setTimeout(() => {
-        setSomeoneIsTyping(false);
-        setTypingMembers([]);
+      const timeoutId = setTimeout(() => {
+        setTypingMembers(prevTypingMembers => {
+          const updatedTypingMembers = prevTypingMembers.slice(1);
+          if (updatedTypingMembers.length === 0) setSomeoneIsTyping(false);
+          return updatedTypingMembers;
+        });
       }, 5000);
+
+      return (() => {
+        clearTimeout(timeoutId);
+      });
     }
-  }, [someoneIsTyping]);
+  }, [someoneIsTyping, typingMembers]);
 
   const listenForMemberTyping = () => {
-    chatSocket.listen("typing", (data: ChannelData) => {
-      if (data.channelId !== chatroomData.channelId) return ;
-      const typist = data.owner.userName;
-      if (typingMembers.includes(typist)) return;
-      setTypingMembers([...typingMembers, typist]);
+    chatSocket.listen("typing", (data: {channel: ChannelData, userName: string}) => {
+      // if current chatroom is a room, the channel is the typist's channel
+      // if current chatroom is a DM, the channel is the sender's channel
+      const { channel, userName } = data;
+      
+      if (chatroomData.channelId !== channel.channelId) return;
+      if (typingMembers.includes(userName)) return;
+      // preventing race condition
+      setTypingMembers(prevTypingMembers => [...prevTypingMembers, userName]);
       setSomeoneIsTyping(true);
     })
   }
