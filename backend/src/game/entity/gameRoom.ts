@@ -33,6 +33,18 @@ export class CollisionResult {
   }
 }
 
+export enum HitType {
+  NONE = 0,
+  WALL = 1,
+  PADDLE = 2,
+  SCORE = 3,
+  BLOCK = 4,
+  SLOW_IN = 5,
+  SLOW_OUT = 6,
+  FAST_IN = 7,
+  FAST_OUT = 8,
+}
+
 export class GameRoom {
   roomID: string;
   gameType: string;
@@ -62,6 +74,7 @@ export class GameRoom {
   gamePausePlayer: string | null;
   _players: Array<string>;
   roomSettings: GameSetting;
+  hitType: HitType = 0;
   matchService: MatchService;
   userService: UserService;
 
@@ -115,12 +128,12 @@ export class GameRoom {
     this.userService = userService;
 
     this.roomSettings = setting;
+    this.hitType = HitType.NONE;
   }
 
   async run(server: Server) {
     this.resetGame(server);
     this.startGame();
-    await this.countdown(3);
     if (this.interval == null) {
       this.interval = setInterval(async () => {
         if (this.gameReset == true) {
@@ -132,7 +145,7 @@ export class GameRoom {
             this.gameReset = false;
           }
         } else if (this.gamePaused == true) {
-          if (Date.now() - this.gamePauseDate > 5000) {
+          if (Date.now() - this.gamePauseDate > 20000) {
             this.endGame(
               server,
               this.player1.intraName === this.gamePausePlayer
@@ -149,6 +162,9 @@ export class GameRoom {
           this.player1Score === this.roomSettings.scoreToWin ||
           this.player2Score === this.roomSettings.scoreToWin
         ) {
+          console.log("trigger end game");
+          console.log("player Score ", this.player1Score, this.player2Score);
+          console.log("room setting ", this.roomSettings.scoreToWin);
           this.endGame(
             server,
             this.player1Score === this.roomSettings.scoreToWin
@@ -165,6 +181,7 @@ export class GameRoom {
     this.Ball.update();
     let score = this.Ball.checkContraint(this.canvasWidth, this.canvasHeight);
     if (score == 1 || score == 2) {
+      this.hitType = HitType.SCORE;
       if (score == 1) {
         this.player1Score++;
         this.lastWinner = 'player1';
@@ -174,6 +191,12 @@ export class GameRoom {
       }
       this.resetTime = Date.now();
       this.gameReset = true;
+    }
+    else if (score == 3){
+      this.hitType = HitType.WALL;
+    }
+    else if (score == 0) {
+      this.hitType = HitType.NONE;
     }
     this.gameCollisionDetection();
     server
@@ -189,6 +212,7 @@ export class GameRoom {
           this.rightPaddle.posY + 50,
           this.player1Score,
           this.player2Score,
+          this.hitType,
         ),
       );
   }
@@ -271,18 +295,19 @@ export class GameRoom {
     }
 
     if (result && result.collided) {
+      this.hitType = HitType.PADDLE;
       this.Ball.collisionResponse(result.collideTime, result.normalX, result.normalY);
     }
   }
 
   updatePlayerPos(socketId: string, xValue: number, yValue: number) {
     if (socketId == this.player1.socket.id) {
-      this.leftPaddle.posY = yValue - 50;
+      this.leftPaddle.posY = yValue - this.leftPaddle.height / 2;
       this.leftMouseX = xValue;
       this.leftMouseY = yValue;
     }
     if (socketId == this.player2.socket.id) {
-      this.rightPaddle.posY = yValue - 50;
+      this.rightPaddle.posY = yValue - this.rightPaddle.height / 2;
       this.rightMouseX = xValue;
       this.rightMouseY = yValue;
     }
@@ -292,27 +317,6 @@ export class GameRoom {
   }
 
   resumeGame(player: Player) {
-    let opponentIntraName = '';
-    if (player.intraName === this.player1.intraName) {
-      this.player1 = player;
-      opponentIntraName = this.player2.intraName;
-    } else if (player.intraName === this.player2.intraName) {
-      this.player2 = player;
-      opponentIntraName = this.player1.intraName;
-    }
-    player.socket.join(this.roomID);
-    player.socket.emit(
-      'gameState',
-      new GameStateDTO(
-        'GameStart',
-        new GameStartDTO(
-          opponentIntraName,
-          this.gameType,
-          player === this.player1,
-          this.roomID,
-        ),
-      ),
-    );
     this.gamePaused = false;
     this.gamePauseDate = null;
     this.gamePausePlayer = null;
@@ -422,6 +426,7 @@ export class GameRoom {
     this.Ball.attracted = false;
     this.Ball.initialSpeedX = this.ballInitSpeedX;
     this.Ball.initialSpeedY = this.ballInitSpeedY;
+    this.hitType = HitType.NONE;
     server
       .to(this.roomID)
       .emit(
@@ -435,6 +440,7 @@ export class GameRoom {
           this.rightPaddle.posY + 50,
           this.player1Score,
           this.player2Score,
+          this.hitType,
         ),
       );
   }
@@ -443,6 +449,7 @@ export class GameRoom {
    * Called when reset timer end.Set the ball velocity based on last winner
    */
   startGame(){
+    this.hitType = HitType.NONE;
     if (this.lastWinner.length == 0) {
       this.Ball.velX =
         this.ballInitSpeedX * (Math.round(Math.random()) === 0 ? -1 : 1);
@@ -456,14 +463,6 @@ export class GameRoom {
       this.Ball.velX = -this.ballInitSpeedX;
       this.Ball.velY =
         this.ballInitSpeedY * (Math.round(Math.random()) === 0 ? -1 : 1);
-    }
-  }
-
-  async countdown(seconds: number): Promise<void> {
-    let counter = seconds;
-    while (counter >= 0) {
-      counter--;
-      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 }

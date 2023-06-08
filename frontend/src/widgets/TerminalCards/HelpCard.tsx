@@ -16,8 +16,8 @@ function HelpCard(props: HelpCardProps) {
   return (
     <Card type={CardType.SUCCESS} key={Math.random().toString(36).slice(2) + Date.now().toString(36)}>
       <p className='text-xl uppercase font-bold'>{title}</p>
-      <p className='text-highlight/60 text-sm'>Usage: {usage}</p>
-      <br />
+      {usage !== '' ? <p className='text-highlight/60 text-sm'>Usage: {usage}</p> : <></>}
+      {usage !== '' ? <br /> : <div className="pb-"></div>}
       <p className='text-highlight text-md font-bold capitalize'>{option}:</p>
       {
         displayAllOptions()
@@ -46,6 +46,7 @@ function HelpCard(props: HelpCardProps) {
       )
       index++;
     }
+    allOptions.pop();
     return allOptions;
   }
 }

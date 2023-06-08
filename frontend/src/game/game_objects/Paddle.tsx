@@ -6,6 +6,78 @@ import { GameDataCtx } from '../../GameApp';
 import { DropShadowFilter } from 'pixi-filters';
 import { PaddleType } from '../gameData';
 
+const arrowTickSkip = 14;
+
+function Arrow() {
+  const gameData = useContext(GameDataCtx);
+  const ref = useRef<PIXI.Container>(null);
+  const tickRef = useRef<number>(0);
+  const arrowRef = useRef<PIXI.Sprite | null>(null);
+  const dashRef = useRef<PIXI.Sprite[]>([]);
+  const app = useApp();
+
+  const { arrowTexture, dashTexture } = useMemo(() => {
+    const g = new PIXI.Graphics();
+    g.lineStyle({ cap: PIXI.LINE_CAP.ROUND, width: 3, color: 0xFEF8E2, alpha: 1 });
+    g.moveTo(0, 0);
+    g.lineTo(0, 13);
+    const dashTexture = app.renderer.generateTexture(g);
+    g.moveTo(0, 0);
+    g.lineTo(5, 5);
+    g.moveTo(0, 0);
+    g.lineTo(-5, 5);
+    const arrowTexture = app.renderer.generateTexture(g);
+    g.destroy();
+    return { arrowTexture, dashTexture };
+  }, []);
+
+  useEffect(() => {
+    arrowRef.current = new PIXI.Sprite(arrowTexture);
+    for (let i = 0; i < 5; i++) {
+      dashRef.current.push(new PIXI.Sprite(dashTexture));
+    }
+    ref.current?.addChild(arrowRef.current);
+    dashRef.current.forEach((dash, index) => {
+      dash.anchor.set(0.5, 0.5);
+      ref.current?.addChild(dash);
+      dash.alpha = Math.max(1 - index * 0.3, 0);
+    });
+    arrowRef.current.anchor.set(0.5, 0.5);
+  }, []);
+
+  useTick((delta) => {
+    if (ref.current == null || arrowRef.current == null) return;
+    if (!gameData.attracted) {
+      ref.current.x = -1000;
+      ref.current.y = -1000;
+      return;
+    }
+    const container = ref.current;
+    container.x = gameData.pongPosition.x + 7;
+    container.y = gameData.pongPosition.y + 7;
+    const { x, y } = gameData.mousePosition;
+    const angle = Math.atan2(y - container.y, x - container.x) + Math.PI / 2;
+    container.rotation = angle;
+    if (tickRef.current++ % arrowTickSkip !== 0) return;
+    const arrow = arrowRef.current;
+    arrow.y -= 25;
+    if (arrow.y < -125) {
+      arrow.y = 0;
+      dashRef.current.forEach((dash, i) => { dash.y = 0; });
+    }
+    else
+      dashRef.current.forEach((dash, i) => {
+        if (i === 0) dash.y = arrow.y + 25;
+        else dash.y = Math.min(dashRef.current[i - 1].y + 25, 0);
+      });
+
+  });
+
+  return (
+    <Container ref={ref} x={-100} y={-100} alpha={0.2} />
+  )
+}
+
 interface PaddleProps {
   left: boolean;
 }
@@ -27,9 +99,13 @@ function Paddle(props: PaddleProps) {
 
   useTick((delta) => {
     if (paddleRef.current == null) return;
+    if (type !== PaddleType.Piiuuuuu) return;
+    if (!gameData.attracted) { paddleRef.current.rotation = 0; rotRef.current = 0; return; }
+    if (!left && gameData.pongPosition.x < gameData.gameCurrentWidth / 2) { paddleRef.current.rotation = 0; rotRef.current = 0; return; }
+    if (left && gameData.pongPosition.x > gameData.gameCurrentWidth / 2) { paddleRef.current.rotation = 0; rotRef.current = 0; return; }
     paddleRef.current.rotation = Math.sin(rotRef.current) * 0.05;
     rotRef.current += 0.8 * delta;
-  }, false);
+  });
 
   useTick((delta) => {
     if (paddleRef.current == null) return;
@@ -66,8 +142,7 @@ function Paddle(props: PaddleProps) {
         g.endFill();
 
         g.beginFill(0x5F928F);
-        if (left) g.drawRect(0, size.h - 30, size.w, 30);
-        else g.drawRect(0, 0, size.w, 30);
+        g.drawRect(0, size.h - 30, size.w, 30);
         g.endFill();
 
         t1.text = "M";
@@ -99,15 +174,16 @@ function Paddle(props: PaddleProps) {
         g.clear();
         g.beginFill(0xFEF8E2);
         g.moveTo(0, 0);
-        g.bezierCurveTo(6, size.h, 6, size.h, 0, size.h * 2);
+        g.bezierCurveTo(10, size.h, 10, size.h, 0, size.h * 2);
         g.lineTo(size.w * 2, size.h * 2);
-        g.bezierCurveTo(size.w * 2 - 6, size.h, size.w * 2 - 6, size.h, size.w * 2, 0);
+        g.bezierCurveTo(size.w * 2 - 10, size.h, size.w * 2 - 10, size.h, size.w * 2, 0);
         g.closePath();
         g.endFill();
         break;
       case PaddleType.Vrooooom:
         g.beginFill(0xAD6454);
-        g.drawRect(10, 0, size.w - 10, size.h);
+        if (!left) g.drawRect(0, 0, 7, size.h);
+        else g.drawRect(8, 0, size.w - 8, size.h);
         g.endFill();
         break;
       default:
@@ -132,14 +208,17 @@ function Paddle(props: PaddleProps) {
   }, []);
 
   return (
-    <Sprite
-      ref={paddleRef}
-      texture={texture}
-      width={size.w}
-      height={size.h}
-      anchor={new PIXI.Point(0.5, 0.5)}
-      filters={gameData.usePaddleFilter ? [filter] : undefined}
-    />
+    <>
+      <Sprite
+        ref={paddleRef}
+        texture={texture}
+        width={size.w}
+        height={size.h}
+        anchor={new PIXI.Point(0.5, 0.5)}
+        filters={gameData.paddleFilter && gameData.gameType !== "boring" ? [filter] : null as unknown as undefined}
+      />
+      <Arrow />
+    </>
   )
 }
 

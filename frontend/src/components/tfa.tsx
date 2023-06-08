@@ -26,12 +26,13 @@ enum TFACommands {
 function help() {
 	return (
 		<Card type={CardType.SUCCESS}>
-			<span className=' text-2xl neonText-white font-bold'>TFA</span><br />
-			<p>
-				tfa set					: Sets and enables Google 2FA<br />
-				tfa unset [OTP code]	: Unsets and disable 2FA (requires OTP code)<br />
-				tfa [OTP code]			: Checks whether code is valid or not<br />
-				tfa forgot				: Emails new 2FA secret (may require relogin)<br />
+			<span className='text-xl neonText-white font-bold'>TFA</span><br/>
+			<p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
+			<p className="text-sm">
+				tfa set					: <span className="text-highlight/70">Sets and enables Google 2FA.</span><br />
+				tfa unset [OTP code]	: <span className="text-highlight/70">Unsets and disable 2FA (requires OTP code).</span><br />
+				tfa check [OTP code]	: <span className="text-highlight/70">Checks whether code is valid or not.</span><br />
+				tfa forgot				: <span className="text-highlight/70">Emails new 2FA secret (may require relogin).</span><br />
 			</p>
 		</Card>
 	)

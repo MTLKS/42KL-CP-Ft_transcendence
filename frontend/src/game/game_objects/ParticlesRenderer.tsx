@@ -10,6 +10,7 @@ import { filter } from 'lodash';
 import { GameGravityArrow } from '../../model/GameGravityArrow';
 import GameParticleDelegate from '../../model/GameParticleDelegate';
 import { PaddleType } from '../gameData';
+import { Offset } from '../../model/GameModels';
 
 // const gameGraphicWorker = new Worker();
 
@@ -69,6 +70,11 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   const purpleContainerRef = useRef<PIXI.ParticleContainer>(null);
   const lightningContainerRef = useRef<PIXI.ParticleContainer>(null);
   const arrowContainerRef = useRef<PIXI.ParticleContainer>(null);
+
+  useEffect(() => {
+    gameData.ballHitParticle = ballHit;
+    gameData.paddleHitParticle = paddleHit;
+  }, []);
 
   useEffect(() => {
     if (!gameGravityArrow) {
@@ -174,8 +180,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   return (
     <Container
       interactiveChildren={false}
-      filterArea={gameData.useParticlesFilter ? new PIXI.Rectangle(0, 0, 1600, 900) : undefined}
-      filters={gameData.useParticlesFilter ? [bloomFilter] : undefined}
+      filterArea={gameData.particlesFilter ? new PIXI.Rectangle(0, 0, app.screen.width, app.screen.height) : null as unknown as undefined}
+      filters={gameData.particlesFilter ? [bloomFilter] : null as unknown as undefined}
     >
       <ParticleContainer
         ref={arrowContainerRef}
@@ -321,6 +327,14 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
     if (sprite) {
       sprite.destroy();
     }
+  }
+
+  function ballHit() {
+    gameParticleDelegate.ballHitParticle(addParticle);
+  }
+
+  function paddleHit() {
+    gameParticleDelegate.paddleHitParticle(addParticle);
   }
 }
 

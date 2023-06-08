@@ -1,3 +1,5 @@
+import { HitType } from "../functions/audio";
+
 export class GameDTO {
   ballPosX: number;
   ballPosY: number;
@@ -11,6 +13,7 @@ export class GameDTO {
   attracted: boolean;
   blockX: number | null;
   blockY: number | null;
+  hitType: HitType;
 
   constructor(
     ballPosX: number,
@@ -24,7 +27,8 @@ export class GameDTO {
     spin: number = 0,
     attracted: boolean = false,
     blockX: number | null = null,
-    blockY: number | null = null
+    blockY: number | null = null,
+    hitType: HitType
   ) {
     this.ballPosX = ballPosX;
     this.ballPosY = ballPosY;
@@ -38,5 +42,6 @@ export class GameDTO {
     this.blockY = blockY;
     this.spin = spin;
     this.attracted = attracted;
+    this.hitType = hitType;
   }
 }

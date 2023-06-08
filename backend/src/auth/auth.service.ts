@@ -33,7 +33,11 @@ export class AuthService {
 			const PATH = 'avatar/' + intraName;
 			const ROUTE = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/";
 			const response = await axios.get(url, { responseType: 'stream' });
-			response.data.pipe(fs.createWriteStream(PATH));
+			await new Promise((resolve, reject) => {
+				response.data.pipe(fs.createWriteStream(PATH))
+					.on('finish', resolve)
+					.on('error', reject);
+			});
 			return ROUTE + PATH;
 		}
 
@@ -56,6 +60,8 @@ export class AuthService {
 			const GOOGLE_DATA = await apiResponse.json();
 			let accessToken = CryptoJS.AES.encrypt(returnData.access_token, process.env.ENCRYPT_KEY).toString()
 
+			if (GOOGLE_DATA.email === undefined)
+				return new AuthResponseDTO("", false);
 			const ENTITY_USER = await this.userRepository.findOne({ where: { email: GOOGLE_DATA.email } });
 			if (ENTITY_USER !== null) {
 				ENTITY_USER.accessToken = returnData.access_token;
@@ -73,14 +79,14 @@ export class AuthService {
 			for (let i = 5; i <= GOOGLE_DATA.email.length && i < 8; i++) {
 				intraName = '@' + GOOGLE_DATA.email.substring(0, i);
 				if (await this.userRepository.findOne({ where: { intraName: intraName } }) === null) {
-					await this.userRepository.save(new User(ID, intraName, intraName, GOOGLE_DATA.email, 400, returnData.access_token, await saveImage(GOOGLE_DATA.picture, intraName), null, true));
+					await this.userRepository.save(new User(ID, intraName, intraName, GOOGLE_DATA.email, 400, returnData.access_token, await saveImage(GOOGLE_DATA.picture, intraName), null, true, 400, 0));
 					return new AuthResponseDTO(accessToken, true);
 				}
 			}
 			for (let i = 0; i < Number.MAX_SAFE_INTEGER; i++) {
 				const TEST = intraName + i.toString();
 				if (await this.userRepository.findOne({ where: { intraName: TEST } }) === null) {
-					await this.userRepository.save(new User(ID, TEST, TEST, GOOGLE_DATA.email, 400, returnData.access_token, await saveImage(GOOGLE_DATA.picture, TEST), null, true));
+					await this.userRepository.save(new User(ID, TEST, TEST, GOOGLE_DATA.email, 400, returnData.access_token, await saveImage(GOOGLE_DATA.picture, TEST), null, true, 400, 0));
 					return new AuthResponseDTO(accessToken, true);
 				}
 			}
@@ -92,7 +98,7 @@ export class AuthService {
 			ENTITY_USER.accessToken = returnData.access_token;
 			await this.userRepository.save(ENTITY_USER);
 		} else {
-			await this.userRepository.save(new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, INTRA_DTO.email, 400, returnData.access_token, await saveImage(INTRA_DTO.imageLarge, INTRA_DTO.name), null, true));
+			await this.userRepository.save(new User(INTRA_DTO.id, INTRA_DTO.name, INTRA_DTO.name, INTRA_DTO.email, 400, returnData.access_token, await saveImage(INTRA_DTO.imageLarge, INTRA_DTO.name), null, true, 400, 0));
 			return new AuthResponseDTO(accessToken, true);
 		}
 		return new AuthResponseDTO(accessToken, false);

@@ -90,14 +90,21 @@ function TimeZone(props: TimeZoneProps) {
   }, []);
   return (
     <Container x={position.x} y={position.y} ref={ref}>
-      <Sprite anchor={0.5} width={size.w} height={size.h} texture={texture} alpha={0.4} filters={[filter]} />
+      <Sprite
+        anchor={0.5}
+        width={size.w}
+        height={size.h}
+        texture={texture}
+        alpha={0.4}
+        filters={gameData.entitiesFilter ? [filter] : null as unknown as undefined}
+      />
       <Sprite
         anchor={0.5}
         width={size.w * svgSizeRatio}
         height={size.h * svgSizeRatio}
         texture={iconTexture}
         alpha={0.4}
-        filters={gameData.useEntitiesFilter ? [filter] : undefined}
+        filters={gameData.entitiesFilter ? [filter] : null as unknown as undefined}
       />
     </Container>
   )

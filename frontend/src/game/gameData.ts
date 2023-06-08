@@ -7,6 +7,9 @@ import {
   GameEndDTO,
   GamePauseDTO,
   FieldEffectDTO,
+  LobbyStartDTO,
+  LobbyEndDTO,
+  CountdonwDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -18,6 +21,15 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
+import Paddle from "./game_objects/Paddle";
+import {
+  playGameSound,
+  HitType,
+  playBlackHoleSound,
+  stopBlackHoleSound,
+  playEngGameSound,
+  stopEngGameSound,
+} from "../functions/audio";
 
 export enum PaddleType {
   "Vzzzzzzt",
@@ -27,32 +39,50 @@ export enum PaddleType {
   "boring",
 }
 
+interface GameSettings {
+  particlesFilter: boolean;
+  entitiesFilter: boolean;
+  paddleFilter: boolean;
+  hitFilter: boolean;
+  tickPerParticles: number;
+  gameMaxWidth: number;
+  gameMaxHeight: number;
+}
+
 export class GameData {
   socketApi: SocketApi;
 
   // game display settings
-  useParticlesFilter: boolean = false;
-  useEntitiesFilter: boolean = false;
-  usePaddleFilter: boolean = false;
-  useHitFilter: boolean = true;
-  tickPerParticlesSpawn: number = 0;
-  gameMaxWidth: number = 1600;
-  gameMaxHeight: number = 900;
-  gameCurrentWidth: number = 1600;
-  gameCurrentHeight: number = 900;
+  particlesFilter: boolean;
+  entitiesFilter: boolean;
+  paddleFilter: boolean;
+  hitFilter: boolean;
+  tickPerParticles: number;
+  gameMaxWidth: number;
+  gameMaxHeight: number;
+  gameCurrentWidth: number;
+  gameCurrentHeight: number;
 
   // pong variables
   private _pongPosition: Offset = { x: 800, y: 450 };
   private _pongSpeed: Offset = { x: 12, y: 8 };
   pongSpin: number = 0;
   attracted: boolean = false;
+  pongSpeedMagnitude: number = 0;
+  numberHits: number = 0;
 
   // player related variables
+  mousePosition: Offset = { x: 0, y: 0 };
+  leftPaddleSucking: boolean = false;
+  rightPaddleSucking: boolean = false;
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
-  leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
+  leftPaddleType: PaddleType = PaddleType.boring;
   rightPaddleType: PaddleType = PaddleType.boring;
-  isLeft: boolean = true;
+  player1IntraId: string = "";
+  player2IntraId: string = "";
+  isLeft: boolean = false;
+  isRight: boolean = false;
   player1Score: number = 0;
   player2Score: number = 0;
 
@@ -77,17 +107,39 @@ export class GameData {
 
   setScale?: (scale: number) => void;
   setUsingTicker?: (usingTicker: boolean) => void;
+  displayLobby?: () => void;
+  stopDisplayLobby?: () => void;
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
   private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
   private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
+  ballHit?: (
+    pongSpeedMagnitude: number,
+    hitPosition: Offset,
+    pongSpeed: Offset,
+    strength: number,
+    tickerSpeed: number
+  ) => void;
+  ballHitParticle?: () => void;
+  paddleHitParticle?: () => void;
+  lobbyCountdown?: () => void;
 
   resize?: () => void;
   focus?: () => void;
   blur?: () => void;
 
   constructor() {
+    this.particlesFilter = true;
+    this.entitiesFilter = true;
+    this.paddleFilter = true;
+    this.hitFilter = true;
+    this.tickPerParticles = 0;
+    this.gameMaxWidth = 1600;
+    this.gameMaxHeight = 900;
+    this.gameCurrentWidth = 1600;
+    this.gameCurrentHeight = 900;
+    this.loadSettings();
     this.socketApi = new SocketApi("game");
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
     this.socketApi.listen("gameState", this.listenToGameState);
@@ -105,6 +157,82 @@ export class GameData {
         isMouseDown: isMouseDown,
       });
     };
+  }
+
+  private loadSettings() {
+    const gameSettings = localStorage.getItem("gameSettings");
+    if (gameSettings) {
+      const settings: GameSettings = JSON.parse(gameSettings);
+      this.particlesFilter = settings.particlesFilter ?? true;
+      this.entitiesFilter = settings.entitiesFilter ?? true;
+      this.paddleFilter = settings.paddleFilter ?? true;
+      this.hitFilter = settings.hitFilter ?? true;
+      this.tickPerParticles = settings.tickPerParticles ?? 0;
+      this.gameMaxWidth = settings.gameMaxWidth ?? 1600;
+      this.gameMaxHeight = settings.gameMaxHeight ?? 900;
+    }
+  }
+  get getSettings() {
+    const settings: GameSettings = {
+      particlesFilter: this.particlesFilter,
+      entitiesFilter: this.entitiesFilter,
+      paddleFilter: this.paddleFilter,
+      hitFilter: this.hitFilter,
+      tickPerParticles: this.tickPerParticles,
+      gameMaxWidth: this.gameMaxWidth,
+      gameMaxHeight: this.gameMaxHeight,
+    };
+    return settings;
+  }
+
+  set setUseParticlesFilter(particlesFilter: boolean) {
+    this.particlesFilter = particlesFilter;
+    this.saveSettings();
+  }
+
+  private saveSettings() {
+    const settings: GameSettings = {
+      particlesFilter: this.particlesFilter,
+      entitiesFilter: this.entitiesFilter,
+      paddleFilter: this.paddleFilter,
+      hitFilter: this.hitFilter,
+      tickPerParticles: this.tickPerParticles,
+      gameMaxWidth: this.gameMaxWidth,
+      gameMaxHeight: this.gameMaxHeight,
+    };
+    localStorage.setItem("gameSettings", JSON.stringify(settings));
+  }
+
+  set setUseEntitiesFilter(entitiesFilter: boolean) {
+    this.entitiesFilter = entitiesFilter;
+    this.saveSettings();
+  }
+
+  set setUsePaddleFilter(paddleFilter: boolean) {
+    this.paddleFilter = paddleFilter;
+    this.saveSettings();
+  }
+
+  set setUseHitFilter(hitFilter: boolean) {
+    this.hitFilter = hitFilter;
+    this.saveSettings();
+  }
+
+  set setTickPerParticlesSpawn(tickPerParticles: number) {
+    this.tickPerParticles = tickPerParticles;
+    this.saveSettings();
+  }
+
+  set setGameMaxWidth(gameMaxWidth: number) {
+    this.gameMaxWidth = gameMaxWidth;
+    this.gameMaxHeight = Math.floor((gameMaxWidth / 16) * 9);
+    this.saveSettings();
+  }
+
+  set setGameMaxHeight(gameMaxHeight: number) {
+    this.gameMaxHeight = gameMaxHeight;
+    this.gameMaxWidth = Math.floor((gameMaxHeight / 9) * 16);
+    this.saveSettings();
   }
 
   get pongPosition() {
@@ -131,6 +259,21 @@ export class GameData {
         resolve(event);
       });
     });
+  }
+
+  sendReady(ready: boolean, powerUp: string) {
+    console.log("send ready: ", {
+      ready: ready,
+      powerUp: powerUp,
+    });
+    this.socketApi.sendMessages("ready", {
+      ready: ready,
+      powerUp: powerUp,
+    });
+  }
+
+  leaveLobby() {
+    this.socketApi.sendMessages("leaveLobby", {});
   }
 
   startGame() {
@@ -174,7 +317,7 @@ export class GameData {
     };
     this.focus = async () => {
       this.inFocus = true;
-      this.setUsingTicker?.(true);
+      // this.setUsingTicker?.(true);
       for (let i = 0; i < 20; i++) {
         if (!this.inFocus) return;
         this.globalSpeedFactor += 0.05;
@@ -192,7 +335,7 @@ export class GameData {
         this.globalScaleFactor -= 0.02;
         await sleep(50);
       }
-      this.setUsingTicker?.(false);
+      // this.setUsingTicker?.(false);
     };
     window.addEventListener("resize", this.resize);
     window.addEventListener("focus", this.focus);
@@ -216,11 +359,14 @@ export class GameData {
   }
 
   async endGame() {
-    console.log("end game");
+    // console.log("end game");
     if (!this.gameStarted) return;
-    await sleep(3000);
+    this.stopDisplayLobby!();
+    await sleep(7000);
     this.stopDisplayGame();
     this.gameStarted = false;
+    this.isLeft = false;
+    this.isRight = false;
     if (this.setShouldRender) this.setShouldRender(false);
     if (this.setUsingTicker) this.setUsingTicker(false);
     this._resetVariables();
@@ -239,36 +385,39 @@ export class GameData {
     this.globalSpeedFactor = 1;
     this.globalScaleFactor = 1;
     this.gameEntities = [];
-  }
-
-  set setSetScale(setScale: (scale: number) => void) {
-    this.setScale = setScale;
-  }
-
-  set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
-    this.setShouldRender = setShouldRender;
-  }
-
-  set setSetShouldDisplayGame(
-    setShouldDisplayGame: (startMatch: boolean) => void
-  ) {
-    this.setShouldDisplayGame = setShouldDisplayGame;
-  }
-
-  set setSetUsingTicker(setUsingTicker: (usingTicker: boolean) => void) {
-    this.setUsingTicker = setUsingTicker;
-  }
-
-  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
-    this.setEntities = setEntities;
+    this.player1Score = 0;
+    this.player2Score = 0;
+    this.numberHits = 0;
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log(state);
+    console.log("GameStateDto:", state);
     switch (state.type) {
+      case "LobbyStart":
+        const lobbyStartData = <LobbyStartDTO>state.data;
+        this.gameType = lobbyStartData.gameType;
+        this.player1IntraId = lobbyStartData.player1IntraName;
+        this.player2IntraId = lobbyStartData.player2IntraName;
+        this.displayLobby!();
+        break;
+      case "LobbyEnd":
+        const lobbyEndData = <LobbyEndDTO>state.data;
+        this.gameType = "";
+        this.stopDisplayLobby!();
+        break;
+      case "LobbyCountdown":
+        const lobbyCountdownData = <CountdonwDTO>state.data;
+        this.lobbyCountdown!();
+        break;
+      case "GameCountdown":
+        const gameCountdownData = <CountdonwDTO>state.data;
+        console.log("GameCountdown:", gameCountdownData);
+        break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
-        this.isLeft = data.isLeft;
+        console.log("GameStart:", data);
+        if (data.isLeft) this.isLeft = data.isLeft;
+        else this.isRight = true;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
         this.leftPaddleType = this.getPaddleType(data.player1PowerUp);
@@ -277,6 +426,7 @@ export class GameData {
         this.displayGame();
         break;
       case "GameEnd":
+        stopBlackHoleSound();
         this.endGame();
         break;
       case "FieldEffect":
@@ -286,6 +436,7 @@ export class GameData {
         this.globalGravityY = 0;
         switch (fieldEffect.type) {
           case "NORMAL":
+            stopBlackHoleSound();
             this.gameEntities = [];
             break;
           case "GRAVITY":
@@ -303,6 +454,7 @@ export class GameData {
             ];
             break;
           case "BLACK_HOLE":
+            playBlackHoleSound();
             this.gameEntities = [
               new GameBlackhole(
                 { x: fieldEffect.xPos, y: fieldEffect.yPos, w: 100, h: 100 },
@@ -331,8 +483,7 @@ export class GameData {
   };
 
   listenToGameLoopCallBack = (data: GameDTO) => {
-    // console.log(data.ballPosX, data.ballPosY);
-    // console.log("isLeft: ", this.isLeft);
+    this.hitEffects(data);
     if (this.isLeft) {
       this.rightPaddlePosition = {
         x: 1600 - 45,
@@ -357,23 +508,80 @@ export class GameData {
     // console.log(data);
   };
 
+  private hitEffects(data: GameDTO) {
+    if (data.hitType === HitType.PADDLE) this.numberHits++;
+    if (this.gameType === "boring") return;
+    if (
+      data.hitType &&
+      !(
+        data.hitType === HitType.SCORE &&
+        (data.player1Score == 10 || data.player2Score == 10)
+      )
+    ) {
+      playGameSound(data.hitType);
+    }
+    if (!this.hitFilter) return;
+    this.pongSpeedMagnitude = Math.sqrt(
+      this._pongSpeed.x ** 2 + this._pongSpeed.y ** 2
+    );
+    if (data.hitType === HitType.SCORE) {
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        1,
+        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
+      );
+    } else if (
+      data.hitType === HitType.WALL ||
+      data.hitType === HitType.PADDLE ||
+      data.hitType === HitType.BLOCK
+    ) {
+      this.ballHitParticle?.();
+      this.ballHit?.(
+        this.pongSpeedMagnitude,
+        this._pongPosition,
+        this._pongSpeed,
+        0.5,
+        1
+      );
+    }
+    if (data.hitType === HitType.PADDLE) {
+      this.paddleHitParticle?.();
+    }
+  }
+
   updatePlayerPosition(y: number, x: number) {
-    if (this.isLeft) {
+    if (this.isLeft && !this.attracted) {
       this.leftPaddlePosition = { x: 30, y: y };
-    } else {
+    }
+    if (this.isRight && !this.attracted) {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
+    this.mousePosition = { x: x, y: y };
     this.sendPlayerMove?.(y, x, this.gameRoom);
   }
 
   updatePlayerClick(isMouseDown: boolean) {
-    this.sendPlayerClick?.(isMouseDown, this.gameRoom);
+    if (this.isLeft && this.leftPaddleType === PaddleType.Piiuuuuu) {
+      this.leftPaddleSucking = isMouseDown;
+    }
+    if (this.isRight && this.rightPaddleType === PaddleType.Piiuuuuu) {
+      this.rightPaddleSucking = isMouseDown;
+    }
+    if (
+      this.leftPaddleType === PaddleType.Piiuuuuu ||
+      this.rightPaddleType === PaddleType.Piiuuuuu
+    ) {
+      this.sendPlayerClick?.(isMouseDown, this.gameRoom);
+    }
   }
 
   useLocalTick() {
+    playEngGameSound();
     this.usingLocalTick = true;
     this.localTicker = new PIXI.Ticker();
-    this.tickPerParticlesSpawn = 1;
+    this.tickPerParticles = Math.floor(this.tickPerParticles * 2 + 1);
     this.localTicker.add(this._localTick.bind(this));
     this.localTicker.start();
     this.localTickerPongSpeed = this.pongSpeed;
@@ -382,12 +590,14 @@ export class GameData {
   disableLocalTick() {
     this.usingLocalTick = false;
     if (!this.localTicker) return;
-    this.tickPerParticlesSpawn = 0;
+    this.tickPerParticles = Math.floor((this.tickPerParticles - 1) / 2);
     this._pongSpeed.x = this.localTickerPongSpeed.x;
     this._pongSpeed.y = this.localTickerPongSpeed.y;
+    this.gameEntities = [];
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
+    stopEngGameSound();
   }
 
   private _localTick(delta: number) {
@@ -397,6 +607,7 @@ export class GameData {
       this._pongPosition.y = 450;
       this.localTickerPongSpeed.x = 0;
       this.localTickerPongSpeed.y = 0;
+      playGameSound(HitType.END_GAME);
     }
     if (this._pongPosition.y <= 0 || this._pongPosition.y >= 900 - 10)
       this.localTickerPongSpeed.y *= -1;
