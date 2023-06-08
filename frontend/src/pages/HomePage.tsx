@@ -100,12 +100,12 @@ function HomePage(props: HomePageProps) {
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
               <div className='w-full h-full p-7'>
-                {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-                <div className='flex flex-row w-full h-full overflow-hidden border-4  bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
+                {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
+                <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
                   <div className='flex-1 h-full'>
                     {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
                   </div>
-                  <div className='w-1 h-full  bg-highlight' />
+                  <div className='w-1 h-full bg-highlight' />
                   <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
                     {topWidget}
                     {midWidget}

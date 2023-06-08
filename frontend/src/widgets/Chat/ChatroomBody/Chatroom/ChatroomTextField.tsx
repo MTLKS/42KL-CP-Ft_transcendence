@@ -73,7 +73,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const listenForMemberTyping = () => {
     chatSocket.listen("typing", (data: ChannelData) => {
-      console.log(data);
       if (data.channelId !== chatroomData.channelId) return ;
       const typist = data.owner.userName;
       if (typingMembers.includes(typist)) return;

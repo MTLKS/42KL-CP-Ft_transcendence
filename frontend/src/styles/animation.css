@@ -95,7 +95,7 @@
 
 @keyframes shine {
   0% {
-    top: -50%;
+    top: -150%;
   }
   100% {
     top: 150%;

@@ -8,7 +8,7 @@ function ChatGameInvite(props: { sender: string }) {
   return (
     <div className='w-[65%] h-fit bg-highlight flex flex-row cursor-pointer group items-center'>
       <div className='flex flex-col flex-1 p-4 gap-y-1'>
-        <p className='text-sm font-semibold text-dimshadow'><span className='font-extrabold bg-accGreen text-highlight px-[1ch]'>{sender}</span> challenge you!</p>
+        <p className='text-sm font-semibold text-dimshadow'><span className='font-extrabold bg-accGreen text-highlight px-[1ch]'>{sender}</span> challenges you!</p>
         <p className='text-xs animate-pulse'>looking for player...</p> {/** in game, looking for player, expired */}
       </div>
       <div className='w-20 p-1 aspect-square bg-highlight'>
