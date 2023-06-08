@@ -21,6 +21,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
+import Paddle from "./game_objects/Paddle";
 import {
   playGameSound,
   HitType,
@@ -68,6 +69,7 @@ export class GameData {
   pongSpin: number = 0;
   attracted: boolean = false;
   pongSpeedMagnitude: number = 0;
+  numberHits: number = 0;
 
   // player related variables
   mousePosition: Offset = { x: 0, y: 0 };
@@ -75,7 +77,7 @@ export class GameData {
   rightPaddleSucking: boolean = false;
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
-  leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
+  leftPaddleType: PaddleType = PaddleType.boring;
   rightPaddleType: PaddleType = PaddleType.boring;
   player1IntraId: string = "";
   player2IntraId: string = "";
@@ -260,6 +262,10 @@ export class GameData {
   }
 
   sendReady(ready: boolean, powerUp: string) {
+    console.log("send ready: ", {
+      ready: ready,
+      powerUp: powerUp,
+    });
     this.socketApi.sendMessages("ready", {
       ready: ready,
       powerUp: powerUp,
@@ -381,6 +387,7 @@ export class GameData {
     this.gameEntities = [];
     this.player1Score = 0;
     this.player2Score = 0;
+    this.numberHits = 0;
   }
 
   listenToGameState = (state: GameStateDTO) => {
@@ -502,6 +509,8 @@ export class GameData {
   };
 
   private hitEffects(data: GameDTO) {
+    if (data.hitType === HitType.PADDLE) this.numberHits++;
+    if (this.gameType === "boring") return;
     if (
       data.hitType &&
       !(

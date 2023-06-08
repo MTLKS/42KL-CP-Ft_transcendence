@@ -26,15 +26,15 @@ import sleep from '../../functions/sleep'
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState('standard');
   const [ready, setReady] = React.useState(false);
-  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
+  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
   const [onCountdown, setOnCountdown] = React.useState(false);
   const myProfile = useContext(UserContext).myProfile;
 
   useEffect(() => {
     gameData.lobbyCountdown = () => {
-      setTimeout(() => {
-        setOnCountdown(true);
-      }, 1100);
+      // setTimeout(() => {
+      setOnCountdown(true);
+      // }, 1100);
     }
   }, []);
 
@@ -117,6 +117,8 @@ function Lobby() {
       gameData.sendReady(newReady, "Vrooooom");
     else if (selectedPowerUp === PaddleType.Vzzzzzzt)
       gameData.sendReady(newReady, "Vzzzzzzt");
+    else if (selectedPowerUp === PaddleType.boring)
+      gameData.sendReady(newReady, "normal");
   }
 }
 
