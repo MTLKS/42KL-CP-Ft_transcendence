@@ -27,7 +27,16 @@ function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState('standard');
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
+  const [onCountdown, setOnCountdown] = React.useState(false);
   const myProfile = useContext(UserContext).myProfile;
+
+  useEffect(() => {
+    gameData.lobbyCountdown = () => {
+      setTimeout(() => {
+        setOnCountdown(true);
+      }, 1100);
+    }
+  }, []);
 
   const opponent = useMemo(() => {
     if (gameData.player1IntraId === myProfile.intraName) {
@@ -89,7 +98,8 @@ function Lobby() {
             >leave</p>
           </LobbyReadyButton>
           <LobbyReadyButton onClick={() => sendReady()} selected={ready}>
-            <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>
+            {onCountdown ? <CountDown /> :
+              <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>}
           </LobbyReadyButton>
         </div>
       </div>
@@ -111,6 +121,23 @@ function Lobby() {
 }
 
 export default Lobby
+
+function CountDown() {
+  const [count, setCount] = React.useState(3);
+  useEffect(() => {
+    if (count <= 0) return;
+    const timeout = setTimeout(() => {
+      setCount(count - 1);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [count]);
+  return (
+    <div className=' relative'>
+      <p className={` uppercase font-extrabold text-3xl m-5 text-dimshadow text-center ${count > 0 ? "animate-ping" : ""}`}>{count}</p>
+      <p className=' absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 uppercase font-extrabold text-3xl text-dimshadow text-center'>{count}</p>
+    </div>
+  )
+}
 
 interface PowerUpButtonProps {
   title?: string;

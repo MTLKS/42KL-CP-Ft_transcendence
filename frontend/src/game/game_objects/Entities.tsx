@@ -11,7 +11,7 @@ function Entities() {
   const [entities, setEntities] = useState<GameEntity[]>([]);
 
   useEffect(() => {
-    gameData.setSetEntities = setEntities;
+    gameData.setEntities = setEntities;
   }, []);
 
   return (

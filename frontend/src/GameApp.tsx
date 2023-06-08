@@ -22,9 +22,9 @@ function GameApp(props: GameAppProps) {
   const { pixiApp, gameData } = props;
   useEffect(() => {
     pixiApp.ticker.maxFPS = 120;
-    gameData.setSetShouldRender = setShouldRender;
-    gameData.setSetScale = setScale;
-    gameData.setSetUsingTicker = setUsingTicker;
+    gameData.setShouldRender = setShouldRender;
+    gameData.setScale = setScale;
+    gameData.setUsingTicker = setUsingTicker;
     return () => {
       gameData.endGame()
     }
@@ -32,7 +32,7 @@ function GameApp(props: GameAppProps) {
 
   useEffect(() => {
     pixiApp.screen.width = gameData.gameCurrentWidth;
-    pixiApp.screen.height =gameData.gameCurrentHeight;
+    pixiApp.screen.height = gameData.gameCurrentHeight;
     window.addEventListener('mousemove', onmousemove);
     window.addEventListener('mousedown', onmousedown);
     window.addEventListener('mouseup', onmouseup);
@@ -55,8 +55,8 @@ function GameApp(props: GameAppProps) {
     if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
     gameData.updatePlayerPosition(
-      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5)/scale, 50, 850),
-      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5)/scale, 30, 1570),
+      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5) / scale, 50, 850),
+      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5) / scale, 30, 1570),
     );
   }
 

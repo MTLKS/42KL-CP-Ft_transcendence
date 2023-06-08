@@ -117,9 +117,9 @@ function HomePage(props: HomePageProps) {
 
   useEffect(() => {
     initFriendshipSocket();
-    gameData.setSetShouldDisplayGame = setShouldDisplayGame;
-    gameData.displayLobby = ()=>displayLobby();
-    gameData.stopDisplayLobby = ()=>stopDisplayLobby();
+    gameData.setShouldDisplayGame = setShouldDisplayGame;
+    gameData.displayLobby = () => displayLobby();
+    gameData.stopDisplayLobby = () => stopDisplayLobby();
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];

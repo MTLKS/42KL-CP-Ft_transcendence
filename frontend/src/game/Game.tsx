@@ -98,7 +98,7 @@ function Game(props: GameProps) {
   }, [scale]);
 
   useEffect(() => {
-    gameData.setBallhit = ballhit;
+    gameData.ballHit = ballhit;
   }, [scale]);
 
   useEffect(() => {
@@ -200,18 +200,18 @@ function Game(props: GameProps) {
 
 const winPhrase = [
   'YOU WIN',
-  'So good, so smooth.',
-  'Victory',
-  'Not bad, Indeed.',
-  'What a shot!!',
+  'SO GOOD, SO SMOOTH',
+  'VICTORY',
+  'NOT BAD, INDEED',
+  'WHAT A SHOT!!'
 ]
 
 const losePhrase = [
   'YOU LOSE',
-  'So bad, so sad.',
-  'Defeat',
-  'Not good, Indeed.',
-  'What a shame!!',
+  'SO BAD, SO SAD',
+  'DEFEAT',
+  'NOT GOOD, INDEED',
+  'WHAT A SHAME!!'
 ]
 
 export default Game
