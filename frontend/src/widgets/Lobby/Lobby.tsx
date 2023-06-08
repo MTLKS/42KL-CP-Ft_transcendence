@@ -24,7 +24,7 @@ import sleep from '../../functions/sleep'
 
 
 function Lobby() {
-  const [selectedMode, setSelectedMode] = React.useState('standard');
+  const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "">(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
   const [onCountdown, setOnCountdown] = React.useState(false);
@@ -83,11 +83,11 @@ function Lobby() {
             <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={longGIF} img={longPNG} title='Ngeeeaat' content='Longer paddle.' />
             <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
           </div>
-          <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode}</span> </h2>
+          <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode === "death" ? "sudden death" : selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
             <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
             <LobbyButton active={standardButtonActive} title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
-            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "sudden death"} onClick={() => setSelectedMode("sudden death")} />
+            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "death"} onClick={() => setSelectedMode("death")} />
           </div>
         </div>
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
