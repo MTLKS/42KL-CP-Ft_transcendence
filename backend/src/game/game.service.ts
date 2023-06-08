@@ -330,6 +330,8 @@ export class GameService {
         gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
+        if (gameType == "boring" || gameType == "death")
+          gameLobby.player1PowerUp = "normal";
 
         //TESTING
         // gameLobby.player2Ready = ready;
@@ -341,6 +343,8 @@ export class GameService {
         gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
+        if (gameType == "boring" || gameType == "death")
+          gameLobby.player2PowerUp = "normal";
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       }
@@ -427,7 +431,7 @@ export class GameService {
 
   async countdown(seconds: number): Promise<void> {
     let counter = seconds;
-    while (counter >= 0) {
+    while (counter > 0) {
       counter--;
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
