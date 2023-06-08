@@ -121,6 +121,7 @@ export class GameData {
   ) => void;
   ballHitParticle?: () => void;
   paddleHitParticle?: () => void;
+  lobbyCountdown?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -399,7 +400,7 @@ export class GameData {
         break;
       case "LobbyCountdown":
         const lobbyCountdownData = <CountdonwDTO>state.data;
-        console.log("LobbyCountdown:", lobbyCountdownData);
+        this.lobbyCountdown!();
         break;
       case "GameCountdown":
         const gameCountdownData = <CountdonwDTO>state.data;
@@ -583,6 +584,7 @@ export class GameData {
     this.tickPerParticles = Math.floor((this.tickPerParticles - 1) / 2);
     this._pongSpeed.x = this.localTickerPongSpeed.x;
     this._pongSpeed.y = this.localTickerPongSpeed.y;
+    this.gameEntities = [];
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();
