@@ -53,7 +53,7 @@ export function ErrorPopup(props: ErrorPopupProps) {
 
   return (
     <div
-      className='flex flex-row items-center overflow-hidden transition-transform duration-200 ease-in-out transform border-2 border-solid w-fit h-fit rounded-l-xl bg-dimshadow lg:border-3 border-highlight'
+      className='z-[100] flex flex-row items-center overflow-hidden transition-transform duration-200 ease-in-out transform border-2 border-solid  w-fit h-fit rounded-l-xl bg-dimshadow lg:border-3 border-highlight'
       style={{ transform: `translateX(${position}%)`}}
     >
       <div className='p-2.5 text-xl lg:text-2xl text-dimshadow bg-highlight'>
