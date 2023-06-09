@@ -22,14 +22,15 @@ import { getProfileOfUser } from '../../api/profileAPI'
 import { ErrorData } from '../../model/ErrorData';
 import UserContext from '../../contexts/UserContext'
 import sleep from '../../functions/sleep'
-
-
+import Triangle from '../../components/Triangle'
+import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
 
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "">(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
   const [onCountdown, setOnCountdown] = React.useState(false);
+  const [currentEmote, setCurrentEmote] = React.useState<number>(0);
   const myProfile = useContext(UserContext).myProfile;
 
   useEffect(() => {
@@ -94,6 +95,17 @@ function Lobby() {
         </div>
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
           <div className='flex-1'></div>
+          <div className="flex flex-row items-center gap-6 box-border pb-10">
+            <button onMouseDown={() => setCurrentEmote(currentEmote === 0 ? 9 : currentEmote - 1)} className="cursor-pointer">
+              <Triangle direction='left' w={40} h={40} ></Triangle>
+            </button>
+            <button className="uppercase font-extrabold w-1/2 text-md text-highlight group-hover:text-dimshadow text-center cursor-pointer" onMouseDown={sendEmote}>
+              <Emote index={currentEmote}></Emote>
+            </button>
+            <button onMouseDown={() => setCurrentEmote(currentEmote === 9 ? 0 : currentEmote + 1)} className="cursor-pointer">
+             <Triangle direction='right' w={40} h={40}></Triangle>
+            </button>
+          </div>
           <LobbyReadyButton >
             <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}
               onClick={() => gameData.leaveLobby()}
@@ -122,9 +134,33 @@ function Lobby() {
     else if (selectedPowerUp === PaddleType.boring)
       gameData.sendReady(newReady, "normal");
   }
+
+  function sendEmote() {
+    console.log("emote: ", currentEmote);
+  }
+
+  function Emote() {
+    let emoteList = [
+      <FaThumbsUp size={100}/>,
+      <FaHandMiddleFinger size={100}/>,
+      <FaSkull size={100}/>,
+      <FaWheelchair size={100}/>,
+      <FaSmile size={100}/>,
+      <FaSadCry size={100}/>,
+      <FaAngry size={100}/>,
+      <FaPoop size={100}/>,
+      <FaHeart size={100}/>,
+      <FaTrash size={100}/>,
+    ]
+  
+    return (
+      emoteList[currentEmote]
+    )
+  }
 }
 
-export default Lobby
+export default Lobby;
+
 
 function CountDown() {
   const [count, setCount] = React.useState(3);
