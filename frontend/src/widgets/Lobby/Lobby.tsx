@@ -100,7 +100,7 @@ function Lobby() {
               <Triangle direction='left' w={40} h={40} ></Triangle>
             </button>
             <button className="uppercase font-extrabold w-1/2 text-md text-highlight group-hover:text-dimshadow text-center cursor-pointer" onMouseDown={sendEmote}>
-              <Emote index={currentEmote}></Emote>
+              <Emote></Emote>
             </button>
             <button onMouseDown={() => setCurrentEmote(currentEmote === 9 ? 0 : currentEmote + 1)} className="cursor-pointer">
              <Triangle direction='right' w={40} h={40}></Triangle>
