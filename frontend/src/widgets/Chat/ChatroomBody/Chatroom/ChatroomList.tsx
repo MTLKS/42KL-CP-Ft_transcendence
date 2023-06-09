@@ -5,17 +5,16 @@ import { HiServer } from 'react-icons/hi';
 import { FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChannel from '../Channel/NewChannel';
-import { ChatContext, ChatroomsContext, NewChannelContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
 import { getChatroomList } from '../../../../api/chatAPIs';
 import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
 import ChannelList from '../Channel/ChannelList';
-import newChannelReducer, { newChannelInitialState } from '../Channel/newChannelReducer';
 
 function ChatroomList() {
 
-  const { chatSocket } = useContext(ChatContext);
+  const { chatSocket, expanded } = useContext(ChatContext);
   const { unreadChatrooms, setUnreadChatrooms } = useContext(ChatroomsContext);
   const { friends } = useContext(FriendsContext);
   const { setChatBody } = useContext(ChatContext);
@@ -25,9 +24,10 @@ function ChatroomList() {
   useEffect(() => {
     const newUnreadChatrooms: number[] = [...unreadChatrooms];
     chatSocket.listen("message", (data: ChatroomMessageData) => {
+      const channelInfo = (data.isRoom ? data.receiverChannel : data.senderChannel);
       getAllChatrooms();
-      if (unreadChatrooms.includes(data.senderChannel.channelId)) return;
-      newUnreadChatrooms.push(data.senderChannel.channelId);
+      if (unreadChatrooms.includes(channelInfo.channelId)) return;
+      newUnreadChatrooms.push(channelInfo.channelId);
       setUnreadChatrooms(newUnreadChatrooms);
     });
     return () => chatSocket.removeListener("message");
@@ -47,7 +47,7 @@ function ChatroomList() {
   }, [chatrooms]);
 
   return (
-    <div className='flex flex-col border-box h-0 flex-1 relative'>
+    <div className={`relative ${expanded ? 'flex' : 'hidden'} flex-col flex-1 h-0 border-box`}>
       {chatrooms.length > 0
         ? displayChatroomListBody()
         : <ChatEmptyState />
@@ -87,16 +87,18 @@ function ChatroomList() {
         return false;
       })
     }
-    return filteredChatrooms.map(chatroom => <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />);
+    return filteredChatrooms.map(chatroom => {
+      return <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />
+    });
   }
 
   function displayChatroomListBody() {
     return (
-      <div className='h-full w-full'>
-        <div className=' py-3 px-4'>
+      <div className='w-full h-full'>
+        <div className='px-4 py-3'>
           <ChatTableTitle title={`Chatrooms`} searchable={true} setFilterKeyword={setFilterKeyword} />
         </div>
-        <div className='h-full w-full overflow-y-scroll scrollbar-hide'>
+        <div className='w-full h-full overflow-y-scroll scrollbar-hide'>
           {displayChatrooms()}
         </div>
       </div>

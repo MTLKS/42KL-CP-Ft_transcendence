@@ -51,15 +51,15 @@ export class GameService {
   //Lobby functions
   async handleConnection(client: Socket) {
     const ACCESS_TOKEN = client.handshake.headers.authorization;
-    const USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
-    if (USER_DATA.error !== undefined) {
-      // client.disconnect(true);
+    let userData: any;
+    try {
+      userData = await this.userService.getMyUserData(ACCESS_TOKEN);
+    } catch {
       return;
     }
-
     // Checks if user is already connected, if they are then send error and disconnect
     if (
-      this.connected.find((e: Player) => e.intraName === USER_DATA.intraName)
+      this.connected.find((e: Player) => e.intraName === userData.intraName)
     ) {
       client.emit(
         'gameResponse',
@@ -70,7 +70,7 @@ export class GameService {
     }
 
     // Keeps track of users that are connected
-    let player = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+    let player = new Player(userData.intraName, ACCESS_TOKEN, client);
     this.connected.push(player);
 
     // Clear any ended game rooms
@@ -78,7 +78,7 @@ export class GameService {
 
     // If player is ingame, reconnect player to game
     this.gameRooms.forEach(async (gameRoom) =>{
-      if (gameRoom._players.includes(USER_DATA.intraName)) {
+      if (gameRoom._players.includes(userData.intraName)) {
         let opponentIntraName = '';
         if (player.intraName == gameRoom.player1.intraName){
           gameRoom.player1 = player;
@@ -109,25 +109,27 @@ export class GameService {
   }
 
   async handleDisconnect(server: Server, client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
+    let userData: any;
+    try {
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
 
     Object.keys(this.queues).forEach((queueType) => {
       if (
         this.queues[queueType].find(
           (e: Player) =>
-            e.intraName === USER_DATA.intraName && e.socket.id === client.id,
+            e.intraName === userData.intraName && e.socket.id === client.id,
         )
       ) {
         this.queues[queueType] = this.queues[queueType].filter(function (e) {
-          return e.intraName !== USER_DATA.intraName;
+          return e.intraName !== userData.intraName;
         });
 
         if (LOBBY_LOGGING)
           console.log(
-            `${USER_DATA.intraName} left ${queueType} queue due to disconnect.`,
+            `${userData.intraName} left ${queueType} queue due to disconnect.`,
           );
       }
     });
@@ -137,27 +139,31 @@ export class GameService {
 
     // If player is ingame, pause game
     this.gameRooms.forEach((gameRoom) => {
-      if (gameRoom._players.includes(USER_DATA.intraName)) {
-        gameRoom.togglePause(server, USER_DATA.intraName);
+      if (gameRoom._players.includes(userData.intraName)) {
+        gameRoom.togglePause(server, userData.intraName);
       }
     });
 
     // Removes user from connection tracking
     this.connected = this.connected.filter(function (e) {
-      return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id;
+      return e.intraName !== userData.intraName || e.socket.id !== client.id;
     });
   }
 
   async joinQueue(client: Socket, clientQueue: string, server: Server) {
+    let userData: any;
     const ACESS_TOKEN = client.handshake.headers.authorization;
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
-
+    try{
+      userData =  await this.userService.getMyUserData(ACESS_TOKEN);
+    }
+    catch{
+      return;
+    }
     // Check if queue is known
     if (!(clientQueue in this.queues) && clientQueue !== "practice") {
       if (LOBBY_LOGGING)
         console.log(
-          `${USER_DATA.intraName} tried to join unknown queue "${clientQueue}".`,
+          `${userData.intraName} tried to join unknown queue "${clientQueue}".`,
         );
       client.emit(
         'gameResponse',
@@ -171,9 +177,9 @@ export class GameService {
 
     // Check if player is already in a game
     this.gameRooms.forEach((gameRoom) => {
-      if (gameRoom._players.includes(USER_DATA.intraName)) {
+      if (gameRoom._players.includes(userData.intraName)) {
         if (LOBBY_LOGGING)
-          console.log(`${USER_DATA.intraName} is already in a game.`);
+          console.log(`${userData.intraName} is already in a game.`);
         client.emit(
           'gameResponse',
           new GameResponseDTO('error', 'Already in game'),
@@ -185,12 +191,12 @@ export class GameService {
     // Check if player if already in a queue
     const IN_QUEUE = Object.keys(this.queues).find((queueType) => {
       return this.queues[queueType].find(
-        (e) => e.intraName === USER_DATA.intraName,
+        (e) => e.intraName === userData.intraName,
       );
     });
     if (IN_QUEUE !== undefined) {
       if (LOBBY_LOGGING)
-        console.log(`${USER_DATA.intraName} is already in ${IN_QUEUE} queue.`);
+        console.log(`${userData.intraName} is already in ${IN_QUEUE} queue.`);
       client.emit(
         'gameResponse',
         new GameResponseDTO('error', 'Already in queue'),
@@ -199,15 +205,15 @@ export class GameService {
     }
 
     if (clientQueue === "practice") {
-      let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
+      let player = new Player(userData.intraName, ACESS_TOKEN, client);
       this.joinPracticeLobby(player);
       return;
     }
 
     // Puts player in the queue
     if (LOBBY_LOGGING)
-      console.log(`${USER_DATA.intraName} joins ${clientQueue} queue.`);
-    let player = new Player(USER_DATA.intraName, ACESS_TOKEN, client);
+      console.log(`${userData.intraName} joins ${clientQueue} queue.`);
+    let player = new Player(userData.intraName, ACESS_TOKEN, client);
     client.emit(
       'gameResponse',
       new GameResponseDTO('success', `Joined ${clientQueue} queue`),
@@ -234,24 +240,26 @@ export class GameService {
   }
 
   async leaveQueue(client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
-
+    let userData: any;
+    try{
+      userData =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+    catch{
+      return;
+    }
     Object.keys(this.queues).forEach((queueType) => {
       if (
-        this.queues[queueType].find((e) => e.intraName === USER_DATA.intraName)
+        this.queues[queueType].find((e) => e.intraName === userData.intraName)
       ) {
         this.queues[queueType] = this.queues[queueType].filter(function (e) {
-          return e.intraName !== USER_DATA.intraName;
+          return e.intraName !== userData.intraName;
         });
         client.emit(
           'gameResponse',
           new GameResponseDTO('success', `Left the ${queueType} queue`),
         );
         if (LOBBY_LOGGING)
-          console.log(`${USER_DATA.intraName} left ${queueType} queue.`);
+          console.log(`${userData.intraName} left ${queueType} queue.`);
       }
     });
   }
@@ -267,8 +275,39 @@ export class GameService {
   joinLobby(player1: Player, player2: Player, gameType: string) {
     let lobby = new Lobby(player1, player2, gameType);
     this.gameLobbies.set(player1.intraName + player2.intraName, lobby);
-    player1.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
-    player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+    player1.socket.join(lobby.name);
+    player2.socket.join(lobby.name);
+    player1.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+    player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+  }
+
+  async joinPrivateLobby(client: Socket, isHost: boolean, opponentIntraName: string){
+    const ACCESS_TOKEN = client.handshake.headers.authorization;
+    let   USER_DATA;
+    try{
+      USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
+    }
+    catch{
+      return;
+    }
+    if (isHost == true){
+      let player1 = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+      let lobby = new Lobby(player1, null, "private");
+      this.gameLobbies.set(player1.intraName + opponentIntraName, lobby);
+      client.join(lobby.name);
+    }
+    else{
+      const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
+      const LOBBY = this.gameLobbies.get(LOBBY_KEY);
+      if (LOBBY == undefined){
+        client.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "lobby not found")));
+        return;
+      }
+      let player2 = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+      LOBBY.player2 = player2;
+      client.join(LOBBY.name);
+    }
+    client.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(USER_DATA.intraName, opponentIntraName, "private", isHost)));
   }
 
   getLobbyKeyFromIntraNames(intraName: string): string | undefined {
@@ -280,10 +319,13 @@ export class GameService {
   }
 
   async leaveLobby(client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
+    let USER_DATA;
+    try{
+      USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+    catch{
+      return;
+    }
     const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
     if (LOBBY_KEY != undefined) {
       const LOBBY = this.gameLobbies.get(LOBBY_KEY);
@@ -296,6 +338,8 @@ export class GameService {
           LOBBY.player1.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO(LOBBY.player2.intraName, "leave")));
           LOBBY.player2.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "leave")));
         }
+        LOBBY.player1.socket.leave(LOBBY.name);
+        LOBBY.player2.socket.leave(LOBBY.name);
         this.gameLobbies.delete(LOBBY_KEY);
       }
     }
@@ -319,15 +363,20 @@ export class GameService {
     return powerUp;
   }
 
-  async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
+  async handleReady(client: Socket, gameType:string, ready: boolean, powerUp: string, server: Server) {
+    let USER_DATA;
+    try{
+      USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+    catch{
+      return;
+    }
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
-      let gameType;
+      // let gameType;
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
-        gameType = gameLobby.gameType;
+        // gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
@@ -340,7 +389,7 @@ export class GameService {
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       } else {
-        gameType = gameLobby.gameType;
+        // gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
@@ -351,6 +400,8 @@ export class GameService {
       if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
         this.gameLobbies.delete(key);
+        gameLobby.player1.socket.leave(gameLobby.name);
+        gameLobby.player2.socket.leave(gameLobby.name);
         this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
       }
     });
@@ -405,19 +456,43 @@ export class GameService {
   }
 
   async playerUpdate(client: Socket, roomID: string, xValue: number, yValue: number) {
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
+    let userData: any;
+    try {
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
     ROOM.updatePlayerPos(client.id, xValue, yValue);
   }
 
   async playerMouseUpdate(client: Socket, roomID: string, isMouseDown: boolean) {
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
+    let userData;
+    try {
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
     ROOM.updatePlayerMouse(client.id, isMouseDown);
+  }
+
+  async emote(client: Socket, server: Server, emote: number){
+    let userData;
+    try {
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
+    const LOBBY_KEY = this.getLobbyKeyFromIntraNames(userData.intraName);
+    if (LOBBY_KEY !== undefined){
+      const LOBBY = this.gameLobbies.get(LOBBY_KEY);
+      if (LOBBY != undefined) {
+        server.to(LOBBY.name).emit("emote", emote);
+      }
+    }
   }
 
   clearGameRooms() {

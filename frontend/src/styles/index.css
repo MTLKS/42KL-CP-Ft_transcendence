@@ -15,6 +15,10 @@
   body {
     @apply bg-highlight relative;
   }
+
+  button {
+    @apply cursor-pointer;
+  }
 }
 
 .pixiApp {
@@ -40,10 +44,10 @@
   }
 
   .polka-dot {
-    @apply h-screen w-screen rounded-3xl border-[4px] border-solid border-highlight;
+    @apply h-screen w-screen border-solid border-highlight bg-center;
     background-color: rgb(var(--dimmer-shadow));
-    background-image: radial-gradient(rgba(var(--highlight-color)) 0.5px,
-        transparent 0.5px);
+    background-image: radial-gradient(rgba(var(--highlight-color)/0.4) 1px,
+        transparent 1px);
     background-size: 20px 20px;
   }
 

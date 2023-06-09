@@ -64,14 +64,14 @@ function Friendlist(props: FriendlistProps) {
   return (
     <div className='w-full h-full flex flex-col overflow-hidden text-base uppercase bg-dimshadow px-[2ch] relative' onClick={focusOnInput}>
       <input
-        className='w-0 h-0 absolute'
+        className='absolute w-0 h-0'
         onKeyDown={handleKeyDown}
         onChange={handleInput}
         value={inputValue}
         ref={inputRef}
       />
       { userData.intraName !== myProfile.intraName && <p className='bg-highlight text-dimshadow w-fit px-[1ch]'>Currently viewing <span className='bg-accCyan text-highlight'>{userData.userName}</span>'s friend list</p>}
-      <div className='w-full h-full flex flex-col overflow-hidden' ref={divRef}>
+      <div className='flex flex-col w-full h-full overflow-hidden' ref={divRef}>
         {
           friends.length === 0
             ? <EmptyFriendlist userData={userData}/>

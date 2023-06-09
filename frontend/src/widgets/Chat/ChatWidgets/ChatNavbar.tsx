@@ -16,11 +16,11 @@ function ChatNavbar(props: ChatNavbarProps) {
   const { backAction, title, nextComponent, children, nextAction } = props;
 
   return (
-    <div className='w-full h-fit flex flex-row relative p-5 items-center justify-center'>
+    <div className='relative flex flex-row items-center justify-center w-full p-5 h-fit'>
       {
         children !== undefined && title === undefined
           ? children
-          : <p className='text-2xl font-extrabold text-center text-highlight w-full uppercase'>{title}</p>
+          : <p className='w-full text-2xl font-extrabold text-center uppercase text-highlight'>{title}</p>
       }
       <div className='absolute flex flex-row justify-between w-[95%]'>
         <ChatButton icon={<FaArrowLeft />} onClick={backAction} />

@@ -2,7 +2,7 @@ import React from 'react'
 
 function YoutubeEmbed() {
   return (
-    <div className=' pointer-events-none'>
+    <div className='pointer-events-none '>
       <iframe
         width="100%"
         height="800"

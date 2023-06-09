@@ -14,14 +14,14 @@ function EmptyFriendlist(props: EmptyFriendlistProps) {
 
   if (userData.intraId === myProfile.intraId) {
     return (
-      <div className='w-fit h-fit text-center text-2xl flex flex-col items-center text-highlight m-auto gap-y-4'>
+      <div className='flex flex-col items-center m-auto text-2xl text-center w-fit h-fit text-highlight gap-y-4'>
         <p className='flex flex-row gap-x-3'>You have no friends... Boohoo <FaSadCry className='animate-bounce text-accYellow' /></p>
         <p className='text-lg'>Use <span className='bg-highlight text-dimshadow'>friend add [username]</span> to add some friends!</p>
       </div>
     )
   } else {
     return (
-      <div className='w-fit h-fit text-center text-2xl flex flex-col items-center text-highlight m-auto gap-y-4'>
+      <div className='flex flex-col items-center m-auto text-2xl text-center w-fit h-fit text-highlight gap-y-4'>
         <p className='flex flex-row gap-x-3'>{userData.userName} has no friends... Boohoo <FaSadCry className='animate-bounce text-accYellow' /></p>
         <p className='text-lg'>Use <span className='bg-highlight text-dimshadow'>friend add {userData.intraName}</span> to send a friend request!</p>
       </div>

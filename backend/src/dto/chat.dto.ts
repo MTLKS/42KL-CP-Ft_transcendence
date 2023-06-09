@@ -103,8 +103,14 @@ export class MessageDTO {
 }
 
 export class GetChannelQueryDTO {
-	@ApiProperty({ description: null, required: false })
+	@ApiProperty({ description: "Defaults to null", required: false })
 	startWith: string;
+
+	@ApiProperty({ description: "Defaults to 50", required: false })
+	perPage: number;
+
+	@ApiProperty({ description: "Defaults to 1", required: false })
+	page: number;
 }
 
 export class GetMessageQueryDTO {

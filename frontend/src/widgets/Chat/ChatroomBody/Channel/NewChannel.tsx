@@ -48,8 +48,8 @@ function NewChannel(props: NewChannelProps) {
   // TODO: DO ME
   function displayNoFriends() {
     return (
-      <div className='uppercase w-full h-full'>
-        <p className='w-fit h-fit bg-accRed m-auto py-6 px-5'>No friends to choose from</p>
+      <div className='w-full h-full uppercase'>
+        <p className='px-5 py-6 m-auto w-fit h-fit bg-accRed'>No friends to choose from</p>
       </div>
     )
   }

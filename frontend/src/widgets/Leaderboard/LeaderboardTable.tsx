@@ -184,7 +184,7 @@ function LeaderboardTable(props: LeaderboardTableProps) {
   const { leaderboardUsers, type, appendLeaderBoardUsers } = props;
 
   return (
-    <div className='text-highlight flex-1 overflow-hidden font-extrabold text-sm flex flex-col'>
+    <div className='flex flex-col flex-1 overflow-hidden text-sm font-extrabold text-highlight'>
       <LeaderboardTableTitle />
       <div className='overflow-auto w-full flex-1 scrollbar-hide'
         onScroll={handleScroll}

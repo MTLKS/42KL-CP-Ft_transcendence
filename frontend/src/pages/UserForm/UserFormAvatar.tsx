@@ -6,12 +6,13 @@ interface UserFormAvatarProps {
   intraName: string,
   avatarUrl: string,
   setAvatar: (newAvatar: string) => void,
-  setFileExtension: (ext: string) => void
+  setFileExtension: (ext: string) => void,
+  animate: boolean,
 }
 
 function UserFormAvatar(props: UserFormAvatarProps) {
 
-  const { intraName, avatarUrl, setAvatar, setFileExtension } = props;
+  const { intraName, avatarUrl, setAvatar, setFileExtension, animate } = props;
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const handleButtonClick = () => {
@@ -31,10 +32,10 @@ function UserFormAvatar(props: UserFormAvatarProps) {
   }
 
   return (
-    <div className='flex flex-col w-[50%] h-fit max-w-md rounded-2xl overflow-hidden border-highlight border-4'>
+    <div className={`${animate ? "" : " scale-y-0"} transition-transform duration-500 flex flex-col w-[50%] h-fit max-w-md rounded-2xl overflow-hidden border-highlight border-4`}>
       <img className='h-full w-full object-cover aspect-square lg:aspect[0.5/0.5]' src={avatarUrl} alt={`${intraName}'s avatar`} />
       <div
-        className='select-none capitalize text-dimshadow hover:text-highlight bg-highlight hover:bg-dimshadow text-center py-2 lg:py-3 cursor-pointer font-semibold lg:font-extrabold transition hover:ease-in-out'
+        className='py-2 font-semibold text-center capitalize cursor-pointer select-none text-dimshadow hover:text-highlight bg-highlight hover:bg-dimshadow lg:py-3 lg:font-extrabold transition hover:ease-in-out'
         onClick={handleButtonClick}
       >
         Upload new avatar

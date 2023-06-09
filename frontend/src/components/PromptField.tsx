@@ -114,40 +114,40 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     }
     inputRef.current!.focus();
   }, [value]);
-  
-  const {toolTips,isParameter} = useMemo(() => {
+
+  const { toolTips, isParameter } = useMemo(() => {
     const toolTipCommands: string[] = [];
     let isParameter = false;
-    let currentCommand :CommandOptionData;
+    let currentCommand: CommandOptionData;
     splitValue.forEach((word, index) => {
       if (index !== 0) {
         const found = currentCommand === undefined ? false : currentCommand.options.find((command) => command.isCommand(word))!;
-        if (!found){
+        if (!found) {
           if (currentCommand) {
             toolTipCommands.push(currentCommand.parameter);
             isParameter = true;
           }
-          return ;
+          return;
         }
         else
-          currentCommand  = found;
+          currentCommand = found;
         toolTipCommands.push(currentCommand.command);
-        return ;
+        return;
       }
       currentCommand = availableCommands.find((command) => command.isCommand(word))!;
-      if (!currentCommand) return ;
+      if (!currentCommand) return;
       toolTipCommands.push(currentCommand.command);
     });
-    return {toolTips: toolTipCommands, isParameter};
+    return { toolTips: toolTipCommands, isParameter };
   }, [value]);
-  
+
   return (
     <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
     >
-      <div className=' relative
-      text-highlight text-2xl tracking-tighter whitespace-pre
-      mx-auto flex
-      px-1 rounded-md h-15 pt-3 pb-3 cursor-text'
+      <div className='px-1 pt-3 pb-3 mx-auto text-2xl tracking-tighter  relative
+ text-highlight whitespace-pre
+ flex
+ rounded-md h-15 cursor-text'
         style={{
           borderColor: focus ? focusColor ?? "#fef8e2" : "#fef8e2", transition: "border-color 0.5s",
           textAlign: center ? "center" : "left", borderWidth: center ? "4px" : 0,
@@ -158,7 +158,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
         ref={divRef}
       >
         {spans}
-        <input className='  w-0 outline-none bg-transparent text-transparent'
+        <input className='w-0 text-transparent bg-transparent outline-none '
           ref={inputRef}
           onInput={(e) => {
 
@@ -174,9 +174,9 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
           onBlur={() => setFocus(false)}
           onClickCapture={(e) => e.stopPropagation()}
         />
-        <div className=' absolute opacity-20'
+        <div className='absolute  opacity-20'
           style={{
-            display: toolTips.length!=0 && value !== "" && showtip && !(isParameter && splitValue[splitValue.length - 1].length !== 0) ? "" : "none",
+            display: toolTips.length != 0 && value !== "" && showtip && !(isParameter && splitValue[splitValue.length - 1].length !== 0) ? "" : "none",
             left: toolTipOffset.left, top: toolTipOffset.top
           }}
         >
@@ -273,6 +273,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     }
     if ((e.key === 'Tab' || e.key === 'ArrowRight')) {
       e.preventDefault();
+      if (toolTips[toolTips.length - 1].startsWith("<")) return;
       let finalString = '';
       toolTips.forEach((toolTip, index) => {
         if (index === 0)
