@@ -21,11 +21,11 @@ function LoginBadge() {
   return (
     <div className='mt-[25px] p-3 font-bungee leading-none rounded-3xl h-[150px] w-[160px] border-4 border-highlight flex flex-col items-center'
       style={{ borderWidth: '10px' }}>
-       <div className='flex self-end mt-1 flex-rol'>
+       <div className='flex self-end mt-1 flex-row'>
         <div className={`text-3xl ${slideIn ? "" : "opacity-0"} transition-opacity duration-700`}>42</div>
         <div className={`ml-[0.375rem] mt-[0.375rem] h-[1.5rem] ${slideIn ? "w-[60px]" : "w-0"} transition-all duration-700 bg-highlight rounded-sm`} />
       </div>
-      <div className='flex self-start flex-rol'>
+      <div className='flex self-start flex-row'>
         <div className={`mr-[0.375rem] mt-[0.375rem] h-[1.5rem] ${slideIn ? "w-[60px]" : "w-0"} transition-all duration-700 bg-highlight rounded-sm`} />
         <div className={`text-3xl ${slideIn ? "" : "opacity-0"} transition-opacity duration-700`}>ft</div>
       </div>
