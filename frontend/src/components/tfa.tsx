@@ -26,7 +26,7 @@ enum TFACommands {
 function help() {
 	return (
 		<Card type={CardType.SUCCESS}>
-			<span className='text-2xl font-bold  neonText-white'>TFA</span><br />
+			<span className='text-2xl font-bold neonText-white'>TFA</span><br />
 			<p>
 				tfa set					: Sets and enables Google 2FA<br />
 				tfa unset [OTP code]	: Unsets and disable 2FA (requires OTP code)<br />
@@ -75,7 +75,6 @@ function Tfa(props: TFAProps) {
 		useEffect(() => {
 			setResult(TFACommands.sending)
 			forgotTFA().then((data) => {
-				console.log(data);
 				if (data.error === "Not authorized") {
 					document.cookie = "Authorization=;";
 					setResult(TFACommands.refresh);

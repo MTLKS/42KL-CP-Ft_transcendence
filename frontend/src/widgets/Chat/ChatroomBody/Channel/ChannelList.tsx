@@ -7,6 +7,7 @@ import ChatroomList from '../Chatroom/ChatroomList';
 import { getAllPublicChannels } from '../../../../api/chatAPIs';
 import { ChatroomData } from '../../../../model/ChatRoomData';
 import { FaEye, FaFlushed, FaHandPaper, FaSadCry, FaTimes } from 'react-icons/fa';
+import { ErrorPopup } from '../../../../components/Popup';
 
 const CHANNEL_FETCH_LIMIT = 5;
 
@@ -28,7 +29,9 @@ function ChannelList() {
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
   const [canBeFetchedFiltered, setCanBeFetchedFiltered] = useState<boolean>(true);
   const scrollableDivRef = useRef<HTMLDivElement>(null);
-  const [listFiltered, setListFiltered] = useState<boolean>(false); 
+  const [listFiltered, setListFiltered] = useState<boolean>(false);
+  const [hasErrorJoining, setHasErrorJoining] = useState<boolean>(false);
+  const [joinChannelErrorMsg, setJoinChannelErrorMsg] = useState<string>('');
 
   useEffect(() => {
     getPublicChannels();
@@ -40,6 +43,15 @@ function ChannelList() {
       scrollableDiv?.removeEventListener('scroll', handleScrollToBottom);
     }
   }, []);
+
+  useEffect(() => {
+    if (hasErrorJoining) {
+      setTimeout(() => {
+        setHasErrorJoining(false);
+        setJoinChannelErrorMsg('');
+      }, 2000);
+    }
+  }, [hasErrorJoining]);
 
   useEffect(() => {
     let shouldListFiltered = false;
@@ -62,8 +74,11 @@ function ChannelList() {
   }, [isAtBottom]);
 
   return (
-    <div className='flex flex-col flex-1 h-0 border-box text-highlight'>
+    <div className='relative flex flex-col flex-1 h-0 border-box text-highlight'>
       <ChatNavbar title="channel list" backAction={() => setChatBody(<ChatroomList />)} />
+      <div className='absolute right-0 z-30 top-4'>
+        {hasErrorJoining && <ErrorPopup text={joinChannelErrorMsg} />}
+      </div>
       <div className='relative w-full h-full px-10 overflow-y-scroll scrollbar-hide' ref={scrollableDivRef}>
         <div className='sticky top-0 z-10 bg-dimshadow'>
           <ChatTableTitle title={`channels`} searchable={true} setFilterKeyword={setFilterKeyword} />
@@ -109,7 +124,7 @@ function ChannelList() {
     }
 
     const newChannelComponents: JSX.Element[] = channels.map((channel) => {
-      return <Channel key={channel.channelId} channelInfo={channel} />
+      return <Channel key={channel.channelId} channelInfo={channel} setHasErrorJoining={setHasErrorJoining} setJoinChannelErrorMsg={setJoinChannelErrorMsg}/>
     });
 
     if (channelType === FetchChannelType.ALL) {

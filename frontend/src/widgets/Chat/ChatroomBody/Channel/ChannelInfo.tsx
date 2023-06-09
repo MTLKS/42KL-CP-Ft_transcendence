@@ -195,7 +195,7 @@ function ChannelInfo(props: ChannelInfoProps) {
         <div className='flex flex-col top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[90%] mx-auto absolute z-20 bg-dimshadow p-2 border-4 border-highlight rounded overflow-hidden'>
           <div className='relative flex flex-row items-center justify-between w-full mb-2'>
             <button className='p-1 m-2 border-2 rounded border-dimshadow w-fit aspect-square hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight' onClick={() => dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})} ><FaTimes /></button>
-            {state.inviteList.length > 0 && <button className='border-2 border-highlight bg-dimshadow text-highlight hover:text-dimshadow hover:bg-highlight font-extrabold rounded text-sm p-1.5 h-fit' onClick={sendInvites}>SEND INVITES ({state.inviteList.length})</button>}
+            {state.inviteList.length > 0 && <button className='border-2 border-highlight bg-dimshadow text-highlight hover:text-dimshadow hover:bg-highlight font-extrabold rounded text-sm p-1.5 h-fit mr-2' onClick={sendInvites}>ADD FRIEND ({state.inviteList.length})</button>}
           </div>
           { friendsButNotMembers.length === 0
             ? (
@@ -282,16 +282,21 @@ function ChannelInfo(props: ChannelInfoProps) {
 
       // kick and unban are the same action
       if (moderatedMember.actionType === ModeratorAction.KICK || moderatedMember.actionType === ModeratorAction.UNBAN) {
-        const kickMemberResponse = await kickMember(channelId, moderatedMember.memberInfo.memberInfo.intraName);
-        
-        const errorString = (kickMemberResponse.data as ErrorData).error;
-        if (errorString) {
-          if (errorString === "Invalid channelId - requires admin privileges") {
-            newErrorResponses.push("Ha! You think you have admin privileges?");
-          } else if (errorString === "Invalid channelId - channel is not found") {
-            newErrorResponses.push("This channel doesn't exist anymore!");
-          } else if (errorString === "Invalid intraName - user is not a member of this channel") {
-            newErrorResponses.push(`${moderatedMember.memberInfo.memberInfo.userName} who???`);
+
+        try {
+          const kickMemberResponse = await kickMember(channelId, moderatedMember.memberInfo.memberInfo.intraName);
+        } catch (err: any) {
+          const errorMessage = err.response.data as ErrorData;
+          if (errorMessage) {
+            if (errorMessage.error === "Invalid channelId - requires admin privileges") {
+              newErrorResponses.push("Ha! You think you have admin privileges?");
+            } else if (errorMessage.error === "Invalid channelId - channel is not found") {
+              newErrorResponses.push("This channel doesn't exist anymore!");
+            } else if (errorMessage.error === "Invalid intraName - user is not a member of this channel") {
+              newErrorResponses.push(`${moderatedMember.memberInfo.memberInfo.userName} who???`);
+            } else if (errorMessage.error === "Invalid channelId - you are not a member of this channel") {
+              newErrorResponses.push("Who are you? You don't belong here!");
+            }
           }
         }
         continue;
@@ -339,8 +344,22 @@ function ChannelInfo(props: ChannelInfoProps) {
         isMuted: isMuted,
       }
       // modify member roles
-      const updateMemberResponse = await updateMemberRole(updatedMember);
-      console.log(updateMemberResponse);
+      try {
+        const updateMemberResponse = await updateMemberRole(updatedMember);
+      } catch (err: any) {
+        const errorMessage = err.response.data as ErrorData;
+        if (errorMessage) {
+          if (errorMessage.error === "Invalid channelId - requires admin privileges") {
+            newErrorResponses.push("Ha! You think you have admin privileges?");
+          } else if (errorMessage.error === "Invalid channelId - channel is not found") {
+            newErrorResponses.push("This channel doesn't exist anymore!");
+          } else if (errorMessage.error === "Invalid intraName - user is not a member of this channel") {
+            newErrorResponses.push(`${moderatedMember.memberInfo.memberInfo.userName} who???`);
+          } else if (errorMessage.error === "Invalid channelId - you are not a member of this channel") {
+            newErrorResponses.push("Who are you? You don't belong here!");
+          }
+        }
+      }
     }
     return newErrorResponses;
   }

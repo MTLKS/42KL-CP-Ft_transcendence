@@ -18,7 +18,6 @@ export function getMemberData(channelId: number): Promise<AxiosResponse> {
 }
 
 export function getAllPublicChannels(perPage: number, page: number, startWith: string): Promise<AxiosResponse> {
-  console.log("Params:", {perPage: perPage, page: page, startWith: startWith});
   return api.get(`${NAMESPACE}/channel/public/?perPage=${perPage}&page=${page}&startWith=${startWith}`);
 }
 

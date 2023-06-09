@@ -11,12 +11,14 @@ import ChatUnreadSeparator from './ChatUnreadSeparator';
 import { FaTimes, FaUsers } from 'react-icons/fa';
 import ChatButton from '../../ChatWidgets/ChatButton';
 import ChannelMemberOnlineList from '../Channel/ChannelMemberOnlineList';
+import { ErrorData } from '../../../../model/ErrorData';
+import ChatroomList from './ChatroomList';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
 }
 
-const MESSAGE_FETCH_LIMIT = 50;
+const MESSAGE_FETCH_LIMIT = 10;
 
 // append new message but to the top of the list (index 0)
 export function appendNewMessage(newMessage: ChatroomMessageData, messages: ChatroomMessageData[]) {
@@ -28,7 +30,7 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   const { chatroomData } = props;
   const { unreadChatrooms, setUnreadChatrooms } = useContext(ChatroomsContext);
-  const { chatSocket } = useContext(ChatContext);
+  const { chatSocket, setChatBody } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
   const [allMessages, setAllMessages] = useState<ChatroomMessageData[]>([]);
   const [isMessagesSet, setIsMessagesSet] = useState<boolean>(false);
@@ -128,15 +130,26 @@ function ChatroomContent(props: ChatroomContentProps) {
 
     if (!canBeFetched) return;
 
-    const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
-    if (fetchResult.length < MESSAGE_FETCH_LIMIT) {
-      setCanBeFetched(false);
+    try {
+      /** HAS ISSUE HERE */
+      const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
+      if (fetchResult.length < MESSAGE_FETCH_LIMIT) {
+        setCanBeFetched(false);
+      }
+      const allMessagesArray = [...fetchResult, ...allMessages];
+      const sortedMsgs = allMessagesArray.sort((b, a) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime());
+      setAllMessages(sortedMsgs);
+      setIsMessagesSet(true);
+      setPage(page + 1);
+    } catch (error: any) {
+      const errorMessage = (error.response.data as ErrorData);
+      if (errorMessage) {
+        if (errorMessage.error === "Invalid channelId - channel does not exist") {
+          setChatBody(<ChatroomList />);
+          dispatch({ type: 'RESET' });
+        }
+      }
     }
-    const allMessagesArray = [...fetchResult, ...allMessages];
-    const sortedMsgs = allMessagesArray.sort((b, a) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime());
-    setAllMessages(sortedMsgs);
-    setIsMessagesSet(true);
-    setPage(page + 1);
   }
 
   async function getMyLastRead() {
