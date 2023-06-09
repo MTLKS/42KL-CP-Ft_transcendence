@@ -125,9 +125,6 @@ function UserForm(props: UserFormProps) {
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
         <UserFormAvatar intraName={userData.intraName} avatarUrl={avatar} setAvatar={setAvatar} setFileExtension={setFileExtension} animate={slideIn1} />
         <div className='w-[48%] lg:w-[40%] h-full my-auto flex flex-col font-extrabold text-highlight gap-3'>
-          <p className='p-2 text-base font-semibold uppercase lg:text-xl text-dimshadow bg-highlight w-fit lg:p-3 lg:font-extrabold'>user info</p>
-          <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} animate={slideIn2} />
-          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} animate={slideIn3} />
           <p className={`${slideIn1 ? "" : " translate-x-12 opacity-0"} transition-all duration-300 uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold`}>user info</p>
           <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} animate={slideIn2} />
           <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} animate={slideIn3} />
