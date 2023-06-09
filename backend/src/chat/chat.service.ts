@@ -57,7 +57,7 @@ export class ChatService {
 				const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
 				if (MEMBER_CHANNEL.owner.intraName === USER_DATA.intraName)
 					continue;
-				server.to(MEMBER_CHANNEL.channelId).emit("message", {message: this.userService.hideData(NEW_MESSAGE), myChannel: this.userService.hideData(MY_CHANNEL)});
+				server.to(MEMBER_CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 			}
 		} else {
 			const FRIENDSHIP = await this.friendshipService.getFriendshipStatus(client.handshake.headers.authorization, CHANNEL.owner.intraName)
@@ -66,7 +66,7 @@ export class ChatService {
 			await this.messageRepository.save(NEW_MESSAGE);
 			MY_MEMBER.lastRead = new Date().toISOString();
 			await this.memberRepository.save(MY_MEMBER);
-			server.to(CHANNEL.channelId).emit("message", {message: this.userService.hideData(NEW_MESSAGE), myChannel: this.userService.hideData(MY_CHANNEL)});
+			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 		}
 	}
 
