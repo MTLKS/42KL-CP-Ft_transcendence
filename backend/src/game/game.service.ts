@@ -51,12 +51,13 @@ export class GameService {
   //Lobby functions
   async handleConnection(client: Socket) {
     const ACCESS_TOKEN = client.handshake.headers.authorization;
-    const USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
-    if (USER_DATA.error !== undefined) {
-      // client.disconnect(true);
+    let USER_DATA;
+    try{
+        USER_DATA =  await this.userService.getMyUserData(ACCESS_TOKEN);
+    }
+    catch{
       return;
     }
-
     // Checks if user is already connected, if they are then send error and disconnect
     if (
       this.connected.find((e: Player) => e.intraName === USER_DATA.intraName)
@@ -109,11 +110,13 @@ export class GameService {
   }
 
   async handleDisconnect(server: Server, client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
-
+    let USER_DATA;
+    try{
+      USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+   catch{
+      return;
+    }
     Object.keys(this.queues).forEach((queueType) => {
       if (
         this.queues[queueType].find(
@@ -149,10 +152,14 @@ export class GameService {
   }
 
   async joinQueue(client: Socket, clientQueue: string, server: Server) {
+    let USER_DATA;
     const ACESS_TOKEN = client.handshake.headers.authorization;
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
-
+    try{
+      USER_DATA =  await this.userService.getMyUserData(ACESS_TOKEN);
+    }
+    catch{
+      return;
+    }
     // Check if queue is known
     if (!(clientQueue in this.queues) && clientQueue !== "practice") {
       if (LOBBY_LOGGING)
@@ -234,11 +241,13 @@ export class GameService {
   }
 
   async leaveQueue(client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
-
+    let USER_DATA;
+    try{
+      USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+    catch{
+      return;
+    }
     Object.keys(this.queues).forEach((queueType) => {
       if (
         this.queues[queueType].find((e) => e.intraName === USER_DATA.intraName)
@@ -324,8 +333,13 @@ export class GameService {
   }
 
   async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
+    let USER_DATA;
+    try{
+      USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+    catch{
+      return;
+    }
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
@@ -419,18 +433,24 @@ export class GameService {
   }
 
   async playerMouseUpdate(client: Socket, roomID: string, isMouseDown: boolean) {
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
+    let USER_DATA;
+    try {
+      USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
     ROOM.updatePlayerMouse(client.id, isMouseDown);
   }
 
   async emote(client: Socket, server: Server, emote: number){
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
+    let USER_DATA;
+    try {
+      USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
     const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
     if (LOBBY_KEY !== undefined){
       const LOBBY = this.gameLobbies.get(LOBBY_KEY);
