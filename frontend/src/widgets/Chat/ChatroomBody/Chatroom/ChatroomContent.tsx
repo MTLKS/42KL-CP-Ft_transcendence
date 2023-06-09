@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ChatroomHeader from './ChatroomHeader'
 import ChatroomTextField from './ChatroomTextField'
-import { ChatroomData, ChatroomMessageData, MemberData } from '../../../../model/ChatRoomData';
+import { ChannelData, ChatroomData, ChatroomMessageData, MemberData } from '../../../../model/ChatRoomData';
 import { getChannelMemberData, getChatroomMessages, getMemberData } from '../../../../api/chatAPIs';
 import ChatroomMessage from './ChatroomMessage';
 import UserContext from '../../../../contexts/UserContext';
@@ -164,9 +164,8 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
-      if (newMessage.receiverChannel.channelId !== chatroomData.channelId) return;
+      if (chatroomData.isRoom && newMessage.receiverChannel.channelId !== chatroomData.channelId) return;
       setAllMessages((messages) => appendNewMessage(newMessage, messages));
-      playNewMessageSound();
     });
   }
 
