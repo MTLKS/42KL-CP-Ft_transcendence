@@ -278,19 +278,20 @@ function HomePage(props: HomePageProps) {
         return;
       }
 
-      getProfileOfUser(wantToView).then((response) => {
-        const newPreviewProfile = response.data as any;
-        if ((newPreviewProfile as ErrorData).error) {
+      getProfileOfUser(wantToView)
+        .then((response) => {
+          const newPreviewProfile = response.data as any;
+          newList = elements;
+          const newProfileCard = <Profile expanded={true} />;
+          setTopWidget(newProfileCard);
+          setCurrentPreviewProfile(newPreviewProfile as UserData);
+        })
+        .catch((error: any) => {
           errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
           newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
           setElements(appendNewCard(newList));
           return;
-        }
-        newList = elements;
-        const newProfileCard = <Profile expanded={true} />;
-        setTopWidget(newProfileCard);
-        setCurrentPreviewProfile(newPreviewProfile as UserData);
-      });
+        })
     }
 
     // handle unknown profile command, push a help card
