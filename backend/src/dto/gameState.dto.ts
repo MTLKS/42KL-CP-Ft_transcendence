@@ -53,10 +53,12 @@ export class FieldEffectDTO {
 
 export class LobbyStartDTO {
 	gameType: string;
+	isHost: boolean;
 	player1IntraName: string;
 	player2IntraName: string;
 
-	constructor(player1IntraName: string, player2IntraName: string, gameType: string) {
+	constructor(player1IntraName: string, player2IntraName: string, gameType: string, isHost: boolean=false) {
+		this.isHost = isHost;
 		this.player1IntraName = player1IntraName;
 		this.player2IntraName = player2IntraName;
 		this.gameType = gameType;

@@ -282,6 +282,35 @@ export class GameService {
     player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
+  async joinPrivateLobby(client: Socket, isHost: boolean, opponentIntraName: string){
+    const ACCESS_TOKEN = client.handshake.headers.authorization;
+    let   USER_DATA;
+    try{
+      USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
+    }
+    catch{
+      return;
+    }
+    if (isHost == true){
+      let player1 = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+      let lobby = new Lobby(player1, null, "private");
+      this.gameLobbies.set(player1.intraName + opponentIntraName, lobby);
+      client.join(lobby.name);
+    }
+    else{
+      const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
+      const LOBBY = this.gameLobbies.get(LOBBY_KEY);
+      if (LOBBY == undefined){
+        client.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "lobby not found")));
+        return;
+      }
+      let player2 = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+      LOBBY.player2 = player2;
+      client.join(LOBBY.name);
+    }
+    client.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(USER_DATA.intraName, opponentIntraName, "private", isHost)));
+  }
+
   getLobbyKeyFromIntraNames(intraName: string): string | undefined {
     for (const KEY of this.gameLobbies.keys()){
       if (KEY.includes(intraName))
@@ -291,10 +320,13 @@ export class GameService {
   }
 
   async leaveLobby(client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
+    let USER_DATA;
+    try{
+      USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    }
+    catch{
+      return;
+    }
     const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
     if (LOBBY_KEY != undefined) {
       const LOBBY = this.gameLobbies.get(LOBBY_KEY);
@@ -332,7 +364,7 @@ export class GameService {
     return powerUp;
   }
 
-  async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
+  async handleReady(client: Socket, gameType:string, ready: boolean, powerUp: string, server: Server) {
     let USER_DATA;
     try{
       USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
@@ -343,9 +375,9 @@ export class GameService {
     if (this.getPowerUp(powerUp) === null) return;
 
     this.gameLobbies.forEach((gameLobby, key) => {
-      let gameType;
+      // let gameType;
       if (gameLobby.player1.intraName === USER_DATA.intraName) {
-        gameType = gameLobby.gameType;
+        // gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
@@ -358,7 +390,7 @@ export class GameService {
         if (LOBBY_LOGGING)
           console.log(`${USER_DATA.intraName} is ready.`);
       } else {
-        gameType = gameLobby.gameType;
+        // gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
