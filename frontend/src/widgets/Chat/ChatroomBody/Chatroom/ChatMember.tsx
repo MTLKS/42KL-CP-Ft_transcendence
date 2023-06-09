@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { FaCaretDown, FaCheck, FaDoorOpen, FaMinus, FaPlus, FaSkull, FaVolumeMute, FaWalking } from 'react-icons/fa'
+import { FaCaretDown, FaCheck, FaDoorOpen, FaDove, FaMinus, FaPlus, FaSkull, FaVolumeMute, FaWalking } from 'react-icons/fa'
 import { FriendData } from '../../../../model/FriendData';
 import UserContext from '../../../../contexts/UserContext';
 import { UserData } from '../../../../model/UserData';
@@ -8,6 +8,7 @@ import PreviewProfileContext from '../../../../contexts/PreviewProfileContext';
 import Profile from '../../../Profile/Profile';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import { ModeratorAction } from '../Channel/newChannelReducer';
+import { divide } from 'lodash';
 
 interface MemberPrivilege {
   isMuted: boolean;
@@ -108,6 +109,11 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
   const [isPressed, setIsPressed] = useState(false);
   const currentTimeRef = useRef<number>(0);
   const [gradientPosition, setGradientPosition] = useState(0);
+  const isBanned = useMemo(() => {
+    return state.members.find(member => member.memberInfo.intraId === userData.intraId)?.isBanned;
+  }, []);
+
+  if (isBanned) return null;
 
   if (role === 'member') {
     if (state.isNewChannel || (!state.isNewChannel && isModifying && state.isOwner)) {
@@ -209,9 +215,31 @@ function ChatMemberRoleTag(props: ChatMemberRoleTagProps) {
   }
 }
 
+function ChatMemberModeratedStatus(props: {userData: UserData}) {
+
+  const { userData } = props;
+  const { state } = useContext(NewChannelContext);
+  const [isBanned, setIsBanned] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+
+  useEffect(() => {
+    const memberInfo = state.members.find(member => member.memberInfo.intraId === userData.intraId);
+    if (!memberInfo) return;
+    setIsBanned(memberInfo.isBanned);
+    setIsMuted(memberInfo.isMuted);
+  })
+
+  return (
+    <div className='h-full text-highlight text-sm w-[60%] flex flex-row gap-x-4 justify-end'>
+      {isBanned && <FaSkull />}
+      {isMuted && <FaVolumeMute />}
+    </div>
+  )
+}
+
 function ChatMember(props: ChatMemberProps) {
 
-  const { isModifyingMember, selectable, userData, memberRole, memberPrivilege } = props;
+  const { isModifyingMember, selectable, userData, memberRole } = props;
   const { myProfile } = useContext(UserContext);
   const { state, dispatch } = useContext(NewChannelContext);
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
@@ -224,7 +252,7 @@ function ChatMember(props: ChatMemberProps) {
       className='flex flex-row items-center justify-between w-full transition-all duration-75 ease-in-out'
       onClick={handleSelectMember}
     >
-      <div className={`flex flex-row flex-1 items-center gap-x-4 ${selectable ? 'group cursor-pointer' : 'cursor-default'}`}>
+      <div className={`flex flex-row w-fit items-center gap-x-4 ${selectable ? 'group cursor-pointer' : 'cursor-default'}`}>
         <div className='relative object-cover w-10 aspect-square'>
           <img
             className='object-cover w-full aspect-square'
@@ -237,12 +265,15 @@ function ChatMember(props: ChatMemberProps) {
         </div>
         <button className={`text-sm font-bold ${isSelected ? 'text-highlight' : 'text-highlight/50'} transition-all duration-150 ease-in-out ${isBlocked && 'cursor-default'} whitespace-pre ${!state.isNewChannel && 'hover:text-highlight'}`} disabled={isBlocked} onClick={viewUserProfile}>{userData.userName} ({userData.intraName})</button>
       </div>
-      <div className={`flex flex-row items-center ${isModifyingMember ? 'w-[30%] justify-between' : ''}`}>
+      <div className={`flex flex-row items-center w-[30%] justify-between`}>
         <div>
           {memberRole !== "owner" && memberRole !== "admin" && state.isAdmin && isModifyingMember && <ChatMemberActions userData={userData} />}
           {memberRole !== "owner" && myProfile.intraId !== userData.intraId && state.isOwner && isModifyingMember && <ChatMemberActions userData={userData} />}
         </div>
-        {memberRole !== undefined && <ChatMemberRoleTag isModifying={isModifyingMember} userData={userData} role={memberRole} />}
+        {!state.isNewChannel && !isModifyingMember && memberRole !== "owner" && <ChatMemberModeratedStatus userData={userData} />}
+        <div className='flex flex-row items-center justify-end w-[50%]'>
+          {memberRole !== undefined && <ChatMemberRoleTag isModifying={isModifyingMember} userData={userData} role={memberRole} />}
+        </div>
       </div>
     </div>
   )

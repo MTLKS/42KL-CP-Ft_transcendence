@@ -24,7 +24,7 @@ function ChannelMemberList(props: ChannelMemberListProps) {
     <div className={`w-[95%] ${isScrollable && 'h-full'} mx-auto flex flex-col gap-y-2`}>
       <div className='sticky top-0 z-10 flex flex-col gap-y-2 bg-dimshadow'>
         <ChatTableTitle title={`${title} (${friendList === undefined ? state.members.length : friendList.length})`} searchable={true} setFilterKeyword={setFilterKeyword} />
-        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-extrabold uppercase border-2 border-dashed gap-x-1 h-fit border-accCyan bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight transition-all duration-150' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> ADD FRIENDS</button>}
+        {(state.isOwner || state.isAdmin) && !viewingInviteList && !state.isNewChannel && <button className='flex flex-row items-center justify-center w-full p-2 text-xs font-extrabold uppercase transition-all duration-150 border-2 border-dashed gap-x-1 h-fit border-accCyan bg-dimshadow hover:bg-accCyan text-accCyan hover:text-highlight' onClick={() => dispatch({ type: 'TOGGLE_IS_INVITING', isInviting: true})}><FaUserPlus /> ADD FRIENDS</button>}
       </div>
       <div className='w-full h-full flex flex-col gap-y-2.5 scrollbar-hide scroll-smooth'>
         {displayMemberList()}
@@ -43,14 +43,16 @@ function ChannelMemberList(props: ChannelMemberListProps) {
     if (!state.isNewChannel) {
       // if is existing channel
       const owner = state.members.find(member => member.role === "owner"); // only one owner, so it's fine
-      const admins = state.members.filter(member => member.role === "admin");
-      const members = state.members.filter(member => member.role === "member");
+      const admins = state.members.filter(member => member.role === "admin" && !member.isBanned).sort((a, b) => a.memberInfo.userName.localeCompare(b.memberInfo.userName));
+      const members = state.members.filter(member => member.role === "member" && !member.isBanned).sort((a, b) => a.memberInfo.userName.localeCompare(b.memberInfo.userName));
+      const banned = state.members.filter(member => member.isBanned).sort((a, b) => a.memberInfo.userName.localeCompare(b.memberInfo.userName));
       const memberList = [];
       if (owner !== undefined) {
         memberList.push(owner);
       }
       memberList.push(...admins);
       memberList.push(...members);
+      memberList.push(...banned);
       return (memberList.map(member => {
         const moderatedInfo = state.moderatedList.find((moderatedMember) => (moderatedMember.memberInfo.memberInfo.intraId === member.memberInfo.intraId));
         if (moderatedInfo !== undefined) {
