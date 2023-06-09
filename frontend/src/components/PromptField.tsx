@@ -273,7 +273,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     }
     if ((e.key === 'Tab' || e.key === 'ArrowRight')) {
       e.preventDefault();
-      if (toolTips[toolTips.length - 1].startsWith("<")) return;
+      if (toolTips[toolTips.length - 1] !== undefined && toolTips[toolTips.length - 1].startsWith("<")) return;
       let finalString = '';
       toolTips.forEach((toolTip, index) => {
         if (index === 0)

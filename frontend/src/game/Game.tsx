@@ -213,18 +213,28 @@ function Game(props: GameProps) {
 
 const winPhrase = [
   'YOU WIN',
+  'EZ PZ',
   'SO GOOD, SO SMOOTH',
   'VICTORY',
   'NOT BAD, INDEED',
-  'WHAT A SHOT!!'
+  'WHAT A SHOT!!',
+  'W FOR WINNERS',
+  'YOU ARE THE GOAT',
+  'YOU ARE THE MVP',
+  "LEGENDARY!",
 ]
 
 const losePhrase = [
   'YOU LOSE',
   'SO BAD, SO SAD',
   'DEFEAT',
-  'NOT GOOD, INDEED',
-  'WHAT A SHAME!!'
+  'WHAT A SHAME!!',
+  'GO BACK TO WORK',
+  'YOU SUCK',
+  'WHAT ARE YOU DOING',
+  'L FOR LOSER',
+  'BOO HOO',
+  'AIM BETTER PLZ',
 ]
 
 export default Game
