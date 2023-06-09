@@ -38,10 +38,12 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "leaderboard" }),
   new CommandOptionData({
     command: "friend", options: [
-      new CommandOptionData({ command: "add", parameter: "<username>" }),
       new CommandOptionData({ command: "list", parameter: "<username>" }),
+      new CommandOptionData({ command: "requests", parameter: "<username>" }),
+      new CommandOptionData({ command: "add", parameter: "<username>" }),
       new CommandOptionData({ command: "block", parameter: "<username>" }),
-      new CommandOptionData({ command: "requests", parameter: "<username>" })
+      new CommandOptionData({ command: "unblock", parameter: "<username>" }),
+      new CommandOptionData({ command: "unfriend", parameter: "<username>" })
     ]
   }),
   new CommandOptionData({ command: "cowsay" }),
@@ -149,11 +151,11 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-              <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
-                {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
-                <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
-                  <div className='h-full flex-1'>
-                    {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
+             <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
+             {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
+             <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
+               <div className='flex-1 h-full'>
+                 {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
                   </div>
                   <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-in-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
@@ -287,19 +289,20 @@ function HomePage(props: HomePageProps) {
         return;
       }
 
-      getProfileOfUser(wantToView).then((response) => {
-        const newPreviewProfile = response.data as any;
-        if ((newPreviewProfile as ErrorData).error) {
+      getProfileOfUser(wantToView)
+        .then((response) => {
+          const newPreviewProfile = response.data as any;
+          newList = elements;
+          const newProfileCard = <Profile expanded={true} />;
+          setTopWidget(newProfileCard);
+          setCurrentPreviewProfile(newPreviewProfile as UserData);
+        })
+        .catch((error: any) => {
           errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
           newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
           setElements(appendNewCard(newList));
           return;
-        }
-        newList = elements;
-        const newProfileCard = <Profile expanded={true} />;
-        setTopWidget(newProfileCard);
-        setCurrentPreviewProfile(newPreviewProfile as UserData);
-      });
+        })
     }
 
     // handle unknown profile command, push a help card
@@ -330,26 +333,26 @@ function HomePage(props: HomePageProps) {
             break;
           case friendErrors.USER_NOT_FOUND:
             newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
-              <p>Looks like you're trying to {action} a ghost. User not found: <span className='bg-accRed font-extrabold text-sm text-highlight'>{errAttempt.data as string}</span></p>
+              <p>Looks like you're trying to {action} a ghost. User not found: <span className='text-sm font-extrabold bg-accRed text-highlight'>{errAttempt.data as string}</span></p>
             </Card>)
             break;
           case friendErrors.FRIENDSHIP_EXISTED:
             friend = (errAttempt.data as FriendData);
             friendName = friend.receiver.intraName === userData.intraName ? friend.sender.intraName : friend.receiver.intraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
-              <p>Friendship with <span className="bg-accRed font-extrabold">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
+              <p>Friendship with <span className="font-extrabold bg-accRed">{friendName}</span> existed! Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
             break;
           case friendErrors.INVALID_RELATIONSHIP:
             friend = (errAttempt.data as FriendData);
             friendName = friend.receiver.intraName === userData.intraName ? friend.sender.intraName : friend.receiver.intraName;
             newErrorCards.push(<Card key={friendName + errIndex + index}>
-              <p>Unable to {action} <span className="bg-accRed font-extrabold">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
+              <p>Unable to {action} <span className="font-extrabold bg-accRed">{friendName}</span>. Current relationship: <span className='bg-highlight text-dimshadow'>{friend.status}</span></p>
             </Card>)
             break;
           case friendErrors.INVALID_OPERATION_ON_STRANGER:
             newErrorCards.push(<Card key={(errAttempt.data as string) + errIndex + index}>
-              <p>Unable to {action} <span className="bg-accRed font-extrabold">{errAttempt.data as string}</span>. You two are not friends.</p>
+              <p>Unable to {action} <span className="font-extrabold bg-accRed">{errAttempt.data as string}</span>. You two are not friends.</p>
             </Card>)
             break;
         }
@@ -376,20 +379,23 @@ function HomePage(props: HomePageProps) {
 
     // iterate through the names and attempt get their user data to add as friend
     for (const friendName of friendIntraNames) {
-      const friendProfile = await getProfileOfUser(friendName);
-      if ((friendProfile.data as ErrorData).error) {
+      let friendProfile;
+
+      try {
+        friendProfile = (await getProfileOfUser(friendName)).data as UserData;
+      } catch (error: any) {
         errors.push({ error: friendErrors.USER_NOT_FOUND, data: friendName as string });
         continue;
       }
 
-      const result = await addFriend((friendProfile.data as UserData).intraName);
-      if (result.data.error) {
+      try {
+        const tryAddFriend = await addFriend(friendProfile.intraName);
+        successes.push(friendName);
+      } catch (error: any) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
           data: (myFriends.find((friend) => friend.receiver.intraName === friendName || friend.sender.intraName === friendName) as FriendData)
         });
-      } else {
-        successes.push(friendName);
       }
     }
 
@@ -398,7 +404,7 @@ function HomePage(props: HomePageProps) {
       for (const successName of successes) {
         newCards.push(
           <Card key={`${successName}_added` + index} type={CardType.SUCCESS}>
-            <p>We've sent your friendship request to <span className='bg-accGreen text-highlight font-extrabold text-sm'>{successName}</span>. Finger crossed!</p>
+            <p>We've sent your friendship request to <span className='text-sm font-extrabold bg-accGreen text-highlight'>{successName}</span>. Finger crossed!</p>
           </Card>
         )
         sendFriendRequestNotification(successName);
@@ -457,30 +463,21 @@ function HomePage(props: HomePageProps) {
     });
 
     // get all stranger data
-    const strangerProfiles = await Promise.all(strangersNames.map(intraName => getProfileOfUser(intraName)));
-
-    // categorized user data
-    const categorizedUsers = strangerProfiles.map((user, index) => {
-
-      // user not found
-      if ((user.data as ErrorData).error) return strangersNames[index];
-
-      // user found but gurantee is a stranger
-      const userData: UserData = user.data as UserData;
-      return { user: userData, type: "STRANGER" };
-    });
-
-    for (const user of categorizedUsers) {
-      if (typeof user === 'string') {
-        errors.push({ error: friendErrors.USER_NOT_FOUND, data: user as string });
-      } else if (typeof user === 'object' && user.type === "STRANGER") {
+    for (const name of strangersNames) {
+      
+      let strangerProfile: UserData | ErrorData;
+      try {
+        strangerProfile = (await getProfileOfUser(name)).data;
         if (action === ACTION_TYPE.BLOCK) {
-          const fakeFriend = userDataToFriendData(user.user);
+          const fakeFriend = userDataToFriendData(strangerProfile as UserData);
           newSelectedFriends.push(fakeFriend);
         } else {
-          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: user.user.intraName });
+          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: (strangerProfile as UserData).intraName });
         }
+      } catch (error: any) {
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: name as string })        
       }
+
     }
 
     newCards = newCards.concat(generateErrorCards(errors, action));
@@ -494,20 +491,23 @@ function HomePage(props: HomePageProps) {
 
     const errors: errorType[] = [];
     let newCards: JSX.Element[] = [];
-    const friendProfile: UserData | ErrorData = (intraName === null ? userData : (await getProfileOfUser(intraName)).data);
 
-    // to handle if the user is not found & if the friendship status is blocked
-    if ((friendProfile as ErrorData).error) {
-      errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
-    } else {
-      // if the user profile is found, get the friendlist
-      let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data;
-      // meaning the user is trying to someone's friendlist. if that's the case, filter out all the friends except those who are accepted
-      if (intraName !== null) {
-        friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
+    try {
+      
+      const friendProfile: UserData | ErrorData = (intraName === null) ? userData : (await getProfileOfUser(intraName)).data;
+      
+      try {
+        let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data; 
+        if (intraName !== null) friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
+        setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
+      } catch (error: any) {
+        console.log("error when fetching friendlist");
       }
-      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
+
+    } catch (error: any) {
+      errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
     }
+
     newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
     setElements(appendNewCard(newCards));
   }
@@ -550,14 +550,14 @@ function HomePage(props: HomePageProps) {
     if (commands.length === 1) {
       newList = appendNewCard(
         <Card key={"game" + index} type={CardType.SUCCESS}>
-          <span className='text-xl neonText-white font-bold'>GAME</span><br />
-          <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
+          <span className='text-xl font-bold neonText-white'>GAME</span><br />
+          <p className="pt-4 font-bold capitalize text-highlight text-md">Commands:</p>
           <p className="text-sm">
             game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
             game dequeue            : <span className="text-highlight/70">Dequeue from the current queue.</span><br />
             game Settings           : <span className="text-highlight/70">Change game settings.</span><br />
           </p>
-          <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
+          <p className="pt-4 font-bold capitalize text-highlight text-md">Game Modes:</p>
           <p className="text-sm">
             standard                : <span className="text-highlight/70">Power-Ups enabled.</span><br />
             boring                  : <span className="text-highlight/70">Boring old Pong.</span><br />
@@ -635,18 +635,18 @@ function HomePage(props: HomePageProps) {
   function generateCredits() {
     return (
       <Card key={"game" + index} type={CardType.SUCCESS}>
-        <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
-        <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
+        <span className='text-xl font-bold neonText-white'>PongSH Credits</span><br />
+        <p className="pt-4 font-bold capitalize text-highlight text-md">Team members</p>
         <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
         <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
         <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
         <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
         <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
-        <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
+        <p className="pt-4 font-bold capitalize text-highlight text-md">Project Details</p>
         <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
         <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
         <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
-        <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
+        <p className="pt-4 font-bold capitalize text-highlight text-md">Tech Stack</p>
         <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
         <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
         <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>

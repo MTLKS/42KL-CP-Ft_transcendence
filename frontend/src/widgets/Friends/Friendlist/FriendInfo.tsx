@@ -55,7 +55,7 @@ function FriendInfo(props: FriendInfoProps) {
       <div className='w-[9ch]'>
         {
           friendshipStatus === "blocked"
-            ? <span className='text-highlight bg-accRed whitespace-pre'> HIDDEN </span>
+            ? <span className='whitespace-pre text-highlight bg-accRed'> HIDDEN </span>
             : friendInfo.elo
         }
       </div>

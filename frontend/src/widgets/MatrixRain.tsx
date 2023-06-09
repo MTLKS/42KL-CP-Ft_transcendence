@@ -81,8 +81,8 @@ function MatrixRain(props: MatrixRainProps) {
   }, [])
 
   return (
-    <div className='relative w-full h-full flex-1' ref={containerRef}>
-      <canvas className='absolute h-full w-full top-0 left-0' id="canvas" ref={canvasRef}
+    <div className='relative flex-1 w-full h-full' ref={containerRef}>
+      <canvas className='absolute top-0 left-0 w-full h-full' id="canvas" ref={canvasRef}
         onClick={(e) => { e.preventDefault(); }}
       />
     </div>

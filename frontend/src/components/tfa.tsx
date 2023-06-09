@@ -76,7 +76,6 @@ function Tfa(props: TFAProps) {
 		useEffect(() => {
 			setResult(TFACommands.sending)
 			forgotTFA().then((data) => {
-				console.log(data);
 				if (data.error === "Not authorized") {
 					document.cookie = "Authorization=;";
 					setResult(TFACommands.refresh);
@@ -95,7 +94,7 @@ function Tfa(props: TFAProps) {
 			<Card type={CardType.SUCCESS}>
 				<figure>
 					<p className='text-center'>Scan QR code with your Google Authenticator app</p>
-					<img src={tfa.qr} className='rounded-md mx-auto object-cover'></img>
+					<img src={tfa.qr} className='object-cover mx-auto rounded-md'></img>
 					<p className='text-center'> SECRET: {tfa.secret}</p>
 				</figure>
 			</Card>

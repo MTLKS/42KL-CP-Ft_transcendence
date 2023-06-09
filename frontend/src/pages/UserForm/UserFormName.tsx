@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { UserData } from '../../model/UserData'
 
 interface UserFormNameProps {
@@ -11,6 +11,13 @@ interface UserFormNameProps {
 function UserFormName(props: UserFormNameProps) {
   const { animate } = props;
   const [userName, setUsername] = useState(props.user.userName);
+
+  useEffect(() => {
+    if (userName[0] === '@') {
+      setUsername(userName.substring(1));
+      props.updateName(userName.substring(1));
+    }
+  }, []);
 
   return (
     <div className="flex flex-col gap-2">

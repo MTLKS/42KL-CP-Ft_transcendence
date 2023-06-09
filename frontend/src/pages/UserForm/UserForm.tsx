@@ -111,15 +111,15 @@ function UserForm(props: UserFormProps) {
 
   return (
     <div className=''>
-      <div className='w-full h-fit flex flex-col gap-2 lg:gap-4 items-end z-30 mt-6'>
+      <div className='z-30 flex flex-col items-end w-full gap-2 mt-6 h-fit lg:gap-4'>
         {popups}
       </div>
       {
         // extra feature: check if the user actually modified their name and avatar or not. If they did, ask for confirmation before back to homepage
         isUpdatingUser &&
         <button className={`${slideIn1 ? "" : " -translate-y-3 opacity-0"} absolute top-8 left-8 h-fit p-3 rounded-md bg-highlight text-center cursor-pointer flex flex-row gap-x-3 items-center group hover:bg-dimshadow border-highlight border-2 transition-all duration-200 focus:outline-dashed focus:outline-[3px] focus:outline-highlight`} onClick={() => setIsUpdatingUser(false)}>
-          <FaArrowLeft className='text-dimshadow font-extrabold text-xl group-hover:text-highlight' />
-          <span className='font-extrabold text-xl group-hover:text-highlight'>BACK</span>
+          <FaArrowLeft className='text-xl font-extrabold text-dimshadow group-hover:text-highlight' />
+          <span className='text-xl font-extrabold group-hover:text-highlight'>BACK</span>
         </button>
       }
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>

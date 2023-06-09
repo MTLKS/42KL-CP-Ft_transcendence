@@ -9,6 +9,7 @@ export default {
         accRed: "rgb(var(--accent-red))",
         accCyan: "rgb(var(--accent-cyan))",
         accYellow: "rgb(var(--accent-yellow))",
+        accBriYellow: "rgb(var(--accent-bri-yellow))",
         accBlue: "rgb(var(--accent-blue))",
         accGreen: "rgb(var(--accent-green))",
       },
@@ -19,7 +20,7 @@ export default {
       animation: {
         "pulse-short": "pulse 0.3s ease-in-out 1",
         "left-to-right": "left-to-right 1",
-        shine: "shine 2s infinite",
+        shine: "shine 3s infinite ease-in-out",
         "h-shake": "h-shake 0.5s",
         marquee: "marquee 15s linear infinite",
         loadingFade: "loadingFade infinite 1s",

@@ -12,6 +12,7 @@ function ChatroomTypingStatus(props: ChatroomTypingStatusProps) {
   if (typingMembers.length === 0) return (<></>);
 
   useEffect(() => {
+
     if (typingMembers.length === 0) return ;
 
     if (typingMembers.length === 1) {

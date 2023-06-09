@@ -34,10 +34,10 @@ export class TFAService{
 	async forgotSecret(accessToken: string): Promise<ErrorDTO> {
 		const INTRA_DATA = await this.userService.getMyIntraData(accessToken);
 		if (INTRA_DATA.error !== undefined)
-			return new ErrorDTO(INTRA_DATA.error);
+			return new ErrorDTO(true, INTRA_DATA.error);
 		const USER_DATA = await this.userRepository.findOne({ where: {intraName: INTRA_DATA.name} });
 		if (USER_DATA.tfaSecret === null)
-			return new ErrorDTO("Invalid request - You don't have a 2FA setup");
+			return new ErrorDTO(true, "Invalid request - You don't have a 2FA setup");
 		await this.deleteSecret(accessToken);
 		const TFA = await this.requestNewSecret(accessToken);
 		const DECODED = Buffer.from(TFA.qr.split(",")[1], 'base64');

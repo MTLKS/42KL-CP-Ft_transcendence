@@ -65,10 +65,10 @@ function ProfileSmall(props: ProfileSmallProps) {
   return (
     <div className={`flex flex-row overflow-hidden items-center transition-all duration-500 ease-in-out ${width}`} >
       <div className='flex flex-col justify-center mx-5'>
-        <div className=' text-2xl text-dimshadow font-extrabold'>{userName}</div>
-        <div className=' text-xs text-dimshadow'>{getEloTitle()}</div>
+        <div className='text-2xl font-extrabold  text-dimshadow'>{userName}</div>
+        <div className='text-xs  text-dimshadow'>{getEloTitle()}</div>
       </div>
-      <div className=' bg-dimshadow w-1 h-16 mr-5' />
+      <div className='w-1 h-16 mr-5  bg-dimshadow' />
       <div>
         <StatusIndicator status={status} />
       </div>

@@ -29,7 +29,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('ready')
 	async handleReady(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
-		this.gameService.handleReady(client, body.ready, body.powerUp, this.server);
+		this.gameService.handleReady(client, body.gameType, body.ready, body.powerUp, this.server);
 	}
 
 	@SubscribeMessage('leaveLobby')
@@ -46,6 +46,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handlePlayerClick(@ConnectedSocket() client: Socket, @MessageBody() body: any){
 		this.gameService.playerMouseUpdate(client, body.gameRoom, body.isMouseDown);
 	}
+
+	@SubscribeMessage('joinPrivateLobby')
+	async handleJoinPrivateLobby(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		await this.gameService.joinPrivateLobby(client, body.isHost, body.opponentIntraName);
+	}
+
 
 	@SubscribeMessage('emote')
 	async handleEmote(@ConnectedSocket() client: Socket, @MessageBody() body: any){

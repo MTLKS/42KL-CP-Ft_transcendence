@@ -3,12 +3,11 @@ import ChatNavbar from '../../ChatWidgets/ChatNavbar'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { ChatContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import NewChannel from './NewChannel';
-import ChannelInfo from './ChannelInfo';
+import ChannelInfoForm from './ChannelInfoForm';
 import ChannelMemberList from './ChannelMemberList';
 import { NewChannelError } from './newChannelReducer';
 import { createChannel, inviteMemberToChannel } from '../../../../api/chatAPIs';
 import ChatroomList from '../Chatroom/ChatroomList';
-import { ErrorData } from '../../../../model/ErrorData';
 import { ChannelData } from '../../../../model/ChatRoomData';
 
 function NewChatInfo() {
@@ -23,7 +22,7 @@ function NewChatInfo() {
         backAction={() => setChatBody(<NewChannel />)}
         nextComponent={<ChatButton title='create' onClick={createNewChannel} />}
       />
-      <ChannelInfo modifying={true} />
+      <ChannelInfoForm modifying={true} setModifyChannel={() => {}} />
       <div className='w-full h-full mt-6'>
         <ChannelMemberList title="members" />
       </div>
@@ -51,22 +50,22 @@ function NewChatInfo() {
   }
 
   async function createNewChannel() {
-    const { channelName, password, errors, isPrivate } = state;
+    const { channelName, password, isPrivate } = state;
     let errorCount = 0;
-  
+
     dispatch({ type: 'RESET_ERRORS' });
 
     if (!(channelName.length > 0 && channelName.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_CHANNEL_NAME });
       errorCount++;
     }
-    
+
     if (!isPrivate && password !== null && !(password.length > 0 && password.length <= 16)) {
       dispatch({ type: 'ADD_ERROR', error: NewChannelError.INVALID_PASSWORD });
       errorCount++;
     }
 
-    if (errorCount !== 0) return ;
+    if (errorCount !== 0) return;
 
     const createChannelResponse = await createChannel({
       channelName: state.channelName,

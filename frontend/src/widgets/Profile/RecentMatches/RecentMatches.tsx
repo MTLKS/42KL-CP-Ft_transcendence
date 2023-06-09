@@ -61,7 +61,7 @@ function RecentMatches(props: RecentMatchesProps) {
       onScroll={handlescroll}
     >
       <div className='w-[80%] mx-auto'>
-        <p className='uppercase text-sm text-highlight font-normal mx-auto mt-8 mb-2'>recent matches</p>
+        <p className='mx-auto mt-8 mb-2 text-sm font-normal uppercase text-highlight'>recent matches</p>
         <div className='flex flex-col mx-auto gap-y-4'>
           {matchCards}
         </div>

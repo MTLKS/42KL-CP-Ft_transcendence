@@ -1,10 +1,9 @@
 import { Player } from "./player";
-import { PowerUp } from "../game.service";
 
 export class Lobby {
 	public name: string;
 	public player1: Player;
-	public player2: Player;
+	public player2: Player | null;
 	public gameType: string;
 	public player1Ready: boolean;
 	public player2Ready: boolean;

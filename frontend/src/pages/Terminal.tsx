@@ -28,7 +28,7 @@ function Terminal(pros: TerminalProps) {
   }, []);
 
   return (
-    <div className='h-full flex-1 flex flex-col justify-end relative'
+    <div className='relative flex flex-col justify-end flex-1 h-full'
       onClick={() => promptFieldRef.current?.focusOnInput()}
     >
       <ScrollView reverse={true}>

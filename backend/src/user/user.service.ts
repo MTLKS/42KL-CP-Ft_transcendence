@@ -18,11 +18,11 @@ export class UserService {
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
-			return new ErrorDTO("Invalid access token - access token decryption failed");
+			return new ErrorDTO(true, "Invalid access token - access token decryption failed");
 		}
 		const USER_DATA = await this.userRepository.findOne({ where: {accessToken} });
 		if (USER_DATA === null)
-			return new ErrorDTO("Invalid access token - access token does not exist");
+			return new ErrorDTO(true, "Invalid access token - access token does not exist");
 		USER_DATA.accessToken = "hidden";
 		USER_DATA.tfaSecret = USER_DATA.tfaSecret === null ? "DISABLED" : "ENABLED";
 		return USER_DATA;
@@ -41,7 +41,7 @@ export class UserService {
 			headers : { 'Authorization': HEADER }
 		});
 		if (RESPONSE.status !== 200)
-			return new ErrorDTO((await RESPONSE.json()).error);
+			return new ErrorDTO(true, (await RESPONSE.json()).error);
 		const USER_DATA = await RESPONSE.json();
 		return new IntraDTO(USER_DATA.id, USER_DATA.url, USER_DATA.login, USER_DATA.email, USER_DATA.image.versions.medium, USER_DATA.image.versions.large, USER_DATA.cursus_users[1].blackholed_at);
 	}
@@ -49,14 +49,14 @@ export class UserService {
 	// Use intraName to get user info
 	async getUserDataByIntraName(accessToken: string, intraName: string): Promise<any> {
 		if (intraName === undefined)
-			return new ErrorDTO("Invalid body - body must include intraName(string)");
+			return new ErrorDTO(true, "Invalid body - body must include intraName(string)");
 		const USER_DATA = await this.getMyUserData(accessToken);
 		const FRIEND_DATA = await this.userRepository.findOne({ where: {intraName} });
 		if (FRIEND_DATA === null)
-			return new ErrorDTO("Invalid intraName - user does not exist");
+			return new ErrorDTO(true, "Invalid intraName - user does not exist");
 		const FRIENDSHIP = await this.friendshipRepository.findOne({ where: [{sender: {intraName: USER_DATA.intraName}, receiver: {intraName: FRIEND_DATA.intraName}}, {sender: {intraName: FRIEND_DATA.intraName}, receiver: {intraName: USER_DATA.intraName}}] });
 		if (FRIENDSHIP !== null && FRIENDSHIP.status === "BLOCKED")
-			return new ErrorDTO("Invalid friendship - you are blocked by this user");
+			return new ErrorDTO(true, "Invalid friendship - you are blocked by this user");
 		return this.hideData(FRIEND_DATA);
 	}
 
@@ -74,9 +74,9 @@ export class UserService {
 		});
 		let userData = await response.json();
 		if (userData.error !== undefined)
-			return new ErrorDTO(userData.error);
+			return new ErrorDTO(true, userData.error);
 		if (response.status !== 200 || userData.length === 0)
-			return new ErrorDTO(userData.error);
+			return new ErrorDTO(true, userData.error);
 		response = await fetch("https://api.intra.42.fr/v2/users/" + userData[0].id, {
 			method : "GET",
 			headers : { 'Authorization': HEADER }
@@ -99,13 +99,13 @@ export class UserService {
 	// Use intraName to get user avatar
 	async getAvatarByIntraName(intraName: string, res: any): Promise<any> {
 		const USER_DATA = await this.userRepository.findOne({ where: {intraName} });
-		return USER_DATA === null ? new ErrorDTO("Invalid intraName - user does not exist") : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
+		return USER_DATA === null ? new ErrorDTO(true, "Invalid intraName - user does not exist") : res.sendFile(USER_DATA.avatar.substring(USER_DATA.avatar.indexOf('avatar/')), { root: '.' });
 	}
 
 	// Updates existing user by saving their userName and avatar
 	async updateUserInfo(accessToken: string, userName: string, image: any): Promise<any> {
 		if (image === undefined)
-			return new ErrorDTO("Invalid image path - no avatar image given");
+			return new ErrorDTO(true, "Invalid image path - no avatar image given");
 		try {
 			accessToken = CryptoJS.AES.decrypt(accessToken, process.env.ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
 		} catch {
@@ -114,9 +114,9 @@ export class UserService {
 		const NEW_USER = await this.userRepository.findOne({ where: {accessToken} });
 		const EXISTING = await this.userRepository.findOne({ where: {userName} });
 		if (EXISTING !== null && accessToken !== EXISTING.accessToken)
-			return new ErrorDTO("Invalid username - username already exists or invalid");
+			return new ErrorDTO(true, "Invalid username - username already exists or invalid");
 		if (userName.length > 16 || userName.length < 1 || /^[a-zA-Z0-9_-]+$/.test(userName) === false)
-			return new ErrorDTO("Invalid username - username must be 1-16 between alphanumeric characters (Including '-' and '_') only");
+			return new ErrorDTO(true, "Invalid username - username must be 1-16 between alphanumeric characters (Including '-' and '_') only");
 		fs.rename(image.path, "avatar/" + NEW_USER.intraName, () => {});
 		image.path = "avatar/" + NEW_USER.intraName;
 		NEW_USER.avatar = process.env.DOMAIN + ":" + process.env.BE_PORT + "/user/" + image.path;
@@ -148,7 +148,7 @@ export class UserService {
 				else if (key === "tfaSecret")
 					OBJ[key] = "HIDDEN";
 				else if (key === "password")
-					OBJ[key] = "HIDDEN";
+					OBJ[key] = OBJ[key] === null ? null : "HIDDEN";
 			}
 			return OBJ;
 		}

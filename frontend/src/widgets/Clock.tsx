@@ -14,7 +14,7 @@ function Clock() {
   }, [])
 
   return (
-    <div className='px-5 py-7 w-fit h-fit bg-highlight rounded-bl-xl font-extrabold text-lg'>
+    <div className='px-5 text-lg font-extrabold py-7 w-fit h-fit bg-highlight rounded-bl-xl'>
       {clockTime}
     </div>
   )

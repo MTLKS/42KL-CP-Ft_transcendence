@@ -10,7 +10,8 @@ let myProfile: UserData = {
 	intraName: "wricky-t",
 	tfaSecret: null,
 	userName: "JOHNDOE",
-	winning: true
+	winning: true,
+	email: ""
 }
 
 interface UserContextProps {

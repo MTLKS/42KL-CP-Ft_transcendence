@@ -12,6 +12,7 @@ export interface ChatroomData {
   owner: UserData | null;
   password: string | null;
   newMessage: boolean;
+  memberCount: number;
 }
 
 export interface ChannelData {
