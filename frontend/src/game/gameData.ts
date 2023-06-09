@@ -389,7 +389,6 @@ export class GameData {
     this.rightPaddlePosition = { x: 1650, y: 450 };
     this.leftPaddleType = PaddleType.boring;
     this.rightPaddleType = PaddleType.boring;
-    this._pongPosition = { x: 800, y: 450 };
 
     this.globalGravityX = 0;
     this.globalGravityY = 0;

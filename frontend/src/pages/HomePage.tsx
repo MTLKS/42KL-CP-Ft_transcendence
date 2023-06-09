@@ -120,6 +120,9 @@ function HomePage(props: HomePageProps) {
     gameData.setShouldDisplayGame = setShouldDisplayGame;
     gameData.displayLobby = () => displayLobby();
     gameData.stopDisplayLobby = () => stopDisplayLobby();
+    if (gameData.gameDisplayed) {
+      setShouldDisplayGame(true);
+    }
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
