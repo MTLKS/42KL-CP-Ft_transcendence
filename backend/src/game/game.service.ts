@@ -367,7 +367,7 @@ export class GameService {
   async handleReady(client: Socket, gameType:string, ready: boolean, powerUp: string, server: Server) {
     let USER_DATA;
     try{
-      userData =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+      USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
     }
     catch{
       return;
@@ -388,7 +388,7 @@ export class GameService {
         // gameLobby.player2PowerUp = powerUp;
         
         if (LOBBY_LOGGING)
-          console.log(`${userData.intraName} is ready.`);
+          console.log(`${USER_DATA.intraName} is ready.`);
       } else {
         // gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
@@ -396,7 +396,7 @@ export class GameService {
         if (gameType == "boring" || gameType == "death")
           gameLobby.player2PowerUp = "normal";
         if (LOBBY_LOGGING)
-          console.log(`${userData.intraName} is ready.`);
+          console.log(`${USER_DATA.intraName} is ready.`);
       }
       if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
