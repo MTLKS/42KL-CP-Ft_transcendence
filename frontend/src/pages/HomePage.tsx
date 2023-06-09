@@ -19,7 +19,7 @@ import { FriendsContext, SelectedFriendContext } from '../contexts/FriendContext
 import UserContext from '../contexts/UserContext';
 import { addFriend } from '../api/friendActionAPI';
 import HelpCard from '../widgets/TerminalCards/HelpCard';
-import { allCommands, friendCommands } from '../functions/commandOptions';
+import { allCommands, friendCommands, gameSetCommands } from '../functions/commandOptions';
 import { friendErrors } from '../functions/errorCodes';
 import Leaderboard from '../widgets/Leaderboard/Leaderboard';
 import Tfa from '../components/tfa';
@@ -29,25 +29,61 @@ import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
 import login from '../api/loginAPI';
+import Lobby from '../widgets/Lobby/Lobby';
+import { set } from 'lodash';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
   new CommandOptionData({ command: "profile" }),
   new CommandOptionData({ command: "leaderboard" }),
-  new CommandOptionData({ command: "friend", options: ["add", "list", "block", "unblock", "requests"], parameters: "<username>" }),
+  new CommandOptionData({
+    command: "friend", options: [
+      new CommandOptionData({ command: "add", parameter: "<username>" }),
+      new CommandOptionData({ command: "list", parameter: "<username>" }),
+      new CommandOptionData({ command: "block", parameter: "<username>" }),
+      new CommandOptionData({ command: "requests", parameter: "<username>" })
+    ]
+  }),
   new CommandOptionData({ command: "cowsay" }),
-  new CommandOptionData({ command: "tfa", options: ["<OTP>", "set", "unset <OTP>", "forgot"] }),
+  new CommandOptionData({
+    command: "tfa", options: [
+      new CommandOptionData({ command: "check", parameter: "<OTP>" }),
+      new CommandOptionData({ command: "set" }),
+      new CommandOptionData({ command: "unset", parameter: "<OTP>" }),
+      new CommandOptionData({ command: "forgot" })
+    ]
+  }),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "display" }),
-  new CommandOptionData({ command: "start" }),
-  new CommandOptionData({ command: "queue", options: ["standard", "boring", "death"] }),
-  new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
-  new CommandOptionData({ command: "end" }),
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),
   new CommandOptionData({ command: "reset" }),
-  new CommandOptionData({ command: "logout" })
+  new CommandOptionData({ command: "logout" }),
+  new CommandOptionData({ command: "showlobby" }),
+  new CommandOptionData({
+    command: "game", options: [
+      new CommandOptionData({
+        command: "queue", options: [
+          new CommandOptionData({ command: "standard" }),
+          new CommandOptionData({ command: "boring" }),
+          new CommandOptionData({ command: "death" }),
+          new CommandOptionData({ command: "practice" })]
+      }),
+      new CommandOptionData({ command: "dequeue" }),
+      new CommandOptionData({
+        command: "setting", options: [
+          new CommandOptionData({ command: "show" }),
+          new CommandOptionData({ command: "particlesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "entitiesFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "paddleFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "hitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "tickPerParticles", parameter: "<int>" }),
+          new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
+          new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]
+      }),
+    ]
+  }),
+  new CommandOptionData({ command: "credits" }),
 ];
 
 interface HomePageProps {
@@ -81,7 +117,9 @@ function HomePage(props: HomePageProps) {
 
   useEffect(() => {
     initFriendshipSocket();
-    gameData.setSetShouldDisplayGame = setShouldDisplayGame;
+    gameData.setShouldDisplayGame = setShouldDisplayGame;
+    gameData.displayLobby = () => displayLobby();
+    gameData.stopDisplayLobby = () => stopDisplayLobby();
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
@@ -138,22 +176,9 @@ function HomePage(props: HomePageProps) {
       case "cowsay":
         newList = appendNewCard(<Cowsay key={"cowsay" + index} index={index} commands={command.slice(1)} />);
         break;
-      case "display":
-        gameData.displayGame();
-        break;
-      case "start":
-        gameData.startGame();
-        break;
-      case "queue":
-        handleQueueCommand(command[1], newList);
+      case "game":
+        handleGameCommand(command, newList);
         return;
-      case "dequeue":
-        handleDequeueCommand(newList);
-        return;
-      case "end":
-        gameData.stopDisplayGame();
-        gameData.endGame();
-        break;
       case "profile":
         handleProfileCommand(command);
         return;
@@ -169,7 +194,7 @@ function HomePage(props: HomePageProps) {
         setIndex(newList.length - 1);
         break;
       case "help":
-        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='<command>' commandOptions={allCommands} />);
+        newList = appendNewCard(<HelpCard key={"help" + index} title="help" option='commands' usage='' commandOptions={allCommands} />);
         break;
       case "ok":
         newList = appendNewCard(<Card key={"ok" + index} type={CardType.SUCCESS}>{"OK👌"}</Card>);
@@ -185,6 +210,12 @@ function HomePage(props: HomePageProps) {
       case "logout":
         document.cookie = "Authorization=;";
         window.location.assign("/");
+        break;
+      case "showlobby":
+        setLeftWidget(<Lobby />);
+        break;
+      case "credits":
+        newList = appendNewCard(generateCredits());
         break;
       default:
         newList = appendNewCard(commandNotFoundCard());
@@ -244,30 +275,20 @@ function HomePage(props: HomePageProps) {
         setElements(appendNewCard(newList));
         return;
       }
-      
-      getProfileOfUser(wantToView)
-        .then((response) => {
-          const newPreviewProfile = response.data as any;
-          newList = elements;
-          const newProfileCard = <Profile expanded={true} />;
-          setTopWidget(newProfileCard);
-          setCurrentPreviewProfile(newPreviewProfile as UserData);
-          setTimeout(() => {
-            if (expandProfile)
-              setExpandProfile(!expandProfile);
-            else
-              setExpandProfile(false);
-          }, 500);
-        })
-        .catch((err: any) => {
-          const error = err.response.data as ErrorData;
-          if (error) {
-            errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
-            newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
-            setElements(appendNewCard(newList));
-            return;
-          }
-        });
+
+      getProfileOfUser(wantToView).then((response) => {
+        const newPreviewProfile = response.data as any;
+        if ((newPreviewProfile as ErrorData).error) {
+          errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
+          newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
+          setElements(appendNewCard(newList));
+          return;
+        }
+        newList = elements;
+        const newProfileCard = <Profile expanded={true} />;
+        setTopWidget(newProfileCard);
+        setCurrentPreviewProfile(newPreviewProfile as UserData);
+      });
     }
 
     // handle unknown profile command, push a help card
@@ -486,7 +507,6 @@ function HomePage(props: HomePageProps) {
     setElements(appendNewCard(newCards));
   }
 
-
   // PLEASE DO NOT SIMPLY REFACTOR THIS FUNCTION. SOMEONE REFACTORED THIS BEFORE AND IT BROKE THE FUNCTIONALITY
   // NEED TO SPEND AN HOUR TO FIND THE BUG. GAWD DAMN IT.
   async function handleFriendCommand(command: string[]) {
@@ -521,20 +541,120 @@ function HomePage(props: HomePageProps) {
     setElements(newList);
   }
 
-  async function handleQueueCommand(argument: string, newList: JSX.Element[]) {
-    let response: GameResponseDTO = await gameData.joinQueue(argument);
-    if (response.type === "success")
-      newList = appendNewCard(<Card key={"queue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-    else
-      newList = appendNewCard(<Card key={"queue" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+  async function handleGameCommand(commands: string[], newList: JSX.Element[]) {
+    if (commands.length === 1) {
+      newList = appendNewCard(
+        <Card key={"game" + index} type={CardType.SUCCESS}>
+          <span className='text-xl neonText-white font-bold'>GAME</span><br />
+          <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
+          <p className="text-sm">
+            game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
+            game dequeue            : <span className="text-highlight/70">Dequeue from the current queue.</span><br />
+            game Settings           : <span className="text-highlight/70">Change game settings.</span><br />
+          </p>
+          <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
+          <p className="text-sm">
+            standard                : <span className="text-highlight/70">Power-Ups enabled.</span><br />
+            boring                  : <span className="text-highlight/70">Boring old Pong.</span><br />
+            death                   : <span className="text-highlight/70">Score once to win.</span><br />
+            practice                : <span className="text-highlight/70">Try to beat the bot (PS. It's possible).</span><br />
+          </p>
+        </Card>
+      );
+      setElements(newList);
+    } else if (commands[1] == "queue") {
+      let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
+      if (response.type === "success")
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+      else
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
+      setElements(newList);
+    } else if (commands[1] == "dequeue") {
+      let response: GameResponseDTO = await gameData.leaveQueue();
+      if (response.type === "success")
+        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
+      setElements(newList);
+    } else if (commands[1] == "setting") {
+      handleGameSettingsCommand(commands, newList);
+    }
+  }
+
+  function handleGameSettingsCommand(commands: string[], newList: JSX.Element[]) {
+    if (commands.length === 2) {
+      newList = appendNewCard(<HelpCard title="game set" usage="game setting <option>" option="options" commandOptions={gameSetCommands} key={"GameSettinghelp" + index} />);
+    } else if (commands.length === 3) {
+      if (commands[2] === "show")
+        newList = appendNewCard(
+          <Card key={"game" + index} type={CardType.SUCCESS}>
+            <div className=''>Game Settings:<br />{JSON.stringify(gameData.getSettings).split(",").join(",\n\t").split("{").join("{\n\t").split("}").join("\n}").split(":").join(" : ")}</div>
+          </Card>
+        );
+      else newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}><div>Hold'up... Wait a minute... Something ain't right...</div></Card>);
+    } else if (commands.length === 4) {
+      switch (commands[2]) {
+        case "particlesFilter":
+          gameData.setUseParticlesFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useParticlesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
+          break;
+        case "entitiesFilter":
+          gameData.setUseEntitiesFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useEntitiesFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
+          break;
+        case "paddleFilter":
+          gameData.setUsePaddleFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set usePaddleFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
+          break;
+        case "hitFilter":
+          gameData.setUseHitFilter = commands[3] === "true" ? true : false;
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set useHitFilter to {commands[3] === "true" ? "true" : "false"}</div></Card>);
+          break;
+        case "tickPerParticles":
+          gameData.setTickPerParticlesSpawn = parseInt(commands[3]);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set tickPerParticlesSpawn to {commands[3]}</div></Card>);
+          break;
+        case "gameMaxWidth":
+          gameData.setGameMaxWidth = parseInt(commands[3]);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set gameMaxWidth to {commands[3]} and gameMaxHeight to {Math.floor(parseInt(commands[3]) / 16 * 9)}</div></Card>);
+          break;
+        case "gameMaxHeight":
+          gameData.setGameMaxHeight = parseInt(commands[3]);
+          newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}><div>set gameMaxHeight to {commands[3]} and gameMaxWidth to {Math.floor(parseInt(commands[3]) / 9 * 16)}</div></Card>);
+          break;
+        default:
+          break;
+      }
+    }
     setElements(newList);
   }
 
-  async function handleDequeueCommand(newList: JSX.Element[]) {
-    let response: GameResponseDTO = await gameData.leaveQueue();
-    if (response.type === "success")
-      newList = appendNewCard(<Card key={"dequeue" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-    setElements(newList);
+  function generateCredits() {
+    return (
+      <Card key={"game" + index} type={CardType.SUCCESS}>
+        <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
+        <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
+        <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
+        <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
+        <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
+        <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
+        <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
+        <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
+        <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
+        <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
+        <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
+        <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
+        <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
+        <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
+        <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
+      </Card>
+    );
+  }
+
+  function displayLobby() {
+    setLeftWidget(<Lobby />);
+  }
+
+  function stopDisplayLobby() {
+    setLeftWidget(null);
   }
 }
 

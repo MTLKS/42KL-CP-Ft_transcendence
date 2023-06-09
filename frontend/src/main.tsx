@@ -21,9 +21,10 @@ const pixiApp = new Application({
   height: 900,
   sharedTicker: true,
   autoDensity: true,
+  // resolution: devicePixelRatio,
+  resolution: 1,
   backgroundColor: 0x242424,
   view: document.getElementById('pixi') as HTMLCanvasElement,
-  antialias: true,
 });
 
 const pixiRoot = createRoot(pixiApp.stage);

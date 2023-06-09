@@ -3,7 +3,6 @@ import { GameData } from './game/gameData'
 import { AppProvider, Container } from '@pixi/react';
 import { Application, ICanvas } from 'pixi.js';
 import Game from './game/Game';
-import * as PIXI from 'pixi.js';
 import { clamp } from 'lodash';
 
 interface GameAppProps {
@@ -19,21 +18,30 @@ function GameApp(props: GameAppProps) {
   const [scale, setScale] = useState<number>(1);
   const [shouldRender, setShouldRender] = useState<boolean>(false);
   const [usingTicker, setUsingTicker] = useState<boolean>(true);
-  const canvas = document.createElement('canvas');
 
   const { pixiApp, gameData } = props;
   useEffect(() => {
-    gameData.setSetShouldRender = setShouldRender;
-    gameData.setSetScale = setScale;
-    gameData.setSetUsingTicker = setUsingTicker;
-    pixiApp.stage.eventMode = "static";
-    pixiApp.stage.hitArea = new PIXI.Rectangle(0, 0, 1600, 900);
-    pixiApp.stage.on('mousemove', onmousemove);
+    pixiApp.ticker.maxFPS = 120;
+    gameData.setShouldRender = setShouldRender;
+    gameData.setScale = setScale;
+    gameData.setUsingTicker = setUsingTicker;
     return () => {
-      gameData.endGame();
-      pixiApp.stage.off('mousemove', onmousemove);
+      gameData.endGame()
     }
   }, []);
+
+  useEffect(() => {
+    pixiApp.screen.width = gameData.gameCurrentWidth;
+    pixiApp.screen.height = gameData.gameCurrentHeight;
+    window.addEventListener('mousemove', onmousemove);
+    window.addEventListener('mousedown', onmousedown);
+    window.addEventListener('mouseup', onmouseup);
+    return () => {
+      window.removeEventListener('mousemove', onmousemove);
+      window.removeEventListener('mousedown', onmousedown);
+      window.removeEventListener('mouseup', onmouseup);
+    }
+  }, [scale]);
   return (
     <AppProvider value={pixiApp}>
       <GameDataCtx.Provider value={gameData}>
@@ -44,14 +52,20 @@ function GameApp(props: GameAppProps) {
 
   function onmousemove(e: MouseEvent) {
     const currentTime = Date.now();
-    if (currentTime - mouseLastMoveTime < 14) return;
+    if (currentTime - mouseLastMoveTime < 16) return;
     mouseLastMoveTime = currentTime;
-    const aspectRatio = 16 / 9;
-    const clampedWidth = clamp(window.innerWidth, 0, 1600);
-    const clampedHeight = clamp(window.innerHeight, 0, 900);
-    const newHeight = Math.min(clampedHeight, clampedWidth / aspectRatio);
-    const top = (window.innerHeight - newHeight) / 2;
-    gameData.updatePlayerPosition(e.clientY - top);
+    gameData.updatePlayerPosition(
+      clamp((e.clientY - (window.innerHeight - gameData.gameCurrentHeight) * 0.5) / scale, 50, 850),
+      clamp((e.clientX - (window.innerWidth - gameData.gameCurrentWidth) * 0.5) / scale, 30, 1570),
+    );
+  }
+
+  function onmousedown() {
+    gameData.updatePlayerClick(true);
+  }
+
+  function onmouseup() {
+    gameData.updatePlayerClick(false);
   }
 }
 

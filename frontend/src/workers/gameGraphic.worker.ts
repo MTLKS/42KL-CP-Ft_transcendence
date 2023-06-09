@@ -100,7 +100,7 @@ function eventLoop() {
         w: 10,
         h: 10,
         colorIndex: 0,
-        gravity: false,
+        affectedByGravity: false,
       })
     );
     self.postMessage({ type: "gameParticles", value: gameParticles });

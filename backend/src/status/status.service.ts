@@ -1,13 +1,16 @@
-import { UserService } from "src/user/user.service";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Status } from "src/entity/status.entity";
-import { ErrorDTO } from "src/dto/error.dto";
-import { Injectable } from "@nestjs/common";
-import { Repository } from "typeorm";
+import { UserService } from 'src/user/user.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Status } from 'src/entity/status.entity';
+import { ErrorDTO } from 'src/dto/error.dto';
+import { Injectable } from '@nestjs/common';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class StatusService {
-	constructor(@InjectRepository(Status) private statusRepository: Repository<Status>, private userService: UserService) {}
+  constructor(
+    @InjectRepository(Status) private statusRepository: Repository<Status>,
+    private userService: UserService,
+  ) {}
 
 	// New user connection
 	async userConnect(client: any, server: any): Promise<any> {
