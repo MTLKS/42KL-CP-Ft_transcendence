@@ -2,6 +2,7 @@ import { Player } from "./player";
 import { PowerUp } from "../game.service";
 
 export class Lobby {
+	public name: string;
 	public player1: Player;
 	public player2: Player;
 	public gameType: string;
@@ -11,6 +12,7 @@ export class Lobby {
 	public player2PowerUp: string;
 
 	constructor (player1: Player, player2: Player, gameType: string) {
+		this.name = player1.intraName + player2.intraName;
 		this.player1 = player1;
 		this.player2 = player2;
 		this.gameType = gameType;

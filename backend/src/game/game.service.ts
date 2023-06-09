@@ -267,8 +267,10 @@ export class GameService {
   joinLobby(player1: Player, player2: Player, gameType: string) {
     let lobby = new Lobby(player1, player2, gameType);
     this.gameLobbies.set(player1.intraName + player2.intraName, lobby);
-    player1.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
-    player2.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+    player1.socket.join(lobby.name);
+    player2.socket.join(lobby.name);
+    player1.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
+    player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
   getLobbyKeyFromIntraNames(intraName: string): string | undefined {
@@ -296,6 +298,8 @@ export class GameService {
           LOBBY.player1.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO(LOBBY.player2.intraName, "leave")));
           LOBBY.player2.socket.emit('gameState', new GameStateDTO('LobbyEnd', new LobbyEndDTO("you", "leave")));
         }
+        LOBBY.player1.socket.leave(LOBBY.name);
+        LOBBY.player2.socket.leave(LOBBY.name);
         this.gameLobbies.delete(LOBBY_KEY);
       }
     }
@@ -351,6 +355,8 @@ export class GameService {
       if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
         this.gameLobbies.delete(key);
+        gameLobby.player1.socket.leave(gameLobby.name);
+        gameLobby.player2.socket.leave(gameLobby.name);
         this.joinGame(gameLobby.player1, gameLobby.player2, gameType, server, this.getPowerUp(gameLobby.player1PowerUp), this.getPowerUp(gameLobby.player2PowerUp));
       }
     });
@@ -418,6 +424,20 @@ export class GameService {
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
     ROOM.updatePlayerMouse(client.id, isMouseDown);
+  }
+
+  async emote(client: Socket, server: Server, emote: number){
+    const USER_DATA = await this.userService.getMyUserData(
+      client.handshake.headers.authorization,
+    );
+    if (USER_DATA.error !== undefined) return;
+    const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
+    if (LOBBY_KEY !== undefined){
+      const LOBBY = this.gameLobbies.get(LOBBY_KEY);
+      if (LOBBY != undefined){
+        server.to(LOBBY.name).emit("emote", emote);
+      }
+    }
   }
 
   clearGameRooms() {
