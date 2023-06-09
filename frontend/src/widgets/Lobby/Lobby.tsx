@@ -26,33 +26,33 @@ import Triangle from '../../components/Triangle'
 import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
 
 const emoteList = [
-  <FaThumbsUp size={100}/>,
-  <FaHandMiddleFinger size={100}/>,
-  <FaSkull size={100}/>,
-  <FaWheelchair size={100}/>,
-  <FaQuestion size={100}/>,
-  <FaSadCry size={100}/>,
-  <FaAngry size={100}/>,
-  <FaPoop size={100}/>,
-  <FaHeart size={100}/>,
-  <FaTrash size={100}/>,
+  <FaThumbsUp size={100} />,
+  <FaHandMiddleFinger size={100} />,
+  <FaSkull size={100} />,
+  <FaWheelchair size={100} />,
+  <FaQuestion size={100} />,
+  <FaSadCry size={100} />,
+  <FaAngry size={100} />,
+  <FaPoop size={100} />,
+  <FaHeart size={100} />,
+  <FaTrash size={100} />,
 ]
 
 const emoteListSmall = [
-  <FaThumbsUp size={25}/>,
-  <FaHandMiddleFinger size={25}/>,
-  <FaSkull size={25}/>,
-  <FaWheelchair size={25}/>,
-  <FaQuestion size={25}/>,
-  <FaSadCry size={25}/>,
-  <FaAngry size={25}/>,
-  <FaPoop size={25}/>,
-  <FaHeart size={25}/>,
-  <FaTrash size={25}/>,
+  <FaThumbsUp size={25} />,
+  <FaHandMiddleFinger size={25} />,
+  <FaSkull size={25} />,
+  <FaWheelchair size={25} />,
+  <FaQuestion size={25} />,
+  <FaSadCry size={25} />,
+  <FaAngry size={25} />,
+  <FaPoop size={25} />,
+  <FaHeart size={25} />,
+  <FaTrash size={25} />,
 ]
 
 function Lobby() {
-  const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "">(gameData.gameType);
+  const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "practice" | "">(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
   const [onCountdown, setOnCountdown] = React.useState(false);
@@ -68,7 +68,8 @@ function Lobby() {
 
   useEffect(() => {
     gameData.socketApi.listen("emote", (data: number) => {
-      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data}/>]);
+      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data} />]);
+      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data} />]);
       setTimeout(() => {
         setEmotes((emotes) => emotes.slice(1));
       }, 3000);
@@ -131,14 +132,14 @@ function Lobby() {
           <div className='flex-1'>
           </div>
           <div className="flex flex-row items-center gap-6 box-border pb-10">
-            <Arrow direction='left' onMouseDown={() => setCurrentEmote(currentEmote === 0 ? 9 : currentEmote - 1)}/>
-            <SendEmote emotes={emotes} currentEmote={currentEmote}/>
-            <Arrow direction='right' onMouseDown={() => setCurrentEmote(currentEmote === 9 ? 0 : currentEmote + 1)}/>
+            <Arrow direction='left' onMouseDown={() => setCurrentEmote(currentEmote === 0 ? 9 : currentEmote - 1)} />
+            <SendEmote emotes={emotes} currentEmote={currentEmote} />
+            <Arrow direction='right' onMouseDown={() => setCurrentEmote(currentEmote === 9 ? 0 : currentEmote + 1)} />
           </div>
           <LobbyReadyButton >
             <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}
               onClick={() => gameData.leaveLobby()}
-              >leave</p>
+            >leave</p>
           </LobbyReadyButton>
           <LobbyReadyButton onClick={() => sendReady()} selected={ready}>
             {onCountdown ? <CountDown /> :
@@ -201,7 +202,7 @@ function SendEmote(props: SendEmoteProps) {
     if (intervalRef.current !== null)
       clearInterval(intervalRef.current);
   };
-  
+
   function handleLongPress() {
     intervalRef.current = setInterval(() => {
       sendEmote();
@@ -217,10 +218,10 @@ function SendEmote(props: SendEmoteProps) {
   return (
     <button className=" hover:scale-110 transition-all transform relative uppercase font-extrabold w-1/2 text-md text-highlight group-hover:text-dimshadow text-center cursor-pointer"
       onClick={sendEmote}
-      onMouseDown={()=>handleMouseDown()}
-      onMouseUp={()=>handleMouseUp()}
-      onMouseLeave={()=>handleMouseUp()}
-      >
+      onMouseDown={() => handleMouseDown()}
+      onMouseUp={() => handleMouseUp()}
+      onMouseLeave={() => handleMouseUp()}
+    >
       {emoteList[currentEmote]}
     </button>
   )
@@ -233,7 +234,7 @@ interface ArrowProps {
 
 function Arrow(props: ArrowProps) {
   const { direction, onMouseDown } = props;
-  const [ hovering, setHovering ] = useState<boolean>(false);
+  const [hovering, setHovering] = useState<boolean>(false);
 
   return (
     <button onMouseDown={onMouseDown} className="w-[40px] h-[40px] relative cursor-pointer"

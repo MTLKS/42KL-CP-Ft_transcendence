@@ -93,7 +93,7 @@ export class GameData {
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
-  gameType: "boring" | "standard" | "death" | "" = "";
+  gameType: "boring" | "standard" | "death" | "practice" | "" = "";
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
 
@@ -265,12 +265,16 @@ export class GameData {
     console.log("send ready: ", {
       ready: ready,
       powerUp: powerUp,
+      gameType: this.gameType,
     });
     this.socketApi.sendMessages("ready", {
       ready: ready,
       powerUp: powerUp,
+      gameType: this.gameType,
     });
   }
+
+  sendUpdateGameType(gameType: string) {}
 
   leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
