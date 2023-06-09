@@ -1,15 +1,12 @@
-import React, { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import FriendActionCard, { ACTION_TYPE } from './FriendActionCard'
 import LessFileIndicator from '../../Less/LessFileIndicator'
 import { FriendData } from '../../../model/FriendData'
 import { UserData } from '../../../model/UserData'
 import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, FriendsContext, SelectedFriendContext } from '../../../contexts/FriendContext'
-import { acceptFriend, addFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../api/friendActionAPI'
+import { acceptFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../api/friendActionAPI'
 import { AxiosResponse } from 'axios'
 import { getFriendList } from '../../../api/friendListAPI'
-import PreviewProfileContext from '../../../contexts/PreviewProfileContext'
-import UserContext from '../../../contexts/UserContext'
-import Profile from '../../Profile/Profile'
 
 interface FriendActionProps {
   user: UserData;
@@ -90,18 +87,18 @@ function FriendAction(props: FriendActionProps) {
               }
             </div>
             <div className='flex-col'>
-              <p className='flex flex-row justify-between'>
-                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</span>
-                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:N</span> No to all</span>
-                {action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</span> : <></>}
+              <div className='flex flex-row justify-between'>
+                <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('Y')}><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</button>
+                <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('N')}><span className='bg-highlight text-dimshadow'>:N</span> No to all</button>
+                {action === ACTION_TYPE.ACCEPT ? <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('I')}><span className='bg-highlight text-dimshadow'>:I</span> Ignore all</button> : <></>}
                 <span></span>
-              </p>
-              <p className='flex flex-row justify-between'>
-                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:y</span> yes to current</span>
-                <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:n</span> no to current</span>
-                {action === ACTION_TYPE.ACCEPT ? <span className='text-highlight'><span className='bg-highlight text-dimshadow'>:i</span> ignore current</span> : <></>}
+              </div>
+              <div className='flex flex-row justify-between'>
+                <button className='text-highlight hover:text-dimshadow hover:bg-highlight ' onClick={() => handleFriendAction('y')}><span className='bg-highlight text-dimshadow'>:y</span> yes to current</button>
+                <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('n')}><span className='bg-highlight text-dimshadow'>:n</span> no to current</button>
+                {action === ACTION_TYPE.ACCEPT ? <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('i')}><span className='bg-highlight text-dimshadow'>:i</span> ignore current</button> : <></>}
                 <span></span>
-              </p>
+              </div>
             </div>
           </div>
         </ActionFunctionsContext.Provider>
@@ -112,6 +109,11 @@ function FriendAction(props: FriendActionProps) {
   function focusOnInput() {
     inputRef.current?.focus();
     setIsInputFocused(true);
+  }
+
+  function handleFriendAction(action: string) {
+    runFriendActionCommands(action);
+    setIsCommandMode(false);
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {

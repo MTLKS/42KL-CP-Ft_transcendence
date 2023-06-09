@@ -51,14 +51,6 @@ function FriendActionCard(props: FriendActionCardProps) {
           <p>PONGSH key fingerprint is SHA256: {fakeSHAkeyStr}</p>
           <div className='flex flex-row whitespace-pre'>
             <FriendActionConfirmation />
-            <div className={`${!isCurrentIndex && 'hidden'} whitespace-pre`}>
-              [<FriendActionConfirmationButtons
-                friendUserName={friendInfo.userName}
-                friendIntraName={friendInfo.intraName}
-                ignoreAction={ignoreAction}
-                useAlternativeAction={action === ACTION_TYPE.BLOCK && friend.status === "STRANGER"}
-              />]
-            </div>
           </div>
         </div>
         <FriendlistEmptyLine />

@@ -136,8 +136,10 @@ export class FriendshipService {
 		const FRIEND_CHANNEL = await this.channelRepository.findOne({ where: { owner: { intraName: receiverIntraName }, isRoom: false }, relations: ['owner'] });
 		const MY_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: USER_DATA.intraName }, channel: { channelId: FRIEND_CHANNEL.channelId } }, relations: ['user', 'channel'] })
 		const FRIEND_MEMBER = await this.memberRepository.findOne({ where: { user: { intraName: receiverIntraName }, channel: { channelId: MY_CHANNEL.channelId } }, relations: ['user', 'channel'] })
-		await this.memberRepository.delete(MY_MEMBER)
-		await this.memberRepository.delete(FRIEND_MEMBER);
+		if (MY_MEMBER !== null)
+			await this.memberRepository.delete(MY_MEMBER)
+		if (FRIEND_MEMBER !== null)
+			await this.memberRepository.delete(FRIEND_MEMBER);
 		return this.userService.hideData(FRIENDSHIP);
 	}
 
