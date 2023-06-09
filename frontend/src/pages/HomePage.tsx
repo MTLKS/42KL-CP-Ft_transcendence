@@ -38,10 +38,12 @@ const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "leaderboard" }),
   new CommandOptionData({
     command: "friend", options: [
-      new CommandOptionData({ command: "add", parameter: "<username>" }),
       new CommandOptionData({ command: "list", parameter: "<username>" }),
+      new CommandOptionData({ command: "requests", parameter: "<username>" }),
+      new CommandOptionData({ command: "add", parameter: "<username>" }),
       new CommandOptionData({ command: "block", parameter: "<username>" }),
-      new CommandOptionData({ command: "requests", parameter: "<username>" })
+      new CommandOptionData({ command: "unblock", parameter: "<username>" }),
+      new CommandOptionData({ command: "unfriend", parameter: "<username>" })
     ]
   }),
   new CommandOptionData({ command: "cowsay" }),
