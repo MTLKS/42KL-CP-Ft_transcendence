@@ -4,6 +4,7 @@ import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatC
 import { ChannelData, ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import UserContext from '../../../../contexts/UserContext';
 import ChatroomTypingStatus from './ChatroomTypingStatus';
+import { gameData } from '../../../../main';
 
 interface ChatroomTextFieldProps {
   chatroomData: ChatroomData;
@@ -90,6 +91,13 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
       setTypingMembers(prevTypingMembers => [...prevTypingMembers, userName]);
       setSomeoneIsTyping(true);
     })
+  }
+
+  const createGameLobby = () => {
+    // DM: receiver's name
+    // GROUPCHAT: group's name
+    const opponentName = chatroomData.isRoom ? chatroomData.channelName : chatroomData.owner!.intraName;
+    gameData.createLobby(true, opponentName, myProfile.intraName);
   }
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

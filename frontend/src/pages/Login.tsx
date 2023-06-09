@@ -1,9 +1,7 @@
 import Title from '../components/Title';
 import login from '../api/loginAPI';
 import PromptField, { CommandOptionData } from '../components/PromptField';
-import sleep from '../functions/sleep';
 import { useEffect, useRef, useState } from 'react';
-import { set } from 'lodash';
 
 function LoginBadge() {
   const [slideIn, setSlideIn] = useState(false);

@@ -21,7 +21,8 @@ export type Events =
   | "leaveQueue"
   | "ready"
   | "leaveLobby"
-  | "emote";
+  | "emote"
+  | "joinPrivateLobby";
 
 class SocketApi {
   socket: Socket;
