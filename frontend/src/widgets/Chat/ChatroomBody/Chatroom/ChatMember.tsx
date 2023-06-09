@@ -66,9 +66,9 @@ function ChatMemberActions(props: { userData: UserData }) {
         <FaCaretDown />
       </button>
       <div className={`absolute right-0 z-10 flex-col items-center w-full h-fit ${showOption ? 'flex' : 'hidden'} text-sm uppercase`}>
-        <button onMouseDown={toggleMuteMember} className={`border border-highlight ${memberInfo?.memberInfo.isMuted ? 'bg-highlight text-dimshadow font-bold' : 'bg-dimshadow text-highlight'} w-full hover:bg-highlight hover:text-dimshadow uppercase`}>{memberInfo?.memberInfo.isMuted ? 'unmute' : 'mute'}</button>
+        {!memberInfo?.memberInfo.isBanned && <button onMouseDown={toggleMuteMember} className={`border border-highlight ${memberInfo?.memberInfo.isMuted ? 'bg-highlight text-dimshadow font-bold' : 'bg-dimshadow text-highlight'} w-full hover:bg-highlight hover:text-dimshadow uppercase`}>{memberInfo?.memberInfo.isMuted ? 'unmute' : 'mute'}</button>}
         <button onMouseDown={toggleBanMember} className={`border border-highlight ${memberInfo?.memberInfo.isBanned ? 'bg-highlight text-dimshadow font-bold' : 'bg-dimshadow text-highlight'} w-full hover:bg-highlight hover:text-dimshadow uppercase`}>{memberInfo?.memberInfo.isBanned ? 'unban' : 'ban'}</button>
-        <button onMouseDown={toggleKickMember} className={`border border-highlight ${memberInfo?.actionType === ModeratorAction.KICK ? 'bg-highlight text-dimshadow font-bold' : 'bg-dimshadow text-highlight'} w-full hover:bg-highlight hover:text-dimshadow uppercase`}>{memberInfo?.willBeKicked ? 'un-kick' : 'kick'}</button>
+        {!memberInfo?.memberInfo.isBanned && <button onMouseDown={toggleKickMember} className={`border border-highlight ${memberInfo?.actionType === ModeratorAction.KICK ? 'bg-highlight text-dimshadow font-bold' : 'bg-dimshadow text-highlight'} w-full hover:bg-highlight hover:text-dimshadow uppercase`}>{memberInfo?.willBeKicked ? 'un-kick' : 'kick'}</button>}
       </div>
     </div>
   )

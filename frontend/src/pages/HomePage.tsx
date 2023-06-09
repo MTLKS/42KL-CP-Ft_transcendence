@@ -244,26 +244,30 @@ function HomePage(props: HomePageProps) {
         setElements(appendNewCard(newList));
         return;
       }
-
-      getProfileOfUser(wantToView).then((response) => {
-        const newPreviewProfile = response.data as any;
-        if ((newPreviewProfile as ErrorData).error) {
-          errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
-          newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
-          setElements(appendNewCard(newList));
-          return;
-        }
-        newList = elements;
-        const newProfileCard = <Profile expanded={true} />;
-        setTopWidget(newProfileCard);
-        setCurrentPreviewProfile(newPreviewProfile as UserData);
-        setTimeout(() => {
-          if (expandProfile)
-            setExpandProfile(!expandProfile);
-          else
-            setExpandProfile(false);
-        }, 500);
-      });
+      
+      getProfileOfUser(wantToView)
+        .then((response) => {
+          const newPreviewProfile = response.data as any;
+          newList = elements;
+          const newProfileCard = <Profile expanded={true} />;
+          setTopWidget(newProfileCard);
+          setCurrentPreviewProfile(newPreviewProfile as UserData);
+          setTimeout(() => {
+            if (expandProfile)
+              setExpandProfile(!expandProfile);
+            else
+              setExpandProfile(false);
+          }, 500);
+        })
+        .catch((err: any) => {
+          const error = err.response.data as ErrorData;
+          if (error) {
+            errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
+            newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
+            setElements(appendNewCard(newList));
+            return;
+          }
+        });
     }
 
     // handle unknown profile command, push a help card
@@ -340,20 +344,23 @@ function HomePage(props: HomePageProps) {
 
     // iterate through the names and attempt get their user data to add as friend
     for (const friendName of friendIntraNames) {
-      const friendProfile = await getProfileOfUser(friendName);
-      if ((friendProfile.data as ErrorData).error) {
+      let friendProfile;
+
+      try {
+        friendProfile = (await getProfileOfUser(friendName)).data as UserData;
+      } catch (error: any) {
         errors.push({ error: friendErrors.USER_NOT_FOUND, data: friendName as string });
         continue;
       }
 
-      const result = await addFriend((friendProfile.data as UserData).intraName);
-      if (result.data.error) {
+      try {
+        const tryAddFriend = await addFriend(friendProfile.intraName);
+        successes.push(friendName);
+      } catch (error: any) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
           data: (myFriends.find((friend) => friend.receiver.intraName === friendName || friend.sender.intraName === friendName) as FriendData)
         });
-      } else {
-        successes.push(friendName);
       }
     }
 
@@ -458,20 +465,23 @@ function HomePage(props: HomePageProps) {
 
     const errors: errorType[] = [];
     let newCards: JSX.Element[] = [];
-    const friendProfile: UserData | ErrorData = (intraName === null ? userData : (await getProfileOfUser(intraName)).data);
 
-    // to handle if the user is not found & if the friendship status is blocked
-    if ((friendProfile as ErrorData).error) {
-      errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
-    } else {
-      // if the user profile is found, get the friendlist
-      let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data;
-      // meaning the user is trying to someone's friendlist. if that's the case, filter out all the friends except those who are accepted
-      if (intraName !== null) {
-        friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
+    try {
+      
+      const friendProfile: UserData | ErrorData = (intraName === null) ? userData : (await getProfileOfUser(intraName)).data;
+      
+      try {
+        let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data; 
+        if (intraName !== null) friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
+        setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
+      } catch (error: any) {
+        console.log("error when fetching friendlist");
       }
-      setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
+
+    } catch (error: any) {
+      errors.push({ error: friendErrors.USER_NOT_FOUND, data: intraName as string });
     }
+
     newCards = newCards.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
     setElements(appendNewCard(newCards));
   }
