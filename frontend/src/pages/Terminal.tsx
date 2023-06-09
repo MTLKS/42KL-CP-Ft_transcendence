@@ -18,10 +18,12 @@ interface TerminalProps {
 
 function Terminal(pros: TerminalProps) {
   const { availableCommands, handleCommands, elements } = pros;
+  const [mounted, setMounted] = React.useState(false);
 
   const promptFieldRef = useRef<any>(null);
 
   useEffect(() => {
+    setMounted(true);
     promptFieldRef.current?.focusOnInput();
   }, []);
 
@@ -32,7 +34,7 @@ function Terminal(pros: TerminalProps) {
       <ScrollView reverse={true}>
         {elements}
       </ScrollView>
-      <div className=' bg-highlight h-1 w-full' />
+      <div className={`h-1 w-full bg-highlight transition-transform duration-500 ${mounted ? " translate-x-0" : " -translate-x-full"}`} />
       <PromptField
         handleCommands={handleCommands}
         availableCommands={availableCommands}
@@ -40,7 +42,9 @@ function Terminal(pros: TerminalProps) {
         enableHistory showtip
       />
       <Queue expanded={true} />
-      <Clock />
+      <div className={`absolute top-0 right-0 transition-transform duration-500 ${mounted ? " translate-x-0" : " translate-x-full"}`}>
+        <Clock />
+      </div>
     </div>
   )
 

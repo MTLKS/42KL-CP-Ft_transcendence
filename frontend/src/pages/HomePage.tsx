@@ -73,10 +73,10 @@ const availableCommands: CommandOptionData[] = [
       new CommandOptionData({
         command: "setting", options: [
           new CommandOptionData({ command: "show" }),
-          new CommandOptionData({ command: "particlesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "entitiesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "paddleFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "hitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "particlesFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "entitiesFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "paddleFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "hitFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
           new CommandOptionData({ command: "tickPerParticles", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]
@@ -99,7 +99,7 @@ function HomePage(props: HomePageProps) {
   const [index, setIndex] = useState(0);
   const [shouldDisplayGame, setShouldDisplayGame] = useState(false);
   const [topWidget, setTopWidget] = useState(<Profile />);
-  const [midWidget, setMidWidget] = useState(<MatrixRain />);
+  const [midWidget, setMidWidget] = useState(<div className='flex-1'></div>);
   const [botWidget, setBotWidget] = useState(<Chat />);
   const [leftWidget, setLeftWidget] = useState<JSX.Element | null>(null);
   const [expandProfile, setExpandProfile] = useState(false);
@@ -107,11 +107,20 @@ function HomePage(props: HomePageProps) {
   const [selectedFriends, setSelectedFriends] = useState<FriendData[]>([]);
   const defaultSocket = useMemo(() => new SocketApi(), []);
   const friendshipSocket = useMemo(() => new SocketApi("friendship"), []);
+  const [scaleY, setScaleY] = useState("scale-y-0");
+  const [showWidget, setShowWidget] = useState(false);
+  const [showTerminal, setShowTerminal] = useState(false);
 
   let incomingRequests: FriendData[] = useMemo(
     () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.sender.intraName !== userData.intraName),
     [myFriends]
   );
+
+  useEffect(() => {
+    setScaleY("scale-y-100");
+    setTimeout(() => setShowWidget(true), 500);
+    setTimeout(() => { setShowTerminal(true); setMidWidget(<MatrixRain />); }, 1000);
+  }, [userData]);
 
   const pageRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +129,9 @@ function HomePage(props: HomePageProps) {
     gameData.setShouldDisplayGame = setShouldDisplayGame;
     gameData.displayLobby = () => displayLobby();
     gameData.stopDisplayLobby = () => stopDisplayLobby();
+    if (gameData.gameDisplayed) {
+      setShouldDisplayGame(true);
+    }
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
@@ -137,14 +149,13 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-              <div className='h-full w-full p-7'>
+              <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
                 {incomingRequests.length !== 0 && <FriendRequestPopup total={incomingRequests.length} />}
                 <div className=' h-full w-full bg-dimshadow border-4 border-highlight rounded-2xl flex flex-row overflow-hidden' ref={pageRef}>
                   <div className='h-full flex-1'>
-                    {leftWidget ? leftWidget : <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} />}
+                    {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
                   </div>
-                  <div className=' bg-highlight h-full w-1' />
-                  <div className=' h-full w-[700px] flex flex-col pointer-events-auto'>
+                  <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-in-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
                     {midWidget}
                     {botWidget}
