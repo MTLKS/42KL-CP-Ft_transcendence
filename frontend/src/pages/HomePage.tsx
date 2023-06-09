@@ -73,10 +73,10 @@ const availableCommands: CommandOptionData[] = [
       new CommandOptionData({
         command: "setting", options: [
           new CommandOptionData({ command: "show" }),
-          new CommandOptionData({ command: "particlesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "entitiesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "paddleFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "hitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "particlesFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "entitiesFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "paddleFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "hitFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
           new CommandOptionData({ command: "tickPerParticles", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]

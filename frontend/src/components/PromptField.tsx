@@ -114,33 +114,33 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     }
     inputRef.current!.focus();
   }, [value]);
-  
-  const {toolTips,isParameter} = useMemo(() => {
+
+  const { toolTips, isParameter } = useMemo(() => {
     const toolTipCommands: string[] = [];
     let isParameter = false;
-    let currentCommand :CommandOptionData;
+    let currentCommand: CommandOptionData;
     splitValue.forEach((word, index) => {
       if (index !== 0) {
         const found = currentCommand === undefined ? false : currentCommand.options.find((command) => command.isCommand(word))!;
-        if (!found){
+        if (!found) {
           if (currentCommand) {
             toolTipCommands.push(currentCommand.parameter);
             isParameter = true;
           }
-          return ;
+          return;
         }
         else
-          currentCommand  = found;
+          currentCommand = found;
         toolTipCommands.push(currentCommand.command);
-        return ;
+        return;
       }
       currentCommand = availableCommands.find((command) => command.isCommand(word))!;
-      if (!currentCommand) return ;
+      if (!currentCommand) return;
       toolTipCommands.push(currentCommand.command);
     });
-    return {toolTips: toolTipCommands, isParameter};
+    return { toolTips: toolTipCommands, isParameter };
   }, [value]);
-  
+
   return (
     <div className={center ? 'mx-auto w-[600px]' : 'mx-2'}
     >
@@ -176,7 +176,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
         />
         <div className=' absolute opacity-20'
           style={{
-            display: toolTips.length!=0 && value !== "" && showtip && !(isParameter && splitValue[splitValue.length - 1].length !== 0) ? "" : "none",
+            display: toolTips.length != 0 && value !== "" && showtip && !(isParameter && splitValue[splitValue.length - 1].length !== 0) ? "" : "none",
             left: toolTipOffset.left, top: toolTipOffset.top
           }}
         >
@@ -273,6 +273,7 @@ const PromptField = forwardRef((props: PromptFieldProps, ref) => {
     }
     if ((e.key === 'Tab' || e.key === 'ArrowRight')) {
       e.preventDefault();
+      if (toolTips[toolTips.length - 1].startsWith("<")) return;
       let finalString = '';
       toolTips.forEach((toolTip, index) => {
         if (index === 0)
