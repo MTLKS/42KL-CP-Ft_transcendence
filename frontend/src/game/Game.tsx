@@ -20,6 +20,7 @@ import { DropShadowFilter, RGBSplitFilter, ShockwaveFilter } from 'pixi-filters'
 import InwardShadow from './game_objects/InwardShadow';
 import { clamp, update } from 'lodash';
 import { playGameSound, HitType } from '../functions/audio';
+import GameEndText from './game_objects/GameEndText';
 
 interface GameProps {
   scale: number;
@@ -34,9 +35,11 @@ function Game(props: GameProps) {
   const [gameGravityArrow, setGameGravityArrow] = useState<GameGravityArrow | null>(null);
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
+  const [numberHits, setNumberHits] = useState(0);
   const [bgColor, setBgColor] = useState(0x242424);
   const [bgColorTween, setBgColorTween] = useState<ColorTween | undefined>(undefined);
   const app = useApp();
+  const [gameEndText, setGameEndText] = useState<JSX.Element>(<></>);
 
   const timeRef = useRef<number[]>([]);
   const fpsTextRef = useRef<PIXI.Text>(null);
@@ -96,7 +99,7 @@ function Game(props: GameProps) {
   }, [scale]);
 
   useEffect(() => {
-    gameData.setBallhit = ballhit;
+    gameData.ballHit = ballhit;
   }, [scale]);
 
   useEffect(() => {
@@ -125,7 +128,14 @@ function Game(props: GameProps) {
     setGameGravityArrow(newGameGravityArrow);
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
-    zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale);
+    if (gameData.gameType === "death") setNumberHits(gameData.numberHits);
+    if (gameData.gameType !== "boring") zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
+    else {
+      if ((gameData.player1Score === 10 && gameData.isLeft) || (gameData.player2Score === 10 && gameData.isRight))
+        setGameEndText(<GameText text='Win' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
+      else if (gameData.player1Score === 10 || gameData.player2Score === 10)
+        setGameEndText(<GameText text='Lose' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
+    }
     // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
 
@@ -142,21 +152,27 @@ function Game(props: GameProps) {
     <>
       <Container ref={containerRef} width={1600} height={900} scale={scale} eventMode='auto'>
         <Sprite width={1600} height={900} texture={backgoundTexture} />
-        <Container ref={shadowRef} alpha={0.5}>
+        {gameData.gameType === "boring" ? <></> : <Container ref={shadowRef} alpha={0.5}>
           <InwardShadow />
-        </Container>
+        </Container>}
         <Container x={850} y={900} anchor={0.5}>
           <GameText text='PONG' anchor={new PIXI.Point(1, 1)} fontSize={250} position={{ x: 150, y: 0 }} opacity={0.1} />
           <GameText text='sh' anchor={new PIXI.Point(0, 1.1)} fontSize={150} position={{ x: 130, y: 0 }} opacity={0.1} />
         </Container>
-        <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-        <GameText text={":"} anchor={new PIXI.Point(0.5, 0)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
-        <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+        {
+          gameData.gameType === "death" ? <GameText text={numberHits.toString()} anchor={new PIXI.Point(0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} /> :
+            <>
+              <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+              <GameText text={":"} anchor={new PIXI.Point(0.5, 0)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+              <GameText text={player2Score.toString()} anchor={new PIXI.Point(-0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
+            </>
+        }
         <Pong size={{ w: 10, h: 10 }} />
         <Entities />
-        <ParticlesRenderer key={"particle renderer"} gameGravityArrow={gameGravityArrow} />
+        {gameData.gameType === "boring" ? <></> : <ParticlesRenderer key={"particle renderer"} gameGravityArrow={gameGravityArrow} />}
         <Paddle left={true} />
         <Paddle left={false} />
+        {gameEndText}
       </Container>
       <Text ref={fpsTextRef} style={new PIXI.TextStyle({ fill: 0xB3A183, fontSize: 16 })} x={10} y={5} />
     </>
@@ -181,7 +197,35 @@ function Game(props: GameProps) {
     }
     return newGameGravityArrow;
   }
+
+  function displayGameEndText(win: boolean) {
+    const random = Math.floor(Math.random() * 5);
+    if (win) {
+      setGameEndText(<GameEndText text={winPhrase[random]} winner />)
+    } else {
+      setGameEndText(<GameEndText text={losePhrase[random]} />)
+    }
+    setTimeout(() => {
+      setGameEndText(<></>)
+    }, 5000);
+  }
 }
+
+const winPhrase = [
+  'YOU WIN',
+  'SO GOOD, SO SMOOTH',
+  'VICTORY',
+  'NOT BAD, INDEED',
+  'WHAT A SHOT!!'
+]
+
+const losePhrase = [
+  'YOU LOSE',
+  'SO BAD, SO SAD',
+  'DEFEAT',
+  'NOT GOOD, INDEED',
+  'WHAT A SHAME!!'
+]
 
 export default Game
 
@@ -241,9 +285,9 @@ function ballHitEffect(
   }
 }
 
-async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number) {
+async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
   if (!((newPosition.x <= 40 || newPosition.x >= 1600 - 50)
-    && ((player1Score === 9 && newPosition.x >= 1600 - 50) || (player2Score === 9 && newPosition.x <= 40))
+    && ((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1600 - 50) || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40))
     && zoomSlowMoRef.current === null)) return;
   gameData.useLocalTick();
   const x = (newPosition.x <= 45 ? 0 : 1600);
@@ -278,6 +322,7 @@ async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, p
       containerRef.current.position.x = 0;
       containerRef.current.position.y = 0;
       app.ticker.speed = 1;
+      displayGameEndText((gameData.player1Score === (gameData.gameType === "death" ? 1 : 10) && gameData.isLeft) || (gameData.player2Score === (gameData.gameType === "death" ? 1 : 10) && gameData.isRight));
       zoomSlowMoRef.current.remove(tickerCallback);
       zoomSlowMoRef.current.stop();
       if (gameData.localTicker)

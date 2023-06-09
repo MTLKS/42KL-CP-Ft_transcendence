@@ -84,10 +84,10 @@ export class PowerGameRoom extends GameRoom {
 
     if (Player1PowerUp == PowerUp.SIZE) {
       this.leftPaddle.height = 150;
-    } else if (Player2PowerUp == PowerUp.SIZE) {
+    }
+    if (Player2PowerUp == PowerUp.SIZE) {
       this.rightPaddle.height = 150;
     }
-
     //Config Setting
     this.minTime = 10;
     this.maxTime = 20;
@@ -375,8 +375,8 @@ export class PowerGameRoom extends GameRoom {
   }
 
   fieldChange(server: Server) {
-    // let effect = this.getRandomNum();
-    let effect = 2;
+    let effect = this.getRandomNum();
+    // let effect = 3;
     let spawnPos;
     switch (effect) {
       case FieldEffect.NORMAL:
@@ -508,14 +508,14 @@ export class PowerGameRoom extends GameRoom {
   updatePlayerPos(socketId: string, xValue: number, yValue: number): void {
     if (socketId == this.player1.socket.id) {
       if (this.leftPaddle.canMove == true) {
-        this.leftPaddle.posY = yValue - 50;
+        this.leftPaddle.posY = yValue - this.leftPaddle.height / 2;
       }
       this.leftMouseX = xValue;
       this.leftMouseY = yValue;
     }
     if (socketId == this.player2.socket.id) {
       if (this.rightPaddle.canMove == true) {
-        this.rightPaddle.posY = yValue - 50;
+        this.rightPaddle.posY = yValue - this.rightPaddle.height / 2;
       }
       this.rightMouseX = xValue;
       this.rightMouseY = yValue;

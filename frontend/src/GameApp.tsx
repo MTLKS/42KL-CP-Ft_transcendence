@@ -22,9 +22,9 @@ function GameApp(props: GameAppProps) {
   const { pixiApp, gameData } = props;
   useEffect(() => {
     pixiApp.ticker.maxFPS = 120;
-    gameData.setSetShouldRender = setShouldRender;
-    gameData.setSetScale = setScale;
-    gameData.setSetUsingTicker = setUsingTicker;
+    gameData.setShouldRender = setShouldRender;
+    gameData.setScale = setScale;
+    gameData.setUsingTicker = setUsingTicker;
     return () => {
       gameData.endGame()
     }

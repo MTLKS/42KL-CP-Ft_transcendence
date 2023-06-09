@@ -46,4 +46,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 	async handlePlayerClick(@ConnectedSocket() client: Socket, @MessageBody() body: any){
 		this.gameService.playerMouseUpdate(client, body.gameRoom, body.isMouseDown);
 	}
+
+	@SubscribeMessage('emote')
+	async handleEmote(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.emote(client, this.server, body.emote);
+	}
 }

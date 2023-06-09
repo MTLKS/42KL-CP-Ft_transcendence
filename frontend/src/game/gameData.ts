@@ -7,6 +7,9 @@ import {
   GameEndDTO,
   GamePauseDTO,
   FieldEffectDTO,
+  LobbyStartDTO,
+  LobbyEndDTO,
+  CountdonwDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -18,6 +21,7 @@ import GameEntity, {
 import sleep from "../functions/sleep";
 import GameParticle from "../model/GameParticle";
 import * as PIXI from "pixi.js";
+import Paddle from "./game_objects/Paddle";
 import {
   playGameSound,
   HitType,
@@ -65,6 +69,7 @@ export class GameData {
   pongSpin: number = 0;
   attracted: boolean = false;
   pongSpeedMagnitude: number = 0;
+  numberHits: number = 0;
 
   // player related variables
   mousePosition: Offset = { x: 0, y: 0 };
@@ -72,8 +77,10 @@ export class GameData {
   rightPaddleSucking: boolean = false;
   leftPaddlePosition: Offset = { x: -50, y: 450 };
   rightPaddlePosition: Offset = { x: 1650, y: 450 };
-  leftPaddleType: PaddleType = PaddleType.Piiuuuuu;
+  leftPaddleType: PaddleType = PaddleType.boring;
   rightPaddleType: PaddleType = PaddleType.boring;
+  player1IntraId: string = "";
+  player2IntraId: string = "";
   isLeft: boolean = false;
   isRight: boolean = false;
   player1Score: number = 0;
@@ -100,6 +107,8 @@ export class GameData {
 
   setScale?: (scale: number) => void;
   setUsingTicker?: (usingTicker: boolean) => void;
+  displayLobby?: () => void;
+  stopDisplayLobby?: () => void;
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
@@ -114,6 +123,7 @@ export class GameData {
   ) => void;
   ballHitParticle?: () => void;
   paddleHitParticle?: () => void;
+  lobbyCountdown?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -134,6 +144,7 @@ export class GameData {
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
+    this.socketApi.listen("emote", this.listenToEmote);
     this.sendPlayerMove = (y: number, x: number, gameRoom: string) => {
       this.socketApi.sendMessages("playerMove", {
         gameRoom: gameRoom,
@@ -251,14 +262,27 @@ export class GameData {
     });
   }
 
-  async sendReady(ready: boolean, powerUp: string) {
+  sendReady(ready: boolean, powerUp: string) {
+    console.log("send ready: ", {
+      ready: ready,
+      powerUp: powerUp,
+    });
     this.socketApi.sendMessages("ready", {
       ready: ready,
       powerUp: powerUp,
     });
   }
 
-  async leaveLobby() {
+  sendEmote(emote: number){
+    console.log("send emote: ", {
+      emote: emote,
+    });
+    this.socketApi.sendMessages("emote", {
+      emote: emote,
+    });
+  }
+
+  leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
   }
 
@@ -303,7 +327,7 @@ export class GameData {
     };
     this.focus = async () => {
       this.inFocus = true;
-      this.setUsingTicker?.(true);
+      // this.setUsingTicker?.(true);
       for (let i = 0; i < 20; i++) {
         if (!this.inFocus) return;
         this.globalSpeedFactor += 0.05;
@@ -321,7 +345,7 @@ export class GameData {
         this.globalScaleFactor -= 0.02;
         await sleep(50);
       }
-      this.setUsingTicker?.(false);
+      // this.setUsingTicker?.(false);
     };
     window.addEventListener("resize", this.resize);
     window.addEventListener("focus", this.focus);
@@ -347,7 +371,8 @@ export class GameData {
   async endGame() {
     // console.log("end game");
     if (!this.gameStarted) return;
-    await sleep(3000);
+    this.stopDisplayLobby!();
+    await sleep(7000);
     this.stopDisplayGame();
     this.gameStarted = false;
     this.isLeft = false;
@@ -370,53 +395,38 @@ export class GameData {
     this.globalSpeedFactor = 1;
     this.globalScaleFactor = 1;
     this.gameEntities = [];
+    this.player1Score = 0;
+    this.player2Score = 0;
+    this.numberHits = 0;
   }
 
-  set setSetScale(setScale: (scale: number) => void) {
-    this.setScale = setScale;
-  }
-
-  set setSetShouldRender(setShouldRender: (shouldRender: boolean) => void) {
-    this.setShouldRender = setShouldRender;
-  }
-
-  set setSetShouldDisplayGame(
-    setShouldDisplayGame: (startMatch: boolean) => void
-  ) {
-    this.setShouldDisplayGame = setShouldDisplayGame;
-  }
-
-  set setSetUsingTicker(setUsingTicker: (usingTicker: boolean) => void) {
-    this.setUsingTicker = setUsingTicker;
-  }
-
-  set setSetEntities(setEntities: (entities: GameEntity[]) => void) {
-    this.setEntities = setEntities;
-  }
-
-  set setBallhit(
-    ballHit: (
-      pongSpeedMagnitude: number,
-      hitPosition: Offset,
-      pongSpeed: Offset,
-      strength: number,
-      tickerSpeed: number
-    ) => void
-  ) {
-    this.ballHit = ballHit;
-  }
-
-  set setBallHitParticle(ballHitParticle: () => void) {
-    this.ballHitParticle = ballHitParticle;
-  }
-
-  set setPaddleHitParticle(paddleHitParticle: () => void) {
-    this.paddleHitParticle = paddleHitParticle;
+  listenToEmote(emote: number){
+    console.log("Listen emote: ", emote);
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log("Field effect:", state);
+    console.log("GameStateDto:", state);
     switch (state.type) {
+      case "LobbyStart":
+        const lobbyStartData = <LobbyStartDTO>state.data;
+        this.gameType = lobbyStartData.gameType;
+        this.player1IntraId = lobbyStartData.player1IntraName;
+        this.player2IntraId = lobbyStartData.player2IntraName;
+        this.displayLobby!();
+        break;
+      case "LobbyEnd":
+        const lobbyEndData = <LobbyEndDTO>state.data;
+        this.gameType = "";
+        this.stopDisplayLobby!();
+        break;
+      case "LobbyCountdown":
+        const lobbyCountdownData = <CountdonwDTO>state.data;
+        this.lobbyCountdown!();
+        break;
+      case "GameCountdown":
+        const gameCountdownData = <CountdonwDTO>state.data;
+        console.log("GameCountdown:", gameCountdownData);
+        break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
         console.log("GameStart:", data);
@@ -513,6 +523,8 @@ export class GameData {
   };
 
   private hitEffects(data: GameDTO) {
+    if (data.hitType === HitType.PADDLE) this.numberHits++;
+    if (this.gameType === "boring") return;
     if (
       data.hitType &&
       !(
@@ -554,10 +566,10 @@ export class GameData {
   }
 
   updatePlayerPosition(y: number, x: number) {
-    if (this.isLeft) {
+    if (this.isLeft && !this.attracted) {
       this.leftPaddlePosition = { x: 30, y: y };
     }
-    if (this.isRight) {
+    if (this.isRight && !this.attracted) {
       this.rightPaddlePosition = { x: 1600 - 46, y: y };
     }
     this.mousePosition = { x: x, y: y };
@@ -595,6 +607,7 @@ export class GameData {
     this.tickPerParticles = Math.floor((this.tickPerParticles - 1) / 2);
     this._pongSpeed.x = this.localTickerPongSpeed.x;
     this._pongSpeed.y = this.localTickerPongSpeed.y;
+    this.gameEntities = [];
     this.localTicker.remove(this._localTick.bind(this));
     this.localTicker.stop();
     this.localTicker.destroy();

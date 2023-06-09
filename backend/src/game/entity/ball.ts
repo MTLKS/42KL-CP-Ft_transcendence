@@ -39,7 +39,6 @@ export class Ball extends DynamicRect{
 			this.posX = 0;
 			return 2;
 		}
-		//TODO: remember to change canvas offset
 		if (this.posX + this.width >= borderWidth - 30){
 			this.posX = borderWidth - this.width;
 			return 1;
@@ -84,7 +83,6 @@ export class Ball extends DynamicRect{
 	}
 
 	update(){
-		// console.log (this.velX, this.velY);
 		if (this.energized == false){
 			this.prevX = this.initialSpeedX;
 			this.prevY = this.initialSpeedY;
@@ -144,8 +142,8 @@ export class Ball extends DynamicRect{
 
 			let velX = dirX * this.velocityMagnitude;
 			let velY = dirY * this.velocityMagnitude;
-			this.initialSpeedX = velX;
-			this.initialSpeedY = velY;
+			this.initialSpeedX = Math.abs(velX);
+			this.initialSpeedY = Math.abs(velY);
 			this.attracted = false;
 			this.velX = velX;
 			this.velY = velY;

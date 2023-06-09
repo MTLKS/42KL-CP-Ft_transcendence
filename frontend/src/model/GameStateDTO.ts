@@ -58,15 +58,43 @@ export class FieldEffectDTO {
   }
 }
 
-export class GameStateDTO {
-  type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect";
-  data: GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO;
+export class LobbyStartDTO {
+	gameType: "boring" | "standard" | "death" | "";
+	player1IntraName: string;
+	player2IntraName: string;
 
-  constructor(
-    type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect",
-    data: GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO
-  ) {
-    this.type = type;
-    this.data = data;
-  }
+	constructor(player1IntraName: string, player2IntraName: string, gameType: "boring" | "standard" | "death" | "") {
+		this.player1IntraName = player1IntraName;
+		this.player2IntraName = player2IntraName;
+		this.gameType = gameType;
+	}
+}
+
+export class LobbyEndDTO {
+	culprit: string;
+	reason: string;
+
+	constructor(culprit: string, reason: string) {
+		this.culprit = culprit;
+		this.reason = reason;
+	}
+}
+
+export class CountdonwDTO{
+	countdown: number;
+
+	constructor(countdown: number) {
+		this.countdown = countdown;
+	}
+}
+
+export class GameStateDTO {
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO;
+
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO) {
+		this.type = type;
+		this.data = data;
+	}
 }

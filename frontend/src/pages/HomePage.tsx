@@ -54,7 +54,6 @@ const availableCommands: CommandOptionData[] = [
     ]
   }),
   new CommandOptionData({ command: "sudo" }),
-  new CommandOptionData({ command: "dequeue" }),
   new CommandOptionData({ command: "clear" }),
   new CommandOptionData({ command: "ok" }),
   new CommandOptionData({ command: "set" }),
@@ -74,10 +73,10 @@ const availableCommands: CommandOptionData[] = [
       new CommandOptionData({
         command: "setting", options: [
           new CommandOptionData({ command: "show" }),
-          new CommandOptionData({ command: "particlesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "entitiesFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "paddleFilter", parameter: "<boolean>" }),
-          new CommandOptionData({ command: "hitFilter", parameter: "<boolean>" }),
+          new CommandOptionData({ command: "particlesFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "entitiesFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "paddleFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
+          new CommandOptionData({ command: "hitFilter", options: [new CommandOptionData({ command: 'true' }), new CommandOptionData({ command: 'false' })] }),
           new CommandOptionData({ command: "tickPerParticles", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxWidth", parameter: "<int>" }),
           new CommandOptionData({ command: "gameMaxHeight", parameter: "<int>" })]
@@ -127,7 +126,12 @@ function HomePage(props: HomePageProps) {
 
   useEffect(() => {
     initFriendshipSocket();
-    gameData.setSetShouldDisplayGame = setShouldDisplayGame;
+    gameData.setShouldDisplayGame = setShouldDisplayGame;
+    gameData.displayLobby = () => displayLobby();
+    gameData.stopDisplayLobby = () => stopDisplayLobby();
+    if (gameData.gameDisplayed) {
+      setShouldDisplayGame(true);
+    }
 
     getFriendList().then((friends) => {
       const newFriendsData = friends.data as FriendData[];
@@ -648,6 +652,14 @@ function HomePage(props: HomePageProps) {
         <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
       </Card>
     );
+  }
+
+  function displayLobby() {
+    setLeftWidget(<Lobby />);
+  }
+
+  function stopDisplayLobby() {
+    setLeftWidget(null);
   }
 }
 

@@ -72,8 +72,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
   const arrowContainerRef = useRef<PIXI.ParticleContainer>(null);
 
   useEffect(() => {
-    gameData.setBallHitParticle = ballHit;
-    gameData.setPaddleHitParticle = paddleHit;
+    gameData.ballHitParticle = ballHit;
+    gameData.paddleHitParticle = paddleHit;
   }, []);
 
   useEffect(() => {
