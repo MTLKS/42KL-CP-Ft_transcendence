@@ -54,7 +54,7 @@ const emoteListSmall = [
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "practice" | "">(gameData.gameType);
   const [ready, setReady] = React.useState(false);
-  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
+  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
   const [onCountdown, setOnCountdown] = React.useState(false);
   const [currentEmote, setCurrentEmote] = React.useState<number>(0);
   const [emotes, setEmotes] = React.useState<JSX.Element[]>([]);
