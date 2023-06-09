@@ -333,9 +333,9 @@ export class GameService {
   }
 
   async handleReady(client: Socket, ready: boolean, powerUp: string, server: Server) {
-    let USER_DATA;
+    let userData;
     try{
-      USER_DATA =  await this.userService.getMyUserData(client.handshake.headers.authorization);
+      userData =  await this.userService.getMyUserData(client.handshake.headers.authorization);
     }
     catch{
       return;
@@ -344,7 +344,7 @@ export class GameService {
 
     this.gameLobbies.forEach((gameLobby, key) => {
       let gameType;
-      if (gameLobby.player1.intraName === USER_DATA.intraName) {
+      if (gameLobby.player1.intraName === userData.intraName) {
         gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
@@ -356,7 +356,7 @@ export class GameService {
         // gameLobby.player2PowerUp = powerUp;
         
         if (LOBBY_LOGGING)
-          console.log(`${USER_DATA.intraName} is ready.`);
+          console.log(`${userData.intraName} is ready.`);
       } else {
         gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
@@ -364,7 +364,7 @@ export class GameService {
         if (gameType == "boring" || gameType == "death")
           gameLobby.player2PowerUp = "normal";
         if (LOBBY_LOGGING)
-          console.log(`${USER_DATA.intraName} is ready.`);
+          console.log(`${userData.intraName} is ready.`);
       }
       if (gameLobby.player1Ready == true && gameLobby.player2Ready == true)
       {
@@ -433,9 +433,9 @@ export class GameService {
   }
 
   async playerMouseUpdate(client: Socket, roomID: string, isMouseDown: boolean) {
-    let USER_DATA;
+    let userData;
     try {
-      USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
     } catch {
       return;
     }
@@ -445,13 +445,13 @@ export class GameService {
   }
 
   async emote(client: Socket, server: Server, emote: number){
-    let USER_DATA;
+    let userData;
     try {
-      USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
     } catch {
       return;
     }
-    const LOBBY_KEY = this.getLobbyKeyFromIntraNames(USER_DATA.intraName);
+    const LOBBY_KEY = this.getLobbyKeyFromIntraNames(userData.intraName);
     if (LOBBY_KEY !== undefined){
       const LOBBY = this.gameLobbies.get(LOBBY_KEY);
       if (LOBBY != undefined) {
