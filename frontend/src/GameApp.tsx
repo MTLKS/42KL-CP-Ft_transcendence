@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, lazy, useEffect, useMemo, useState } from 'react'
 import { GameData } from './game/gameData'
 import { AppProvider, Container } from '@pixi/react';
 import { Application, ICanvas } from 'pixi.js';

@@ -109,7 +109,7 @@ function Game(props: GameProps) {
   }, []);
 
   useTick((delta) => {
-    if (!gameData.displayGame || !mounted) return;
+    if (!gameData.gameDisplayed || !mounted) return;
     const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
     const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);
@@ -131,9 +131,9 @@ function Game(props: GameProps) {
     if (gameData.gameType === "death") setNumberHits(gameData.numberHits);
     if (gameData.gameType !== "boring") zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
     else {
-      if ((player1Score === 10 && gameData.isLeft) || (player2Score === 10 && gameData.isRight))
+      if ((gameData.player1Score === 10 && gameData.isLeft) || (gameData.player2Score === 10 && gameData.isRight))
         setGameEndText(<GameText text='Win' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
-      else if (player1Score === 10 || player2Score === 10)
+      else if (gameData.player1Score === 10 || gameData.player2Score === 10)
         setGameEndText(<GameText text='Lose' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
     }
     // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
@@ -160,7 +160,7 @@ function Game(props: GameProps) {
           <GameText text='sh' anchor={new PIXI.Point(0, 1.1)} fontSize={150} position={{ x: 130, y: 0 }} opacity={0.1} />
         </Container>
         {
-          gameData.gameType === "death" ? <GameText text={gameData.numberHits.toString()} anchor={new PIXI.Point(0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} /> :
+          gameData.gameType === "death" ? <GameText text={numberHits.toString()} anchor={new PIXI.Point(0.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} /> :
             <>
               <GameText text={player1Score.toString()} anchor={new PIXI.Point(1.5, -0.1)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
               <GameText text={":"} anchor={new PIXI.Point(0.5, 0)} fontSize={200} position={{ x: 800, y: 0 }} opacity={0.3} />
