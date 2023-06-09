@@ -244,26 +244,30 @@ function HomePage(props: HomePageProps) {
         setElements(appendNewCard(newList));
         return;
       }
-
-      getProfileOfUser(wantToView).then((response) => {
-        const newPreviewProfile = response.data as any;
-        if ((newPreviewProfile as ErrorData).error) {
-          errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
-          newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
-          setElements(appendNewCard(newList));
-          return;
-        }
-        newList = elements;
-        const newProfileCard = <Profile expanded={true} />;
-        setTopWidget(newProfileCard);
-        setCurrentPreviewProfile(newPreviewProfile as UserData);
-        setTimeout(() => {
-          if (expandProfile)
-            setExpandProfile(!expandProfile);
-          else
-            setExpandProfile(false);
-        }, 500);
-      });
+      
+      getProfileOfUser(wantToView)
+        .then((response) => {
+          const newPreviewProfile = response.data as any;
+          newList = elements;
+          const newProfileCard = <Profile expanded={true} />;
+          setTopWidget(newProfileCard);
+          setCurrentPreviewProfile(newPreviewProfile as UserData);
+          setTimeout(() => {
+            if (expandProfile)
+              setExpandProfile(!expandProfile);
+            else
+              setExpandProfile(false);
+          }, 500);
+        })
+        .catch((err: any) => {
+          const error = err.response.data as ErrorData;
+          if (error) {
+            errors.push({ error: friendErrors.USER_NOT_FOUND, data: wantToView });
+            newList = newList.concat(generateErrorCards(errors, ACTION_TYPE.VIEW));
+            setElements(appendNewCard(newList));
+            return;
+          }
+        });
     }
 
     // handle unknown profile command, push a help card
