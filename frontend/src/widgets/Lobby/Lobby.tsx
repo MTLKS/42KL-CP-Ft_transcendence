@@ -194,7 +194,7 @@ function SendEmote(props: SendEmoteProps) {
 
   function handleMouseDown() {
     const now = Date.now();
-    if (now - lastPressRef.current < 100) return;
+    if (now - lastPressRef.current < 16) return;
     lastPressRef.current = now;
     handleLongPress();
   };
