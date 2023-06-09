@@ -68,8 +68,7 @@ function Lobby() {
 
   useEffect(() => {
     gameData.socketApi.listen("emote", (data: number) => {
-      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data} />]);
-      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data} />]);
+      setEmotes((emotes) => [...emotes, <Emote key={Math.random().toString() + Date.now().toString()} emote={data} />]);
       setTimeout(() => {
         setEmotes((emotes) => emotes.slice(1));
       }, 3000);
@@ -189,16 +188,18 @@ interface SendEmoteProps {
 }
 
 function SendEmote(props: SendEmoteProps) {
-  let longPressTimer: number = 0;
   const { currentEmote } = props;
   const intervalRef = useRef<number | null>(null);
+  const lastPressRef = useRef<number>(0);
 
   function handleMouseDown() {
+    const now = Date.now();
+    if (now - lastPressRef.current < 16) return;
+    lastPressRef.current = now;
     handleLongPress();
   };
 
   function handleMouseUp() {
-    clearTimeout(longPressTimer);
     if (intervalRef.current !== null)
       clearInterval(intervalRef.current);
   };
