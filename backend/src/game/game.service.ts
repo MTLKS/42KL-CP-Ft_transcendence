@@ -51,15 +51,16 @@ export class GameService {
   //Lobby functions
   async handleConnection(client: Socket) {
     const ACCESS_TOKEN = client.handshake.headers.authorization;
-    const USER_DATA = await this.userService.getMyUserData(ACCESS_TOKEN);
-    if (USER_DATA.error !== undefined) {
-      // client.disconnect(true);
+    let userData: any;
+    try {
+      userData = await this.userService.getMyUserData(ACCESS_TOKEN);
+    } catch {
       return;
     }
 
     // Checks if user is already connected, if they are then send error and disconnect
     if (
-      this.connected.find((e: Player) => e.intraName === USER_DATA.intraName)
+      this.connected.find((e: Player) => e.intraName === userData.intraName)
     ) {
       client.emit(
         'gameResponse',
@@ -70,7 +71,7 @@ export class GameService {
     }
 
     // Keeps track of users that are connected
-    let player = new Player(USER_DATA.intraName, ACCESS_TOKEN, client);
+    let player = new Player(userData.intraName, ACCESS_TOKEN, client);
     this.connected.push(player);
 
     // Clear any ended game rooms
@@ -78,7 +79,7 @@ export class GameService {
 
     // If player is ingame, reconnect player to game
     this.gameRooms.forEach(async (gameRoom) =>{
-      if (gameRoom._players.includes(USER_DATA.intraName)) {
+      if (gameRoom._players.includes(userData.intraName)) {
         let opponentIntraName = '';
         if (player.intraName == gameRoom.player1.intraName){
           gameRoom.player1 = player;
@@ -109,25 +110,27 @@ export class GameService {
   }
 
   async handleDisconnect(server: Server, client: Socket) {
-    const USER_DATA = await this.userService.getMyUserData(
-      client.handshake.headers.authorization,
-    );
-    if (USER_DATA.error !== undefined) return;
+    let userData: any;
+    try {
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
 
     Object.keys(this.queues).forEach((queueType) => {
       if (
         this.queues[queueType].find(
           (e: Player) =>
-            e.intraName === USER_DATA.intraName && e.socket.id === client.id,
+            e.intraName === userData.intraName && e.socket.id === client.id,
         )
       ) {
         this.queues[queueType] = this.queues[queueType].filter(function (e) {
-          return e.intraName !== USER_DATA.intraName;
+          return e.intraName !== userData.intraName;
         });
 
         if (LOBBY_LOGGING)
           console.log(
-            `${USER_DATA.intraName} left ${queueType} queue due to disconnect.`,
+            `${userData.intraName} left ${queueType} queue due to disconnect.`,
           );
       }
     });
@@ -137,14 +140,14 @@ export class GameService {
 
     // If player is ingame, pause game
     this.gameRooms.forEach((gameRoom) => {
-      if (gameRoom._players.includes(USER_DATA.intraName)) {
-        gameRoom.togglePause(server, USER_DATA.intraName);
+      if (gameRoom._players.includes(userData.intraName)) {
+        gameRoom.togglePause(server, userData.intraName);
       }
     });
 
     // Removes user from connection tracking
     this.connected = this.connected.filter(function (e) {
-      return e.intraName !== USER_DATA.intraName || e.socket.id !== client.id;
+      return e.intraName !== userData.intraName || e.socket.id !== client.id;
     });
   }
 
@@ -405,8 +408,12 @@ export class GameService {
   }
 
   async playerUpdate(client: Socket, roomID: string, xValue: number, yValue: number) {
-    const USER_DATA = await this.userService.getMyUserData(client.handshake.headers.authorization);
-    if (USER_DATA.error !== undefined) return;
+    let userData: any;
+    try {
+      userData = await this.userService.getMyUserData(client.handshake.headers.authorization);
+    } catch {
+      return;
+    }
     const ROOM = this.gameRooms.get(roomID);
     if (ROOM === undefined) return;
     ROOM.updatePlayerPos(client.id, xValue, yValue);

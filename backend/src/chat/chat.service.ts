@@ -66,7 +66,7 @@ export class ChatService {
 			await this.messageRepository.save(NEW_MESSAGE);
 			MY_MEMBER.lastRead = new Date().toISOString();
 			await this.memberRepository.save(MY_MEMBER);
-			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
+			server.to(CHANNEL.channelId).emit("message", {message: this.userService.hideData(NEW_MESSAGE), myChannel: this.userService.hideData(MY_CHANNEL)});
 		}
 	}
 
@@ -90,7 +90,6 @@ export class ChatService {
 		}
 		MY_MEMBER.lastRead = new Date().toISOString();
 		await this.memberRepository.save(MY_MEMBER);
-		server.to(MY_CHANNEL.channelId).emit("read", this.userService.hideData(MY_MEMBER));
 	}
 
 	// Ping the channel that the user is typing to that channel
@@ -118,7 +117,7 @@ export class ChatService {
 			if (member.user.intraName === USER_DATA.intraName)
 				continue;
 			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
-			server.to(MEMBER_CHANNEL.channelId).emit("typing", CHANNEL.isRoom ? { channel: CHANNEL, userName: USER_DATA.userName } : { channel: MY_CHANNEL, userName: USER_DATA.userName });
+			server.to(MEMBER_CHANNEL.channelId).emit("typing", CHANNEL.isRoom ? { channel: this.userService.hideData(CHANNEL), userName: USER_DATA.userName } : { channel: this.userService.hideData(MY_CHANNEL), userName: USER_DATA.userName });
 		}
 	}
 
