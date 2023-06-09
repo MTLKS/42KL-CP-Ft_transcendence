@@ -344,20 +344,23 @@ function HomePage(props: HomePageProps) {
 
     // iterate through the names and attempt get their user data to add as friend
     for (const friendName of friendIntraNames) {
-      const friendProfile = await getProfileOfUser(friendName);
-      if ((friendProfile.data as ErrorData).error) {
+      let friendProfile;
+
+      try {
+        friendProfile = (await getProfileOfUser(friendName)).data as UserData;
+      } catch (error: any) {
         errors.push({ error: friendErrors.USER_NOT_FOUND, data: friendName as string });
         continue;
       }
 
-      const result = await addFriend((friendProfile.data as UserData).intraName);
-      if (result.data.error) {
+      try {
+        const tryAddFriend = await addFriend(friendProfile.intraName);
+        successes.push(friendName);
+      } catch (error: any) {
         errors.push({
           error: friendErrors.FRIENDSHIP_EXISTED,
           data: (myFriends.find((friend) => friend.receiver.intraName === friendName || friend.sender.intraName === friendName) as FriendData)
         });
-      } else {
-        successes.push(friendName);
       }
     }
 
