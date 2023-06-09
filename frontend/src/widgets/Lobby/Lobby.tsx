@@ -136,7 +136,7 @@ function Lobby() {
   }
 
   function sendEmote() {
-    console.log("emote: ", currentEmote);
+    gameData.sendEmote(currentEmote);
   }
 
   function Emote() {

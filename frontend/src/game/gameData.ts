@@ -144,6 +144,7 @@ export class GameData {
     this.socketApi.listen("gameLoop", this.listenToGameLoopCallBack.bind(this));
     this.socketApi.listen("gameState", this.listenToGameState);
     this.socketApi.listen("gameResponse", this.listenToGameResponse);
+    this.socketApi.listen("emote", this.listenToEmote);
     this.sendPlayerMove = (y: number, x: number, gameRoom: string) => {
       this.socketApi.sendMessages("playerMove", {
         gameRoom: gameRoom,
@@ -272,6 +273,15 @@ export class GameData {
     });
   }
 
+  sendEmote(emote: number){
+    console.log("send emote: ", {
+      emote: emote,
+    });
+    this.socketApi.sendMessages("emote", {
+      emote: emote,
+    });
+  }
+
   leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
   }
@@ -388,6 +398,10 @@ export class GameData {
     this.player1Score = 0;
     this.player2Score = 0;
     this.numberHits = 0;
+  }
+
+  listenToEmote(emote: number){
+    console.log("Listen emote: ", emote);
   }
 
   listenToGameState = (state: GameStateDTO) => {
