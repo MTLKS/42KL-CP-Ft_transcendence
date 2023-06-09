@@ -449,30 +449,21 @@ function HomePage(props: HomePageProps) {
     });
 
     // get all stranger data
-    const strangerProfiles = await Promise.all(strangersNames.map(intraName => getProfileOfUser(intraName)));
-
-    // categorized user data
-    const categorizedUsers = strangerProfiles.map((user, index) => {
-
-      // user not found
-      if ((user.data as ErrorData).error) return strangersNames[index];
-
-      // user found but gurantee is a stranger
-      const userData: UserData = user.data as UserData;
-      return { user: userData, type: "STRANGER" };
-    });
-
-    for (const user of categorizedUsers) {
-      if (typeof user === 'string') {
-        errors.push({ error: friendErrors.USER_NOT_FOUND, data: user as string });
-      } else if (typeof user === 'object' && user.type === "STRANGER") {
+    for (const name of strangersNames) {
+      
+      let strangerProfile: UserData | ErrorData;
+      try {
+        strangerProfile = (await getProfileOfUser(name)).data;
         if (action === ACTION_TYPE.BLOCK) {
-          const fakeFriend = userDataToFriendData(user.user);
+          const fakeFriend = userDataToFriendData(strangerProfile as UserData);
           newSelectedFriends.push(fakeFriend);
         } else {
-          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: user.user.intraName });
+          errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: (strangerProfile as UserData).intraName });
         }
+      } catch (error: any) {
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: name as string })        
       }
+
     }
 
     newCards = newCards.concat(generateErrorCards(errors, action));
@@ -545,14 +536,14 @@ function HomePage(props: HomePageProps) {
     if (commands.length === 1) {
       newList = appendNewCard(
         <Card key={"game" + index} type={CardType.SUCCESS}>
-          <span className='text-xl neonText-white font-bold'>GAME</span><br />
-          <p className="text-highlight text-md font-bold capitalize pt-4">Commands:</p>
+          <span className='text-xl font-bold neonText-white'>GAME</span><br />
+          <p className="pt-4 font-bold capitalize text-highlight text-md">Commands:</p>
           <p className="text-sm">
             game queue [gamemmode]  : <span className="text-highlight/70">Queue for a game.</span><br />
             game dequeue            : <span className="text-highlight/70">Dequeue from the current queue.</span><br />
             game Settings           : <span className="text-highlight/70">Change game settings.</span><br />
           </p>
-          <p className="text-highlight text-md font-bold capitalize pt-4">Game Modes:</p>
+          <p className="pt-4 font-bold capitalize text-highlight text-md">Game Modes:</p>
           <p className="text-sm">
             standard                : <span className="text-highlight/70">Power-Ups enabled.</span><br />
             boring                  : <span className="text-highlight/70">Boring old Pong.</span><br />
@@ -630,18 +621,18 @@ function HomePage(props: HomePageProps) {
   function generateCredits() {
     return (
       <Card key={"game" + index} type={CardType.SUCCESS}>
-        <span className='text-xl neonText-white font-bold'>PongSH Credits</span><br />
-        <p className="text-highlight text-md font-bold capitalize pt-4">Team members</p>
+        <span className='text-xl font-bold neonText-white'>PongSH Credits</span><br />
+        <p className="pt-4 font-bold capitalize text-highlight text-md">Team members</p>
         <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
         <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
         <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
         <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
         <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>
-        <p className="text-highlight text-md font-bold capitalize pt-4">Project Details</p>
+        <p className="pt-4 font-bold capitalize text-highlight text-md">Project Details</p>
         <p className="text-sm">Project Name           - <span className="text-highlight/70">PongSH</span></p>
         <p className='text-sm'>Project Duration       - <span className="text-highlight/70">April - June</span></p>
         <p className="text-sm">Project Repository     - <span className="text-highlight/70">https://github.com/MTLKS/42KL-CP-Ft_transcendence</span></p>
-        <p className="text-highlight text-md font-bold capitalize pt-4">Tech Stack</p>
+        <p className="pt-4 font-bold capitalize text-highlight text-md">Tech Stack</p>
         <p className="text-sm">Frontend               - <span className="text-highlight/70">Vite, React, Pixi.JS, Tailwind</span></p>
         <p className="text-sm">Backend                - <span className="text-highlight/70">NestJS, PostgreSQL, TypeORM</span></p>
         <p className="text-sm">API                    - <span className="text-highlight/70">42API, GoogleAPI, SMTP, Socket.io, Axios</span></p>
