@@ -1,4 +1,5 @@
 import { DynamicRect } from "./dynamicRect";
+import { HitType } from "./gameRoom";
 
 export class Circle{
 	posX: number;
@@ -17,24 +18,22 @@ export class Circle{
 	}
 
 	pull(rect: DynamicRect, effectRadius: number, force: number){
-		const dx = this.posX - rect.posX;
-		const dy = this.posY - rect.posY;
+		const dx = rect.posX - this.posX;
+		const dy = rect.posY - this.posY;
 		const distance = Math.sqrt(dx * dx + dy * dy);
 
 		if (distance < this.radius * effectRadius && distance > this.radius){
 			const theta = Math.atan2(dy, dx);
-			const fg = force * 100 / (distance * distance);
+			const fg = Math.min(force * 500 / (distance * distance), 20);
 
-			rect.accelX = -fg * Math.cos(theta);
-			rect.accelY = -fg * Math.sin(theta);
+			let accelX = -fg * Math.cos(theta) * 2;
+			let accelY = -fg * Math.sin(theta) * 2;
+			rect.accelX = accelX;
+			rect.accelY = accelY;
 		}
 		else{
 			rect.accelX = 0;
 			rect.accelY = 0;
-		}
-		if (distance < this.radius){
-			rect.velX = 0;
-			rect.velY = 0;
 		}
 	}
 	

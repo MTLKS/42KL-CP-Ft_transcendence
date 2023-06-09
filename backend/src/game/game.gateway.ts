@@ -27,13 +27,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.gameService.leaveQueue(client);
 	}
 
-	@SubscribeMessage('gameEnd')
-	async gameEnd(@ConnectedSocket() player1: Socket, @ConnectedSocket() player2: Socket){
-		// await this.gameService.gameEnd(player1, player2);
+	@SubscribeMessage('ready')
+	async handleReady(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.handleReady(client, body.ready, body.powerUp, this.server);
+	}
+
+	@SubscribeMessage('leaveLobby')
+	async handleLeaveLobby(@ConnectedSocket() client: Socket, @MessageBody() body: any) {
+		this.gameService.leaveLobby(client);
 	}
 
 	@SubscribeMessage('playerMove')
-	async handleMouse(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		this.gameService.playerUpdate(client, body.gameRoom, body.y);
+	async handlePlayerMove(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.playerUpdate(client, body.gameRoom, body.x,body.y);
+	}
+
+	@SubscribeMessage('playerClick')
+	async handlePlayerClick(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.playerMouseUpdate(client, body.gameRoom, body.isMouseDown);
 	}
 }

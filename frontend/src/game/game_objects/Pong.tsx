@@ -1,17 +1,25 @@
-import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Container, Graphics, useTick, useApp, Sprite } from '@pixi/react';
 import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { GameData } from '../gameData';
 import { GameDataCtx } from '../../GameApp';
 interface PongProps {
-	position: Offset
 	size: BoxSize;
 }
 
 function Pong(props: PongProps) {
-	const { size, position } = props;
+	const { size } = props;
 	const app = useApp();
+	const gameData = useContext(GameDataCtx);
+	const pongRef = useRef<PIXI.Sprite>(null);
+
+	useTick((delta) => {
+		if (pongRef.current == null) return;
+		const pong = pongRef.current;
+		pong.x = gameData.pongPosition.x;
+		pong.y = gameData.pongPosition.y;
+	});
 
 	const texture = useMemo(() => {
 		const g = new PIXI.Graphics();
@@ -24,7 +32,7 @@ function Pong(props: PongProps) {
 	}, [size.w, size.h]);
 
 	return (
-		<Sprite x={position.x} y={position.y} width={size.w} height={size.h} texture={texture} />
+		<Sprite ref={pongRef} x={gameData.pongPosition.x} y={gameData.pongPosition.y} width={size.w} height={size.h} texture={texture} />
 	)
 }
 

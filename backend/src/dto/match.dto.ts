@@ -39,10 +39,16 @@ export class MatchResponseDTO {
 }
 
 export class MatchStatsResponseDTO {
-	@ApiProperty({ example: "69" })
+	@ApiProperty({ example: 100 })
+	winStreak: number;
+
+	@ApiProperty({ example: 4242 })
+	highestElo: number;
+
+	@ApiProperty({ example: 69 })
 	win: number;
 
-	@ApiProperty({ example: "42" })
+	@ApiProperty({ example: 42 })
 	lose: number;
 
 	@ApiProperty({ type: UserDTO })

@@ -1,19 +1,18 @@
 import React from 'react'
+import { MatchData } from '../../../model/MatchData'
 
 interface MatchCardProps {
-  id: number,
-  ply1: string,
-  ply2: string,
-  ply1score: number,
-  ply2score: number,
+  data: MatchData;
 }
 
 function MatchCard(props: MatchCardProps) {
+  const { data } = props;
+  const { player1, player2, player1Score, player2Score } = data;
   return (
-    <div className='flex flex-row justify-between w-full px-4 py-2 text-lg font-extrabold uppercase border-2 border-dashed h-fit border-highlight text-highlight'>
-      <p className='w-[30%] text-center truncate font-bold'>{props.ply1}</p>
-      <p className='flex-1 text-2xl text-center'>{props.ply1score}:{props.ply2score}</p>
-      <p className='w-[30%] text-center truncate font-bold'>{props.ply2}</p>
+    <div className='flex flex-row justify-between w-full h-fit py-2 px-4 border-2 border-highlight border-dashed text-highlight font-extrabold text-lg uppercase'>
+      <p className='w-[30%] text-center truncate font-bold'>{player1.userName}</p>
+      <p className='text-center text-2xl flex-1'>{player1Score}:{player2Score}</p>
+      <p className='w-[30%] text-center truncate font-bold'>{player2.userName}</p>
     </div>
   )
 }

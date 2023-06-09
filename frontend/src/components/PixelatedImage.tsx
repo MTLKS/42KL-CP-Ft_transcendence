@@ -58,7 +58,7 @@ function PixelatedImage(props: PixelatedImageProps) {
   }, []);
 
   return (
-    <canvas id="canvas" ref={canvasRef} className={className} />
+    <canvas ref={canvasRef} className={className} />
   )
 
 

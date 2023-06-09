@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react';
 import sleep from '../functions/sleep';
 
@@ -15,17 +15,23 @@ interface CardProps {
 interface CardAnimation {
   transform: string,
   opacity: number,
-  transition: string,
 }
 
 function Card(props: CardProps) {
   const { type = "NOTFOUND", children } = props;
-  const [animation, setAnimation] = useState({ transform: "translateY(50px)", opacity: 0, transition: "all 0.5s" } as CardAnimation);
+  const [animation, setAnimation] = useState<CardAnimation>({ transform: "translateY(50px)", opacity: 0});
   const [mounted, setMounted] = useState(false);
 
-  if (!mounted) animate();
+  useEffect(() => {
+    if (mounted) return;
+    setTimeout(() => {
+      setAnimation({ transform: "translateY(0px)", opacity: 1});
+      setMounted(true);
+    }, 2);
+  }, []);
+
   return (
-    <div className='w-full h-fit flex flex-row items-center border-t-2 border-highlight/[0.5]'
+    <div className='w-full h-fit flex flex-row items-center border-t-2 border-highlight/[0.5] transistion-all duration-500 ease-in-out'
       style={animation}
     >
       {type == CardType.SUCCESS ? <div className='w-2 h-full bg-accGreen' /> : <div className='w-2 h-full bg-accRed' />}
@@ -34,12 +40,6 @@ function Card(props: CardProps) {
       </div>
     </div>
   )
-
-  async function animate() {
-    await sleep(10);
-    setAnimation({ transform: "translateY(0px)", opacity: 1, transition: "all 0.5s" });
-    setMounted(true);
-  }
 }
 
 export default Card
