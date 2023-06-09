@@ -163,6 +163,11 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     setRows(1);
     setIsFirstLoad(false);
     pingServer();
+
+    if (type === MessageType.INVITE) {
+      createGameLobby();
+    }
+
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
