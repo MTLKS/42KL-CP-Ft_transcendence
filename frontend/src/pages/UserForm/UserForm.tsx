@@ -12,6 +12,7 @@ import sleep from '../../functions/sleep';
 import login from '../../api/loginAPI';
 import { FaArrowLeft } from 'react-icons/fa';
 import UserFormTfa from './UserFormTfa';
+import { set } from 'lodash';
 
 interface IAPIResponse {
   intraId: number,
@@ -83,6 +84,25 @@ function UserForm(props: UserFormProps) {
   const [isTFAEnabled, setIsTFAEnabled] = useState(userData.tfaSecret === "ENABLED");
   const [TFAVerified, setTFAVerified] = useState(false);
 
+  // animations
+  const [slideIn1, setSlideIn1] = useState(false);
+  const [slideIn2, setSlideIn2] = useState(false);
+  const [slideIn3, setSlideIn3] = useState(false);
+  const [slideIn4, setSlideIn4] = useState(false);
+
+  useEffect(() => {
+    setSlideIn1(true);
+    setTimeout(() => {
+      setSlideIn2(true);
+    }, 300);
+    setTimeout(() => {
+      setSlideIn3(true);
+    }, 600);
+    setTimeout(() => {
+      setSlideIn4(true);
+    }, 1000);
+  }, []);
+
   // convert the image from intra to data:base64
   useEffect(() => {
     toDataUrl(userData.avatar)
@@ -97,19 +117,22 @@ function UserForm(props: UserFormProps) {
       {
         // extra feature: check if the user actually modified their name and avatar or not. If they did, ask for confirmation before back to homepage
         isUpdatingUser &&
-        <button className='absolute top-8 left-8 h-fit p-3 rounded-md bg-highlight text-center cursor-pointer flex flex-row gap-x-3 items-center group hover:bg-dimshadow border-highlight border-2 transition-all duration-200 focus:outline-dashed focus:outline-[3px] focus:outline-highlight' onClick={() => setIsUpdatingUser(false)}>
+        <button className={`${slideIn1 ? "" : " -translate-y-3 opacity-0"} absolute top-8 left-8 h-fit p-3 rounded-md bg-highlight text-center cursor-pointer flex flex-row gap-x-3 items-center group hover:bg-dimshadow border-highlight border-2 transition-all duration-200 focus:outline-dashed focus:outline-[3px] focus:outline-highlight`} onClick={() => setIsUpdatingUser(false)}>
           <FaArrowLeft className='text-xl font-extrabold text-dimshadow group-hover:text-highlight' />
           <span className='text-xl font-extrabold group-hover:text-highlight'>BACK</span>
         </button>
       }
       <div className='flex flex-row w-[80%] h-fit justify-center absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 items-center gap-5 lg:gap-10'>
-        <UserFormAvatar intraName={userData.intraName} avatarUrl={avatar} setAvatar={setAvatar} setFileExtension={setFileExtension} />
+        <UserFormAvatar intraName={userData.intraName} avatarUrl={avatar} setAvatar={setAvatar} setFileExtension={setFileExtension} animate={slideIn1} />
         <div className='w-[48%] lg:w-[40%] h-full my-auto flex flex-col font-extrabold text-highlight gap-3'>
           <p className='p-2 text-base font-semibold uppercase lg:text-xl text-dimshadow bg-highlight w-fit lg:p-3 lg:font-extrabold'>user info</p>
-          <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} />
-          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} />
+          <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} animate={slideIn2} />
+          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} animate={slideIn3} />
+          <p className={`${slideIn1 ? "" : " translate-x-12 opacity-0"} transition-all duration-300 uppercase text-base lg:text-xl text-dimshadow bg-highlight w-fit p-2 lg:p-3 font-semibold lg:font-extrabold`}>user info</p>
+          <UserFormName user={userData} awesomeSynonym={awesomeSynonym} updateName={updateName} animate={slideIn2} />
+          <UserFormQuestion question={iceBreakingQuestion} answer={questionAns} updateAnswer={updateAnswer} animate={slideIn3} />
           {isVerifyingTFA && <UserFormTfa tfaCode={tfaCode} setTfaCode={setTfaCode} tfaVerified={TFAVerified} setTFAVerified={setTFAVerified} handleSubmit={handleSubmit} />}
-          <button className={`${isVerifyingTFA && 'hidden'} font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out focus:outline-dimshadow ${isVerifyingTFA && !TFAVerified && 'focus:bg-highlight'}`} onClick={handleSubmit}>
+          <button className={`${slideIn4 ? "" : " -translate-y-3 opacity-0"} transition-all duration-300 ${isVerifyingTFA && 'hidden'} font-semibold lg:font-extrabold flex-1 w-full h-full bg-highlight hover:bg-dimshadow text-dimshadow hover:text-highlight border-2 border-highlight text-center p-2 lg:p-3 text-base lg:text-lg cursor-pointer transition hover:ease-in-out focus:outline-dimshadow ${isVerifyingTFA && !TFAVerified && 'focus:bg-highlight'}`} onClick={handleSubmit}>
             Submit
           </button>
         </div>

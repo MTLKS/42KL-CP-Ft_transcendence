@@ -136,3 +136,16 @@
   }
 }
 
+@keyframes floatFade {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-500px);
+    opacity: 0;
+  }
+}

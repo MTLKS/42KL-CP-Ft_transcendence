@@ -5,10 +5,11 @@ interface UserFormNameProps {
   user: UserData,
   awesomeSynonym: string,
   updateName: (name: string) => void,
+  animate: boolean,
 }
 
 function UserFormName(props: UserFormNameProps) {
-
+  const { animate } = props;
   const [userName, setUsername] = useState(props.user.userName);
 
   useEffect(() => {
@@ -20,14 +21,14 @@ function UserFormName(props: UserFormNameProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className='text-lg font-semibold lg:text-xl'>
+      <p className={`${animate ? "" : "opacity-0"} transition-opacity duration-500 font-semibold text-lg lg:text-xl`}>
         Your {props.awesomeSynonym} name
       </p>
-      <p className='text-sm font-normal text-highlight/60'>
+      <p className={`${animate ? "" : "opacity-0"} transition-opacity duration-500 font-normal text-sm text-highlight/60`}>
         (Alphanumeric, '-', and '_' only)
       </p>
       <input
-        className={`bg-dimshadow border-highlight border-2 lg:border-4 rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl p-2 lg:p-3 w-full focus:[outline:none] focus:animate-pulse-short cursor-text`}
+        className={`${animate ? "" : " scale-y-0 -translate-y-1/2"} transition-transform duration-700 bg-dimshadow border-highlight border-2 lg:border-4 rounded-md font-semibold text-xs sm:text-sm md:text-lg lg:text-xl p-2 lg:p-3 w-full focus:[outline:none] focus:animate-pulse-short cursor-text`}
         type="text"
         name="name"
         value={userName}

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import PixelatedImage from '../../components/PixelatedImage'
 import ProfileElo from '../Profile/Expanded/ProfileElo'
 import { UserData } from '../../model/UserData'
@@ -22,22 +22,57 @@ import { getProfileOfUser } from '../../api/profileAPI'
 import { ErrorData } from '../../model/ErrorData';
 import UserContext from '../../contexts/UserContext'
 import sleep from '../../functions/sleep'
+import Triangle from '../../components/Triangle'
+import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
 
+const emoteList = [
+  <FaThumbsUp size={100}/>,
+  <FaHandMiddleFinger size={100}/>,
+  <FaSkull size={100}/>,
+  <FaWheelchair size={100}/>,
+  <FaSmile size={100}/>,
+  <FaSadCry size={100}/>,
+  <FaAngry size={100}/>,
+  <FaPoop size={100}/>,
+  <FaHeart size={100}/>,
+  <FaTrash size={100}/>,
+]
 
+const emoteListSmall = [
+  <FaThumbsUp size={25}/>,
+  <FaHandMiddleFinger size={25}/>,
+  <FaSkull size={25}/>,
+  <FaWheelchair size={25}/>,
+  <FaSmile size={25}/>,
+  <FaSadCry size={25}/>,
+  <FaAngry size={25}/>,
+  <FaPoop size={25}/>,
+  <FaHeart size={25}/>,
+  <FaTrash size={25}/>,
+]
 
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "">(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
   const [onCountdown, setOnCountdown] = React.useState(false);
+  const [currentEmote, setCurrentEmote] = React.useState<number>(0);
+  const [emotes, setEmotes] = React.useState<JSX.Element[]>([]);
   const myProfile = useContext(UserContext).myProfile;
 
   useEffect(() => {
     gameData.lobbyCountdown = () => {
-      // setTimeout(() => {
       setOnCountdown(true);
-      // }, 1100);
     }
+  }, []);
+
+  useEffect(() => {
+    gameData.socketApi.listen("emote", (data: number) => {
+      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data}/>]);
+      setTimeout(() => {
+        setEmotes((emotes) => emotes.slice(1));
+      }, 3000);
+    });
   }, []);
 
   const opponent = useMemo(() => {
@@ -93,7 +128,16 @@ function Lobby() {
           </div>
         </div>
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
-          <div className='flex-1'></div>
+          <div className='flex-1'>
+          </div>
+          <div className="flex flex-row items-center gap-6 box-border pb-10">
+            <Arrow direction='left' onMouseDown={() => setCurrentEmote(currentEmote === 0 ? 9 : currentEmote - 1)}/>
+            <button className=" hover:scale-110 transition-all transform relative uppercase font-extrabold w-1/2 text-md text-highlight group-hover:text-dimshadow text-center cursor-pointer" onMouseDown={sendEmote}>
+              {emotes}
+              <EmoteSelection></EmoteSelection>
+            </button>
+            <Arrow direction='right' onMouseDown={() => setCurrentEmote(currentEmote === 9 ? 0 : currentEmote + 1)}/>
+          </div>
           <LobbyReadyButton >
             <p className={`uppercase font-extrabold w-full text-md text-highlight group-hover:text-dimshadow text-center`}
               onClick={() => gameData.leaveLobby()}
@@ -122,9 +166,56 @@ function Lobby() {
     else if (selectedPowerUp === PaddleType.boring)
       gameData.sendReady(newReady, "normal");
   }
+
+  function sendEmote() {
+    gameData.socketApi.sendMessages("emote", {
+      emote: currentEmote
+    });
+  }
+
+  function EmoteSelection() {
+    return (
+      emoteList[currentEmote]
+    )
+  }
+
+  interface EmoteProps {
+    emote: number;
+  }
+
+  function Emote(props: EmoteProps) {
+    return (
+      <div className={`absolute top-1/2 animate-emoteFloat transition-all -translate-x-full -translate-y-1/2 opacity-0`}
+        style={{ left: `${Math.random() * 100 - 13}%` }}
+      >
+        {emoteListSmall[props.emote]}
+      </div>
+    )
+  }
 }
 
-export default Lobby
+export default Lobby;
+
+interface ArrowProps {
+  direction: "top" | "right" | "bottom" | "left";
+  onMouseDown: () => void;
+}
+
+function Arrow(props: ArrowProps) {
+  const { direction, onMouseDown } = props;
+  const [ hovering, setHovering ] = useState<boolean>(false);
+
+  return (
+    <button onMouseDown={onMouseDown} className="w-[40px] h-[40px] relative cursor-pointer"
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+    >
+      <div className={`absolute ${hovering ? "scale-125" : "scale-100"} left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all transform`}>
+        <Triangle direction={direction} w={40} h={40} ></Triangle>
+      </div>
+    </button>
+  )
+}
 
 function CountDown() {
   const [count, setCount] = React.useState(3);

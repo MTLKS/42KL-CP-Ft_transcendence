@@ -41,7 +41,7 @@ function MatrixRain(props: MatrixRainProps) {
         var column: column = {
           x: i * tileWidth,
           stackHeight: 10 + Math.random() * maxStackHeight,
-          stackCounter: 0
+          stackCounter: Math.floor(Math.random() * maxStackHeight / 2)
         };
         columns.push(column);
       }

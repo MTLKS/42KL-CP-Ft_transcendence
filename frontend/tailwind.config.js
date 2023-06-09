@@ -14,8 +14,8 @@ export default {
         accGreen: "rgb(var(--accent-green))",
       },
       fontFamily: {
-        jbmono: ["JetBrains Mono", "monospace"],
-        bungee: ["Bungee", "monospace"],
+        jbmono: ["JetBrains Mono"],
+        bungee: ["Bungee"],
       },
       animation: {
         "pulse-short": "pulse 0.3s ease-in-out 1",
@@ -24,6 +24,7 @@ export default {
         "h-shake": "h-shake 0.5s",
         marquee: "marquee 15s linear infinite",
         loadingFade: "loadingFade infinite 1s",
+        emoteFloat: "floatFade 1 3s linear",
       },
       cursor: {
         default: "url(./assets/cursor/smiley.svg), default",
