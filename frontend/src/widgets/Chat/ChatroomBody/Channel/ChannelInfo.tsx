@@ -76,7 +76,7 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   return (
     <div className='relative flex flex-col h-full'>
-      <div className='absolute right-0 top-[5%] z-10 flex flex-col gap-y-1 transition-all duration-75'>
+      <div className='absolute right-0 top-[5%] z-30 flex flex-col gap-y-1 transition-all duration-75'>
         { errorPopups }
       </div>
       <ChatNavbar
@@ -248,25 +248,36 @@ function ChannelInfo(props: ChannelInfoProps) {
 
   async function sendInvites() {
     const { inviteList } = state;
-    const inviteErrors: number[] = [];
+    const inviteErrors: string[] = [];
 
     for (const invite of inviteList) {
-      const inviteResponse = await inviteMemberToChannel({
-        channelId: chatroomData.channelId,
-        intraName: invite.memberInfo.intraName,
-        isAdmin: false,
-        isBanned: false,
-        isMuted: false,
-        password: null,
-      })
-      if (inviteResponse.status !== 201) {
-        inviteErrors.push(invite.memberInfo.intraId);
-      } else {
+
+      try {
+        const inviteResponse = await inviteMemberToChannel({
+          channelId: chatroomData.channelId,
+          intraName: invite.memberInfo.intraName,
+          isAdmin: false,
+          isBanned: false,
+          isMuted: false,
+          password: null,
+        });
         dispatch({ type: 'SELECT_MEMBER', userInfo: (inviteResponse.data as MemberData).user});
+      } catch (error: any) {
+        const errorMessage = error.response.data as ErrorData;
+        if (errorMessage) {
+          if (errorMessage.error === "Invalid intraName - user is already a member of this channel") {
+            inviteErrors.push(`${invite.memberInfo.intraName} is already a member!`);
+          }
+        }
+        continue;
       }
     }
     dispatch({ type: 'RESET_INVITE_LIST' });
     dispatch({type: 'TOGGLE_IS_INVITING', isInviting: false})
+    if (inviteErrors.length > 0) {
+      setErrorResponses(inviteErrors);
+      return;
+    }
   }
 
   async function updateMembers() {
