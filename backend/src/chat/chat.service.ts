@@ -115,9 +115,9 @@ export class ChatService {
 		}
 		const MEMBERS = CHANNEL.isRoom === true ? await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] }) : await this.memberRepository.find({ where: { channel: { channelId: MY_CHANNEL.channelId } }, relations: ['user', 'channel'] });
 		for (let member of MEMBERS) {
-			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
 			if (member.user.intraName === USER_DATA.intraName)
 				continue;
+			const MEMBER_CHANNEL = await this.channelRepository.findOne({ where: { channelName: member.user.intraName, isRoom: false }, relations: ['owner'] });
 			server.to(MEMBER_CHANNEL.channelId).emit("typing", CHANNEL.isRoom ? { channel: CHANNEL, userName: USER_DATA.userName } : { channel: MY_CHANNEL, userName: USER_DATA.userName });
 		}
 	}
