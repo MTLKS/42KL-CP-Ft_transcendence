@@ -294,8 +294,14 @@ export class GameService {
       return;
     }
     let host = new Player(user_data.intraName, ACCESS_TOKEN, client);
+
+    //Have an ongoing invite
+    if (this.invitations.find((e) => e.intraName === host.intraName) !== undefined){
+      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver)));
+      return;
+    }
     this.invitations.push(host);
-    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO(sender, receiver)));
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver)));
   }
 
   async joinInvite(client: Socket, hostIntraName: string){
@@ -314,6 +320,10 @@ export class GameService {
       return;
     }
     else{
+      if (user_data.intraName === hostIntraName){
+        client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO('error', hostIntraName)));
+        return;
+      }
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO('success', hostIntraName)));
       
       //Remove invite from list

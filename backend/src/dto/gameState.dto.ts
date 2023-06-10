@@ -65,10 +65,12 @@ export class LobbyStartDTO {
 }
 
 export class CreateInviteDTO {
+	type: "success" | "error";
 	sender: string;
 	receiver: string;
 
-	constructor(sender: string, receiver: string) {
+	constructor(type: "success" | "error", sender: string, receiver: string) {
+		this.type = type;
 		this.sender = sender;
 		this.receiver = receiver;
 	}
