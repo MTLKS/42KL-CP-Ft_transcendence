@@ -4,7 +4,6 @@ import { UserData } from '../../model/UserData';
 import UserFormName from './UserFormName';
 import UserFormQuestion from './UserFormQuestion';
 import { getAwesomeSynonym, getRandomIceBreakingQuestion } from '../../functions/fun';
-import { PolkaDotContainer } from '../../components/Background';
 import { ErrorPopup } from '../../components/Popup';
 import { dataURItoFile, toDataUrl } from '../../functions/toDataURL';
 import Api from '../../api/api';
@@ -12,7 +11,6 @@ import sleep from '../../functions/sleep';
 import login from '../../api/loginAPI';
 import { FaArrowLeft } from 'react-icons/fa';
 import UserFormTfa from './UserFormTfa';
-import { set } from 'lodash';
 
 interface IAPIResponse {
   intraId: number,

@@ -355,6 +355,11 @@ function HomePage(props: HomePageProps) {
               <p>Unable to {action} <span className="font-extrabold bg-accRed">{errAttempt.data as string}</span>. You two are not friends.</p>
             </Card>)
             break;
+          case friendErrors.FAILED_TO_FETCH_FRIENDS:
+            newErrorCards.push(<Card key={"FAILED_TO_FETCH_FRIENDS" + errIndex + index}>
+              <p>Failed to fetch friends. Please try again later.</p>
+            </Card>)
+            break;
         }
         errIndex++;
       }
@@ -501,7 +506,7 @@ function HomePage(props: HomePageProps) {
         if (intraName !== null) friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
         setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
       } catch (error: any) {
-        console.log("error when fetching friendlist");
+        errors.push({ error: friendErrors.FAILED_TO_FETCH_FRIENDS, data: intraName as string})
       }
 
     } catch (error: any) {

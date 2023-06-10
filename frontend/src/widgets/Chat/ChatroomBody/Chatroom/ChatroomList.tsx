@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useReducer, useState } from 'react'
 import Chatroom from './Chatroom'
 import ChatButton from '../../ChatWidgets/ChatButton'
 import { HiServer } from 'react-icons/hi';
-import { FaPlusSquare } from 'react-icons/fa'
+import { FaMeh, FaPlusSquare } from 'react-icons/fa'
 import ChatEmptyState from '../../ChatEmptyState';
 import NewChannel from '../Channel/NewChannel';
 import { ChatContext, ChatroomsContext } from '../../../../contexts/ChatContext';
@@ -11,6 +11,17 @@ import { ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomDat
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import ChatTableTitle from '../../ChatWidgets/ChatTableTitle';
 import ChannelList from '../Channel/ChannelList';
+
+function FilteredChatroomEmptyState() {
+  return (
+    <div className='w-full h-full relative'>
+      <div className='absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center text-highlight gap-y-3'>
+        <p className='text-center'>There's no existing chatroom that matches your search</p>
+        <FaMeh className='text-3xl'/>
+      </div>
+    </div>
+  )
+}
 
 function ChatroomList() {
 
@@ -87,6 +98,9 @@ function ChatroomList() {
         return false;
       })
     }
+
+    if (filteredChatrooms.length === 0) return <FilteredChatroomEmptyState />;
+
     return filteredChatrooms.map(chatroom => {
       return <Chatroom key={chatroom.channelName + chatroom.channelId} chatroomData={chatroom} hasUnReadMsg={unreadChatrooms && unreadChatrooms.includes(chatroom.channelId)} />
     });

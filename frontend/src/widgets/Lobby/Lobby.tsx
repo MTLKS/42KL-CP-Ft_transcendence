@@ -54,7 +54,7 @@ const emoteListSmall = [
 function Lobby() {
   const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "practice" | "">(gameData.gameType);
   const [ready, setReady] = React.useState(false);
-  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.boring);
+  const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
   const [onCountdown, setOnCountdown] = React.useState(false);
   const [currentEmote, setCurrentEmote] = React.useState<number>(0);
   const [emotes, setEmotes] = React.useState<JSX.Element[]>([]);
@@ -68,8 +68,7 @@ function Lobby() {
 
   useEffect(() => {
     gameData.socketApi.listen("emote", (data: number) => {
-      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data} />]);
-      setEmotes((emotes) => [...emotes, <Emote key={Date.now()} emote={data} />]);
+      setEmotes((emotes) => [...emotes, <Emote key={Math.random().toString() + Date.now().toString()} emote={data} />]);
       setTimeout(() => {
         setEmotes((emotes) => emotes.slice(1));
       }, 3000);
@@ -189,16 +188,18 @@ interface SendEmoteProps {
 }
 
 function SendEmote(props: SendEmoteProps) {
-  let longPressTimer: number = 0;
   const { currentEmote } = props;
   const intervalRef = useRef<number | null>(null);
+  const lastPressRef = useRef<number>(0);
 
   function handleMouseDown() {
+    const now = Date.now();
+    if (now - lastPressRef.current < 16) return;
+    lastPressRef.current = now;
     handleLongPress();
   };
 
   function handleMouseUp() {
-    clearTimeout(longPressTimer);
     if (intervalRef.current !== null)
       clearInterval(intervalRef.current);
   };

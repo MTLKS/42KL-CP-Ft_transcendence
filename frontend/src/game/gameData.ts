@@ -276,6 +276,14 @@ export class GameData {
 
   sendUpdateGameType(gameType: string) {}
 
+  createLobby(isHost: boolean, opponentName: string, hostName: string) {
+    this.socketApi.sendMessages("joinPrivateLobby", {
+      isHost: isHost,
+      opponentName: opponentName,
+      hostName: hostName,
+    });
+  }
+
   leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
   }

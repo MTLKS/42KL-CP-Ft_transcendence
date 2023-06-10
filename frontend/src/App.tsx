@@ -1,4 +1,4 @@
-import { lazy, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { PolkaDotContainer } from "./components/Background";
 // import Login from "./pages/Login";
 import login, { checkAuth } from "./api/loginAPI";
@@ -6,10 +6,10 @@ import login, { checkAuth } from "./api/loginAPI";
 // import UserForm from "./pages/UserForm/UserForm";
 import { getMyProfile } from "./api/profileAPI";
 import { UserData } from "./model/UserData";
+import UserForm from "./pages/UserForm/UserForm";
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const Login = lazy(() => import('./pages/Login'));
-const UserForm = lazy(() => import('./pages/UserForm/UserForm'));
 
 function App() {
   const [logged, setLogged] = useState(false);
@@ -17,27 +17,26 @@ function App() {
   const [userData, setUserData] = useState<UserData>({} as UserData);
   const [updateUser, setUpdateUser] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const hompageLoaded = HomePage._result !== null;
-  const userFormLoaded = UserForm._result !== null;
-  const loginLoaded = Login._result !== null;
 
   useEffect(() => {
     checkIfLoggedIn();
   }, []);
 
-  let page = <Loading></Loading>;
-  if ((newUser || updateUser) && userFormLoaded) {
+  let page = <></>;
+  if ((newUser || updateUser)) {
     page = <UserForm userData={userData} isUpdatingUser={updateUser} setIsUpdatingUser={setUpdateUser} />;
   }
-  else if (logged && hompageLoaded) {
+  else if (logged) {
     page = <HomePage setUserData={setUserData} setUpdateUser={setUpdateUser} userData={userData} />;
-  } else if (loaded && loginLoaded) {
+  } else if (loaded) {
     page = <Login />;
   }
 
   return (
     <PolkaDotContainer>
-      {page}
+      <Suspense fallback={<Loading />}>
+        {page}
+      </Suspense>
     </PolkaDotContainer>
   )
 
