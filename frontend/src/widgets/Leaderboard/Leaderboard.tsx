@@ -31,7 +31,7 @@ function Leaderboard() {
   }
 
   function appendLeaderboardUser(newLeaderboardUsers: LeaderboardUser[]) {
-    setLeaderboardUsers([...leaderboardUsers, ...newLeaderboardUsers]);
+    setLeaderboardUsers([...leaderboardUsers, ...newLeaderboardUsers]); 
   }
 }
 
