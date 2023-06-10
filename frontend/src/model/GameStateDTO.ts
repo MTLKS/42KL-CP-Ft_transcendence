@@ -88,12 +88,30 @@ export class CountdonwDTO{
 	}
 }
 
-export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO;
+export class JoinInviteDTO {
+  type: "success" | "error";
+  hostIntraName: string;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO) {
+  constructor(type: "success" | "error", hostIntraName: string) {
+    this.type = type;
+    this.hostIntraName = hostIntraName;
+  }
+}
+
+export class GameTypeChangeDTO {
+  gameType: "boring" | "standard" | "death" | "";
+
+  constructor(gameType: "boring" | "standard" | "death" | "") {
+    this.gameType = gameType;
+  }
+}
+
+export class GameStateDTO {
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "JoinInvite" | "GameTypeChange";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | JoinInviteDTO | GameTypeChangeDTO;
+
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "JoinInvite" | "GameTypeChange",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | JoinInviteDTO | GameTypeChangeDTO) {
 		this.type = type;
 		this.data = data;
 	}
