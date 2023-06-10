@@ -489,6 +489,10 @@ export class GameData {
         }
         this.setEntities?.(this.gameEntities);
         break;
+      case "CreateInvite":
+        break;
+      case "JoinInvite":
+        break;
       default:
         break;
     }
