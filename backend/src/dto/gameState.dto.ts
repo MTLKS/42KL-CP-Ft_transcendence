@@ -1,3 +1,4 @@
+import exp from "constants";
 import { PowerUp } from "src/game/game.service";
 
 export class GameStartDTO {
@@ -53,14 +54,29 @@ export class FieldEffectDTO {
 
 export class LobbyStartDTO {
 	gameType: string;
-	isHost: boolean;
 	player1IntraName: string;
 	player2IntraName: string;
 
-	constructor(player1IntraName: string, player2IntraName: string, gameType: string, isHost: boolean=false) {
-		this.isHost = isHost;
+	constructor(player1IntraName: string, player2IntraName: string, gameType: string) {
 		this.player1IntraName = player1IntraName;
 		this.player2IntraName = player2IntraName;
+		this.gameType = gameType;
+	}
+}
+
+export class JoinInviteDTO {
+	type : "success" | "error";
+	intraName: string;
+
+	constructor(type: "success" | "error" ,intraName: string) {
+		this.type = type;
+		this.intraName = intraName;
+	}
+}
+export class GameTypeChangeDTO{
+	gameType: string;
+
+	constructor(gameType: string) {
 		this.gameType = gameType;
 	}
 }
@@ -84,11 +100,11 @@ export class CountdonwDTO{
 }
 
 export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO;
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "JoinInvite" | "GameTypeChange";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | JoinInviteDTO | GameTypeChangeDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "JoinInvite" | "GameTypeChange",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | JoinInviteDTO | GameTypeChangeDTO) {
 		this.type = type;
 		this.data = data;
 	}
