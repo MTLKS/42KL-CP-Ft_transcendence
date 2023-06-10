@@ -14,6 +14,7 @@ import {
   LobbyStartDTO,
   LobbyEndDTO,
   CountdonwDTO,
+  CreateInviteDTO,
   JoinInviteDTO,
   GameTypeChangeDTO,
 } from 'src/dto/gameState.dto';
@@ -283,7 +284,7 @@ export class GameService {
     player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
-  async createInvite(client: Socket){
+  async createInvite(client: Socket, sender: string, receiver: string){
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -294,7 +295,7 @@ export class GameService {
     }
     let host = new Player(user_data.intraName, ACCESS_TOKEN, client);
     this.invitations.push(host);
-    client.emit('gameResponse', new GameResponseDTO('success', 'Invite created'));
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO(sender, receiver)));
   }
 
   async joinInvite(client: Socket, hostIntraName: string){

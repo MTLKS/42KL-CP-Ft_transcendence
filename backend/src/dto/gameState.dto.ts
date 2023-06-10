@@ -64,6 +64,16 @@ export class LobbyStartDTO {
 	}
 }
 
+export class CreateInviteDTO {
+	sender: string;
+	receiver: string;
+
+	constructor(sender: string, receiver: string) {
+		this.sender = sender;
+		this.receiver = receiver;
+	}
+}
+
 export class JoinInviteDTO {
 	type : "success" | "error";
 	intraName: string;
@@ -100,11 +110,11 @@ export class CountdonwDTO{
 }
 
 export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "JoinInvite" | "GameTypeChange";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | JoinInviteDTO | GameTypeChangeDTO;
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite"| "JoinInvite" | "GameTypeChange";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | GameTypeChangeDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "JoinInvite" | "GameTypeChange",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | JoinInviteDTO | GameTypeChangeDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" |"JoinInvite" | "GameTypeChange",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | GameTypeChangeDTO) {
 		this.type = type;
 		this.data = data;
 	}
