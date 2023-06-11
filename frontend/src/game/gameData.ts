@@ -428,8 +428,8 @@ export class GameData {
       case "GameStart":
         const data = <GameStartDTO>state.data;
         console.log("GameStart:", data);
-        if (data.isLeft) this.isLeft = data.isLeft;
-        else this.isRight = true;
+        this.isLeft = data.isLeft;
+        this.isRight = !data.isLeft;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
         this.leftPaddleType = this.getPaddleType(data.player1PowerUp);
