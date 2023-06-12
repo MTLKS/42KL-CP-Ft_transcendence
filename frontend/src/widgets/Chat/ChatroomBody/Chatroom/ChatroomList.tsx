@@ -79,6 +79,7 @@ function ChatroomList() {
     const chatrooms: ChatroomData[] = [];
 
     const chatroomsFromDb = await getChatroomList();
+    console.log(chatroomsFromDb.data);
     if (chatroomsFromDb.data.length > 0) {
       chatrooms.push(...chatroomsFromDb.data);
     }

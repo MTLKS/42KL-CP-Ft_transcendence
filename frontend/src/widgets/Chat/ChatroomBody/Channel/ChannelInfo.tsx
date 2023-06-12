@@ -44,6 +44,7 @@ function ChannelInfo(props: ChannelInfoProps) {
   useEffect(() => {
     dispatch({ type: 'IS_OWNER', userInfo: myProfile });
     dispatch({ type: 'IS_ADMIN', userInfo: myProfile });
+    console.log(state.memberCount);
   }, []);
   
   useEffect(() => {
@@ -132,7 +133,7 @@ function ChannelInfo(props: ChannelInfoProps) {
             { chatroomData.isPrivate ? <FaUserSecret className='text-3xl' /> : <ImEarth className='text-3xl' /> }
             <p className='text-lg font-extrabold'>{chatroomData.channelName}</p>
             <p className='text-sm'>Created by <span className='bg-accGreen px-[1ch] text-highlight'>{chatroomData.owner?.userName}</span></p>
-            <p className='flex flex-row items-center text-sm uppercase gap-x-2'><FaUsers /> {chatroomData.memberCount} members</p>
+            <p className='flex flex-row items-center text-sm uppercase gap-x-2'><FaUsers /> {state.memberCount} members</p>
             {state.isTryingToDeleteChannel && !state.deleteConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_DELETE_CHANNEL' })}>I want to delete this channel</button>}
             {state.isTryingToLeaveChannel && !state.leaveConfirmed && <button className='uppercase rounded p-2 px-[2ch] bg-dimshadow text-accRed font-bold border-2 border-accRed hover:bg-accRed hover:text-highlight mt-2 transition-all duration-100 hover:animate-h-shake' onClick={() => dispatch({ type: 'CONFIRM_LEAVE_CHANNEL' })}>I want to leave this channel</button>}
             {state.deleteConfirmed && (

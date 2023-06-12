@@ -6,22 +6,23 @@ import PreviewProfileContext from "../../../../contexts/PreviewProfileContext";
 import Profile from "../../../Profile/Profile";
 import StatusIndicator from "../../../Profile/StatusIndicator";
 import SocketApi from "../../../../api/socketApi";
+import { ChannelMemberRole } from "./newChannelReducer";
 
 interface ChannelMemberOnlineProfileProps {
-  memberInfo: UserData;
+  member: ChannelMemberRole;
 }
 
 function ChannelMemberOnlineProfile(props: ChannelMemberOnlineProfileProps) {
 
-  const { memberInfo } = props;
+  const { member } = props;
   const { friends } = useContext(FriendsContext);
   const [onlineStatus, setOnlineStatus] = useState("offline");
   const { setPreviewProfileFunction, setTopWidgetFunction } = useContext(PreviewProfileContext);
-  const { intraName, userName, intraId, avatar } = memberInfo;
+  const { intraName, userName, intraId, avatar } = member.memberInfo;
   const isBlocked = useMemo(checkIfFriendIsBlocked, [friends]);
 
   useEffect(() => {
-    if (isBlocked) return;
+    if (isBlocked || member.isBanned) return;
     let friendInfoSocket = new SocketApi();
     friendInfoSocket.sendMessages("statusRoom", { intraName: intraName, joining: true });
     friendInfoSocket.listen("statusRoom", (data: any) => {
@@ -42,7 +43,7 @@ function ChannelMemberOnlineProfile(props: ChannelMemberOnlineProfileProps) {
         <p className={`text-sm font-normal text-highlight ${!isBlocked && 'group-hover:underline'}`}>{userName}</p>
       </div>
       <div className="aspect-square w-fit">
-        {!isBlocked && <StatusIndicator status={onlineStatus} showText={false} small invert/>}
+        {(!isBlocked && !member.isBanned) && <StatusIndicator status={onlineStatus} showText={false} small invert/>}
       </div>
     </div>
   )
@@ -56,7 +57,7 @@ function ChannelMemberOnlineProfile(props: ChannelMemberOnlineProfileProps) {
 
   function viewProfile() {
     if (isBlocked) return;
-    setPreviewProfileFunction(memberInfo);
+    setPreviewProfileFunction(member.memberInfo);
     setTopWidgetFunction(<Profile expanded={true} />)
   }
 }
@@ -78,7 +79,7 @@ function ChannelMemberOnlineList() {
         <p className='text-sm font-extrabold'>MEMBERS {`(${state.members.length})`}</p>
         <div className="box-border flex flex-col w-full h-full overflow-y-scroll gap-y-2 scrollbar-hide">
           {members.map((member) => {
-            return (<ChannelMemberOnlineProfile memberInfo={member.memberInfo} />);
+            return (<ChannelMemberOnlineProfile member={member} />);
           })}
         </div>
       </div>
