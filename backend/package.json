@@ -41,7 +41,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.5.5",
     "sharp": "^0.32.1",
-    "speakeasy": "^2.0.0"
+    "speakeasy": "^2.0.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
