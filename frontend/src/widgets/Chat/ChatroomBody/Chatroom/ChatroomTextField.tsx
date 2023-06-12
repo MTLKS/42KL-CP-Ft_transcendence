@@ -148,7 +148,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const sendMessage = (type: MessageType) => {
 
-    if (type === MessageType.INVITE || message === "/invite") {
+    if (message === "/invite") {
       createGameLobby();
       return;
     }
