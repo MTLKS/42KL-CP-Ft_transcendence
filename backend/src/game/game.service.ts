@@ -23,7 +23,6 @@ import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
 import { PracticeGameRoom } from './entity/practiceGameRoom';
-import { v4 as uuidv4 } from 'uuid';
 import { cp } from 'fs';
 
 export enum PowerUp{
@@ -61,10 +60,10 @@ export class GameService {
   };
   private connected = [];
 
-  //hosts : map intraName -> uuid
-  //invitationRoom : map uuid -> Invitation
-  private hosts = new Map<string, string>();
-  private invitationRoom = new Map<string, Invitation>();
+  //hosts : map intraName -> messageID
+  //invitationRoom : map messageID -> Invitation
+  private hosts = new Map<string, number>();
+  private invitationRoom = new Map<number, Invitation>();
   private gameRooms = new Map<string, GameRoom>();
   private gameLobbies = new Map<string, Lobby>();
 
@@ -154,7 +153,7 @@ export class GameService {
       }
     });
 
-    //TODO: leave invite
+    // If player is hosting, cancel invite
     this.cancelInvite(client);
 
     // If player is in a lobby, leave the lobby
@@ -300,7 +299,7 @@ export class GameService {
     player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
-  async createInvite(client: Socket, sender: string, receiver: string) {
+  async createInvite(client: Socket, sender: string, receiver: string, messageID: number){
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -314,19 +313,28 @@ export class GameService {
     //Have an ongoing invite
     const CURRENT_INVITE = this.hosts.get(host.intraName);
     if (CURRENT_INVITE !== undefined){
-      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver, "")));
+
+      //TESTING
+      // console.log("have ongoing invite");
+      // console.log(this.hosts);
+      // console.log(this.invitationRoom);
+
+      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver, -1)));
       return;
     }
-    const UUID = uuidv4();
     const INVITATION = new Invitation(host, receiver);
-    this.hosts.set(host.intraName, UUID);
-    this.invitationRoom.set(UUID, INVITATION);
-    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver, UUID)));
+
+    //TESTING
+    // console.log("create invite success");
+    // console.log(this.hosts);
+    // console.log(this.invitationRoom);
+
+    this.hosts.set(host.intraName, messageID);
+    this.invitationRoom.set(messageID, INVITATION);
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver, messageID)));
   }
 
-  async joinInvite(client: Socket, uuid: string){
-
-    //Check if the client is the host of the invite
+  async joinInvite(client: Socket, messageID: number){
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -335,23 +343,23 @@ export class GameService {
     catch{
       return;
     }
-    const INVITATION = this.invitationRoom.get(uuid);
+    const INVITATION = this.invitationRoom.get(messageID);
     //Invitation not found
     if (INVITATION === undefined){
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", "")));
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
     //The client is the host of the invite
     if (INVITATION.host.intraName == user_data.intraName){
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", "")));
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
     else{
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", uuid)));
-      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(uuid)));
-      INVITATION.host.socket.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(uuid)));
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", messageID)));
+      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(messageID)));
+      INVITATION.host.socket.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(messageID)));
       this.hosts.delete(INVITATION.host.intraName);
-      this.invitationRoom.delete(uuid);
+      this.invitationRoom.delete(messageID);
 
       //Make both players join lobby
       let lobby = new Lobby(INVITATION.host, new Player(user_data.intraName, ACCESS_TOKEN, client), "");
@@ -371,10 +379,10 @@ export class GameService {
     catch{
       return;
     }
-    const UUID = this.hosts.get(user_data.intraName);
-    if (UUID !== undefined){
-      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(UUID)));
-      this.invitationRoom.delete(UUID);
+    const MESSAGE_ID = this.hosts.get(user_data.intraName);
+    if (MESSAGE_ID !== undefined){
+      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(MESSAGE_ID)));
+      this.invitationRoom.delete(MESSAGE_ID);
     }
     this.hosts.delete(user_data.intraName);
   }
@@ -466,9 +474,7 @@ export class GameService {
       gameType = "standard";
     }
     this.gameLobbies.forEach((gameLobby, key) => {
-      // let gameType;
       if (gameLobby.player1.intraName === user_data.intraName) {
-        // gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
@@ -477,7 +483,6 @@ export class GameService {
         if (LOBBY_LOGGING)
           console.log(`${user_data.intraName} is ready.`);
       } else {
-        // gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
