@@ -411,10 +411,11 @@ export class GameData {
 
   private _resetVariables() {
     this.gameType = "";
-    this.leftPaddlePosition = { x: -50, y: 450 };
-    this.rightPaddlePosition = { x: 1650, y: 450 };
+    this.leftPaddlePosition = { x: 30, y: 450 };
+    this.rightPaddlePosition = { x: 1570, y: 450 };
     this.leftPaddleType = PaddleType.boring;
     this.rightPaddleType = PaddleType.boring;
+    this._pongPosition = { x: 800, y: 450 };
 
     this.globalGravityX = 0;
     this.globalGravityY = 0;
@@ -590,7 +591,7 @@ export class GameData {
         this._pongPosition,
         this._pongSpeed,
         1,
-        (data.player1Score == 10 || data.player2Score == 10) ? 0.5 : 1
+        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
       );
     } else if (
       data.hitType === HitType.WALL ||

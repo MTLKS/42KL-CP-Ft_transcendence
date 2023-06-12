@@ -125,7 +125,7 @@ function Lobby() {
           <div className="mb-12 border-4 rounded border-highlight">
             <LobbyProfile playerIntraId={opponent} />
           </div>
-          {powerButtonActive ?
+          {powerButtonActive || selectedMode === "standard" ?
             (
               <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
                 <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
