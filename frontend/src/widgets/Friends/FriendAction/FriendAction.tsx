@@ -43,6 +43,7 @@ function FriendAction(props: FriendActionProps) {
   const { setFriends } = useContext(FriendsContext);
   const { friends: selectedFriends, setFriends: setSelectedFriends } = useContext(SelectedFriendContext);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [animate, setAnimate] = useState(false);
 
   let actionCards: JSX.Element[] = [];
   let yesAction: (name: string) => Promise<AxiosResponse>;
@@ -54,6 +55,7 @@ function FriendAction(props: FriendActionProps) {
   createFriendActionCards();
 
   useEffect(() => {
+    setAnimate(true);
     focusOnInput();
     setActionFunctions();
   }, []);
@@ -75,18 +77,18 @@ function FriendAction(props: FriendActionProps) {
               value={inputValue}
               ref={inputRef}
             />
-            <div className='px-[2ch] flex flex-col-reverse'>
+            <div className={`px-[2ch] flex flex-col-reverse ${animate ? "" : " translate-y-12 opacity-0"} transition-all duration-1000q`}>
               {actionCards.length === 0 ? <></> : actionCards.slice(selectedIndex)}
             </div>
             <p className={`px-[2ch] text-highlight ${outputStyle} w-fit ${commandNotFound || showOutput ? 'visible' : 'invisible'}`}>{outputStr}</p>
-            <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow`}>
+            <div className={`${isInputFocused ? '' : 'opacity-70'} flex flex-row px-[1ch] bg-highlight whitespace-pre w-fit h-fit text-dimshadow ${animate ? "" : " -translate-x-24 opacity-0"} transition-all duration-500`}>
               {
                 inputValue === ""
                   ? <><LessFileIndicator fileString={fileString} /> {filteredFriends.length !== 0 && `${selectedIndex + 1}/${filteredFriends.length}`} <p>press 'q' to quit</p></>
                   : <p>{inputValue}</p>
               }
             </div>
-            <div className='flex-col'>
+            <div className={`flex-col ${animate ? "" : " translate-y-full"} transition-all duration-500`}>
               <div className='flex flex-row justify-between'>
                 <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('Y')}><span className='bg-highlight text-dimshadow'>:Y</span> Yes to all</button>
                 <button className='text-highlight hover:text-dimshadow hover:bg-highlight' onClick={() => handleFriendAction('N')}><span className='bg-highlight text-dimshadow'>:N</span> No to all</button>
