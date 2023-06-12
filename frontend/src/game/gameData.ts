@@ -138,6 +138,7 @@ export class GameData {
   ballHitParticle?: () => void;
   paddleHitParticle?: () => void;
   lobbyCountdown?: () => void;
+  stopDisplayQueue?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -316,6 +317,7 @@ export class GameData {
       return;
     }
     console.log("start game");
+    this.stopDisplayQueue!();
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
     if (this.setUsingTicker) this.setUsingTicker(true);
