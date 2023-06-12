@@ -16,7 +16,7 @@ import boringGIF from '../../../assets/GIFS/BoringGame.gif'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import deathGIF from '../../../assets/GIFS/DeathGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
-import { PaddleType } from '../../game/gameData'
+import { GameType, PaddleType } from '../../game/gameData'
 import { gameData } from '../../main'
 import { getProfileOfUser } from '../../api/profileAPI'
 import { ErrorData } from '../../model/ErrorData';
@@ -52,7 +52,7 @@ const emoteListSmall = [
 ]
 
 function Lobby() {
-  const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "practice" | "">(gameData.gameType);
+  const [selectedMode, setSelectedMode] = React.useState<GameType>(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
   const [onCountdown, setOnCountdown] = React.useState(false);
@@ -94,7 +94,16 @@ function Lobby() {
       boringButtonActive = true;
       standardButtonActive = true;
       deathButtonActive = true;
-    } else if (gameData.gameType === 'standard') {
+    }
+    if (selectedMode === 'standard') {
+      powerButtonActive = true;
+    }
+    if (gameData.gameType === 'private') {
+      boringButtonActive = true;
+      standardButtonActive = true;
+      deathButtonActive = true;
+    }
+    if (gameData.gameType === 'practice') {
       powerButtonActive = true;
     }
     if (ready) {
@@ -104,7 +113,7 @@ function Lobby() {
       deathButtonActive = false;
     }
     return { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive };
-  }, [ready, gameData.gameType]);
+  }, [ready, gameData.gameType, selectedMode]);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
