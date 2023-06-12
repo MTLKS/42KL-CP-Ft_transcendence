@@ -15,6 +15,7 @@ import {
   LobbyEndDTO,
   CountdonwDTO,
   CreateInviteDTO,
+  CancelInviteDTO,
   JoinInviteDTO,
   GameTypeChangeDTO,
 } from 'src/dto/gameState.dto';
@@ -22,6 +23,8 @@ import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
 import { PracticeGameRoom } from './entity/practiceGameRoom';
+import { v4 as uuidv4 } from 'uuid';
+import { cp } from 'fs';
 
 export enum PowerUp{
   NORMAL = 0,
@@ -29,6 +32,16 @@ export enum PowerUp{
   SIZE = 2,
   PRECISION = 3,
   SPIN = 4,
+}
+
+class Invitation{
+  host: Player;
+  receiver: string;
+
+  constructor(host: Player, receiver: string){
+    this.host = host;
+    this.receiver = receiver;
+  }
 }
 
 const LOBBY_LOGGING = false;
@@ -48,7 +61,10 @@ export class GameService {
   };
   private connected = [];
 
-  private invitations = [];
+  //hosts : map intraName -> uuid
+  //invitationRoom : map uuid -> Invitation
+  private hosts = new Map<string, string>();
+  private invitationRoom = new Map<string, Invitation>();
   private gameRooms = new Map<string, GameRoom>();
   private gameLobbies = new Map<string, Lobby>();
 
@@ -137,6 +153,9 @@ export class GameService {
           );
       }
     });
+
+    //TODO: leave invite
+    this.cancelInvite(client);
 
     // If player is in a lobby, leave the lobby
     this.leaveLobby(client);
@@ -237,9 +256,6 @@ export class GameService {
       return;
     }
     this.queues[clientQueue].push(player);
-
-    //TESTING
-    // this.joinLobby(player, player, clientQueue);
   }
 
   async leaveQueue(client: Socket) {
@@ -296,15 +312,21 @@ export class GameService {
     let host = new Player(user_data.intraName, ACCESS_TOKEN, client);
 
     //Have an ongoing invite
-    if (this.invitations.find((e) => e.intraName === host.intraName) !== undefined){
-      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver)));
+    const CURRENT_INVITE = this.hosts.get(host.intraName);
+    if (CURRENT_INVITE !== undefined){
+      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver, "")));
       return;
     }
-    this.invitations.push(host);
-    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver)));
+    const UUID = uuidv4();
+    const INVITATION = new Invitation(host, receiver);
+    this.hosts.set(host.intraName, UUID);
+    this.invitationRoom.set(UUID, INVITATION);
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver, UUID)));
   }
 
-  async joinInvite(client: Socket, hostIntraName: string){
+  async joinInvite(client: Socket, uuid: string){
+
+    //Check if the client is the host of the invite
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -313,36 +335,35 @@ export class GameService {
     catch{
       return;
     }
-    //Check whether invitation still exist
-    const HOST = this.invitations.find((e) => e.intraName === hostIntraName);
-    if (HOST === undefined){
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO('error', hostIntraName)));
+    const INVITATION = this.invitationRoom.get(uuid);
+    //Invitation not found
+    if (INVITATION === undefined){
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", "")));
+      return;
+    }
+    //The client is the host of the invite
+    if (INVITATION.host.intraName == user_data.intraName){
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", "")));
       return;
     }
     else{
-      if (user_data.intraName === hostIntraName){
-        client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO('error', hostIntraName)));
-        return;
-      }
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO('success', hostIntraName)));
-      
-      //Remove invite from list
-      const index = this.invitations.findIndex((e) => e.intraName === hostIntraName);
-      if (index !== -1){
-        this.invitations.splice(index, 1);
-      }
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", uuid)));
+      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(uuid)));
+      INVITATION.host.socket.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(uuid)));
+      this.hosts.delete(INVITATION.host.intraName);
+      this.invitationRoom.delete(uuid);
 
       //Make both players join lobby
-      let lobby = new Lobby(HOST, new Player(user_data.intraName, ACCESS_TOKEN, client), "private");
-      this.gameLobbies.set(HOST.intraName + user_data.intraName, lobby);
-      HOST.socket.join(lobby.name);
+      let lobby = new Lobby(INVITATION.host, new Player(user_data.intraName, ACCESS_TOKEN, client), "");
+      this.gameLobbies.set(INVITATION.host.intraName + user_data.intraName, lobby);
+      INVITATION.host.socket.join(lobby.name);
       client.join(lobby.name);
-      HOST.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(HOST.intraName, user_data.intraName, "private")));
-      client.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(HOST.intraName, user_data.intraName, "private")));
-    }
+      INVITATION.host.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(INVITATION.host.intraName, user_data.intraName, "", true)));
+      client.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(INVITATION.host.intraName, user_data.intraName, "", true)));
+    } 
   }
 
-  async leaveInvite(client: Socket){
+  async cancelInvite(client: Socket){
     let user_data;
     try{
       user_data = await this.userService.getMyUserData(client.handshake.headers.authorization);
@@ -350,10 +371,12 @@ export class GameService {
     catch{
       return;
     }
-    const index = this.invitations.findIndex((e) => e.intraName === user_data.intraName);
-    if (index !== -1){
-      this.invitations.splice(index, 1);
+    const UUID = this.hosts.get(user_data.intraName);
+    if (UUID !== undefined){
+      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(UUID)));
+      this.invitationRoom.delete(UUID);
     }
+    this.hosts.delete(user_data.intraName);
   }
 
   getLobbyKeyFromIntraNames(intraName: string): string | undefined {
@@ -372,9 +395,6 @@ export class GameService {
     catch{
       return;
     }
-
-    //Check whether player is sending invitation or inside invitation lobby
-    this.leaveInvite(client);
 
     const LOBBY_KEY = this.getLobbyKeyFromIntraNames(user_data.intraName);
     if (LOBBY_KEY != undefined) {
@@ -433,7 +453,7 @@ export class GameService {
     return powerUp;
   }
 
-  async handleReady(client: Socket, gameType:string, ready: boolean, powerUp: string, server: Server) {
+  async handleReady(client: Socket, gameType: string, ready: boolean, powerUp: string, server: Server) {
     let user_data;
     try{
       user_data =  await this.userService.getMyUserData(client.handshake.headers.authorization);
@@ -453,10 +473,6 @@ export class GameService {
         gameLobby.player1PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
           gameLobby.player1PowerUp = "normal";
-
-        //TESTING
-        // gameLobby.player2Ready = ready;
-        // gameLobby.player2PowerUp = powerUp;
         
         if (LOBBY_LOGGING)
           console.log(`${user_data.intraName} is ready.`);
@@ -479,10 +495,10 @@ export class GameService {
     });
   }
 
-  async joinPractice(server: Server, player: Player) {
-    let room = new PracticeGameRoom(player, PowerUp.SPIN);
+  async joinPractice(server: Server, player: Player, powerUp: PowerUp) {
+    let room = new PracticeGameRoom(player, powerUp);
     player.socket.join(room.roomID);
-    player.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO("Bot", "standard", true, room.roomID)));
+    player.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO("Bot", "standard", true, room.roomID, powerUp)));
     this.gameRooms.set(room.roomID, room);
     await room.run(server);
   }
@@ -505,7 +521,7 @@ export class GameService {
         this.userService,
       );
     } else if (gameType === 'practice') {
-      await this.joinPractice(server, player1);
+      await this.joinPractice(server, player1, player1PowerUp);
       return;
     }
     else if (gameType === 'death'){
