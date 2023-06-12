@@ -300,7 +300,7 @@ export class GameService {
     player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
-  async createInvite(client: Socket, sender: string, receiver: string){
+  async createInvite(client: Socket, sender: string, receiver: string) {
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{

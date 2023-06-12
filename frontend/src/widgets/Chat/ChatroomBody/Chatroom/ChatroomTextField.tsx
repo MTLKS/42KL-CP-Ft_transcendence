@@ -38,7 +38,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, []);
 
   useEffect(() => {
-    console.log("invite created? ", inviteCreated);
     if (inviteCreated) {
       sendMessage(MessageType.INVITE);
       setInviteCreated(false);
@@ -118,7 +117,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     // DM: receiver's name
     // GROUPCHAT: group's name
     const targetChannel = chatroomData.isRoom ? chatroomData.channelName : chatroomData.owner!.intraName;
-    gameData.createInvite(myProfile.intraName, targetChannel);
+    gameData.createInvite(myProfile.intraName, targetChannel, chatroomData.channelId);
   }
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -147,7 +146,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const sendMessage = (type: MessageType) => {
 
-    if (type === MessageType.INVITE && !inviteCreated) {
+    if (type === MessageType.INVITE || message === "/invite") {
       createGameLobby();
       return;
     }
