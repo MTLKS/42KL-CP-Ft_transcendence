@@ -110,6 +110,8 @@ function HomePage(props: HomePageProps) {
   const [scaleY, setScaleY] = useState("scale-y-0");
   const [showWidget, setShowWidget] = useState(false);
   const [showTerminal, setShowTerminal] = useState(false);
+  const [queueType, setQueueType] = useState("");
+  const [queueExpanded, setQueueExpanded] = useState(false);
 
   let incomingRequests: FriendData[] = useMemo(
     () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.sender.intraName !== userData.intraName),
@@ -153,7 +155,7 @@ function HomePage(props: HomePageProps) {
              {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
              <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
                <div className='flex-1 h-full'>
-                 {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
+                 {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} queueType={queueType} queueExpanded={queueExpanded}/> : null}
                   </div>
                   <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-in-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
@@ -572,16 +574,17 @@ function HomePage(props: HomePageProps) {
       setElements(newList);
     } else if (commands[1] == "queue") {
       let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
-      if (response.type === "success")
-        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-      else
+      if (response.type === "success") {
+        setQueueExpanded(true);
+        setQueueType(commands[2]);
+      } else {
         newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
-      setElements(newList);
+        setElements(newList);
+      }
     } else if (commands[1] == "dequeue") {
       let response: GameResponseDTO = await gameData.leaveQueue();
       if (response.type === "success")
-        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-      setElements(newList);
+        setQueueExpanded(false);
     } else if (commands[1] == "setting") {
       handleGameSettingsCommand(commands, newList);
     }
@@ -641,7 +644,7 @@ function HomePage(props: HomePageProps) {
         <span className='text-xl font-bold neonText-white'>PongSH Credits</span><br />
         <p className="pt-4 font-bold capitalize text-highlight text-md">Team members</p>
         <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
-        <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
+        <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">The most useful git command is blame.</span></p>
         <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
         <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
         <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>

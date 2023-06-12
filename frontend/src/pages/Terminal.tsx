@@ -14,10 +14,12 @@ interface TerminalProps {
   availableCommands: CommandOptionData[];
   handleCommands: (command: string[]) => void;
   elements: JSX.Element[];
+  queueType: string;
+  queueExpanded: boolean;
 }
 
 function Terminal(pros: TerminalProps) {
-  const { availableCommands, handleCommands, elements } = pros;
+  const { availableCommands, handleCommands, elements, queueType, queueExpanded } = pros;
   const [mounted, setMounted] = React.useState(false);
 
   const promptFieldRef = useRef<any>(null);
@@ -41,7 +43,7 @@ function Terminal(pros: TerminalProps) {
         center={false} ref={promptFieldRef}
         enableHistory showtip
       />
-      <Queue expanded={true} />
+      <Queue queueType={queueType} expanded={queueExpanded} />
       <div className={`absolute top-0 right-0 transition-transform duration-500 ${mounted ? " translate-x-0" : " translate-x-full"}`}>
         <Clock />
       </div>
