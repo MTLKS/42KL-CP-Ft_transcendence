@@ -588,7 +588,7 @@ export class GameData {
         this._pongPosition,
         this._pongSpeed,
         1,
-        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
+        (data.player1Score == 10 || data.player2Score == 10) ? 0.5 : 1
       );
     } else if (
       data.hitType === HitType.WALL ||
