@@ -270,7 +270,7 @@ function ballHitEffect(
 ) {
   if (!gameData.hitFilter) return;
   if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
-    if (player1Score === 9 || player2Score === 9) {
+    if (player1Score === 10 || player2Score === 10) {
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
     } else {
       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 1);
