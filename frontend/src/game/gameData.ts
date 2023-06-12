@@ -41,6 +41,14 @@ export enum PaddleType {
   "boring",
 }
 
+export type GameType =
+  | "boring"
+  | "standard"
+  | "death"
+  | "practice"
+  | "private"
+  | "";
+
 interface GameSettings {
   particlesFilter: boolean;
   entitiesFilter: boolean;
@@ -95,7 +103,7 @@ export class GameData {
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
-  gameType: "boring" | "standard" | "death" | "practice" | "" = "";
+  gameType: GameType = "";
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
 
@@ -507,7 +515,10 @@ export class GameData {
         const createInviteData = <CreateInviteDTO>state.data;
         if (createInviteData.type === "success" && this.setInviteCreated) {
           this.setInviteCreated(true);
-        } else if (createInviteData.type === "error" && this.setUnableToCreateInvite) {
+        } else if (
+          createInviteData.type === "error" &&
+          this.setUnableToCreateInvite
+        ) {
           this.setUnableToCreateInvite(true);
           console.log("Error creating invite");
         }
@@ -516,7 +527,10 @@ export class GameData {
         const joinInviteData = <JoinInviteDTO>state.data;
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
-        } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
+        } else if (
+          joinInviteData.type === "error" &&
+          this.setUnableToAcceptInvite
+        ) {
           this.setUnableToAcceptInvite(true);
           console.log("Error joining invite");
         }
