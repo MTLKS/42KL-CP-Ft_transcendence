@@ -424,6 +424,7 @@ export class GameData {
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
         this.displayLobby!();
+        this.stopDisplayQueue!();
         break;
       case "LobbyEnd":
         const lobbyEndData = <LobbyEndDTO>state.data;
@@ -549,8 +550,7 @@ export class GameData {
     this.attracted = data.attracted;
   };
 
-  listenToGameResponse = (data: GameResponseDTO) => {
-  };
+  listenToGameResponse = (data: GameResponseDTO) => {};
 
   private hitEffects(data: GameDTO) {
     if (data.hitType === HitType.PADDLE) this.numberHits++;
