@@ -31,6 +31,19 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [someoneIsTyping, setSomeoneIsTyping] = useState(false);
   const [typingMembers, setTypingMembers] = useState<string[]>([]);
+  const [inviteCreated, setInviteCreated] = useState(false);
+
+  useEffect(() => {
+    gameData.setInviteCreated = setInviteCreated;
+  }, []);
+
+  useEffect(() => {
+    console.log("invite created? ", inviteCreated);
+    if (inviteCreated) {
+      sendMessage(MessageType.INVITE);
+      setInviteCreated(false);
+    }
+  }, [inviteCreated]);
 
   useEffect(() => {
     // listen for member typing
@@ -42,9 +55,13 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   useEffect(() => {
     if (textTooLong) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setTextTooLong(false);
       }, 800);
+
+      return (() => {
+        clearTimeout(timeoutId);
+      });
     }
   }, [textTooLong]);
 
@@ -57,9 +74,13 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   useEffect(() => {
     if (isTyping) {
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setIsTyping(false);
       }, 5000);
+
+      return (() => {
+        clearTimeout(timeoutId);
+      });
     }
   }, [isTyping]);
 
@@ -96,8 +117,8 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   const createGameLobby = () => {
     // DM: receiver's name
     // GROUPCHAT: group's name
-    const opponentName = chatroomData.isRoom ? chatroomData.channelName : chatroomData.owner!.intraName;
-    gameData.createLobby(true, opponentName, myProfile.intraName);
+    const targetChannel = chatroomData.isRoom ? chatroomData.channelName : chatroomData.owner!.intraName;
+    gameData.createInvite(myProfile.intraName, targetChannel);
   }
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -125,6 +146,12 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   const sendMessage = (type: MessageType) => {
+
+    if (type === MessageType.INVITE && !inviteCreated) {
+      createGameLobby();
+      return;
+    }
+
     if (message === '' && type === MessageType.MESSAGE) return;
     
     chatSocket.sendMessages("message", {
@@ -163,11 +190,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     setRows(1);
     setIsFirstLoad(false);
     pingServer();
-
-    if (type === MessageType.INVITE) {
-      createGameLobby();
-    }
-
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

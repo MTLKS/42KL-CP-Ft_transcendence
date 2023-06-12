@@ -13,12 +13,14 @@ import ChatButton from '../../ChatWidgets/ChatButton';
 import ChannelMemberOnlineList from '../Channel/ChannelMemberOnlineList';
 import { ErrorData } from '../../../../model/ErrorData';
 import ChatroomList from './ChatroomList';
+import { gameData } from '../../../../main';
+import { ErrorPopup } from '../../../../components/Popup';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
 }
 
-const MESSAGE_FETCH_LIMIT = 10;
+const MESSAGE_FETCH_LIMIT = 50;
 
 // append new message but to the top of the list (index 0)
 export function appendNewMessage(newMessage: ChatroomMessageData, messages: ChatroomMessageData[]) {
@@ -43,9 +45,15 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
   const [viewMemberList, setViewMemberList] = useState<boolean>(false);
-  const { state, dispatch } = useContext(NewChannelContext);
+  const { dispatch } = useContext(NewChannelContext);
+  const [unableToCreateInvite, setUnableToCreateInvite] = useState(false);
+  const [unableToAcceptInvite, setUnableToAcceptInvite] = useState(false);
 
   useEffect(() => {
+
+    gameData.setUnableToCreateInvite = setUnableToCreateInvite;
+    gameData.setUnableToAcceptInvite = setUnableToAcceptInvite;
+
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
@@ -70,6 +78,35 @@ function ChatroomContent(props: ChatroomContentProps) {
   }, []);
 
   useEffect(() => {
+    if (isFirstLoad) return;
+
+    if (unableToCreateInvite) {
+      const timeoutId = setTimeout(() => {
+        setUnableToCreateInvite(false);
+      }, 3000);
+      
+      return () => {
+        clearTimeout(timeoutId);
+      }
+    }
+
+  }, [unableToCreateInvite]);
+
+  useEffect(() => {
+    if (isFirstLoad) return;
+
+    if (unableToAcceptInvite) {
+      const timeoutId = setTimeout(() => {
+        setUnableToAcceptInvite(false);
+      }, 3000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      }
+    }
+  }, [unableToAcceptInvite])
+
+  useEffect(() => {
     if (hasNewMessage) {
       scrollToHereRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
       setHasNewMessage(false);
@@ -89,6 +126,12 @@ function ChatroomContent(props: ChatroomContentProps) {
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
       <div className='box-border relative flex flex-col flex-1 w-full h-0'>
         <ChatroomHeader chatroomData={chatroomData} viewMemberListButton={ViewMemberOnlineListButton}/>
+        { (unableToCreateInvite || unableToAcceptInvite) && (
+            <div className='absolute top-10 right-0 z-[60]'>
+              <ErrorPopup text={unableToAcceptInvite ? 'Invitation not found :(' : `Failed to create invite :(`} />
+            </div>
+          )
+        }
         <div className='box-border flex flex-col-reverse h-full px-5 pb-4 overflow-y-scroll scrollbar-hide gap-y-4 scroll-smooth' ref={scrollableDivRef}>
           {messagesComponent}
         </div>

@@ -5,6 +5,7 @@ import Profile from '../../../Profile/Profile';
 import ChatGameInvite from '../../ChatWidgets/ChatGameInvite';
 import { FriendsContext } from '../../../../contexts/FriendContext';
 import UserContext from '../../../../contexts/UserContext';
+import { GameDataCtx } from '../../../../GameApp';
 
 interface ChatroomMessageProps {
   messageData: ChatroomMessageData;
@@ -33,7 +34,7 @@ function ChatroomMessage(props: ChatroomMessageProps) {
         isMessageFromBlockedUser
           ? <p className={`w-fit h-fit whitespace-normal break-all ${ isMyMessage ? 'text-right' : 'text-left' } text-sm font-medium bg-accRed text-highlight px-[1ch]`}>BLOCKED MESSAGE</p>
           : isGameInvite
-            ? <ChatGameInvite sender={messageData.senderChannel.owner.userName}/>
+            ? <ChatGameInvite sender={messageData.senderChannel.owner.userName} senderIntraName={messageData.senderChannel.owner.intraName}/>
             : <p className={`w-full h-fit whitespace-normal break-all ${ isMyMessage ? 'text-right' : 'text-left' } text-base font-medium text-highlight select-text selection:bg-highlight selection:text-dimshadow`}>{ messageData.message }</p> 
       }
       <p className='text-xs font-normal text-highlight/50'>{ convertDatetoString(messageData.timeStamp) }</p>

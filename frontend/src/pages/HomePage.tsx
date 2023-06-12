@@ -28,9 +28,7 @@ import { ErrorData } from '../model/ErrorData';
 import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
-import login from '../api/loginAPI';
 import Lobby from '../widgets/Lobby/Lobby';
-import { set } from 'lodash';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),

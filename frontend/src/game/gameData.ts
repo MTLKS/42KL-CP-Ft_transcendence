@@ -10,6 +10,8 @@ import {
   LobbyStartDTO,
   LobbyEndDTO,
   CountdonwDTO,
+  CreateInviteDTO,
+  JoinInviteDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -112,6 +114,10 @@ export class GameData {
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
+  setInviteCreated?: (inviteCreated: boolean) => void;
+  setJoinSuccessful?: (joinSuccessfull: boolean) => void;
+  setUnableToCreateInvite?: (unableToCreateInvite: boolean) => void;
+  setUnableToAcceptInvite?: (unableToAcceptInvite: boolean) => void;
   private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
   private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
   ballHit?: (
@@ -276,12 +282,20 @@ export class GameData {
 
   sendUpdateGameType(gameType: string) {}
 
-  createLobby(isHost: boolean, opponentName: string, hostName: string) {
-    this.socketApi.sendMessages("joinPrivateLobby", {
-      isHost: isHost,
-      opponentName: opponentName,
-      hostName: hostName,
+  createInvite(sender: string, receiver: string) {
+    console.log("create invite: ", {
+      sender: sender,
+      receiver: receiver,
     });
+    // both sender and receiver should be intraname
+    this.socketApi.sendMessages("createInvite", {
+      sender: sender,
+      receiver: receiver,
+    });
+  }
+
+  joinInvite(hostIntraName: string) {
+    this.socketApi.sendMessages("joinInvite", { host: hostIntraName });
   }
 
   leaveLobby() {
@@ -490,8 +504,22 @@ export class GameData {
         this.setEntities?.(this.gameEntities);
         break;
       case "CreateInvite":
+        const createInviteData = <CreateInviteDTO>state.data;
+        if (createInviteData.type === "success" && this.setInviteCreated) {
+          this.setInviteCreated(true);
+        } else if (createInviteData.type === "error" && this.setUnableToCreateInvite) {
+          this.setUnableToCreateInvite(true);
+          console.log("Error creating invite");
+        }
         break;
       case "JoinInvite":
+        const joinInviteData = <JoinInviteDTO>state.data;
+        if (joinInviteData.type === "success" && this.setJoinSuccessful) {
+          this.setJoinSuccessful(true);
+        } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
+          this.setUnableToAcceptInvite(true);
+          console.log("Error joining invite");
+        }
         break;
       default:
         break;

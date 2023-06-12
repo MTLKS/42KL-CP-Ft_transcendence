@@ -46,9 +46,13 @@ export function ErrorPopup(props: ErrorPopupProps) {
   const { text } = props;
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setPosition(0);
     }, 10);
+
+    return () => {
+      clearTimeout(timeoutId);
+    }
   }, []);
 
   return (
@@ -79,10 +83,14 @@ export function CollapsiblePopup(props: CollapsiblePopup) {
 
   // animation: when this component get rendered on screen
   useEffect(() => {
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setPosition("0px");
     }, 20);
     setIsCollapsed(false);
+
+    return () => {
+      clearTimeout(timeoutId);
+    }
   }, [props.content]);
 
   useEffect(() => {
