@@ -152,11 +152,11 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-             <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
-             {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
-             <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
-               <div className='flex-1 h-full'>
-                 {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} queueType={queueType} queueExpanded={queueExpanded}/> : null}
+              <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
+                {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
+                <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
+                  <div className='flex-1 h-full'>
+                    {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} queueType={queueType} queueExpanded={queueExpanded} /> : null}
                   </div>
                   <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-in-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
@@ -470,7 +470,7 @@ function HomePage(props: HomePageProps) {
 
     // get all stranger data
     for (const name of strangersNames) {
-      
+
       let strangerProfile: UserData | ErrorData;
       try {
         strangerProfile = (await getProfileOfUser(name)).data;
@@ -481,7 +481,7 @@ function HomePage(props: HomePageProps) {
           errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: (strangerProfile as UserData).intraName });
         }
       } catch (error: any) {
-        errors.push({ error: friendErrors.USER_NOT_FOUND, data: name as string })        
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: name as string })
       }
 
     }
@@ -499,15 +499,15 @@ function HomePage(props: HomePageProps) {
     let newCards: JSX.Element[] = [];
 
     try {
-      
+
       const friendProfile: UserData | ErrorData = (intraName === null) ? userData : (await getProfileOfUser(intraName)).data;
-      
+
       try {
-        let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data; 
+        let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data;
         if (intraName !== null) friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
         setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
       } catch (error: any) {
-        errors.push({ error: friendErrors.FAILED_TO_FETCH_FRIENDS, data: intraName as string})
+        errors.push({ error: friendErrors.FAILED_TO_FETCH_FRIENDS, data: intraName as string })
       }
 
     } catch (error: any) {
@@ -574,6 +574,9 @@ function HomePage(props: HomePageProps) {
       );
       setElements(newList);
     } else if (commands[1] == "queue") {
+      if (queueExpanded) {
+        await gameData.leaveQueue();
+      }
       let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
       if (response.type === "success") {
         setQueueExpanded(true);
