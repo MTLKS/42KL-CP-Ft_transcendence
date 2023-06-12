@@ -131,6 +131,7 @@ function HomePage(props: HomePageProps) {
     gameData.setShouldDisplayGame = setShouldDisplayGame;
     gameData.displayLobby = () => displayLobby();
     gameData.stopDisplayLobby = () => stopDisplayLobby();
+    gameData.stopDisplayQueue = () => setQueueExpanded(false);
     if (gameData.gameDisplayed) {
       setShouldDisplayGame(true);
     }

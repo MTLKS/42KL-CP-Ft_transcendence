@@ -247,8 +247,8 @@ class GameLightningParticle {
     this.centerY = centerY;
     this.paddingX = paddingX;
     this.paddingY = paddingY;
-    this.currentTagetX = 0;
-    this.currentTagetY = 0;
+    this.currentTagetX = this.centerX;
+    this.currentTagetY = this.centerY;
     this.pointIndex = 0;
   }
 

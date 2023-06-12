@@ -41,6 +41,14 @@ export enum PaddleType {
   "boring",
 }
 
+export type GameType =
+  | "boring"
+  | "standard"
+  | "death"
+  | "practice"
+  | "private"
+  | "";
+
 interface GameSettings {
   particlesFilter: boolean;
   entitiesFilter: boolean;
@@ -77,8 +85,8 @@ export class GameData {
   mousePosition: Offset = { x: 0, y: 0 };
   leftPaddleSucking: boolean = false;
   rightPaddleSucking: boolean = false;
-  leftPaddlePosition: Offset = { x: -50, y: 450 };
-  rightPaddlePosition: Offset = { x: 1650, y: 450 };
+  leftPaddlePosition: Offset = { x: 30, y: 450 };
+  rightPaddlePosition: Offset = { x: 1570, y: 450 };
   leftPaddleType: PaddleType = PaddleType.boring;
   rightPaddleType: PaddleType = PaddleType.boring;
   player1IntraId: string = "";
@@ -95,7 +103,7 @@ export class GameData {
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
-  gameType: "boring" | "standard" | "death" | "practice" | "" = "";
+  gameType: GameType = "";
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
 
@@ -130,6 +138,7 @@ export class GameData {
   ballHitParticle?: () => void;
   paddleHitParticle?: () => void;
   lobbyCountdown?: () => void;
+  stopDisplayQueue?: () => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -308,6 +317,7 @@ export class GameData {
       return;
     }
     console.log("start game");
+    this.stopDisplayQueue!();
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
     if (this.setUsingTicker) this.setUsingTicker(true);
@@ -507,7 +517,10 @@ export class GameData {
         const createInviteData = <CreateInviteDTO>state.data;
         if (createInviteData.type === "success" && this.setInviteCreated) {
           this.setInviteCreated(true);
-        } else if (createInviteData.type === "error" && this.setUnableToCreateInvite) {
+        } else if (
+          createInviteData.type === "error" &&
+          this.setUnableToCreateInvite
+        ) {
           this.setUnableToCreateInvite(true);
           console.log("Error creating invite");
         }
@@ -516,7 +529,10 @@ export class GameData {
         const joinInviteData = <JoinInviteDTO>state.data;
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
-        } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
+        } else if (
+          joinInviteData.type === "error" &&
+          this.setUnableToAcceptInvite
+        ) {
           this.setUnableToAcceptInvite(true);
           console.log("Error joining invite");
         }
@@ -574,7 +590,7 @@ export class GameData {
         this._pongPosition,
         this._pongSpeed,
         1,
-        data.player1Score == 10 || data.player2Score == 10 ? 0.5 : 1
+        (data.player1Score == 10 || data.player2Score == 10) ? 0.5 : 1
       );
     } else if (
       data.hitType === HitType.WALL ||

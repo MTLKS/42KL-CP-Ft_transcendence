@@ -16,7 +16,7 @@ import boringGIF from '../../../assets/GIFS/BoringGame.gif'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import deathGIF from '../../../assets/GIFS/DeathGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
-import { PaddleType } from '../../game/gameData'
+import { GameType, PaddleType } from '../../game/gameData'
 import { gameData } from '../../main'
 import { getProfileOfUser } from '../../api/profileAPI'
 import { ErrorData } from '../../model/ErrorData';
@@ -24,6 +24,7 @@ import UserContext from '../../contexts/UserContext'
 import sleep from '../../functions/sleep'
 import Triangle from '../../components/Triangle'
 import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
+import { PowerUp } from '../../../../backend/src/game/game.service';
 
 const emoteList = [
   <FaThumbsUp size={100} />,
@@ -52,7 +53,7 @@ const emoteListSmall = [
 ]
 
 function Lobby() {
-  const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "practice" | "">(gameData.gameType);
+  const [selectedMode, setSelectedMode] = React.useState<GameType>(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
   const [onCountdown, setOnCountdown] = React.useState(false);
@@ -90,11 +91,20 @@ function Lobby() {
     let deathButtonActive = false;
 
     if (gameData.gameType === '') {
-      powerButtonActive = true;
+      // powerButtonActive = true;
       boringButtonActive = true;
       standardButtonActive = true;
       deathButtonActive = true;
-    } else if (gameData.gameType === 'standard') {
+    }
+    if (selectedMode === 'standard') {
+      powerButtonActive = true;
+    }
+    if (gameData.gameType === 'private') {
+      boringButtonActive = true;
+      standardButtonActive = true;
+      deathButtonActive = true;
+    }
+    if (gameData.gameType === 'practice') {
       powerButtonActive = true;
     }
     if (ready) {
@@ -104,7 +114,8 @@ function Lobby() {
       deathButtonActive = false;
     }
     return { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive };
-  }, [ready, gameData.gameType]);
+  }, [ready, gameData.gameType, selectedMode]);
+  console.log(powerButtonActive);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
@@ -114,12 +125,17 @@ function Lobby() {
           <div className="mb-12 border-4 rounded border-highlight">
             <LobbyProfile playerIntraId={opponent} />
           </div>
-          <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={magnetGIF} img={magnetPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={longGIF} img={longPNG} title='Ngeeeaat' content='Longer paddle.' />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
-          </div>
+          {powerButtonActive ?
+            (
+              <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={magnetGIF} img={magnetPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={longGIF} img={longPNG} title='Ngeeeaat' content='Longer paddle.' />
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
+              </div>
+            ) :
+            <div className=' mx-auto my-auto items-center flex flex-row  text-2xl'><p className=' whitespace-pre'>No PowerUp For You! </p ><FaSadCry width={60} height={60} /></div >
+          }
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode === "death" ? "sudden death" : selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
             <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
@@ -189,7 +205,7 @@ interface SendEmoteProps {
 
 function SendEmote(props: SendEmoteProps) {
   const { currentEmote } = props;
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timer | null>(null);
   const lastPressRef = useRef<number>(0);
 
   function handleMouseDown() {
