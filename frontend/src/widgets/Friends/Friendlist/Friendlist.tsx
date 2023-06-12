@@ -7,6 +7,7 @@ import FriendlistEmptyLine from './FriendlistEmptyLine';
 import FriendlistTag from './FriendlistTag';
 import FriendInfo from './FriendInfo';
 import UserContext from '../../../contexts/UserContext';
+import { set } from 'lodash';
 
 interface FriendlistProps {
   friends: FriendData[]; // need to be changed to compulsory
@@ -29,6 +30,7 @@ function Friendlist(props: FriendlistProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const divRef = useRef<HTMLDivElement>(null);
   const { myProfile } = useContext(UserContext);
+  const [animate, setAnimate] = useState(false);
 
   // Filtered Raw data
   const acceptedFriends = useMemo(() => filterFriends(friends, FriendTags.accepted), []);
@@ -43,6 +45,7 @@ function Friendlist(props: FriendlistProps) {
   useEffect(() => {
     handleResize();
     focusOnInput();
+    setAnimate(true);
     return observerSetup();
   }, []);
 
@@ -70,15 +73,15 @@ function Friendlist(props: FriendlistProps) {
         value={inputValue}
         ref={inputRef}
       />
-      { userData.intraName !== myProfile.intraName && <p className='bg-highlight text-dimshadow w-fit px-[1ch]'>Currently viewing <span className='bg-accCyan text-highlight'>{userData.userName}</span>'s friend list</p>}
-      <div className='flex flex-col w-full h-full overflow-hidden' ref={divRef}>
+      {userData.intraName !== myProfile.intraName && <p className='bg-highlight text-dimshadow w-fit px-[1ch]'>Currently viewing <span className='bg-accCyan text-highlight'>{userData.userName}</span>'s friend list</p>}
+      <div className={`flex flex-col w-full h-full overflow-hidden ${animate ? "" : " -translate-y-5 opacity-0"} transition-all duration-700`} ref={divRef}>
         {
           friends.length === 0
-            ? <EmptyFriendlist userData={userData}/>
+            ? <EmptyFriendlist userData={userData} />
             : lines.slice(startingIndex, endingIndex)
         }
       </div>
-      <p className={`absolute bottom-0 left-0 ${friends.length === 0 ? '' : 'whitespace-pre'} lowercase bg-highlight px-[1ch]`}>
+      <p className={`absolute bottom-0 left-0 ${friends.length === 0 ? '' : 'whitespace-pre'} transition-transform ${animate ? "" : " translate-y-full"} lowercase bg-highlight px-[1ch]`}>
         {
           (!isSearching || inputValue === "")
             ? `./usr/${userData.userName}/friends ${friends.length === 0 ? '' : `line [${startingIndex + 1}-${endingIndex}]/${lines.length}`}  press 'q' to quit`

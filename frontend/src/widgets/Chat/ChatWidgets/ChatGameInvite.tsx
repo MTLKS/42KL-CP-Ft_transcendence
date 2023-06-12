@@ -16,7 +16,6 @@ function ChatGameInvite(props: { sender: string, senderIntraName: string }) {
 
   useEffect(() => {
     if (!joinSuccessful) return;
-    console.log("join successful!");
     setJoinSuccessful(false);
   }, [joinSuccessful]);
 
