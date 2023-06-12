@@ -277,11 +277,6 @@ export class GameData {
   }
 
   sendReady(ready: boolean, powerUp: string) {
-    console.log("send ready: ", {
-      ready: ready,
-      powerUp: powerUp,
-      gameType: this.gameType,
-    });
     this.socketApi.sendMessages("ready", {
       ready: ready,
       powerUp: powerUp,
@@ -312,7 +307,6 @@ export class GameData {
       console.error("game already started");
       return;
     }
-    console.log("start game");
     this.stopDisplayQueue!();
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
@@ -391,7 +385,6 @@ export class GameData {
   }
 
   async endGame() {
-    // console.log("end game");
     if (!this.gameStarted) return;
     this.stopDisplayLobby!();
     await sleep(7000);
@@ -424,7 +417,6 @@ export class GameData {
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log("GameStateDto:", state);
     switch (state.type) {
       case "LobbyStart":
         const lobbyStartData = <LobbyStartDTO>state.data;
@@ -444,11 +436,9 @@ export class GameData {
         break;
       case "GameCountdown":
         const gameCountdownData = <CountdonwDTO>state.data;
-        console.log("GameCountdown:", gameCountdownData);
         break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
-        console.log("GameStart:", data);
         this.isLeft = data.isLeft;
         this.isRight = !data.isLeft;
         this.gameRoom = data.gameRoom;
@@ -519,7 +509,6 @@ export class GameData {
           this.setUnableToCreateInvite
         ) {
           this.setUnableToCreateInvite(true);
-          console.log("Error creating invite");
         }
         break;
       case "JoinInvite":
@@ -531,7 +520,6 @@ export class GameData {
           this.setUnableToAcceptInvite
         ) {
           this.setUnableToAcceptInvite(true);
-          console.log("Error joining invite");
         }
         break;
       default:
@@ -562,7 +550,6 @@ export class GameData {
   };
 
   listenToGameResponse = (data: GameResponseDTO) => {
-    // console.log(data);
   };
 
   private hitEffects(data: GameDTO) {

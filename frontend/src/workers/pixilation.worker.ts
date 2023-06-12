@@ -2,7 +2,6 @@ import { DrawData } from "../model/pixilationWorkerData";
 
 function draw(data: DrawData) {
   const { imageData, w, h, pixelSize } = data;
-  // console.log(pixelSize);
   for (let y = 0; y < h; y += pixelSize) {
     for (let x = 0; x < w; x += pixelSize) {
       const pixelIndex = (y * w + x) * 4;
