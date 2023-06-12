@@ -54,7 +54,12 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage("joinInvite")
 	async handlejoinInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		this.gameService.joinInvite(client, body.hostIntraName);
+		this.gameService.joinInvite(client, body.uuid);
+	}
+
+	@SubscribeMessage('removeInvite')
+	async handleCancelInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.cancelInvite(client);
 	}
 
 	@SubscribeMessage('changeGameType')

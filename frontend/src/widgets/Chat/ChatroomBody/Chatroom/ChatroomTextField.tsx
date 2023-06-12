@@ -105,7 +105,9 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
       // if current chatroom is a room, the channel is the typist's channel
       // if current chatroom is a DM, the channel is the sender's channel
       const { channel, userName } = data;
-      
+      // console.log(channel, userName);
+      console.log(chatroomData);
+      console.log(chatroomData.channelId, channel.channelId);
       if (chatroomData.channelId !== channel.channelId) return;
       if (typingMembers.includes(userName)) return;
       // preventing race condition
