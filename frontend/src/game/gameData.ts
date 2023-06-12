@@ -291,13 +291,9 @@ export class GameData {
 
   sendUpdateGameType(gameType: string) {}
 
-  createInvite(sender: string, receiver: string) {
-    console.log("create invite: ", {
-      sender: sender,
-      receiver: receiver,
-    });
-    // both sender and receiver should be intraname
+  createInvite(sender: string, receiver: string, messageId: number) {
     this.socketApi.sendMessages("createInvite", {
+      messageId: messageId,
       sender: sender,
       receiver: receiver,
     });
