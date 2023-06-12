@@ -12,6 +12,7 @@ import {
   CountdonwDTO,
   CreateInviteDTO,
   JoinInviteDTO,
+  GameTypeChangeDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -139,6 +140,7 @@ export class GameData {
   paddleHitParticle?: () => void;
   lobbyCountdown?: () => void;
   stopDisplayQueue?: () => void;
+  setGameType?: (gameType: GameType) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -423,6 +425,7 @@ export class GameData {
         this.gameType = lobbyStartData.gameType;
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
+
         this.displayLobby!();
         this.stopDisplayQueue!();
         break;
@@ -430,6 +433,11 @@ export class GameData {
         const lobbyEndData = <LobbyEndDTO>state.data;
         this.gameType = "";
         this.stopDisplayLobby!();
+        break;
+      case "GameTypeChange":
+        const gameTypeChangeData = <GameTypeChangeDTO>state.data;
+        this.gameType = gameTypeChangeData.gameType;
+        this.setGameType?.(gameTypeChangeData.gameType);
         break;
       case "LobbyCountdown":
         const lobbyCountdownData = <CountdonwDTO>state.data;

@@ -62,9 +62,8 @@ function Lobby() {
   const myProfile = useContext(UserContext).myProfile;
 
   useEffect(() => {
-    gameData.lobbyCountdown = () => {
-      setOnCountdown(true);
-    }
+    gameData.lobbyCountdown = () => setOnCountdown(true);
+    gameData.setGameType = (type: GameType) => setSelectedMode(type);
   }, []);
 
   useEffect(() => {
@@ -137,9 +136,9 @@ function Lobby() {
           }
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode === "death" ? "sudden death" : selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
-            <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
-            <LobbyButton active={standardButtonActive} title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
-            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "death"} onClick={() => setSelectedMode("death")} />
+            <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => gameData.socketApi.sendMessages("changeGameType", { gameType: "boring" })} />
+            <LobbyButton active={standardButtonActive} title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => gameData.socketApi.sendMessages("changeGameType", { gameType: "standard" })} />
+            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "death"} onClick={() => gameData.socketApi.sendMessages("changeGameType", { gameType: "death" })} />
           </div>
         </div>
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
