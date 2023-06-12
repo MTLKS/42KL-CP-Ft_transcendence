@@ -112,7 +112,7 @@ export class ChatService {
 			if (FRIENDSHIP === null || FRIENDSHIP.status !== "ACCEPTED")
 				return server.to(MY_CHANNEL.channelId).emit("typing", new ErrorDTO(false, "Invalid channelId - you are not a member of this channel"));
 		}
-		const MEMBERS = CHANNEL.isRoom === true ? await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] }) : await this.memberRepository.find({ where: { channel: { channelId: MY_CHANNEL.channelId } }, relations: ['user', 'channel'] });
+		const MEMBERS = CHANNEL.isRoom === true ? await this.memberRepository.find({ where: { channel: { channelId: CHANNEL.channelId } }, relations: ['user', 'channel'] }) : await this.memberRepository.find({ where: { channel: { channelId: MY_CHANNEL.channelId, isRoom: false } }, relations: ['user', 'channel'] });
 		for (let member of MEMBERS) {
 			if (member.user.intraName === USER_DATA.intraName)
 				continue;
