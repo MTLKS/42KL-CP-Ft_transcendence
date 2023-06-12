@@ -151,6 +151,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   
   function setChannelInfo(members: MemberData[]) {
     if (!chatroomData.isRoom) return;
+    console.log("setChannelInfo", chatroomData);
     dispatch({ type: 'SET_CHANNEL_INFO', chatroomData: chatroomData, members: members});
   }
 

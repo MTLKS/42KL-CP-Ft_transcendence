@@ -1,7 +1,7 @@
 import { ChatroomData, MemberData } from "../../../../model/ChatRoomData";
 import { UserData } from "../../../../model/UserData"
 
-interface ChannelMemberRole {
+export interface ChannelMemberRole {
   memberInfo: UserData,
   role: 'admin' | 'member' | 'owner'
   isMuted: boolean,
@@ -36,6 +36,7 @@ interface ModeratorActionData {
 
 export interface NewChannelState {
   members: ChannelMemberRole[],
+  memberCount: number,
   inviteList: ChannelMemberRole[],
   moderatedList: ModeratorActionData[],
   channelName: string,
@@ -57,6 +58,7 @@ export interface NewChannelState {
 
 export const newChannelInitialState: NewChannelState = {
   members: [],
+  memberCount: 0,
   inviteList: [],
   moderatedList: [],
   channelName: '',
@@ -222,7 +224,8 @@ export default function newChannelReducer(state = newChannelInitialState, action
             isMuted: member.isMuted,
           }
           return memberRole;
-        })
+        }),
+        memberCount: chatroomData.memberCount
       }
     }
     case 'IS_EDIT_CHANNEL': {

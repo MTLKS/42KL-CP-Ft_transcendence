@@ -74,7 +74,7 @@ function NewChatInfo() {
     });
 
     if (createChannelResponse.status === 201) {
-      inviteMember(createChannelResponse.data as ChannelData);
+      await inviteMember(createChannelResponse.data as ChannelData);
       dispatch({ type: 'RESET' });
       setChatBody(<ChatroomList />);
     }

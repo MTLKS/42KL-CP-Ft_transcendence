@@ -135,6 +135,11 @@ function Game(props: GameProps) {
         setGameEndText(<GameText text='Win' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
       else if (gameData.player1Score === 10 || gameData.player2Score === 10)
         setGameEndText(<GameText text='Lose' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
+      if (gameData.player1Score === 10 || gameData.player2Score === 10) {
+        setTimeout(() => {
+          setGameEndText(<></>);
+        }, 7000);
+      }
     }
     // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
@@ -297,8 +302,8 @@ function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.Mu
 
 async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
   if (!((newPosition.x <= 40 || newPosition.x >= 1600 - 50)
-    && ((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1600 - 50 && newPosition.x <= 1600 - 20) 
-                          || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40&& newPosition.x >= 20))
+    && ((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1600 - 50 && newPosition.x <= 1600 - 20)
+      || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40 && newPosition.x >= 20))
     && zoomSlowMoRef.current === null)) return;
   gameData.useLocalTick();
   const x = (newPosition.x <= 45 ? 0 : 1600);
