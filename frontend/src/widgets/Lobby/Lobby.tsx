@@ -115,7 +115,6 @@ function Lobby() {
     }
     return { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive };
   }, [ready, gameData.gameType, selectedMode]);
-  console.log(powerButtonActive);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>

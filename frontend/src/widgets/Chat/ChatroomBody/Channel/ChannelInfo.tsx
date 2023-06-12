@@ -44,7 +44,6 @@ function ChannelInfo(props: ChannelInfoProps) {
   useEffect(() => {
     dispatch({ type: 'IS_OWNER', userInfo: myProfile });
     dispatch({ type: 'IS_ADMIN', userInfo: myProfile });
-    console.log(state.memberCount);
   }, []);
   
   useEffect(() => {
