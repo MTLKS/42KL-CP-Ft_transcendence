@@ -107,8 +107,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         leftLightningParticles.update(addLightningParticle, removeLightningParticle);
       } else {
         setLeftLightningParticles(new GameLightningParticle({
-          centerX: 400,
-          centerY: 400,
+          centerX: 30,
+          centerY: 450,
           paddingX: 15,
           paddingY: 60,
         }),);
@@ -121,8 +121,8 @@ function ParticlesRenderer(props: ParticlesRendererProps) {
         rightLightningParticles.update(addLightningParticle, removeLightningParticle);
       } else {
         setRightLightningParticles(new GameLightningParticle({
-          centerX: 400,
-          centerY: 400,
+          centerX: 1570,
+          centerY: 450,
           paddingX: 15,
           paddingY: 60,
         }),);

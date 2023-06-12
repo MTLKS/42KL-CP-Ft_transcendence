@@ -85,8 +85,8 @@ export class GameData {
   mousePosition: Offset = { x: 0, y: 0 };
   leftPaddleSucking: boolean = false;
   rightPaddleSucking: boolean = false;
-  leftPaddlePosition: Offset = { x: -50, y: 450 };
-  rightPaddlePosition: Offset = { x: 1650, y: 450 };
+  leftPaddlePosition: Offset = { x: 30, y: 450 };
+  rightPaddlePosition: Offset = { x: 1570, y: 450 };
   leftPaddleType: PaddleType = PaddleType.boring;
   rightPaddleType: PaddleType = PaddleType.boring;
   player1IntraId: string = "";
