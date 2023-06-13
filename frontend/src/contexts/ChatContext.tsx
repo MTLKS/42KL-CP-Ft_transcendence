@@ -8,6 +8,7 @@ interface ChatContextType {
   chatBody: JSX.Element,
   setChatBody: (newChatBody: JSX.Element) => void,
   expanded: boolean,
+  activeInviteId: number,
 }
 
 export const ChatContext = createContext<ChatContextType>({
@@ -15,6 +16,7 @@ export const ChatContext = createContext<ChatContextType>({
   chatBody: <></>,
   setChatBody: (newChatBody: JSX.Element) => { },
   expanded: false,
+  activeInviteId: -1,
 });
 
 interface NewChannelContextType {
