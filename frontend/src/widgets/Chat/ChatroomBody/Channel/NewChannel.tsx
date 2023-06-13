@@ -45,11 +45,12 @@ function NewChannel(props: NewChannelProps) {
     </div>
   )
 
-  // TODO: DO ME
   function displayNoFriends() {
     return (
       <div className='w-full h-full uppercase'>
-        <p className='px-5 py-6 m-auto w-fit h-fit bg-accRed'>No friends to choose from</p>
+        <div className='relative w-full h-full'>
+          <p className='absolute font-extrabold text-center -translate-x-1/2 -translate-y-1/3 top-1/3 left-1/2 text-highlight'>No friends to choose from...</p>
+        </div>
       </div>
     )
   }

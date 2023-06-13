@@ -15,7 +15,6 @@ import magnetGIF from '../../../assets/GIFS/MagnetPaddle.gif'
 import boringGIF from '../../../assets/GIFS/BoringGame.gif'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import deathGIF from '../../../assets/GIFS/DeathGame.gif'
-import { Active } from '../../../../backend/src/entity/active.entity';
 import { GameType, PaddleType } from '../../game/gameData'
 import { gameData } from '../../main'
 import { getProfileOfUser } from '../../api/profileAPI'
@@ -24,7 +23,6 @@ import UserContext from '../../contexts/UserContext'
 import sleep from '../../functions/sleep'
 import Triangle from '../../components/Triangle'
 import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
-import { PowerUp } from '../../../../backend/src/game/game.service';
 import terminator from '../../../assets/terminator.webp'
 import rick from '../../../assets/rick.png'
 import musk from '../../../assets/musk.jpeg'
@@ -205,7 +203,7 @@ interface SendEmoteProps {
 
 function SendEmote(props: SendEmoteProps) {
   const { currentEmote } = props;
-  const intervalRef = useRef<NodeJS.Timer | null>(null);
+  const intervalRef = useRef<number | null>(null);
   const lastPressRef = useRef<number>(0);
 
   function handleMouseDown() {
