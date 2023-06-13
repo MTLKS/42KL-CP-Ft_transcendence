@@ -180,7 +180,6 @@ export class PracticeGameRoom extends PowerGameRoom {
           new GameEndDTO(this.player1Score, this.player2Score),
         ),
       );
-    // console.log(`game ${this.roomID} ended`);
     this.gameEnded = true;
   }
 

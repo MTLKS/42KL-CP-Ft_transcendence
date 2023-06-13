@@ -16,7 +16,7 @@ import boringGIF from '../../../assets/GIFS/BoringGame.gif'
 import standardGIF from '../../../assets/GIFS/StandardGame.gif'
 import deathGIF from '../../../assets/GIFS/DeathGame.gif'
 import { Active } from '../../../../backend/src/entity/active.entity';
-import { PaddleType } from '../../game/gameData'
+import { GameType, PaddleType } from '../../game/gameData'
 import { gameData } from '../../main'
 import { getProfileOfUser } from '../../api/profileAPI'
 import { ErrorData } from '../../model/ErrorData';
@@ -24,6 +24,10 @@ import UserContext from '../../contexts/UserContext'
 import sleep from '../../functions/sleep'
 import Triangle from '../../components/Triangle'
 import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
+import { PowerUp } from '../../../../backend/src/game/game.service';
+import terminator from '../../../assets/terminator.webp'
+import rick from '../../../assets/rick.png'
+import musk from '../../../assets/musk.jpeg'
 
 const emoteList = [
   <FaThumbsUp size={100} />,
@@ -52,7 +56,7 @@ const emoteListSmall = [
 ]
 
 function Lobby() {
-  const [selectedMode, setSelectedMode] = React.useState<"boring" | "standard" | "death" | "practice" | "">(gameData.gameType);
+  const [selectedMode, setSelectedMode] = React.useState<GameType>(gameData.gameType);
   const [ready, setReady] = React.useState(false);
   const [selectedPowerUp, setSelectedPowerUp] = React.useState<PaddleType>(PaddleType.Vzzzzzzt);
   const [onCountdown, setOnCountdown] = React.useState(false);
@@ -61,9 +65,8 @@ function Lobby() {
   const myProfile = useContext(UserContext).myProfile;
 
   useEffect(() => {
-    gameData.lobbyCountdown = () => {
-      setOnCountdown(true);
-    }
+    gameData.lobbyCountdown = () => setOnCountdown(true);
+    gameData.setGameType = (type: GameType) => setSelectedMode(type);
   }, []);
 
   useEffect(() => {
@@ -90,11 +93,19 @@ function Lobby() {
     let deathButtonActive = false;
 
     if (gameData.gameType === '') {
-      powerButtonActive = true;
       boringButtonActive = true;
       standardButtonActive = true;
       deathButtonActive = true;
-    } else if (gameData.gameType === 'standard') {
+    }
+    if (selectedMode === 'standard') {
+      powerButtonActive = true;
+    }
+    if (gameData.isPrivate) {
+      boringButtonActive = true;
+      standardButtonActive = true;
+      deathButtonActive = true;
+    }
+    if (gameData.gameType === 'practice') {
       powerButtonActive = true;
     }
     if (ready) {
@@ -104,7 +115,7 @@ function Lobby() {
       deathButtonActive = false;
     }
     return { powerButtonActive, boringButtonActive, standardButtonActive, deathButtonActive };
-  }, [ready, gameData.gameType]);
+  }, [ready, gameData.gameType, selectedMode]);
 
   return (
     <div className=' flex flex-col font-bungee tracking-widest text-highlight items-center p-10 box-border h-full'>
@@ -114,17 +125,22 @@ function Lobby() {
           <div className="mb-12 border-4 rounded border-highlight">
             <LobbyProfile playerIntraId={opponent} />
           </div>
-          <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={magnetGIF} img={magnetPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={longGIF} img={longPNG} title='Ngeeeaat' content='Longer paddle.' />
-            <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
-          </div>
+          {powerButtonActive || selectedMode === "standard" ?
+            (
+              <div className=' shrink grid grid-cols-2 grid-rows-2 w-full gap-x-20 gap-y-20 max-w-md max-h-md place-items-center box-border'>
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vzzzzzzt)} selected={selectedPowerUp === PaddleType.Vzzzzzzt} gif={speedGIF} img={speedPNG} title='Vzzzzzzt' content='Faster ball.' />
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Piiuuuuu)} selected={selectedPowerUp === PaddleType.Piiuuuuu} gif={magnetGIF} img={magnetPNG} title='Piiuuuuu' content={'Hold left click to hold the ball on contact,\nrelease left click to release.'} />
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Ngeeeaat)} selected={selectedPowerUp === PaddleType.Ngeeeaat} gif={longGIF} img={longPNG} title='Ngeeeaat' content='Longer paddle.' />
+                <PowerUpButton active={powerButtonActive} onClick={() => setSelectedPowerUp(PaddleType.Vrooooom)} selected={selectedPowerUp === PaddleType.Vrooooom} gif={spinGIF} img={spinPNG} title='Vrooooom' content='Stronger spin.' />
+              </div>
+            ) :
+            <div className=' mx-auto my-auto items-center flex flex-row  text-2xl'><p className=' whitespace-pre'>No PowerUp For You! </p ><FaSadCry width={60} height={60} /></div >
+          }
           <h2 className=' mt-auto text-[25px] text-highlight font-extrabold'>gamemode: <span className={selectedMode === "boring" ? "text-highlight" : selectedMode === "standard" ? "text-accCyan" : "text-accRed"}>{selectedMode === "death" ? "sudden death" : selectedMode}</span> </h2>
           <div className=' flex flex-row gap-x-2 w-full h-fit'>
-            <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => setSelectedMode("boring")} />
-            <LobbyButton active={standardButtonActive} title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => setSelectedMode("standard")} />
-            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "death"} onClick={() => setSelectedMode("death")} />
+            <LobbyButton active={boringButtonActive} title='boring' selected={selectedMode === "boring"} onClick={() => gameData.socketApi.sendMessages("changeGameType", { gameType: "boring" })} />
+            <LobbyButton active={standardButtonActive} title='standard' color='accCyan' selected={selectedMode === "standard"} onClick={() => gameData.socketApi.sendMessages("changeGameType", { gameType: "standard" })} />
+            <LobbyButton active={deathButtonActive} title='death' color='accRed' selected={selectedMode === "death"} onClick={() => gameData.socketApi.sendMessages("changeGameType", { gameType: "death" })} />
           </div>
         </div>
         <div className=' top-0 w-64 flex flex-col items-center gap-3 box-border'>
@@ -140,7 +156,7 @@ function Lobby() {
               onClick={() => gameData.leaveLobby()}
             >leave</p>
           </LobbyReadyButton>
-          <LobbyReadyButton onClick={() => sendReady()} selected={ready}>
+          <LobbyReadyButton onClick={() => sendReady()} selected={ready} active={selectedMode !== ""}>
             {onCountdown ? <CountDown /> :
               <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>}
           </LobbyReadyButton>
@@ -189,7 +205,7 @@ interface SendEmoteProps {
 
 function SendEmote(props: SendEmoteProps) {
   const { currentEmote } = props;
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timer | null>(null);
   const lastPressRef = useRef<number>(0);
 
   function handleMouseDown() {
@@ -324,10 +340,56 @@ function LobbyProfile(props: { playerIntraId: string }) {
   const [pixelSize, setPixelSize] = React.useState(200);
 
   useEffect(() => {
+    if (playerIntraId === "BOT") return;
     getProfileOfUser(playerIntraId).then((data) => {
       setUserData(data.data as UserData);
       pixelatedToSmooth();
     });
+  }, [playerIntraId]);
+
+  useEffect(() => {
+    if (playerIntraId !== "BOT") return;
+    var i = Math.floor(Math.random() * 3);
+    if (i === 0) {
+      setUserData({
+        intraId: 0,
+        userName: "SKYNET",
+        intraName: "SKYNET",
+        email: "skynet@pongsh.com",
+        elo: 99999,
+        accessToken: "",
+        avatar: terminator,
+        tfaSecret: "",
+        winning: true,
+      });
+    }
+    else if (i === 1) {
+      setUserData({
+        intraId: 0,
+        userName: "伊隆马",
+        intraName: "MUSK",
+        email: " musk@pongsh.com",
+        elo: 226,
+        accessToken: "",
+        avatar: musk,
+        tfaSecret: "",
+        winning: true,
+      });
+    } else {
+      setUserData({
+        intraId: 0,
+        userName: "Roll",
+        intraName: "ROLL",
+        email: "roll@pongsh.com",
+        elo: 1400000000,
+        accessToken: "",
+        avatar: rick,
+        tfaSecret: "",
+        winning: true,
+      });
+
+    }
+    pixelatedToSmooth();
   }, [playerIntraId]);
 
   const titles: { [key: string]: string } = {
@@ -472,16 +534,18 @@ interface LobbyReadyButtonProps {
   onClick?: () => void;
   children?: React.ReactNode;
   selected?: boolean;
+  active?: boolean;
 }
 
 function LobbyReadyButton(props: LobbyReadyButtonProps) {
-  const { onClick, children, selected = false } = props;
+  const { onClick, children, selected = false, active = true } = props;
   return (
     <button
       className={`
         w-full ${selected ? "bg-highlight" : "bg-transparent  hover:bg-highlight/70"} cursor-pointer rounded-xl group
         border-[4px] border-highlight transition-all duration-200 focus:outline-dimshadow`}
       onClick={onClick}
+      disabled={!active}
     >
       {children}
     </button>

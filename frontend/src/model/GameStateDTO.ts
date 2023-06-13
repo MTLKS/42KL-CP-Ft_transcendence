@@ -1,3 +1,5 @@
+import { GameType } from "../game/gameData";
+
 export class GameStartDTO {
   opponentIntraName: string;
   gameType: "boring" | "standard" | "death" | "";
@@ -59,14 +61,16 @@ export class FieldEffectDTO {
 }
 
 export class LobbyStartDTO {
-	gameType: "boring" | "standard" | "death" | "";
+	gameType: GameType;
 	player1IntraName: string;
 	player2IntraName: string;
+  isPrivate: boolean;
 
-	constructor(player1IntraName: string, player2IntraName: string, gameType: "boring" | "standard" | "death" | "") {
+	constructor(player1IntraName: string, player2IntraName: string, gameType: GameType, isPrivate: boolean=false) {
 		this.player1IntraName = player1IntraName;
 		this.player2IntraName = player2IntraName;
 		this.gameType = gameType;
+    this.isPrivate = isPrivate;
 	}
 }
 
@@ -88,12 +92,56 @@ export class CountdonwDTO{
 	}
 }
 
-export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO;
+export class CheckCreateInviteDTO {
+  type: "success" | "error";
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO) {
+  constructor(type: "success" | "error") {
+    this.type = type;
+  }
+}
+
+export class CreateInviteDTO{
+	messageID: number;
+
+	constructor(messageID: number) {
+		this.messageID = messageID;
+	}
+}
+
+export class JoinInviteDTO {
+  type: "success" | "error";
+  messageID: number;
+
+  constructor(type: "success" | "error", messageID: number) {
+    this.type = type;
+    this.messageID = messageID;
+  }
+}
+
+export class RemoveInviteDTO{
+	type: "success" | "error";
+	messageID: number;
+
+	constructor(type: "success" | "error", messageID: number) {
+		this.type = type;
+		this.messageID = messageID;
+	}
+}
+
+export class GameTypeChangeDTO {
+  gameType: "boring" | "standard" | "death" | "";
+
+  constructor(gameType: "boring" | "standard" | "death" | "") {
+    this.gameType = gameType;
+  }
+}
+
+export class GameStateDTO {
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange" | "CheckCreateInvite";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO | CheckCreateInviteDTO;
+
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange" | "CheckCreateInvite",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO | CheckCreateInviteDTO) {
 		this.type = type;
 		this.data = data;
 	}

@@ -47,11 +47,30 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.gameService.playerMouseUpdate(client, body.gameRoom, body.isMouseDown);
 	}
 
-	@SubscribeMessage('joinPrivateLobby')
-	async handleJoinPrivateLobby(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		await this.gameService.joinPrivateLobby(client, body.isHost, body.opponentIntraName);
+	@SubscribeMessage('checkCreateInvite')
+	async handleCheckCreateInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.checkCreateInvite(client);
 	}
 
+	@SubscribeMessage('createInvite')
+	async handleCreateInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.createInvite(client, body.sender, body.receiver, body.messageId);
+	}
+
+	@SubscribeMessage("joinInvite")
+	async handlejoinInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.joinInvite(client, body.messageId);
+	}
+
+	@SubscribeMessage('removeInvite')
+	async handleCancelInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.cancelInvite(client);
+	}
+
+	@SubscribeMessage('changeGameType')
+	async handleChangeMode(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.changeGameType(client, body.gameType, this.server);
+	}
 
 	@SubscribeMessage('emote')
 	async handleEmote(@ConnectedSocket() client: Socket, @MessageBody() body: any){

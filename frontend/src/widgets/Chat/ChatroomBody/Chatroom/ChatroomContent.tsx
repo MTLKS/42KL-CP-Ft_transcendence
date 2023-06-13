@@ -13,12 +13,15 @@ import ChatButton from '../../ChatWidgets/ChatButton';
 import ChannelMemberOnlineList from '../Channel/ChannelMemberOnlineList';
 import { ErrorData } from '../../../../model/ErrorData';
 import ChatroomList from './ChatroomList';
+import { gameData } from '../../../../main';
+import { ErrorPopup } from '../../../../components/Popup';
+import { set } from 'lodash';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
 }
 
-const MESSAGE_FETCH_LIMIT = 10;
+const MESSAGE_FETCH_LIMIT = 50;
 
 // append new message but to the top of the list (index 0)
 export function appendNewMessage(newMessage: ChatroomMessageData, messages: ChatroomMessageData[]) {
@@ -44,8 +47,15 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
   const [viewMemberList, setViewMemberList] = useState<boolean>(false);
   const { state, dispatch } = useContext(NewChannelContext);
+  const [isPreparingInvite, setIsPreparingInvite] = useState<boolean>(false);
+  const [unableToCreateInvite, setUnableToCreateInvite] = useState(false);
+  const [unableToAcceptInvite, setUnableToAcceptInvite] = useState(false);
+  const [unableToSendMessage, setUnableToSendMessage] = useState(false);
 
   useEffect(() => {
+    gameData.setUnableToCreateInvite = setUnableToCreateInvite;
+    gameData.setUnableToAcceptInvite = setUnableToAcceptInvite;
+
     // pop off this channel id from the list of unread channels
     if (unreadChatrooms.includes(chatroomData.channelId)) {
       const newUnreadChatrooms = unreadChatrooms.filter((channelId) => channelId !== chatroomData.channelId);
@@ -69,6 +79,54 @@ function ChatroomContent(props: ChatroomContentProps) {
     }
   }, []);
 
+  // useEffect(() => {
+  //   const myLastestInvitation = allMessages.find((message) => message.senderChannel.owner.intraId === myProfile.intraId && message.message === "/invite");
+  //   if (!myLastestInvitation) return;
+  //   // update my latest invitation's message Id to the actual message Id
+  //   const updateAllMessages = allMessages.map((message) => {
+  //     if (message.messageId === myLastestInvitation.messageId) {
+  //       message.messageId = gameData.activeInviteMessageId;
+  //     }
+  //     return message;
+  //   });
+  //   setAllMessages(() => updateAllMessages);
+  //   setIsPreparingInvite(false);
+  // }, [isPreparingInvite])
+
+  useEffect(() => {
+    const amIMuted = state.members.find((member) => member.memberInfo.intraId === myProfile.intraId)?.isMuted;
+    if (amIMuted) setUnableToSendMessage(true);
+  }, [state.members]);
+
+  useEffect(() => {
+    if (isFirstLoad) return;
+
+    if (unableToCreateInvite) {
+      const timeoutId = setTimeout(() => {
+        setUnableToCreateInvite(false);
+      }, 3000);
+      
+      return () => {
+        clearTimeout(timeoutId);
+      }
+    }
+
+  }, [unableToCreateInvite]);
+
+  useEffect(() => {
+    if (isFirstLoad) return;
+
+    if (unableToAcceptInvite) {
+      const timeoutId = setTimeout(() => {
+        setUnableToAcceptInvite(false);
+      }, 3000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      }
+    }
+  }, [unableToAcceptInvite])
+
   useEffect(() => {
     if (hasNewMessage) {
       scrollToHereRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
@@ -89,11 +147,23 @@ function ChatroomContent(props: ChatroomContentProps) {
     <ChatroomMessagesContext.Provider value={{ messages: allMessages, setMessages: setAllMessages }}>
       <div className='box-border relative flex flex-col flex-1 w-full h-0'>
         <ChatroomHeader chatroomData={chatroomData} viewMemberListButton={ViewMemberOnlineListButton}/>
+        { (unableToCreateInvite || unableToAcceptInvite) && (
+            <div className='absolute top-10 right-0 z-[60]'>
+              <ErrorPopup text={unableToAcceptInvite ? 'Invitation not found :(' : `Failed to create invite :(`} />
+            </div>
+          )
+        }
         <div className='box-border flex flex-col-reverse h-full px-5 pb-4 overflow-y-scroll scrollbar-hide gap-y-4 scroll-smooth' ref={scrollableDivRef}>
           {messagesComponent}
         </div>
         {viewMemberList && <ChannelMemberOnlineList />}
-        <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
+        {unableToSendMessage ? (
+          <div className='w-full p-4'>
+            <p className='bg-highlight text-dimshadow px-[1ch] w-fit mx-auto uppercase font-extrabold'>read-only</p>
+          </div>
+        ) : (
+          <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad}/>
+        )}
       </div>
     </ChatroomMessagesContext.Provider>
   )
@@ -131,7 +201,6 @@ function ChatroomContent(props: ChatroomContentProps) {
     if (!canBeFetched) return;
 
     try {
-      /** HAS ISSUE HERE */
       const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
       if (fetchResult.length < MESSAGE_FETCH_LIMIT) {
         setCanBeFetched(false);

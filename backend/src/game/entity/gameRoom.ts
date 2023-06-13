@@ -5,7 +5,6 @@ import { GameSetting } from './gameSetting';
 import { Server } from 'socket.io';
 import { GameDTO } from 'src/dto/game.dto';
 import {
-  GameStartDTO,
   GameEndDTO,
   GamePauseDTO,
   GameStateDTO,
@@ -162,9 +161,6 @@ export class GameRoom {
           this.player1Score === this.roomSettings.scoreToWin ||
           this.player2Score === this.roomSettings.scoreToWin
         ) {
-          console.log("trigger end game");
-          console.log("player Score ", this.player1Score, this.player2Score);
-          console.log("room setting ", this.roomSettings.scoreToWin);
           this.endGame(
             server,
             this.player1Score === this.roomSettings.scoreToWin
@@ -320,10 +316,8 @@ export class GameRoom {
     this.gamePaused = false;
     this.gamePauseDate = null;
     this.gamePausePlayer = null;
-    // console.log(`${player.intraName} reconnected to ${this.roomID}`);
   }
 
-  // TODO: wait for reconnect, abandon game after x seconds
   togglePause(server: Server, pausePlayer: string) {
     if (this.gamePaused) this.endGameNoMatch();
     this.gamePaused = true;
@@ -335,7 +329,6 @@ export class GameRoom {
         'gameState',
         new GameStateDTO('GamePause', new GamePauseDTO(this.gamePauseDate)),
       );
-    // console.log(`game ${this.roomID} paused due to player disconnect`);
   }
 
   async endGame(server: Server, winner: string, wonBy: string) {
@@ -349,7 +342,6 @@ export class GameRoom {
           new GameEndDTO(this.player1Score, this.player2Score),
         ),
       );
-    // console.log(`game ${this.roomID} ended`);
     this.gameEnded = true;
     this.player1.socket.leave(this.roomID);
     this.player2.socket.leave(this.roomID);
@@ -404,7 +396,6 @@ export class GameRoom {
   endGameNoMatch() {
     clearInterval(this.interval);
     this.gameEnded = true;
-    // console.log(`game ${this.roomID} ended due to both players disconnect`);
   }
 
   /**

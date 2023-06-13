@@ -10,6 +10,11 @@ import {
   LobbyStartDTO,
   LobbyEndDTO,
   CountdonwDTO,
+  CreateInviteDTO,
+  JoinInviteDTO,
+  GameTypeChangeDTO,
+  CheckCreateInviteDTO,
+  RemoveInviteDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -38,6 +43,14 @@ export enum PaddleType {
   "Vrooooom",
   "boring",
 }
+
+export type GameType =
+  | "boring"
+  | "standard"
+  | "death"
+  | "practice"
+  | "private"
+  | "";
 
 interface GameSettings {
   particlesFilter: boolean;
@@ -75,8 +88,8 @@ export class GameData {
   mousePosition: Offset = { x: 0, y: 0 };
   leftPaddleSucking: boolean = false;
   rightPaddleSucking: boolean = false;
-  leftPaddlePosition: Offset = { x: -50, y: 450 };
-  rightPaddlePosition: Offset = { x: 1650, y: 450 };
+  leftPaddlePosition: Offset = { x: 30, y: 450 };
+  rightPaddlePosition: Offset = { x: 1570, y: 450 };
   leftPaddleType: PaddleType = PaddleType.boring;
   rightPaddleType: PaddleType = PaddleType.boring;
   player1IntraId: string = "";
@@ -93,9 +106,13 @@ export class GameData {
   gameDisplayed: boolean = false;
   gameStarted: boolean = false;
   gameRoom: string = "";
-  gameType: "boring" | "standard" | "death" | "practice" | "" = "";
+  gameType: GameType = "";
+  isPrivate: boolean = false;
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
+
+  // game invite related variables
+  activeInviteMessageId: number = -1;
 
   // global effects
   globalSpeedFactor: number = 1;
@@ -112,6 +129,11 @@ export class GameData {
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
+  setCanCreateInvite?: (canCreateInvite: boolean) => void;
+  setInviteCreated?: (inviteCreated: boolean) => void;
+  setJoinSuccessful?: (joinSuccessfull: boolean) => void;
+  setUnableToCreateInvite?: (unableToCreateInvite: boolean) => void;
+  setUnableToAcceptInvite?: (unableToAcceptInvite: boolean) => void;
   private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
   private sendPlayerClick?: (isMouseDown: boolean, gameRoom: string) => void;
   ballHit?: (
@@ -124,6 +146,9 @@ export class GameData {
   ballHitParticle?: () => void;
   paddleHitParticle?: () => void;
   lobbyCountdown?: () => void;
+  stopDisplayQueue?: () => void;
+  setGameType?: (gameType: GameType) => void;
+  changeStatus?: (status: string) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -262,11 +287,6 @@ export class GameData {
   }
 
   sendReady(ready: boolean, powerUp: string) {
-    console.log("send ready: ", {
-      ready: ready,
-      powerUp: powerUp,
-      gameType: this.gameType,
-    });
     this.socketApi.sendMessages("ready", {
       ready: ready,
       powerUp: powerUp,
@@ -275,6 +295,26 @@ export class GameData {
   }
 
   sendUpdateGameType(gameType: string) {}
+
+  checkCreateInvite() {
+    this.socketApi.sendMessages("checkCreateInvite", {});
+  }
+
+  createInvite(sender: string, receiver: string, messageId: number) {
+    this.socketApi.sendMessages("createInvite", {
+      messageId: messageId,
+      sender: sender,
+      receiver: receiver,
+    });
+  }
+
+  joinInvite(messageId: number) {
+    this.socketApi.sendMessages("joinInvite", { messageId: messageId });
+  }
+
+  removeInvite(messageId: number) {
+    this.socketApi.sendMessages("removeInvite", { messageId: messageId });
+  }
 
   leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
@@ -285,7 +325,8 @@ export class GameData {
       console.error("game already started");
       return;
     }
-    console.log("start game");
+    this.stopDisplayQueue!();
+    this.changeStatus!("INGAME");
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
     if (this.setUsingTicker) this.setUsingTicker(true);
@@ -363,10 +404,10 @@ export class GameData {
   }
 
   async endGame() {
-    // console.log("end game");
     if (!this.gameStarted) return;
     this.stopDisplayLobby!();
     await sleep(7000);
+    this.changeStatus!("ONLINE");
     this.stopDisplayGame();
     this.gameStarted = false;
     this.isLeft = false;
@@ -379,10 +420,11 @@ export class GameData {
 
   private _resetVariables() {
     this.gameType = "";
-    this.leftPaddlePosition = { x: -50, y: 450 };
-    this.rightPaddlePosition = { x: 1650, y: 450 };
+    this.leftPaddlePosition = { x: 30, y: 450 };
+    this.rightPaddlePosition = { x: 1570, y: 450 };
     this.leftPaddleType = PaddleType.boring;
     this.rightPaddleType = PaddleType.boring;
+    this._pongPosition = { x: 800, y: 450 };
 
     this.globalGravityX = 0;
     this.globalGravityY = 0;
@@ -395,19 +437,26 @@ export class GameData {
   }
 
   listenToGameState = (state: GameStateDTO) => {
-    console.log("GameStateDto:", state);
     switch (state.type) {
       case "LobbyStart":
         const lobbyStartData = <LobbyStartDTO>state.data;
         this.gameType = lobbyStartData.gameType;
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
+        this.isPrivate = lobbyStartData.isPrivate;
+
         this.displayLobby!();
+        this.stopDisplayQueue!();
         break;
       case "LobbyEnd":
         const lobbyEndData = <LobbyEndDTO>state.data;
         this.gameType = "";
         this.stopDisplayLobby!();
+        break;
+      case "GameTypeChange":
+        const gameTypeChangeData = <GameTypeChangeDTO>state.data;
+        this.gameType = gameTypeChangeData.gameType;
+        this.setGameType?.(gameTypeChangeData.gameType);
         break;
       case "LobbyCountdown":
         const lobbyCountdownData = <CountdonwDTO>state.data;
@@ -415,13 +464,11 @@ export class GameData {
         break;
       case "GameCountdown":
         const gameCountdownData = <CountdonwDTO>state.data;
-        console.log("GameCountdown:", gameCountdownData);
         break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
-        console.log("GameStart:", data);
-        if (data.isLeft) this.isLeft = data.isLeft;
-        else this.isRight = true;
+        this.isLeft = data.isLeft;
+        this.isRight = !data.isLeft;
         this.gameRoom = data.gameRoom;
         this.gameType = data.gameType;
         this.leftPaddleType = this.getPaddleType(data.player1PowerUp);
@@ -481,6 +528,36 @@ export class GameData {
         }
         this.setEntities?.(this.gameEntities);
         break;
+      case "CheckCreateInvite":
+        const checkCreateInviteData = <CheckCreateInviteDTO>state.data;
+        if (
+          checkCreateInviteData.type === "success" &&
+          this.setCanCreateInvite
+        ) {
+          this.setCanCreateInvite(true);
+        } else if (
+          checkCreateInviteData.type === "error" &&
+          this.setUnableToCreateInvite
+        ) {
+          this.setUnableToCreateInvite(true);
+        }
+        break;
+      case "RemoveInvite":
+        const removeInviteData = <RemoveInviteDTO>state.data;
+        if (removeInviteData.type === "success") {
+          this.activeInviteMessageId = -1;
+        }
+      case "JoinInvite":
+        const joinInviteData = <JoinInviteDTO>state.data;
+        if (joinInviteData.type === "success" && this.setJoinSuccessful) {
+          this.setJoinSuccessful(true);
+        } else if (
+          joinInviteData.type === "error" &&
+          this.setUnableToAcceptInvite
+        ) {
+          this.setUnableToAcceptInvite(true);
+        }
+        break;
       default:
         break;
     }
@@ -508,9 +585,7 @@ export class GameData {
     this.attracted = data.attracted;
   };
 
-  listenToGameResponse = (data: GameResponseDTO) => {
-    // console.log(data);
-  };
+  listenToGameResponse = (data: GameResponseDTO) => {};
 
   private hitEffects(data: GameDTO) {
     if (data.hitType === HitType.PADDLE) this.numberHits++;

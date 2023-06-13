@@ -135,6 +135,11 @@ function Game(props: GameProps) {
         setGameEndText(<GameText text='Win' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
       else if (gameData.player1Score === 10 || gameData.player2Score === 10)
         setGameEndText(<GameText text='Lose' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
+      if (gameData.player1Score === 10 || gameData.player2Score === 10) {
+        setTimeout(() => {
+          setGameEndText(<></>);
+        }, 7000);
+      }
     }
     // ballHitEffect(gameData, newPosition, player1Score, player2Score, ballhit, pongSpeedMagnitude, newPongSpeed, leftPaddlePosition, rightPaddlePosition);
   }, usingTicker ?? true);
@@ -257,47 +262,48 @@ function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.Mu
   }
 }
 
-function ballHitEffect(
-  gameData: GameData,
-  newPosition: Readonly<Offset>,
-  player1Score: number,
-  player2Score: number,
-  ballhit: (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset, strength: number, tickerSpeed: number) => Promise<void>,
-  pongSpeedMagnitude: number,
-  newPongSpeed: Readonly<Offset>,
-  leftPaddlePosition: Offset,
-  rightPaddlePosition: Offset
-) {
-  if (!gameData.hitFilter) return;
-  if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
-    if (player1Score === 9 || player2Score === 9) {
-      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
-    } else {
-      ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 1);
-    }
-  }
+// function ballHitEffect(
+//   gameData: GameData,
+//   newPosition: Readonly<Offset>,
+//   player1Score: number,
+//   player2Score: number,
+//   ballhit: (pongSpeedMagnitude: number, hitPosition: Offset, pongSpeed: Offset, strength: number, tickerSpeed: number) => Promise<void>,
+//   pongSpeedMagnitude: number,
+//   newPongSpeed: Readonly<Offset>,
+//   leftPaddlePosition: Offset,
+//   rightPaddlePosition: Offset
+// ) {
+//   if (!gameData.hitFilter) return;
+//   if (newPosition.x <= 5 || newPosition.x >= 1600 - 15) {
+//     if (player1Score === 10 || player2Score === 10) {
+//       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 0.5);
+//     } else {
+//       ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 1, 1);
+//     }
+//   }
 
-  if (newPosition.y <= 0 || newPosition.y >= 900 - 10) {
-    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
-  }
+//   if (newPosition.y <= 0 || newPosition.y >= 900 - 10) {
+//     ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+//   }
 
-  if (newPosition.x <= leftPaddlePosition.x + 30
-    && newPosition.x >= leftPaddlePosition.x - 30
-    && newPosition.y >= leftPaddlePosition.y - 60
-    && newPosition.y <= leftPaddlePosition.y + 60) {
-    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
-  }
-  if (newPosition.x <= rightPaddlePosition.x + 30
-    && newPosition.x >= rightPaddlePosition.x - 30
-    && newPosition.y >= rightPaddlePosition.y - 60
-    && newPosition.y <= rightPaddlePosition.y + 60) {
-    ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
-  }
-}
+//   if (newPosition.x <= leftPaddlePosition.x + 30
+//     && newPosition.x >= leftPaddlePosition.x - 30
+//     && newPosition.y >= leftPaddlePosition.y - 60
+//     && newPosition.y <= leftPaddlePosition.y + 60) {
+//     ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+//   }
+//   if (newPosition.x <= rightPaddlePosition.x + 30
+//     && newPosition.x >= rightPaddlePosition.x - 30
+//     && newPosition.y >= rightPaddlePosition.y - 60
+//     && newPosition.y <= rightPaddlePosition.y + 60) {
+//     ballhit(pongSpeedMagnitude, newPosition, newPongSpeed, 0.5, 1);
+//   }
+// }
 
 async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
   if (!((newPosition.x <= 40 || newPosition.x >= 1600 - 50)
-    && ((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1600 - 50) || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40))
+    && ((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1600 - 50 && newPosition.x <= 1600 - 20)
+      || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40 && newPosition.x >= 20))
     && zoomSlowMoRef.current === null)) return;
   gameData.useLocalTick();
   const x = (newPosition.x <= 45 ? 0 : 1600);

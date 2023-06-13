@@ -1,3 +1,4 @@
+import exp from "constants";
 import { PowerUp } from "src/game/game.service";
 
 export class GameStartDTO {
@@ -53,14 +54,58 @@ export class FieldEffectDTO {
 
 export class LobbyStartDTO {
 	gameType: string;
-	isHost: boolean;
 	player1IntraName: string;
 	player2IntraName: string;
+	isPrivate: boolean;
 
-	constructor(player1IntraName: string, player2IntraName: string, gameType: string, isHost: boolean=false) {
-		this.isHost = isHost;
+	constructor(player1IntraName: string, player2IntraName: string, gameType: string, isPrivate: boolean=false) {
 		this.player1IntraName = player1IntraName;
 		this.player2IntraName = player2IntraName;
+		this.gameType = gameType;
+		this.isPrivate = isPrivate;
+	}
+}
+
+export class CheckCreateInviteDTO {
+	type: "success" | "error";
+
+	constructor(type: "success" | "error") {
+		this.type = type;
+	}
+}
+
+export class CreateInviteDTO{
+	messageID: number;
+
+	constructor(messageID: number) {
+		this.messageID = messageID;
+	}
+}
+
+export class JoinInviteDTO {
+	type : "success" | "error";
+	messageID: number;
+
+	constructor(type: "success" | "error" , messageID: number) {
+		this.type = type;
+		this.messageID = messageID;
+	}
+}
+
+export class RemoveInviteDTO{
+	type: "success" | "error";
+	messageID: number;
+
+	constructor(type: "success" | "error", messageID: number) {
+		this.type = type;
+		this.messageID = messageID;
+	}
+}
+
+export class GameTypeChangeDTO{
+	gameType: string;
+
+	constructor(gameType: string) {
 		this.gameType = gameType;
 	}
 }
@@ -84,11 +129,11 @@ export class CountdonwDTO{
 }
 
 export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO;
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite"| "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite" | "CreateInvite" |"JoinInvite" | "RemoveInvite" | "GameTypeChange",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO) {
 		this.type = type;
 		this.data = data;
 	}

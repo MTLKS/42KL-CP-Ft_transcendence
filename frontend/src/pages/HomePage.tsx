@@ -28,9 +28,7 @@ import { ErrorData } from '../model/ErrorData';
 import { gameData } from '../main';
 import { CommandOptionData } from '../components/PromptField';
 import { GameResponseDTO } from '../model/GameResponseDTO';
-import login from '../api/loginAPI';
 import Lobby from '../widgets/Lobby/Lobby';
-import { set } from 'lodash';
 
 const availableCommands: CommandOptionData[] = [
   new CommandOptionData({ command: "help" }),
@@ -112,6 +110,8 @@ function HomePage(props: HomePageProps) {
   const [scaleY, setScaleY] = useState("scale-y-0");
   const [showWidget, setShowWidget] = useState(false);
   const [showTerminal, setShowTerminal] = useState(false);
+  const [queueType, setQueueType] = useState("");
+  const [queueExpanded, setQueueExpanded] = useState(false);
 
   let incomingRequests: FriendData[] = useMemo(
     () => myFriends.filter(friend => (friend.status.toLowerCase() === "pending") && friend.sender.intraName !== userData.intraName),
@@ -131,6 +131,8 @@ function HomePage(props: HomePageProps) {
     gameData.setShouldDisplayGame = setShouldDisplayGame;
     gameData.displayLobby = () => displayLobby();
     gameData.stopDisplayLobby = () => stopDisplayLobby();
+    gameData.stopDisplayQueue = () => setQueueExpanded(false);
+    gameData.changeStatus = (status: string) => { defaultSocket.sendMessages("changeStatus", { newStatus: status }) };
     if (gameData.gameDisplayed) {
       setShouldDisplayGame(true);
     }
@@ -151,11 +153,11 @@ function HomePage(props: HomePageProps) {
         <FriendsContext.Provider value={{ friendshipSocket: friendshipSocket, friends: myFriends, setFriends: setMyFriends }}>
           <SelectedFriendContext.Provider value={{ friends: selectedFriends, setFriends: setSelectedFriends }}>
             {shouldDisplayGame ? <MatrixRain></MatrixRain> :
-             <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
-             {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
-             <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
-               <div className='flex-1 h-full'>
-                 {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} /> : null}
+              <div className={`h-full w-full p-7 transition-transform duration-500 scale-x-100 ${scaleY}`}>
+                {incomingRequests.length !== 0 && leftWidget === null && <FriendRequestPopup total={incomingRequests.length} setLeftWidget={setLeftWidget} />}
+                <div className='flex flex-row w-full h-full overflow-hidden border-4 bg-dimshadow border-highlight rounded-2xl' ref={pageRef}>
+                  <div className='flex-1 h-full'>
+                    {showTerminal ? leftWidget ?? <Terminal availableCommands={availableCommands} handleCommands={handleCommands} elements={elements} queueType={queueType} queueExpanded={queueExpanded} /> : null}
                   </div>
                   <div className={` border-highlight border-l-4 h-full w-[700px] flex flex-col pointer-events-auto transition-transform duration-500 ease-in-out ${showWidget ? "translate-x-0" : " translate-x-full"}`}>
                     {topWidget}
@@ -355,6 +357,11 @@ function HomePage(props: HomePageProps) {
               <p>Unable to {action} <span className="font-extrabold bg-accRed">{errAttempt.data as string}</span>. You two are not friends.</p>
             </Card>)
             break;
+          case friendErrors.FAILED_TO_FETCH_FRIENDS:
+            newErrorCards.push(<Card key={"FAILED_TO_FETCH_FRIENDS" + errIndex + index}>
+              <p>Failed to fetch friends. Please try again later.</p>
+            </Card>)
+            break;
         }
         errIndex++;
       }
@@ -464,7 +471,7 @@ function HomePage(props: HomePageProps) {
 
     // get all stranger data
     for (const name of strangersNames) {
-      
+
       let strangerProfile: UserData | ErrorData;
       try {
         strangerProfile = (await getProfileOfUser(name)).data;
@@ -475,7 +482,7 @@ function HomePage(props: HomePageProps) {
           errors.push({ error: friendErrors.INVALID_OPERATION_ON_STRANGER, data: (strangerProfile as UserData).intraName });
         }
       } catch (error: any) {
-        errors.push({ error: friendErrors.USER_NOT_FOUND, data: name as string })        
+        errors.push({ error: friendErrors.USER_NOT_FOUND, data: name as string })
       }
 
     }
@@ -493,15 +500,15 @@ function HomePage(props: HomePageProps) {
     let newCards: JSX.Element[] = [];
 
     try {
-      
+
       const friendProfile: UserData | ErrorData = (intraName === null) ? userData : (await getProfileOfUser(intraName)).data;
-      
+
       try {
-        let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data; 
+        let friendList: FriendData[] = (await friendListOf((friendProfile as UserData).intraName)).data;
         if (intraName !== null) friendList = friendList.filter((friend) => friend.status === "ACCEPTED");
         setLeftWidget(<Friendlist userData={friendProfile as UserData} friends={friendList} onQuit={() => setLeftWidget(null)} />);
       } catch (error: any) {
-        console.log("error when fetching friendlist");
+        errors.push({ error: friendErrors.FAILED_TO_FETCH_FRIENDS, data: intraName as string })
       }
 
     } catch (error: any) {
@@ -568,17 +575,21 @@ function HomePage(props: HomePageProps) {
       );
       setElements(newList);
     } else if (commands[1] == "queue") {
+      if (queueExpanded) {
+        await gameData.leaveQueue();
+      }
       let response: GameResponseDTO = await gameData.joinQueue(commands[2]);
-      if (response.type === "success")
-        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-      else
+      if (response.type === "success") {
+        setQueueExpanded(true);
+        setQueueType(commands[2]);
+      } else {
         newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
-      setElements(newList);
+        setElements(newList);
+      }
     } else if (commands[1] == "dequeue") {
       let response: GameResponseDTO = await gameData.leaveQueue();
       if (response.type === "success")
-        newList = appendNewCard(<Card key={"game" + index} type={CardType.SUCCESS}>{`${response.message}`}</Card>)
-      setElements(newList);
+        setQueueExpanded(false);
     } else if (commands[1] == "setting") {
       handleGameSettingsCommand(commands, newList);
     }
@@ -638,7 +649,7 @@ function HomePage(props: HomePageProps) {
         <span className='text-xl font-bold neonText-white'>PongSH Credits</span><br />
         <p className="pt-4 font-bold capitalize text-highlight text-md">Team members</p>
         <p className="text-sm">Sean Chuah (schuah)    - <span className="text-highlight/70">Why declare variable types when "any" exists.</span></p>
-        <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">Git add, git push, just trust me.</span></p>
+        <p className="text-sm">Matthew Liew (maliew)  - <span className="text-highlight/70">The most useful git command is blame.</span></p>
         <p className="text-sm">Ijon Tan (itan)        - <span className="text-highlight/70">JS sucks.</span></p>
         <p className="text-sm">Ricky Wong (wricky-t)  - <span className="text-highlight/70">Fixed codes, lost sanity.</span></p>
         <p className="text-sm">Ze Hao Ah (zah)        - <span className="text-highlight/70">I know more about blackholes now.</span></p>

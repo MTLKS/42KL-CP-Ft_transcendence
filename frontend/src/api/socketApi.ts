@@ -21,7 +21,12 @@ export type Events =
   | "leaveQueue"
   | "ready"
   | "leaveLobby"
-  | "emote";
+  | "emote"
+  | "checkCreateInvite"
+  | "createInvite"
+  | "joinInvite"
+  | "removeInvite"
+  | "changeGameType";
 
 class SocketApi {
   socket: Socket;
@@ -40,7 +45,6 @@ class SocketApi {
 
   connect() {
     this.socket.on("connect", () => {
-      // console.log(this.socket.id);
     });
   }
 
