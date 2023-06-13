@@ -15,6 +15,7 @@ import { ErrorData } from '../../../../model/ErrorData';
 import ChatroomList from './ChatroomList';
 import { gameData } from '../../../../main';
 import { ErrorPopup } from '../../../../components/Popup';
+import { set } from 'lodash';
 
 interface ChatroomContentProps {
   chatroomData: ChatroomData;
@@ -45,12 +46,12 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [canBeFetched, setCanBeFetched] = useState<boolean>(true);
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
   const [viewMemberList, setViewMemberList] = useState<boolean>(false);
-  const { dispatch } = useContext(NewChannelContext);
+  const { state, dispatch } = useContext(NewChannelContext);
   const [unableToCreateInvite, setUnableToCreateInvite] = useState(false);
   const [unableToAcceptInvite, setUnableToAcceptInvite] = useState(false);
+  const [unableToSendMessage, setUnableToSendMessage] = useState(false);
 
   useEffect(() => {
-
     gameData.setUnableToCreateInvite = setUnableToCreateInvite;
     gameData.setUnableToAcceptInvite = setUnableToAcceptInvite;
 
@@ -76,6 +77,11 @@ function ChatroomContent(props: ChatroomContentProps) {
       scrollableDiv?.removeEventListener('scroll', handleScrollToTop);
     }
   }, []);
+
+  useEffect(() => {
+    const amIMuted = state.members.find((member) => member.memberInfo.intraId === myProfile.intraId)?.isMuted;
+    if (amIMuted) setUnableToSendMessage(true);
+  }, [state.members]);
 
   useEffect(() => {
     if (isFirstLoad) return;
@@ -136,7 +142,13 @@ function ChatroomContent(props: ChatroomContentProps) {
           {messagesComponent}
         </div>
         {viewMemberList && <ChannelMemberOnlineList />}
-        <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad} />
+        {unableToSendMessage ? (
+          <div className='w-full p-4'>
+            <p className='bg-highlight text-dimshadow px-[1ch] w-fit mx-auto uppercase font-extrabold'>read-only</p>
+          </div>
+        ) : (
+          <ChatroomTextField chatroomData={chatroomData} pingServer={pingServerToUpdateLastRead} setIsFirstLoad={setIsFirstLoad}/>
+        )}
       </div>
     </ChatroomMessagesContext.Provider>
   )
