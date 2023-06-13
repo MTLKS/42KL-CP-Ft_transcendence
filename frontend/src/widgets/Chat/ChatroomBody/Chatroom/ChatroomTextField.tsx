@@ -55,8 +55,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   useEffect(() => {
     // if user can create invite, send invite
     if (canCreateInvite) {
-      // sendMessage(MessageType.INVITE);
-      console.log("after send: ", messages);
       sendInvite();
       setCanCreateInvite(false);
     }
