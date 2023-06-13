@@ -7,6 +7,7 @@ import { ActionCardsContext, ActionFunctionsContext, FriendActionContext, Friend
 import { acceptFriend, blockExistingFriend, blockStranger, deleteFriendship } from '../../../api/friendActionAPI'
 import { AxiosResponse } from 'axios'
 import { getFriendList } from '../../../api/friendListAPI'
+import { ErrorPopup } from '../../../components/Popup'
 
 interface FriendActionProps {
   user: UserData;
@@ -44,6 +45,7 @@ function FriendAction(props: FriendActionProps) {
   const { friends: selectedFriends, setFriends: setSelectedFriends } = useContext(SelectedFriendContext);
   const inputRef = useRef<HTMLInputElement>(null);
   const [animate, setAnimate] = useState(false);
+  const [hasErrorProcessingRequest, setHasErrorProcessingRequest] = useState(false);
 
   let actionCards: JSX.Element[] = [];
   let yesAction: (name: string) => Promise<AxiosResponse>;
@@ -64,11 +66,23 @@ function FriendAction(props: FriendActionProps) {
     createFriendActionCards();
   }, []);
 
+  useEffect(() => {
+    if (hasErrorProcessingRequest) {
+      const timeoutId = setTimeout(() => {
+        setHasErrorProcessingRequest(false);
+      }, 3000);
+
+      return () => {
+        clearTimeout(timeoutId);
+      }
+    }
+  }, [hasErrorProcessingRequest])
+
   return (
     <FriendActionContext.Provider value={action}>
       <ActionCardsContext.Provider value={{ actionCards, selectedIndex, setSelectedIndex }}>
         <ActionFunctionsContext.Provider value={{ yesAction: handleYesAction, noAction: handleNoAction, alternativeAction: blockStrangerAction }}>
-          <div className='flex flex-col justify-end w-full h-full overflow-hidden text-base bg-dimshadow' onClick={focusOnInput}>
+          <div className='flex flex-col justify-end w-full h-full overflow-hidden text-base bg-dimshadow relative' onClick={focusOnInput}>
             <input
               className='absolute w-0 h-0'
               onBlur={() => setIsInputFocused(false)}
@@ -77,6 +91,9 @@ function FriendAction(props: FriendActionProps) {
               value={inputValue}
               ref={inputRef}
             />
+            {hasErrorProcessingRequest && (<div className='absolute top-10 right-0'>
+              <ErrorPopup text='Friendship not found! Please refresh your friend list :(' />
+            </div>)}
             <div className={`px-[2ch] flex flex-col-reverse ${animate ? "" : " translate-y-12 opacity-0"} transition-all duration-1000q`}>
               {actionCards.length === 0 ? <></> : actionCards.slice(selectedIndex)}
             </div>
@@ -186,7 +203,7 @@ function FriendAction(props: FriendActionProps) {
           setShowOutput(true);
         }
       })
-      .catch(err => console.log(err));
+      .catch(err => setHasErrorProcessingRequest(true));
   }
 
   function handleNoAction(friendIntraName: string, shouldShow: boolean) {
@@ -208,7 +225,7 @@ function FriendAction(props: FriendActionProps) {
           setShowOutput(true);
         }
       })
-      .catch(err => console.log(err));
+      .catch(err => setHasErrorProcessingRequest(true));
   }
 
   function blockStrangerAction(strangerIntraName: string, shouldShow: boolean) {
@@ -230,7 +247,7 @@ function FriendAction(props: FriendActionProps) {
           setShowOutput(true);
         }
       })
-      .catch(err => console.log(err));
+      .catch(err => setHasErrorProcessingRequest(true));
   }
 
   function handleInput(e: React.FormEvent<HTMLInputElement>) {
