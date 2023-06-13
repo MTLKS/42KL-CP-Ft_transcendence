@@ -367,7 +367,7 @@ export class GameService {
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
-    //The client is the host of the invite
+    //The client is the host of the invite, so cannot join
     if (INVITATION.host.intraName == user_data.intraName){
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
@@ -375,7 +375,7 @@ export class GameService {
     else{
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", messageID)));
       // client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
-      // INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
+      INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO("success",messageID)));
       this.hosts.delete(INVITATION.host.intraName);
       this.invitationRoom.delete(messageID);
 
