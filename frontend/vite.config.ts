@@ -12,5 +12,5 @@ export default defineConfig({
     strictPort: true,
     port: 5173, // you can replace this port with any port
   },
-  assetsInclude: ["./assets/**/*"],
+  assetsInclude: ["./assets/cursor/**/*.svg"],
 });
