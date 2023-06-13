@@ -25,6 +25,9 @@ import sleep from '../../functions/sleep'
 import Triangle from '../../components/Triangle'
 import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
 import { PowerUp } from '../../../../backend/src/game/game.service';
+import terminator from '../../../assets/terminator.webp'
+import rick from '../../../assets/rick.png'
+import musk from '../../../assets/musk.jpeg'
 
 const emoteList = [
   <FaThumbsUp size={100} />,
@@ -337,10 +340,56 @@ function LobbyProfile(props: { playerIntraId: string }) {
   const [pixelSize, setPixelSize] = React.useState(200);
 
   useEffect(() => {
+    if (playerIntraId === "BOT") return;
     getProfileOfUser(playerIntraId).then((data) => {
       setUserData(data.data as UserData);
       pixelatedToSmooth();
     });
+  }, [playerIntraId]);
+
+  useEffect(() => {
+    if (playerIntraId !== "BOT") return;
+    var i = Math.floor(Math.random() * 3);
+    if (i === 0) {
+      setUserData({
+        intraId: 0,
+        userName: "SKYNET",
+        intraName: "SKYNET",
+        email: "skynet@pongsh.com",
+        elo: 99999,
+        accessToken: "",
+        avatar: terminator,
+        tfaSecret: "",
+        winning: true,
+      });
+    }
+    else if (i === 1) {
+      setUserData({
+        intraId: 0,
+        userName: "伊隆马",
+        intraName: "MUSK",
+        email: " musk@pongsh.com",
+        elo: 226,
+        accessToken: "",
+        avatar: musk,
+        tfaSecret: "",
+        winning: true,
+      });
+    } else {
+      setUserData({
+        intraId: 0,
+        userName: "Roll",
+        intraName: "ROLL",
+        email: "roll@pongsh.com",
+        elo: 1400000000,
+        accessToken: "",
+        avatar: rick,
+        tfaSecret: "",
+        winning: true,
+      });
+
+    }
+    pixelatedToSmooth();
   }, [playerIntraId]);
 
   const titles: { [key: string]: string } = {
