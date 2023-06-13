@@ -107,6 +107,7 @@ export class GameData {
   gameStarted: boolean = false;
   gameRoom: string = "";
   gameType: GameType = "";
+  isPrivate: boolean = false;
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
 
@@ -439,6 +440,7 @@ export class GameData {
         this.gameType = lobbyStartData.gameType;
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
+        this.isPrivate = lobbyStartData.isPrivate;
 
         this.displayLobby!();
         this.stopDisplayQueue!();
@@ -525,9 +527,15 @@ export class GameData {
         break;
       case "CheckCreateInvite":
         const checkCreateInviteData = <CheckCreateInviteDTO>state.data;
-        if (checkCreateInviteData.type === "success" && this.setCanCreateInvite) {
+        if (
+          checkCreateInviteData.type === "success" &&
+          this.setCanCreateInvite
+        ) {
           this.setCanCreateInvite(true);
-        } else if (checkCreateInviteData.type === "error" && this.setUnableToCreateInvite) {
+        } else if (
+          checkCreateInviteData.type === "error" &&
+          this.setUnableToCreateInvite
+        ) {
           this.setUnableToCreateInvite(true);
         }
         break;
@@ -540,7 +548,10 @@ export class GameData {
         const joinInviteData = <JoinInviteDTO>state.data;
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
-        } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
+        } else if (
+          joinInviteData.type === "error" &&
+          this.setUnableToAcceptInvite
+        ) {
           this.setUnableToAcceptInvite(true);
         }
         break;

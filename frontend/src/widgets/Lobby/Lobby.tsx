@@ -90,7 +90,6 @@ function Lobby() {
     let deathButtonActive = false;
 
     if (gameData.gameType === '') {
-      // powerButtonActive = true;
       boringButtonActive = true;
       standardButtonActive = true;
       deathButtonActive = true;
@@ -98,7 +97,7 @@ function Lobby() {
     if (selectedMode === 'standard') {
       powerButtonActive = true;
     }
-    if (gameData.gameType === 'private') {
+    if (gameData.isPrivate) {
       boringButtonActive = true;
       standardButtonActive = true;
       deathButtonActive = true;
@@ -154,7 +153,7 @@ function Lobby() {
               onClick={() => gameData.leaveLobby()}
             >leave</p>
           </LobbyReadyButton>
-          <LobbyReadyButton onClick={() => sendReady()} selected={ready}>
+          <LobbyReadyButton onClick={() => sendReady()} selected={ready} active={selectedMode !== ""}>
             {onCountdown ? <CountDown /> :
               <p className={`uppercase font-extrabold text-3xl m-5 ${ready ? "text-dimshadow" : "text-highlight"} group-hover:text-dimshadow text-center`}>ready</p>}
           </LobbyReadyButton>
@@ -486,16 +485,18 @@ interface LobbyReadyButtonProps {
   onClick?: () => void;
   children?: React.ReactNode;
   selected?: boolean;
+  active?: boolean;
 }
 
 function LobbyReadyButton(props: LobbyReadyButtonProps) {
-  const { onClick, children, selected = false } = props;
+  const { onClick, children, selected = false, active = true } = props;
   return (
     <button
       className={`
         w-full ${selected ? "bg-highlight" : "bg-transparent  hover:bg-highlight/70"} cursor-pointer rounded-xl group
         border-[4px] border-highlight transition-all duration-200 focus:outline-dimshadow`}
       onClick={onClick}
+      disabled={!active}
     >
       {children}
     </button>
