@@ -15,7 +15,7 @@ import {
   LobbyEndDTO,
   CountdonwDTO,
   CreateInviteDTO,
-  CancelInviteDTO,
+  RemoveInviteDTO,
   JoinInviteDTO,
   GameTypeChangeDTO,
 } from 'src/dto/gameState.dto';
@@ -356,8 +356,8 @@ export class GameService {
     }
     else{
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", messageID)));
-      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(messageID)));
-      INVITATION.host.socket.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(messageID)));
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
+      INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
       this.hosts.delete(INVITATION.host.intraName);
       this.invitationRoom.delete(messageID);
 
@@ -381,7 +381,7 @@ export class GameService {
     }
     const MESSAGE_ID = this.hosts.get(user_data.intraName);
     if (MESSAGE_ID !== undefined){
-      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(MESSAGE_ID)));
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(MESSAGE_ID)));
       this.invitationRoom.delete(MESSAGE_ID);
     }
     this.hosts.delete(user_data.intraName);
