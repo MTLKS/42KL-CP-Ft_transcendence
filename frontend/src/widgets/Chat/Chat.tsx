@@ -7,8 +7,7 @@ import { ChatroomMessageData } from '../../model/ChatRoomData';
 import { getFriendList } from '../../api/friendListAPI';
 import { FriendsContext } from '../../contexts/FriendContext';
 import newChannelReducer, { newChannelInitialState } from './ChatroomBody/Channel/newChannelReducer';
-import UserContext from '../../contexts/UserContext';
-import NewChannel from './ChatroomBody/Channel/NewChannel';
+import { gameData } from '../../main';
 
 const CHAT_SOCKET_NAMESPACE = "chat";
 
@@ -20,8 +19,12 @@ function Chat() {
   const [expanded, setExpanded] = useState(false);
   const [chatroomBody, setChatroomBody] = useState(<ChatroomList />);
   const chatSocket = useMemo(() => new SocketApi(CHAT_SOCKET_NAMESPACE), []);
+  const [activeInviteId, setActiveInviteId] = useState<number>(-1);
 
   useEffect(() => {
+
+    gameData.setActiveInviteId = setActiveInviteId;
+
     // for receive new message
     const newUnreadChatrooms: number[] = [];
     chatSocket.connect();
@@ -47,7 +50,7 @@ function Chat() {
 
   return (
     <ChatroomsContext.Provider value={{ unreadChatrooms: unreadChatrooms, setUnreadChatrooms: setUnreadChatrooms }}>
-      <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody, expanded: expanded }}>
+      <ChatContext.Provider value={{ chatSocket: chatSocket, chatBody: chatroomBody, setChatBody: setChatroomBody, expanded: expanded, activeInviteId: activeInviteId }}>
         <NewChannelContext.Provider value={{ state, dispatch }}>
           <div className={`flex flex-col select-none transition-all duration-300 overflow-hidden ${expanded ? 'h-full' : 'h-[60px]'} box-border`}>
             <ChatToggle toggleChat={handleToggleChat} expanded={expanded} hasNewMessage={unreadChatrooms.length > 0} />

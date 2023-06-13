@@ -79,7 +79,7 @@ function ChannelMemberOnlineList() {
         <p className='text-sm font-extrabold'>MEMBERS {`(${state.members.length})`}</p>
         <div className="box-border flex flex-col w-full h-full overflow-y-scroll gap-y-2 scrollbar-hide">
           {members.map((member) => {
-            return (<ChannelMemberOnlineProfile member={member} />);
+            return (<div id={`${member.memberInfo.intraId}`}><ChannelMemberOnlineProfile member={member} /></div>);
           })}
         </div>
       </div>

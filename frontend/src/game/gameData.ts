@@ -17,7 +17,7 @@ import {
   RemoveInviteDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
-import { clamp } from "lodash";
+import { clamp, update } from "lodash";
 import GameEntity, {
   GameBlackhole,
   GameBlock,
@@ -132,6 +132,7 @@ export class GameData {
   setCanCreateInvite?: (canCreateInvite: boolean) => void;
   setInviteCreated?: (inviteCreated: boolean) => void;
   setJoinSuccessful?: (joinSuccessfull: boolean) => void;
+  setActiveInviteId?: (activeInviteId: number) => void;
   setUnableToCreateInvite?: (unableToCreateInvite: boolean) => void;
   setUnableToAcceptInvite?: (unableToAcceptInvite: boolean) => void;
   private sendPlayerMove?: (y: number, x: number, gameRoom: string) => void;
@@ -318,6 +319,12 @@ export class GameData {
 
   leaveLobby() {
     this.socketApi.sendMessages("leaveLobby", {});
+  }
+
+  updateInviteId(messageId: number) {
+    if (this.setActiveInviteId) {
+      this.setActiveInviteId(messageId);
+    }
   }
 
   startGame() {
@@ -545,7 +552,7 @@ export class GameData {
       case "RemoveInvite":
         const removeInviteData = <RemoveInviteDTO>state.data;
         if (removeInviteData.type === "success") {
-          this.activeInviteMessageId = -1;
+          this.updateInviteId(-1);
         }
       case "JoinInvite":
         const joinInviteData = <JoinInviteDTO>state.data;

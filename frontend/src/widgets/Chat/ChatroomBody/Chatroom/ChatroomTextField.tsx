@@ -39,7 +39,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
       if (newMessage.senderChannel.owner.intraId === myProfile.intraId && newMessage.message === "/invite") {
-        gameData.activeInviteMessageId = newMessage.messageId;
+        gameData.updateInviteId(newMessage.messageId);
         createGameLobby(newMessage.messageId);
       }
     });
@@ -166,7 +166,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   const sendMessageDataToServer = (message: string) => {
-    if (message === '') return;
     chatSocket.sendMessages("message", {
       channelId: chatroomData.channelId,
       message: message,
@@ -186,6 +185,8 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   const sendMessage = () => {
+
+    if (message === '' || message.length === 0) return;
 
     sendMessageDataToServer(message);
 
