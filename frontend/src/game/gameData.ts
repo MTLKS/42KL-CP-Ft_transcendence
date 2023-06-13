@@ -109,6 +109,9 @@ export class GameData {
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
 
+  // game invite related variables
+  activeInviteMessageId: number = -1;
+
   // global effects
   globalSpeedFactor: number = 1;
   globalScaleFactor: number = 1;
@@ -521,6 +524,7 @@ export class GameData {
         break;
       case "CheckCreateInvite":
         const checkCreateInviteData = <CheckCreateInviteDTO>state.data;
+        console.log("ccid:", checkCreateInviteData);
         if (checkCreateInviteData.type === "success" && this.setCanCreateInvite) {
           this.setCanCreateInvite(true);
         } else if (checkCreateInviteData.type === "error" && this.setUnableToCreateInvite) {
@@ -536,6 +540,7 @@ export class GameData {
       //   break;
       case "JoinInvite":
         const joinInviteData = <JoinInviteDTO>state.data;
+        console.log("jid:", joinInviteData);
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
         } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {

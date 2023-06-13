@@ -36,24 +36,31 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   const [canCreateInvite, setCanCreateInvite] = useState(false); // use to check if user can create invite
 
   useEffect(() => {
+
+    chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
+      if (newMessage.senderChannel.owner.intraId === myProfile.intraId && newMessage.message === "/invite") {
+        gameData.activeInviteMessageId = newMessage.messageId;
+        createGameLobby(newMessage.messageId);
+      }
+    });
+
     gameData.setCanCreateInvite = setCanCreateInvite;
     gameData.setInviteCreated = setInviteCreated;
+
+    return (() => {
+      chatSocket.removeListener("message");
+    });
   }, []);
 
   useEffect(() => {
     // if user can create invite, send invite
     if (canCreateInvite) {
-      sendMessage(MessageType.INVITE);
+      // sendMessage(MessageType.INVITE);
+      console.log("after send: ", messages);
+      sendInvite();
       setCanCreateInvite(false);
     }
   }, [canCreateInvite]);
-
-  // useEffect(() => {
-  //   if (inviteCreated) {
-  //     sendMessage(MessageType.INVITE);
-  //     setInviteCreated(false);
-  //   }
-  // }, [inviteCreated]);
 
   useEffect(() => {
     // listen for member typing
@@ -129,11 +136,11 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }
 
   // the actual function to create invite
-  const createGameLobby = () => {
+  const createGameLobby = (messageId: number) => {
     // DM: receiver's name
     // GROUPCHAT: group's name
     const targetChannel = chatroomData.isRoom ? chatroomData.channelName : chatroomData.owner!.intraName;
-    gameData.createInvite(myProfile.intraName, targetChannel, chatroomData.channelId);
+    gameData.createInvite(myProfile.intraName, targetChannel, messageId);
   }
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -160,22 +167,30 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     setMessage(value);
   }
 
-  const sendMessage = (type: MessageType) => {
-
-    // if user is trying to create invite but backend not yet verified if user can create invite
-    if ((message === "/invite" || type === MessageType.INVITE) && !canCreateInvite) {
-      canCurrentUserCreateInvite();
-      return;
-    } else {
-      console.log("can create invite");
-    }
-
-    if (message === '' && type === MessageType.MESSAGE) return;
-    
+  const sendMessageDataToServer = (message: string) => {
+    if (message === '') return;
     chatSocket.sendMessages("message", {
       channelId: chatroomData.channelId,
-      message: (type === MessageType.MESSAGE) ? message : "/invite",
+      message: message,
     });
+  }
+
+  const sendInvite = () => {
+    if (!canCreateInvite) {
+      canCurrentUserCreateInvite();
+      return;
+    }
+    sendMessageDataToServer("/invite");
+    setMessage('');
+    setRows(1);
+    setIsFirstLoad(false);
+    pingServer();
+  }
+
+  const sendMessage = () => {
+
+    sendMessageDataToServer(message);
+
     // append new message to the top of the list (index 0)
     const newMessage: ChatroomMessageData = {
       senderChannel: {
@@ -195,7 +210,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
         password: chatroomData.password,
       },
       isRoom: chatroomData.isRoom,
-      message: (type === MessageType.MESSAGE) ? message : "/invite",
+      message: message,
       messageId: new Date().getTime(),
       timeStamp: new Date().toISOString(),
     };
@@ -213,7 +228,11 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage(MessageType.MESSAGE);
+      if (message === "/invite") {
+        sendInvite();
+        return;
+      }
+      sendMessage();
     }
   }
 
@@ -237,12 +256,12 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           onKeyDown={handleKeyPress}
         >
         </textarea>
-        <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={() => sendMessage(MessageType.MESSAGE)}>
+        <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={() => sendMessage()}>
           <FaPaperPlane className='w-full h-full -ml-1 text-3xl text-dimshadow aspect-square' />
         </button>
       </div>
       <div className='w-[20%] h-[60px] px-4 bg-dimshadow'>
-        <button className='bg-highlight w-full h-[60px] rounded-t-md px-3 cursor-pointer' onClick={() => sendMessage(MessageType.INVITE)}>
+        <button className='bg-highlight w-full h-[60px] rounded-t-md px-3 cursor-pointer' onClick={() => sendInvite()}>
           <span className='relative w-fit h-fit'>
             <FaGamepad className='w-fit h-full text-[53px] mx-auto text-dimshadow'/>
             <span className='absolute z-20 flex flex-row h-5 rounded-full bg-highlight aspect-square bottom-3 right-1 justify-evenly'>

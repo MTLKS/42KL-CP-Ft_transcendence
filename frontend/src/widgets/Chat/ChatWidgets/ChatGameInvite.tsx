@@ -29,7 +29,7 @@ function ChatGameInvite(props: ChatGameInviteProps) {
     <button className={`w-[65%] h-fit bg-highlight flex flex-row ${isMyInvitation && 'cursor-default'} group items-center`} onClick={acceptGameInvite} disabled={isMyInvitation} id={`${messageId}`}>
       <div className='flex flex-col flex-1 p-4 gap-y-1 items-start'>
         <p className='text-sm font-semibold text-dimshadow'><span className='font-extrabold bg-accGreen text-highlight px-[1ch]'>{senderChannel.owner.userName}</span> challenges you!</p>
-        {isMyInvitation && (
+        {isMyInvitation && (gameData.activeInviteMessageId === messageId) && (
           <p id={`${messageId}`} className='flex flex-row gap-x-1 items-center text-xs px-[1ch] cursor-pointer text-right hover:underline hover:bg-accRed text-dimshadow hover:text-highlight' onClick={cancelGameInvite}><FaTimes /> Cancel</p>
         )}
       </div>

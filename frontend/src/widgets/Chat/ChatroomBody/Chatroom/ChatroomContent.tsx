@@ -47,6 +47,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   const [isAtTop, setIsAtTop] = useState<boolean>(false);
   const [viewMemberList, setViewMemberList] = useState<boolean>(false);
   const { state, dispatch } = useContext(NewChannelContext);
+  const [isPreparingInvite, setIsPreparingInvite] = useState<boolean>(false);
   const [unableToCreateInvite, setUnableToCreateInvite] = useState(false);
   const [unableToAcceptInvite, setUnableToAcceptInvite] = useState(false);
   const [unableToSendMessage, setUnableToSendMessage] = useState(false);
@@ -77,6 +78,20 @@ function ChatroomContent(props: ChatroomContentProps) {
       scrollableDiv?.removeEventListener('scroll', handleScrollToTop);
     }
   }, []);
+
+  // useEffect(() => {
+  //   const myLastestInvitation = allMessages.find((message) => message.senderChannel.owner.intraId === myProfile.intraId && message.message === "/invite");
+  //   if (!myLastestInvitation) return;
+  //   // update my latest invitation's message Id to the actual message Id
+  //   const updateAllMessages = allMessages.map((message) => {
+  //     if (message.messageId === myLastestInvitation.messageId) {
+  //       message.messageId = gameData.activeInviteMessageId;
+  //     }
+  //     return message;
+  //   });
+  //   setAllMessages(() => updateAllMessages);
+  //   setIsPreparingInvite(false);
+  // }, [isPreparingInvite])
 
   useEffect(() => {
     const amIMuted = state.members.find((member) => member.memberInfo.intraId === myProfile.intraId)?.isMuted;
@@ -186,7 +201,6 @@ function ChatroomContent(props: ChatroomContentProps) {
     if (!canBeFetched) return;
 
     try {
-      /** HAS ISSUE HERE */
       const fetchResult: ChatroomMessageData[] = (await getChatroomMessages(chatroomData.channelId, MESSAGE_FETCH_LIMIT, page)).data;
       if (fetchResult.length < MESSAGE_FETCH_LIMIT) {
         setCanBeFetched(false);
