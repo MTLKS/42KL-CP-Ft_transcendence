@@ -74,6 +74,14 @@ export class CheckCreateInviteDTO {
 	}
 }
 
+export class CreateInviteDTO{
+	messageID: number;
+
+	constructor(messageID: number) {
+		this.messageID = messageID;
+	}
+}
+
 export class JoinInviteDTO {
 	type : "success" | "error";
 	messageID: number;
@@ -119,11 +127,11 @@ export class CountdonwDTO{
 }
 
 export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite"| "JoinInvite" | "RemoveInvite" | "GameTypeChange";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO;
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite"| "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite" |"JoinInvite" | "RemoveInvite" | "GameTypeChange",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite" | "CreateInvite" |"JoinInvite" | "RemoveInvite" | "GameTypeChange",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO) {
 		this.type = type;
 		this.data = data;
 	}

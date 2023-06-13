@@ -15,6 +15,7 @@ import {
   LobbyEndDTO,
   CountdonwDTO,
   CheckCreateInviteDTO,
+  CreateInviteDTO,
   RemoveInviteDTO,
   JoinInviteDTO,
   GameTypeChangeDTO,
@@ -181,6 +182,15 @@ export class GameService {
     catch{
       return;
     }
+    // Check player is currently sending invite
+    const INVITE = this.hosts.get(userData.intraName);
+    if (INVITE !== undefined) {
+      client.emit(
+        'gameResponse',
+        new GameResponseDTO('error', 'Is sending invite'),
+      );
+      return;
+    }
     // Check if queue is known
     if (!(clientQueue in this.queues) && clientQueue !== "practice") {
       if (LOBBY_LOGGING)
@@ -311,9 +321,15 @@ export class GameService {
     const CURRENT_INVITE = this.hosts.get(user_data.intraName);
     //Have an ongoing invite
     if (CURRENT_INVITE !== undefined){
+
+      console.log("Invite already exists");
+
       client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("error")));
       return;
     }
+
+    console.log("success");
+
     client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("success")));
   }
 
@@ -330,6 +346,9 @@ export class GameService {
     const INVITATION = new Invitation(HOST, receiver);
     this.hosts.set(HOST.intraName, messageID);
     this.invitationRoom.set(messageID, INVITATION);
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO(messageID)));
+    console.log(this.hosts);
+    console.log(this.invitationRoom);
   }
 
   async joinInvite(client: Socket, messageID: number){
@@ -354,8 +373,8 @@ export class GameService {
     }
     else{
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", messageID)));
-      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
-      INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
+      // client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
+      // INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
       this.hosts.delete(INVITATION.host.intraName);
       this.invitationRoom.delete(messageID);
 
