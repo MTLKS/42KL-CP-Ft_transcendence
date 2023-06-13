@@ -218,6 +218,11 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
+      if (!chatroomData.isRoom && newMessage.senderChannel.channelId !== chatroomData.channelId) {
+        console.log("newMessage:", newMessage);
+        console.log("chatroomData:", chatroomData);
+        return;
+      }
       if (chatroomData.isRoom && newMessage.receiverChannel.channelId !== chatroomData.channelId) return;
       setAllMessages((messages) => appendNewMessage(newMessage, messages));
     });

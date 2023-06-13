@@ -150,9 +150,11 @@ export class ChatService {
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const DM_CHANNEL = await this.channelRepository.find({ where: { channelName: In(MEMBERS.map(memberInChannel => memberInChannel.user.intraName)), isRoom: false }, relations: ['owner'] });
 			const CHANNEL_ID = DM_CHANNEL.map(memberInChannel => memberInChannel.channelId);
-			const LAST_MESSAGE = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: member.channel.channelId }, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: member.channel.channelId } }], order: { timeStamp: "DESC" } });
-			member.channel.newMessage = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > member.lastRead;
-			member.channel.owner.accessToken = LAST_MESSAGE === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : LAST_MESSAGE.timeStamp;
+			let lastMessage = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: member.channel.channelId }, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: member.channel.channelId } }], order: { timeStamp: "DESC" }, relations: ['senderChannel.owner', 'receiverChannel.owner'] });
+			if (lastMessage !== null && (lastMessage.senderChannel.owner.intraName !== USER_DATA.intraName || lastMessage.receiverChannel.owner.intraName !== USER_DATA.intraName))
+				lastMessage = null;
+			member.channel.newMessage = lastMessage === null ? false : lastMessage.timeStamp > member.lastRead;
+			member.channel.owner.accessToken = lastMessage === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : lastMessage.timeStamp;
 			channel.push(member.channel);
 		}
 		channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());
