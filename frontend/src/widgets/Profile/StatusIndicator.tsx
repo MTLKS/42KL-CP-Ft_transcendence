@@ -15,7 +15,7 @@ function StatusIndicator(props: StatusIndicatorProps) {
   if (status == "online")
     indicatorStyle = `bg-accGreen`;
   else if (status === "ingame") {
-    indicatorStyle = `bg-orange-700`;
+    indicatorStyle = `bg-accCyan`;
   }
 
   return (

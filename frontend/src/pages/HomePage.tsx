@@ -132,6 +132,7 @@ function HomePage(props: HomePageProps) {
     gameData.displayLobby = () => displayLobby();
     gameData.stopDisplayLobby = () => stopDisplayLobby();
     gameData.stopDisplayQueue = () => setQueueExpanded(false);
+    gameData.changeStatus = (status: string) => { defaultSocket.sendMessages("changeStatus", { newStatus: status }) };
     if (gameData.gameDisplayed) {
       setShouldDisplayGame(true);
     }

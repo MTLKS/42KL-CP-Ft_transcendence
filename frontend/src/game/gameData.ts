@@ -148,6 +148,7 @@ export class GameData {
   lobbyCountdown?: () => void;
   stopDisplayQueue?: () => void;
   setGameType?: (gameType: GameType) => void;
+  changeStatus?: (status: string) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -325,6 +326,7 @@ export class GameData {
       return;
     }
     this.stopDisplayQueue!();
+    this.changeStatus!("INGAME");
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
     if (this.setUsingTicker) this.setUsingTicker(true);
@@ -405,6 +407,7 @@ export class GameData {
     if (!this.gameStarted) return;
     this.stopDisplayLobby!();
     await sleep(7000);
+    this.changeStatus!("ONLINE");
     this.stopDisplayGame();
     this.gameStarted = false;
     this.isLeft = false;
