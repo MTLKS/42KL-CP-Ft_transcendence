@@ -297,7 +297,7 @@ export class GameService {
     this.gameLobbies.set(player.intraName, lobby);
     lobby.player2Ready = true;
     lobby.player2PowerUp = "normal";
-    player.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player.intraName, "bot", "practice")));
+    player.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player.intraName, "BOT", "practice")));
   }
 
   joinLobby(player1: Player, player2: Player, gameType: string) {
