@@ -444,7 +444,6 @@ export class GameData {
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
         this.isPrivate = lobbyStartData.isPrivate;
-        console.log("lobby start", lobbyStartData);
 
         this.displayLobby!();
         this.stopDisplayQueue!();

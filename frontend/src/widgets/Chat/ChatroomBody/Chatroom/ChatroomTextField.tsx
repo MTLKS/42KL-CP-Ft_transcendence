@@ -56,7 +56,6 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     // if user can create invite, send invite
     if (canCreateInvite) {
       // sendMessage(MessageType.INVITE);
-      console.log("after send: ", messages);
       sendInvite();
       setCanCreateInvite(false);
     }
@@ -83,8 +82,8 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, [textTooLong]);
 
   useEffect(() => {
-    if (isTyping || message.length === 0) return ;
-    
+    if (isTyping || message.length === 0) return;
+
     if (!isTyping) setIsTyping(true);
     chatSocket.sendMessages("typing", { channelId: chatroomData.channelId });
   }, [message]);
@@ -118,7 +117,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   }, [someoneIsTyping, typingMembers]);
 
   const listenForMemberTyping = () => {
-    chatSocket.listen("typing", (data: {channel: ChannelData, userName: string}) => {
+    chatSocket.listen("typing", (data: { channel: ChannelData, userName: string }) => {
       // if current chatroom is a room, the channel is the typist's channel
       // if current chatroom is a DM, the channel is the sender's channel
       const { channel, userName } = data;
@@ -239,7 +238,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   return (
     <div className='w-full h-[60px] flex flex-row bg-dimshadow/0 items-end'>
       <div className='w-[80%] h-full flex flex-row relative'>
-        { isFocusing && <span className={`text-xs ${message.length === 1024 || textTooLong ? 'bg-accRed text-highlight' : 'bg-highlight text-dimshadow'} h-fit px-[1ch] font-bold absolute -top-3 right-16`}>{textTooLong ? "TEXT TOO LONG!" : `${message.length}/1024`}</span> }
+        {isFocusing && <span className={`text-xs ${message.length === 1024 || textTooLong ? 'bg-accRed text-highlight' : 'bg-highlight text-dimshadow'} h-fit px-[1ch] font-bold absolute -top-3 right-16`}>{textTooLong ? "TEXT TOO LONG!" : `${message.length}/1024`}</span>}
         {
           someoneIsTyping &&
           <div className='absolute -top-4'>
@@ -251,7 +250,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           rows={rows}
           value={message}
           onBlur={() => { setRows(1); setIsFocusing(false); }}
-          onFocus={() => { setRows(previousRows); setIsFocusing(true); } }
+          onFocus={() => { setRows(previousRows); setIsFocusing(true); }}
           onChange={handleInput}
           onKeyDown={handleKeyPress}
         >
@@ -263,9 +262,9 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
       <div className='w-[20%] h-[60px] px-4 bg-dimshadow'>
         <button className='bg-highlight w-full h-[60px] rounded-t-md px-3 cursor-pointer' onClick={() => sendInvite()}>
           <span className='relative w-fit h-fit'>
-            <FaGamepad className='w-fit h-full text-[53px] mx-auto text-dimshadow'/>
+            <FaGamepad className='w-fit h-full text-[53px] mx-auto text-dimshadow' />
             <span className='absolute z-20 flex flex-row h-5 rounded-full bg-highlight aspect-square bottom-3 right-1 justify-evenly'>
-              <FaPlusCircle className='h-full rounded-full w-fullaspect-square text-accGreen'/>
+              <FaPlusCircle className='h-full rounded-full w-fullaspect-square text-accGreen' />
             </span>
           </span>
         </button>

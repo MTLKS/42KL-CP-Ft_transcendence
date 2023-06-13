@@ -3,8 +3,6 @@ test*
 index.html
 api.md
 *.sql
-*.jpeg
-*.jpg
 avatar
 *.env
 placeholder.json
