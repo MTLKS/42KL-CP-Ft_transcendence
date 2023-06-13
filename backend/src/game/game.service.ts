@@ -187,7 +187,7 @@ export class GameService {
     if (INVITE !== undefined) {
       client.emit(
         'gameResponse',
-        new GameResponseDTO('error', 'Is sending invite'),
+        new GameResponseDTO('error', 'Already sending invite'),
       );
       return;
     }
@@ -352,6 +352,7 @@ export class GameService {
   }
 
   async joinInvite(client: Socket, messageID: number){
+    console.log("called join")
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -398,10 +399,13 @@ export class GameService {
     }
     const MESSAGE_ID = this.hosts.get(user_data.intraName);
     if (MESSAGE_ID !== undefined){
-      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(MESSAGE_ID)));
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO("success",MESSAGE_ID)));
       this.invitationRoom.delete(MESSAGE_ID);
+      this.hosts.delete(user_data.intraName);
     }
-    this.hosts.delete(user_data.intraName);
+    else{
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO("error",-1)));
+    }
   }
 
   getLobbyKeyFromIntraNames(intraName: string): string | undefined {
