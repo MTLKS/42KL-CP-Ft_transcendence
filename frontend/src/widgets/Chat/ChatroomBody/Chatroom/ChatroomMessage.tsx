@@ -34,7 +34,7 @@ function ChatroomMessage(props: ChatroomMessageProps) {
         isMessageFromBlockedUser
           ? <p className={`w-fit h-fit whitespace-normal break-all ${ isMyMessage ? 'text-right' : 'text-left' } text-sm font-medium bg-accRed text-highlight px-[1ch]`}>BLOCKED MESSAGE</p>
           : isGameInvite
-            ? <ChatGameInvite sender={messageData.senderChannel.owner.userName} senderIntraName={messageData.senderChannel.owner.intraName}/>
+            ? <ChatGameInvite messageData={messageData}/>
             : <p className={`w-full h-fit whitespace-normal break-all ${ isMyMessage ? 'text-right' : 'text-left' } text-base font-medium text-highlight select-text selection:bg-highlight selection:text-dimshadow`}>{ messageData.message }</p> 
       }
       <p className='text-xs font-normal text-highlight/50'>{ convertDatetoString(messageData.timeStamp) }</p>

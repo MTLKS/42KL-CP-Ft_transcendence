@@ -14,8 +14,9 @@ import {
   LobbyStartDTO,
   LobbyEndDTO,
   CountdonwDTO,
+  CheckCreateInviteDTO,
   CreateInviteDTO,
-  CancelInviteDTO,
+  RemoveInviteDTO,
   JoinInviteDTO,
   GameTypeChangeDTO,
 } from 'src/dto/gameState.dto';
@@ -23,7 +24,6 @@ import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
 import { PracticeGameRoom } from './entity/practiceGameRoom';
-import { v4 as uuidv4 } from 'uuid';
 import { cp } from 'fs';
 
 export enum PowerUp{
@@ -61,10 +61,10 @@ export class GameService {
   };
   private connected = [];
 
-  //hosts : map intraName -> uuid
-  //invitationRoom : map uuid -> Invitation
-  private hosts = new Map<string, string>();
-  private invitationRoom = new Map<string, Invitation>();
+  //hosts : map intraName -> messageID
+  //invitationRoom : map messageID -> Invitation
+  private hosts = new Map<string, number>();
+  private invitationRoom = new Map<number, Invitation>();
   private gameRooms = new Map<string, GameRoom>();
   private gameLobbies = new Map<string, Lobby>();
 
@@ -154,7 +154,7 @@ export class GameService {
       }
     });
 
-    //TODO: leave invite
+    // If player is hosting, cancel invite
     this.cancelInvite(client);
 
     // If player is in a lobby, leave the lobby
@@ -180,6 +180,15 @@ export class GameService {
       userData =  await this.userService.getMyUserData(ACESS_TOKEN);
     }
     catch{
+      return;
+    }
+    // Check player is currently sending invite
+    const INVITE = this.hosts.get(userData.intraName);
+    if (INVITE !== undefined) {
+      client.emit(
+        'gameResponse',
+        new GameResponseDTO('error', 'Is sending invite'),
+      );
       return;
     }
     // Check if queue is known
@@ -300,7 +309,7 @@ export class GameService {
     player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
-  async createInvite(client: Socket, sender: string, receiver: string) {
+  async checkCreateInvite(client: Socket){
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -309,24 +318,22 @@ export class GameService {
     catch{
       return;
     }
-    let host = new Player(user_data.intraName, ACCESS_TOKEN, client);
-
+    const CURRENT_INVITE = this.hosts.get(user_data.intraName);
     //Have an ongoing invite
-    const CURRENT_INVITE = this.hosts.get(host.intraName);
     if (CURRENT_INVITE !== undefined){
-      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver, "")));
+
+      console.log("Invite already exists");
+
+      client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("error")));
       return;
     }
-    const UUID = uuidv4();
-    const INVITATION = new Invitation(host, receiver);
-    this.hosts.set(host.intraName, UUID);
-    this.invitationRoom.set(UUID, INVITATION);
-    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver, UUID)));
+
+    console.log("success");
+
+    client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("success")));
   }
 
-  async joinInvite(client: Socket, uuid: string){
-
-    //Check if the client is the host of the invite
+  async createInvite(client: Socket, sender: string, receiver: string, messageID: number){
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -335,23 +342,41 @@ export class GameService {
     catch{
       return;
     }
-    const INVITATION = this.invitationRoom.get(uuid);
+    const HOST = new Player(user_data.intraName, ACCESS_TOKEN, client);
+    const INVITATION = new Invitation(HOST, receiver);
+    this.hosts.set(HOST.intraName, messageID);
+    this.invitationRoom.set(messageID, INVITATION);
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO(messageID)));
+    console.log(this.hosts);
+    console.log(this.invitationRoom);
+  }
+
+  async joinInvite(client: Socket, messageID: number){
+    let user_data;
+    const ACCESS_TOKEN = client.handshake.headers.authorization;
+    try{
+      user_data = await this.userService.getMyUserData(ACCESS_TOKEN);
+    }
+    catch{
+      return;
+    }
+    const INVITATION = this.invitationRoom.get(messageID);
     //Invitation not found
     if (INVITATION === undefined){
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", "")));
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
     //The client is the host of the invite
     if (INVITATION.host.intraName == user_data.intraName){
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", "")));
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
     else{
-      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", uuid)));
-      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(uuid)));
-      INVITATION.host.socket.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(uuid)));
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", messageID)));
+      // client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
+      // INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
       this.hosts.delete(INVITATION.host.intraName);
-      this.invitationRoom.delete(uuid);
+      this.invitationRoom.delete(messageID);
 
       //Make both players join lobby
       let lobby = new Lobby(INVITATION.host, new Player(user_data.intraName, ACCESS_TOKEN, client), "");
@@ -371,10 +396,10 @@ export class GameService {
     catch{
       return;
     }
-    const UUID = this.hosts.get(user_data.intraName);
-    if (UUID !== undefined){
-      client.emit('gameState', new GameStateDTO('CancelInvite', new CancelInviteDTO(UUID)));
-      this.invitationRoom.delete(UUID);
+    const MESSAGE_ID = this.hosts.get(user_data.intraName);
+    if (MESSAGE_ID !== undefined){
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(MESSAGE_ID)));
+      this.invitationRoom.delete(MESSAGE_ID);
     }
     this.hosts.delete(user_data.intraName);
   }
@@ -466,9 +491,7 @@ export class GameService {
       gameType = "standard";
     }
     this.gameLobbies.forEach((gameLobby, key) => {
-      // let gameType;
       if (gameLobby.player1.intraName === user_data.intraName) {
-        // gameType = gameLobby.gameType;
         gameLobby.player1Ready = ready;
         gameLobby.player1PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")
@@ -477,7 +500,6 @@ export class GameService {
         if (LOBBY_LOGGING)
           console.log(`${user_data.intraName} is ready.`);
       } else {
-        // gameType = gameLobby.gameType;
         gameLobby.player2Ready = ready;
         gameLobby.player2PowerUp = powerUp;
         if (gameType == "boring" || gameType == "death")

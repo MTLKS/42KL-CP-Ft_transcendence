@@ -47,14 +47,20 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 		this.gameService.playerMouseUpdate(client, body.gameRoom, body.isMouseDown);
 	}
 
+	@SubscribeMessage('checkCreateInvite')
+	async handleCheckCreateInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
+		this.gameService.checkCreateInvite(client);
+	}
+
 	@SubscribeMessage('createInvite')
 	async handleCreateInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		this.gameService.createInvite(client, body.sender, body.receiver);
+		console.log("createInvite called");
+		this.gameService.createInvite(client, body.sender, body.receiver, body.messageId);
 	}
 
 	@SubscribeMessage("joinInvite")
 	async handlejoinInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		this.gameService.joinInvite(client, body.uuid);
+		this.gameService.joinInvite(client, body.messageId);
 	}
 
 	@SubscribeMessage('removeInvite')

@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 import { FaPaperPlane, FaGamepad, FaPlusCircle } from 'react-icons/fa'
-import { ChatContext, ChatroomMessagesContext } from '../../../../contexts/ChatContext';
+import { ChatContext, ChatroomMessagesContext, NewChannelContext } from '../../../../contexts/ChatContext';
 import { ChannelData, ChatroomData, ChatroomMessageData } from '../../../../model/ChatRoomData';
 import UserContext from '../../../../contexts/UserContext';
 import ChatroomTypingStatus from './ChatroomTypingStatus';
@@ -22,6 +22,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   const { chatroomData, pingServer, setIsFirstLoad } = props;
   const { chatSocket } = useContext(ChatContext);
   const { messages, setMessages } = useContext(ChatroomMessagesContext);
+  const { state } = useContext(NewChannelContext);
   const { myProfile } = useContext(UserContext);
   const [previousRows, setPreviousRows] = useState(1);
   const [rows, setRows] = useState(1);
@@ -32,17 +33,27 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
   const [someoneIsTyping, setSomeoneIsTyping] = useState(false);
   const [typingMembers, setTypingMembers] = useState<string[]>([]);
   const [inviteCreated, setInviteCreated] = useState(false);
+  const [canCreateInvite, setCanCreateInvite] = useState(false); // use to check if user can create invite
 
   useEffect(() => {
+    gameData.setCanCreateInvite = setCanCreateInvite;
     gameData.setInviteCreated = setInviteCreated;
   }, []);
 
   useEffect(() => {
-    if (inviteCreated) {
+    // if user can create invite, send invite
+    if (canCreateInvite) {
       sendMessage(MessageType.INVITE);
-      setInviteCreated(false);
+      setCanCreateInvite(false);
     }
-  }, [inviteCreated]);
+  }, [canCreateInvite]);
+
+  // useEffect(() => {
+  //   if (inviteCreated) {
+  //     sendMessage(MessageType.INVITE);
+  //     setInviteCreated(false);
+  //   }
+  // }, [inviteCreated]);
 
   useEffect(() => {
     // listen for member typing
@@ -112,6 +123,12 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
     })
   }
 
+  // use to check if the current user can create invite
+  const canCurrentUserCreateInvite = () => {
+    gameData.checkCreateInvite();
+  }
+
+  // the actual function to create invite
   const createGameLobby = () => {
     // DM: receiver's name
     // GROUPCHAT: group's name
@@ -145,9 +162,12 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
   const sendMessage = (type: MessageType) => {
 
-    if (message === "/invite") {
-      createGameLobby();
+    // if user is trying to create invite but backend not yet verified if user can create invite
+    if ((message === "/invite" || type === MessageType.INVITE) && !canCreateInvite) {
+      canCurrentUserCreateInvite();
       return;
+    } else {
+      console.log("can create invite");
     }
 
     if (message === '' && type === MessageType.MESSAGE) return;

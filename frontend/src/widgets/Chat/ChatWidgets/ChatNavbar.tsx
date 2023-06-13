@@ -14,9 +14,13 @@ interface ChatNavbarProps {
 function ChatNavbar(props: ChatNavbarProps) {
 
   const { backAction, title, nextComponent, children, nextAction } = props;
+  const [animate, setAnimate] = React.useState(false);
+  useEffect(() => {
+    setAnimate(true);
+  }, []);
 
   return (
-    <div className='relative flex flex-row items-center justify-center w-full p-5 h-fit'>
+    <div className={`relative flex flex-row items-center justify-center w-full p-5 h-fit ${animate ? "" : " -translate-y-3 opacity-0"} transition-all duration-300`}>
       {
         children !== undefined && title === undefined
           ? children

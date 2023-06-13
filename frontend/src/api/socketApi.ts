@@ -22,8 +22,10 @@ export type Events =
   | "ready"
   | "leaveLobby"
   | "emote"
+  | "checkCreateInvite"
   | "createInvite"
   | "joinInvite"
+  | "removeInvite"
   | "changeGameType";
 
 class SocketApi {

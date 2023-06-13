@@ -12,6 +12,8 @@ import {
   CountdonwDTO,
   CreateInviteDTO,
   JoinInviteDTO,
+  GameTypeChangeDTO,
+  CheckCreateInviteDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -122,6 +124,7 @@ export class GameData {
   setShouldRender?: (shouldRender: boolean) => void;
   setShouldDisplayGame?: (shouldDisplayGame: boolean) => void;
   setEntities?: (entities: GameEntity[]) => void;
+  setCanCreateInvite?: (canCreateInvite: boolean) => void;
   setInviteCreated?: (inviteCreated: boolean) => void;
   setJoinSuccessful?: (joinSuccessfull: boolean) => void;
   setUnableToCreateInvite?: (unableToCreateInvite: boolean) => void;
@@ -139,6 +142,7 @@ export class GameData {
   paddleHitParticle?: () => void;
   lobbyCountdown?: () => void;
   stopDisplayQueue?: () => void;
+  setGameType?: (gameType: GameType) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -286,6 +290,10 @@ export class GameData {
 
   sendUpdateGameType(gameType: string) {}
 
+  checkCreateInvite() {
+    this.socketApi.sendMessages("checkCreateInvite", {});
+  }
+
   createInvite(sender: string, receiver: string, messageId: number) {
     this.socketApi.sendMessages("createInvite", {
       messageId: messageId,
@@ -294,8 +302,12 @@ export class GameData {
     });
   }
 
-  joinInvite(hostIntraName: string) {
-    this.socketApi.sendMessages("joinInvite", { host: hostIntraName });
+  joinInvite(messageId: number) {
+    this.socketApi.sendMessages("joinInvite", { messageId: messageId });
+  }
+
+  removeInvite(messageId: number) {
+    this.socketApi.sendMessages("removeInvite", { messageId: messageId });
   }
 
   leaveLobby() {
@@ -423,12 +435,19 @@ export class GameData {
         this.gameType = lobbyStartData.gameType;
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
+
         this.displayLobby!();
+        this.stopDisplayQueue!();
         break;
       case "LobbyEnd":
         const lobbyEndData = <LobbyEndDTO>state.data;
         this.gameType = "";
         this.stopDisplayLobby!();
+        break;
+      case "GameTypeChange":
+        const gameTypeChangeData = <GameTypeChangeDTO>state.data;
+        this.gameType = gameTypeChangeData.gameType;
+        this.setGameType?.(gameTypeChangeData.gameType);
         break;
       case "LobbyCountdown":
         const lobbyCountdownData = <CountdonwDTO>state.data;
@@ -500,25 +519,26 @@ export class GameData {
         }
         this.setEntities?.(this.gameEntities);
         break;
-      case "CreateInvite":
-        const createInviteData = <CreateInviteDTO>state.data;
-        if (createInviteData.type === "success" && this.setInviteCreated) {
-          this.setInviteCreated(true);
-        } else if (
-          createInviteData.type === "error" &&
-          this.setUnableToCreateInvite
-        ) {
+      case "CheckCreateInvite":
+        const checkCreateInviteData = <CheckCreateInviteDTO>state.data;
+        if (checkCreateInviteData.type === "success" && this.setCanCreateInvite) {
+          this.setCanCreateInvite(true);
+        } else if (checkCreateInviteData.type === "error" && this.setUnableToCreateInvite) {
           this.setUnableToCreateInvite(true);
         }
-        break;
+      // case "CreateInvite":
+      //   const createInviteData = <CreateInviteDTO>state.data;
+      //   if (createInviteData.type === "success" && this.setInviteCreated) {
+      //     this.setInviteCreated(true);
+      //   } else if (createInviteData.type === "error" && this.setUnableToCreateInvite) {
+      //     this.setUnableToCreateInvite(true);
+      //   }
+      //   break;
       case "JoinInvite":
         const joinInviteData = <JoinInviteDTO>state.data;
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
-        } else if (
-          joinInviteData.type === "error" &&
-          this.setUnableToAcceptInvite
-        ) {
+        } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
           this.setUnableToAcceptInvite(true);
         }
         break;
@@ -549,8 +569,7 @@ export class GameData {
     this.attracted = data.attracted;
   };
 
-  listenToGameResponse = (data: GameResponseDTO) => {
-  };
+  listenToGameResponse = (data: GameResponseDTO) => {};
 
   private hitEffects(data: GameDTO) {
     if (data.hitType === HitType.PADDLE) this.numberHits++;
