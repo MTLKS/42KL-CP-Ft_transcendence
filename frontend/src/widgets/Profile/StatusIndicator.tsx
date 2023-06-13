@@ -12,8 +12,11 @@ function StatusIndicator(props: StatusIndicatorProps) {
   const { status, invert = false, showText = true, small = false } = props;
   let indicatorStyle = `opacity-50 ${small ? 'border-[4px] xl:border-[4px]' : 'border-[5px] xl:border-[6px]'} ${invert ? 'border-highlight' : 'border-dimshadow'}`;
 
-  if (status == "online" || status == 'ingame')
+  if (status == "online")
     indicatorStyle = `bg-accGreen`;
+  else if (status === "ingame") {
+    indicatorStyle = `bg-orange-700`;
+  }
 
   return (
     <div className={`w-full flex flex-row-reverse items-center gap-2`}>
