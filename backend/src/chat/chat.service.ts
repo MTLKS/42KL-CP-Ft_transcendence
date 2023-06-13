@@ -68,6 +68,8 @@ export class ChatService {
 			await this.memberRepository.save(MY_MEMBER);
 			server.to(CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 		}
+		if (message === "/invite")
+			server.to(MY_CHANNEL.channelId).emit("message", this.userService.hideData(NEW_MESSAGE));
 	}
 
 	// Marks a message as read
