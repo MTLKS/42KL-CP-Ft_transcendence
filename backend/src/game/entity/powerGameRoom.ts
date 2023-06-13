@@ -380,7 +380,7 @@ export class PowerGameRoom extends GameRoom {
     switch (effect) {
       case FieldEffect.NORMAL:
         this.currentEffect = FieldEffect.NORMAL;
-        server.emit(
+        server.to(this.roomID).emit(
           'gameState',
           new GameStateDTO(
             'FieldEffect',
@@ -392,7 +392,7 @@ export class PowerGameRoom extends GameRoom {
         let direction = Math.random();
         if (direction < 0.5) {
           this.effectMagnitude = 1;
-          server.emit(
+          server.to(this.roomID).emit(
             'gameState',
             new GameStateDTO(
               'FieldEffect',
@@ -401,7 +401,7 @@ export class PowerGameRoom extends GameRoom {
           );
         } else {
           this.effectMagnitude = -1;
-          server.emit(
+          server.to(this.roomID).emit(
             'gameState',
             new GameStateDTO(
               'FieldEffect',
@@ -424,7 +424,7 @@ export class PowerGameRoom extends GameRoom {
         } else {
           this.effectMagnitude = this.timeZoneSlowDown;
         }
-        server.emit(
+        server.to(this.roomID).emit(
           'gameState',
           new GameStateDTO(
             'FieldEffect',
@@ -445,7 +445,7 @@ export class PowerGameRoom extends GameRoom {
           spawnPos.y,
           this.blackHoleRadius,
         );
-        server.emit(
+        server.to(this.roomID).emit(
           'gameState',
           new GameStateDTO(
             'FieldEffect',
@@ -468,7 +468,7 @@ export class PowerGameRoom extends GameRoom {
           this.blockSize,
           this.blockMass,
         );
-        server.emit(
+        server.to(this.roomID).emit(
           'gameState',
           new GameStateDTO(
             'FieldEffect',
