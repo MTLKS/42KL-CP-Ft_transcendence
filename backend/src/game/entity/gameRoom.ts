@@ -5,7 +5,6 @@ import { GameSetting } from './gameSetting';
 import { Server } from 'socket.io';
 import { GameDTO } from 'src/dto/game.dto';
 import {
-  GameStartDTO,
   GameEndDTO,
   GamePauseDTO,
   GameStateDTO,
@@ -319,7 +318,6 @@ export class GameRoom {
     this.gamePausePlayer = null;
   }
 
-  // TODO: wait for reconnect, abandon game after x seconds
   togglePause(server: Server, pausePlayer: string) {
     if (this.gamePaused) this.endGameNoMatch();
     this.gamePaused = true;

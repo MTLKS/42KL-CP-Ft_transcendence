@@ -9,8 +9,6 @@ import { GameResponseDTO } from 'src/dto/gameResponse.dto';
 import {
   GameStateDTO,
   GameStartDTO,
-  GameEndDTO,
-  GamePauseDTO,
   LobbyStartDTO,
   LobbyEndDTO,
   CountdonwDTO,
@@ -24,7 +22,6 @@ import { MatchService } from 'src/match/match.service';
 import { DeathGameRoom } from './entity/deathGameRoom';
 import { Lobby } from './entity/lobby';
 import { PracticeGameRoom } from './entity/practiceGameRoom';
-import { cp } from 'fs';
 
 export enum PowerUp{
   NORMAL = 0,
@@ -297,7 +294,7 @@ export class GameService {
     this.gameLobbies.set(player.intraName, lobby);
     lobby.player2Ready = true;
     lobby.player2PowerUp = "normal";
-    player.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player.intraName, "bot", "practice")));
+    player.socket.emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player.intraName, "BOT", "practice")));
   }
 
   joinLobby(player1: Player, player2: Player, gameType: string) {
@@ -344,7 +341,6 @@ export class GameService {
   }
 
   async joinInvite(client: Socket, messageID: number){
-    console.log("join invite")
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -356,13 +352,11 @@ export class GameService {
     const INVITATION = this.invitationRoom.get(messageID);
     //Invitation not found
     if (INVITATION === undefined){
-      console.log("invitation not found");
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
     //The client is the host of the invite, so cannot join
     if (INVITATION.host.intraName == user_data.intraName){
-      console.log("host cannot join");
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
