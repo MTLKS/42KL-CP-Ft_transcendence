@@ -1,7 +1,7 @@
 import GameEntity, { GameBlackhole } from "../model/GameEntities";
 import GameParticle from "../model/GameParticle";
 
-let interval: NodeJS.Timeout;
+let interval: number;
 const gameParticles: GameParticle[] = [];
 let gameEntities: GameEntity[] = [];
 let pongPosition: { x: number; y: number } = { x: 0, y: 0 };
@@ -17,7 +17,7 @@ function eventLoop() {
         if (entity.type == "blackhole")
           particle.setGravityAccel(entity.x, entity.y, 2);
       });
-      particle.update();
+      particle.update({});
     });
     gameParticles.push(
       new GameParticle({
