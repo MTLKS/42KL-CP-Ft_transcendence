@@ -1,6 +1,17 @@
-const messageNotificationSound = new Audio('../../assets/sounds/new-message.wav');
-const blackHoleSound = new Audio('../../assets/sounds/BlackHole.wav');
-const endGameSound = new Audio('../../assets/sounds/EndGame.wav');
+import newMessage from "../../assets/sounds/new-message.wav";
+import blackHole from "../../assets/sounds/BlackHole.wav";
+import endGame from "../../assets/sounds/EndGame.wav";
+import Wall from "../../assets/sounds/Wall.wav";
+import Paddle from "../../assets/sounds/Paddle.wav";
+import Score from "../../assets/sounds/Score.wav";
+import Slow from "../../assets/sounds/Slow.wav";
+import SlowEnd from "../../assets/sounds/SlowEnd.wav";
+import Fast from "../../assets/sounds/Fast.wav";
+import EndGameExplosion from "../../assets/sounds/EndGameExplosion.wav";
+
+const messageNotificationSound = new Audio(newMessage);
+const blackHoleSound = new Audio(blackHole);
+const endGameSound = new Audio(endGame);
 
 export enum HitType {
   NONE,
@@ -12,36 +23,36 @@ export enum HitType {
   SLOW_OUT,
   FAST_IN,
   FAST_OUT,
-  END_GAME
+  END_GAME,
 }
 
-let SoundPath : string[] = [
-  '',
-  '../../assets/sounds/Wall.wav',
-  '../../assets/sounds/Paddle.wav',
-  '../../assets/sounds/Score.wav',
-  '../../assets/sounds/Wall.wav',
-  '../../assets/sounds/Slow.wav',
-  '../../assets/sounds/SlowEnd.wav',
-  '../../assets/sounds/Fast.wav',
-  '',
-  '../../assets/sounds/EndGameExplosion.wav'
-]
+let SoundPath: string[] = [
+  "",
+  Wall,
+  Paddle,
+  Score,
+  "",
+  Slow,
+  SlowEnd,
+  Fast,
+  "",
+  EndGameExplosion,
+];
 
 export const playNewMessageSound = () => {
-  messageNotificationSound.addEventListener('loadedmetadata', () => {
+  messageNotificationSound.addEventListener("loadedmetadata", () => {
     messageNotificationSound.play();
   });
-}
+};
 
 export const playGameSound = (type: HitType) => {
   new Audio(SoundPath[type]).play();
-}
+};
 
 export const playBlackHoleSound = () => {
   blackHoleSound.volume = 1;
   blackHoleSound.play();
-}
+};
 
 export const stopBlackHoleSound = () => {
   const fadeOutInterval = setInterval(() => {
@@ -58,7 +69,7 @@ export const stopBlackHoleSound = () => {
 export const playEngGameSound = () => {
   endGameSound.volume = 1;
   endGameSound.play();
-}
+};
 
 export const stopEngGameSound = () => {
   const fadeOutInterval = setInterval(() => {
@@ -70,4 +81,4 @@ export const stopEngGameSound = () => {
       endGameSound.volume -= 0.1;
     }
   }, 100);
-}
+};

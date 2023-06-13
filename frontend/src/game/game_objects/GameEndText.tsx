@@ -37,10 +37,10 @@ function GameEndText(props: GameEndTextProps) {
   }, []);
 
   return (
-    <Container>
-      <GameText textRef={shadowRef} text={text} fontWeight={text.length > 10 ? '600' : '900'} fontSize={text.length > 10 ? 150 : 250} anchor={0.5} color={!winner ? 0xff0000 : 0x19A6FF} opacity={0.25} />
-      <GameText textRef={textRef} text={text} fontWeight={text.length > 10 ? '600' : '900'} fontSize={text.length > 10 ? 150 : 250} anchor={0.5} />
-    </Container>
+    <>
+      <GameText textRef={shadowRef} text={text} position={{ x: 0, y: 0 }} fontWeight={text.length > 10 ? '600' : '900'} fontSize={text.length > 10 ? 150 : 250} anchor={0.5} color={!winner ? 0xff0000 : 0x19A6FF} opacity={0.25} />
+      <GameText textRef={textRef} text={text} position={{ x: 0, y: 0 }} fontWeight={text.length > 10 ? '600' : '900'} fontSize={text.length > 10 ? 150 : 250} anchor={0.5} />
+    </>
   )
 }
 
