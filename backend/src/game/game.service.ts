@@ -14,7 +14,7 @@ import {
   LobbyStartDTO,
   LobbyEndDTO,
   CountdonwDTO,
-  CreateInviteDTO,
+  CheckCreateInviteDTO,
   RemoveInviteDTO,
   JoinInviteDTO,
   GameTypeChangeDTO,
@@ -311,10 +311,10 @@ export class GameService {
     const CURRENT_INVITE = this.hosts.get(user_data.intraName);
     //Have an ongoing invite
     if (CURRENT_INVITE !== undefined){
-      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error")));
+      client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("error")));
       return;
     }
-    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success")));
+    client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("success")));
   }
 
   async createInvite(client: Socket, sender: string, receiver: string, messageID: number){

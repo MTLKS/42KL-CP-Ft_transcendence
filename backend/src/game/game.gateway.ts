@@ -54,7 +54,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	@SubscribeMessage('createInvite')
 	async handleCreateInvite(@ConnectedSocket() client: Socket, @MessageBody() body: any){
-		console.log(body);
 		this.gameService.createInvite(client, body.sender, body.receiver, body.messageId);
 	}
 
