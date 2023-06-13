@@ -39,7 +39,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
 
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
       if (newMessage.senderChannel.owner.intraId === myProfile.intraId && newMessage.message === "/invite") {
-        gameData.activeInviteMessageId = newMessage.messageId;
+        gameData.updateInviteId(newMessage.messageId);
         createGameLobby(newMessage.messageId);
       }
     });
