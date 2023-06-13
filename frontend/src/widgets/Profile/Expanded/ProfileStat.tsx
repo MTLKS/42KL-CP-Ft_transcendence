@@ -17,7 +17,7 @@ const SmallStatProfile = (props: SmallStatProfileProps) => {
   if (!userData)
     return (<div></div>)
   return (
-    <div className="absolute bg-highlight p-2 w-52 h-28 top-[130px] rounded shadow-md transition-all">
+    <div className="absolute bg-highlight p-2 w-52 h-28 top-[90px] rounded shadow-md transition-all">
       <div className="flex justify-between">
         <div>
           <img src={userData.avatar} alt="User Avatar" className="w-20 h-20 ml-1 pb-0 pl-0 rounded" />
