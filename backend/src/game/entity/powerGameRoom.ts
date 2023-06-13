@@ -498,7 +498,7 @@ export class PowerGameRoom extends GameRoom {
     this.currentEffect = FieldEffect.NORMAL;
     this.Ball.initAcceleration(0, 0);
     this.effectMagnitude = 0;
-    server.emit(
+    server.to(this.roomID).emit(
       'gameState',
       new GameStateDTO('FieldEffect', new FieldEffectDTO('NORMAL', 0, 0, 0)),
     );
