@@ -93,9 +93,11 @@ export class JoinInviteDTO {
 }
 
 export class RemoveInviteDTO{
+	type: "success" | "error";
 	messageID: number;
 
-	constructor(messageID: number) {
+	constructor(type: "success" | "error", messageID: number) {
+		this.type = type;
 		this.messageID = messageID;
 	}
 }

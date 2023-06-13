@@ -92,20 +92,6 @@ export class CountdonwDTO{
 	}
 }
 
-export class CreateInviteDTO {
-  type: "success" | "error";
-  sender: string;
-  receiver: string;
-  uuid: string;
-
-  constructor(type: "success" | "error", sender: string, receiver: string, uuid: string) {
-    this.type = type;
-    this.sender = sender;
-    this.receiver = receiver;
-    this.uuid = uuid;
-  }
-}
-
 export class CheckCreateInviteDTO {
   type: "success" | "error";
 
@@ -114,21 +100,31 @@ export class CheckCreateInviteDTO {
   }
 }
 
+export class CreateInviteDTO{
+	messageID: number;
+
+	constructor(messageID: number) {
+		this.messageID = messageID;
+	}
+}
+
 export class JoinInviteDTO {
   type: "success" | "error";
-  uuid: string;
+  messageID: number;
 
-  constructor(type: "success" | "error", uuid: string) {
+  constructor(type: "success" | "error", messageID: number) {
     this.type = type;
-    this.uuid = uuid;
+    this.messageID = messageID;
   }
 }
 
-export class CancelInviteDTO{
-	uuid: string;
+export class RemoveInviteDTO{
+	type: "success" | "error";
+	messageID: number;
 
-	constructor(uuid: string) {
-		this.uuid = uuid;
+	constructor(type: "success" | "error", messageID: number) {
+		this.type = type;
+		this.messageID = messageID;
 	}
 }
 
@@ -141,11 +137,11 @@ export class GameTypeChangeDTO {
 }
 
 export class GameStateDTO {
-	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" | "JoinInvite" | "CancelInvite" | "GameTypeChange" | "CheckCreateInvite";
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | CancelInviteDTO | GameTypeChangeDTO | CheckCreateInviteDTO;
+	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange" | "CheckCreateInvite";
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO | CheckCreateInviteDTO;
 
-	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" | "JoinInvite" | "CancelInvite" | "GameTypeChange" | "CheckCreateInvite",
-	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | CancelInviteDTO| GameTypeChangeDTO | CheckCreateInviteDTO) {
+	constructor(type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange" | "CheckCreateInvite",
+	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO | CheckCreateInviteDTO) {
 		this.type = type;
 		this.data = data;
 	}

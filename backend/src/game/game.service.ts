@@ -187,7 +187,7 @@ export class GameService {
     if (INVITE !== undefined) {
       client.emit(
         'gameResponse',
-        new GameResponseDTO('error', 'Is sending invite'),
+        new GameResponseDTO('error', 'Already sending invite'),
       );
       return;
     }
@@ -321,15 +321,9 @@ export class GameService {
     const CURRENT_INVITE = this.hosts.get(user_data.intraName);
     //Have an ongoing invite
     if (CURRENT_INVITE !== undefined){
-
-      console.log("Invite already exists");
-
       client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("error")));
       return;
     }
-
-    console.log("success");
-
     client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("success")));
   }
 
@@ -347,11 +341,10 @@ export class GameService {
     this.hosts.set(HOST.intraName, messageID);
     this.invitationRoom.set(messageID, INVITATION);
     client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO(messageID)));
-    console.log(this.hosts);
-    console.log(this.invitationRoom);
   }
 
   async joinInvite(client: Socket, messageID: number){
+    console.log("join invite")
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
     try{
@@ -363,18 +356,19 @@ export class GameService {
     const INVITATION = this.invitationRoom.get(messageID);
     //Invitation not found
     if (INVITATION === undefined){
+      console.log("invitation not found");
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
-    //The client is the host of the invite
+    //The client is the host of the invite, so cannot join
     if (INVITATION.host.intraName == user_data.intraName){
+      console.log("host cannot join");
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
       return;
     }
     else{
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("success", messageID)));
-      // client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
-      // INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(messageID)));
+      INVITATION.host.socket.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO("success",messageID)));
       this.hosts.delete(INVITATION.host.intraName);
       this.invitationRoom.delete(messageID);
 
@@ -398,10 +392,13 @@ export class GameService {
     }
     const MESSAGE_ID = this.hosts.get(user_data.intraName);
     if (MESSAGE_ID !== undefined){
-      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO(MESSAGE_ID)));
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO("success",MESSAGE_ID)));
       this.invitationRoom.delete(MESSAGE_ID);
+      this.hosts.delete(user_data.intraName);
     }
-    this.hosts.delete(user_data.intraName);
+    else{
+      client.emit('gameState', new GameStateDTO('RemoveInvite', new RemoveInviteDTO("error",-1)));
+    }
   }
 
   getLobbyKeyFromIntraNames(intraName: string): string | undefined {
@@ -487,9 +484,6 @@ export class GameService {
       return;
     }
     if (this.getPowerUp(powerUp) === null) return;
-    if (gameType === "private") {
-      gameType = "standard";
-    }
     this.gameLobbies.forEach((gameLobby, key) => {
       if (gameLobby.player1.intraName === user_data.intraName) {
         gameLobby.player1Ready = ready;
@@ -520,7 +514,7 @@ export class GameService {
   async joinPractice(server: Server, player: Player, powerUp: PowerUp) {
     let room = new PracticeGameRoom(player, powerUp);
     player.socket.join(room.roomID);
-    player.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO("Bot", "standard", true, room.roomID, powerUp)));
+    player.socket.emit('gameState', new GameStateDTO('GameStart', new GameStartDTO("BOT", "standard", true, room.roomID, powerUp)));
     this.gameRooms.set(room.roomID, room);
     await room.run(server);
   }

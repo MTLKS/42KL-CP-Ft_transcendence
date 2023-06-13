@@ -14,6 +14,7 @@ import {
   JoinInviteDTO,
   GameTypeChangeDTO,
   CheckCreateInviteDTO,
+  RemoveInviteDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -106,8 +107,12 @@ export class GameData {
   gameStarted: boolean = false;
   gameRoom: string = "";
   gameType: GameType = "";
+  isPrivate: boolean = false;
   gameEntities: GameEntity[] = [];
   inFocus: boolean = true;
+
+  // game invite related variables
+  activeInviteMessageId: number = -1;
 
   // global effects
   globalSpeedFactor: number = 1;
@@ -143,6 +148,7 @@ export class GameData {
   lobbyCountdown?: () => void;
   stopDisplayQueue?: () => void;
   setGameType?: (gameType: GameType) => void;
+  changeStatus?: (status: string) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -320,6 +326,7 @@ export class GameData {
       return;
     }
     this.stopDisplayQueue!();
+    this.changeStatus!("INGAME");
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
     if (this.setUsingTicker) this.setUsingTicker(true);
@@ -400,6 +407,7 @@ export class GameData {
     if (!this.gameStarted) return;
     this.stopDisplayLobby!();
     await sleep(7000);
+    this.changeStatus!("ONLINE");
     this.stopDisplayGame();
     this.gameStarted = false;
     this.isLeft = false;
@@ -435,6 +443,7 @@ export class GameData {
         this.gameType = lobbyStartData.gameType;
         this.player1IntraId = lobbyStartData.player1IntraName;
         this.player2IntraId = lobbyStartData.player2IntraName;
+        this.isPrivate = lobbyStartData.isPrivate;
 
         this.displayLobby!();
         this.stopDisplayQueue!();
@@ -521,24 +530,31 @@ export class GameData {
         break;
       case "CheckCreateInvite":
         const checkCreateInviteData = <CheckCreateInviteDTO>state.data;
-        if (checkCreateInviteData.type === "success" && this.setCanCreateInvite) {
+        if (
+          checkCreateInviteData.type === "success" &&
+          this.setCanCreateInvite
+        ) {
           this.setCanCreateInvite(true);
-        } else if (checkCreateInviteData.type === "error" && this.setUnableToCreateInvite) {
+        } else if (
+          checkCreateInviteData.type === "error" &&
+          this.setUnableToCreateInvite
+        ) {
           this.setUnableToCreateInvite(true);
         }
-      // case "CreateInvite":
-      //   const createInviteData = <CreateInviteDTO>state.data;
-      //   if (createInviteData.type === "success" && this.setInviteCreated) {
-      //     this.setInviteCreated(true);
-      //   } else if (createInviteData.type === "error" && this.setUnableToCreateInvite) {
-      //     this.setUnableToCreateInvite(true);
-      //   }
-      //   break;
+        break;
+      case "RemoveInvite":
+        const removeInviteData = <RemoveInviteDTO>state.data;
+        if (removeInviteData.type === "success") {
+          this.activeInviteMessageId = -1;
+        }
       case "JoinInvite":
         const joinInviteData = <JoinInviteDTO>state.data;
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
-        } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
+        } else if (
+          joinInviteData.type === "error" &&
+          this.setUnableToAcceptInvite
+        ) {
           this.setUnableToAcceptInvite(true);
         }
         break;
