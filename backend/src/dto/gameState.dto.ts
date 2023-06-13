@@ -68,15 +68,9 @@ export class LobbyStartDTO {
 
 export class CreateInviteDTO {
 	type: "success" | "error";
-	sender: string;
-	receiver: string;
-	messageID : number;
 
-	constructor(type: "success" | "error", sender: string, receiver: string, messageID: number) {
+	constructor(type: "success" | "error") {
 		this.type = type;
-		this.sender = sender;
-		this.receiver = receiver;
-		this.messageID = messageID;
 	}
 }
 

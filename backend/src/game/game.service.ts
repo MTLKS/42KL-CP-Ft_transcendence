@@ -299,6 +299,24 @@ export class GameService {
     player2.socket.to(lobby.name).emit('gameState', new GameStateDTO('LobbyStart', new LobbyStartDTO(player1.intraName, player2.intraName, gameType)));
   }
 
+  async checkCreateInvite(client: Socket){
+    let user_data;
+    const ACCESS_TOKEN = client.handshake.headers.authorization;
+    try{
+      user_data = await this.userService.getMyUserData(ACCESS_TOKEN);
+    }
+    catch{
+      return;
+    }
+    const CURRENT_INVITE = this.hosts.get(user_data.intraName);
+    //Have an ongoing invite
+    if (CURRENT_INVITE !== undefined){
+      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error")));
+      return;
+    }
+    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success")));
+  }
+
   async createInvite(client: Socket, sender: string, receiver: string, messageID: number){
     let user_data;
     const ACCESS_TOKEN = client.handshake.headers.authorization;
@@ -308,30 +326,10 @@ export class GameService {
     catch{
       return;
     }
-    let host = new Player(user_data.intraName, ACCESS_TOKEN, client);
-
-    //Have an ongoing invite
-    const CURRENT_INVITE = this.hosts.get(host.intraName);
-    if (CURRENT_INVITE !== undefined){
-
-      //TESTING
-      // console.log("have ongoing invite");
-      // console.log(this.hosts);
-      // console.log(this.invitationRoom);
-
-      client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("error", sender, receiver, -1)));
-      return;
-    }
-    const INVITATION = new Invitation(host, receiver);
-
-    //TESTING
-    // console.log("create invite success");
-    // console.log(this.hosts);
-    // console.log(this.invitationRoom);
-
-    this.hosts.set(host.intraName, messageID);
+    const HOST = new Player(user_data.intraName, ACCESS_TOKEN, client);
+    const INVITATION = new Invitation(HOST, receiver);
+    this.hosts.set(HOST.intraName, messageID);
     this.invitationRoom.set(messageID, INVITATION);
-    client.emit('gameState', new GameStateDTO('CreateInvite', new CreateInviteDTO("success",sender, receiver, messageID)));
   }
 
   async joinInvite(client: Socket, messageID: number){
