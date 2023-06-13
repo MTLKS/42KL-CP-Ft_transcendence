@@ -14,6 +14,7 @@ import {
   JoinInviteDTO,
   GameTypeChangeDTO,
   CheckCreateInviteDTO,
+  RemoveInviteDTO,
 } from "../model/GameStateDTO";
 import { Offset } from "../model/GameModels";
 import { clamp } from "lodash";
@@ -524,23 +525,19 @@ export class GameData {
         break;
       case "CheckCreateInvite":
         const checkCreateInviteData = <CheckCreateInviteDTO>state.data;
-        console.log("ccid:", checkCreateInviteData);
         if (checkCreateInviteData.type === "success" && this.setCanCreateInvite) {
           this.setCanCreateInvite(true);
         } else if (checkCreateInviteData.type === "error" && this.setUnableToCreateInvite) {
           this.setUnableToCreateInvite(true);
         }
-      // case "CreateInvite":
-      //   const createInviteData = <CreateInviteDTO>state.data;
-      //   if (createInviteData.type === "success" && this.setInviteCreated) {
-      //     this.setInviteCreated(true);
-      //   } else if (createInviteData.type === "error" && this.setUnableToCreateInvite) {
-      //     this.setUnableToCreateInvite(true);
-      //   }
-      //   break;
+        break;
+      case "RemoveInvite":
+        const removeInviteData = <RemoveInviteDTO>state.data;
+        if (removeInviteData.type === "success") {
+          this.activeInviteMessageId = -1;
+        }
       case "JoinInvite":
         const joinInviteData = <JoinInviteDTO>state.data;
-        console.log("jid:", joinInviteData);
         if (joinInviteData.type === "success" && this.setJoinSuccessful) {
           this.setJoinSuccessful(true);
         } else if (joinInviteData.type === "error" && this.setUnableToAcceptInvite) {
