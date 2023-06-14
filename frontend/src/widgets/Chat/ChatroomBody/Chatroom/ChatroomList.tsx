@@ -35,7 +35,6 @@ function ChatroomList() {
   useEffect(() => {
     const newUnreadChatrooms: number[] = [...unreadChatrooms];
     chatSocket.listen("message", (data: ChatroomMessageData) => {
-      console.log(data);
       const channelInfo = (data.isRoom ? data.receiverChannel : data.senderChannel);
       getAllChatrooms();
       if (unreadChatrooms.includes(channelInfo.channelId)) return;
@@ -44,10 +43,6 @@ function ChatroomList() {
     });
     return () => chatSocket.removeListener("message");
   }, []);
-
-  useEffect(() => {
-    console.log(unreadChatrooms);
-  }, [unreadChatrooms]);
 
   useEffect(() => {
     getAllChatrooms();
@@ -88,7 +83,6 @@ function ChatroomList() {
       chatrooms.push(...chatroomsFromDb.data);
     }
     setChatrooms(chatrooms);
-    console.log(chatrooms);
   }
 
   function displayChatrooms() {
