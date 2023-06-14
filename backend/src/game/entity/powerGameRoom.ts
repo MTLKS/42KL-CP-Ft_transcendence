@@ -66,6 +66,7 @@ export class PowerGameRoom extends GameRoom {
   blackHoleForce: number;
   blockSize: number;
   blockMass: number;
+  lastShotSent: number = 0;
 
   constructor(
     player1: Player,
@@ -214,13 +215,15 @@ export class PowerGameRoom extends GameRoom {
     this.gameCollisionDetection();
 
     if (this.player1Score == this.roomSettings.scoreToWin - 1){
-      if (this.Ball.posX < this.roomSettings.paddleOffsetX + this.leftPaddle.width) {
+      if (this.Ball.posX < this.roomSettings.paddleOffsetX + this.leftPaddle.width && this.lastShotSent == 0) {
+        this.lastShotSent = 1;
         server.to(this.roomID).emit('gameState', new GameStateDTO('LastShot', null));
       }
     }
 
     if (this.player2Score == this.roomSettings.scoreToWin - 1){
-      if (this.Ball.posX > this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width) {
+      if (this.Ball.posX > this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width && this.lastShotSent == 0) {
+        this.lastShotSent = 1;
         server.to(this.roomID).emit('gameState', new GameStateDTO('LastShot', null));
       }
     }
