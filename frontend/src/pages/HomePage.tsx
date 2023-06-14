@@ -589,6 +589,9 @@ function HomePage(props: HomePageProps) {
       } else {
         newList = appendNewCard(<Card key={"game" + index} type={CardType.ERROR}>{`${response.message}`}</Card>)
         setElements(newList);
+        if (queueExpanded) {
+          setQueueExpanded(false);
+        }
       }
     } else if (commands[1] == "dequeue") {
       let response: GameResponseDTO = await gameData.leaveQueue();
