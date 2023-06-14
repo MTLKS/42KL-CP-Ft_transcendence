@@ -301,7 +301,7 @@ function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.Mu
 // }
 
 async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
-  if (!(((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1540 && newPosition.x <= 1580)
+  if (!(((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1550 && newPosition.x <= 1580)
     || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40 && newPosition.x >= 10))
     && zoomSlowMoRef.current === null)) return;
   gameData.useLocalTick();

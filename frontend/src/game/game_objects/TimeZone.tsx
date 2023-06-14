@@ -4,6 +4,8 @@ import { BoxSize, Offset } from '../../model/GameModels';
 import * as PIXI from 'pixi.js';
 import { DropShadowFilter } from 'pixi-filters';
 import { GameDataCtx } from '../../GameApp';
+import wheelChairMove from '../../../assets/icons/wheelchair-move-solid.svg';
+import wheelChair from '../../../assets/icons/wheelchair-solid.svg';
 
 
 export enum TimeZoneType {
@@ -49,11 +51,11 @@ function TimeZone(props: TimeZoneProps) {
   const iconTexture = useMemo(() => {
     switch (type) {
       case TimeZoneType.SPEEDUP:
-        return PIXI.Texture.from("../../../assets/icons/wheelchair-move-solid.svg");
+        return PIXI.Texture.from(wheelChairMove);
       case TimeZoneType.SLOWDOWN:
-        return PIXI.Texture.from("../../../assets/icons/wheelchair-solid.svg");
+        return PIXI.Texture.from(wheelChair);
       default:
-        return PIXI.Texture.from("../../../assets/icons/wheelchair-move-solid.svg");
+        return PIXI.Texture.from(wheelChairMove);
     }
   }, [type]);
 

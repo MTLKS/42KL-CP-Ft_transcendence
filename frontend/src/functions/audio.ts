@@ -31,7 +31,7 @@ let SoundPath: string[] = [
   Wall,
   Paddle,
   Score,
-  "",
+  Wall,
   Slow,
   SlowEnd,
   Fast,
@@ -46,6 +46,7 @@ export const playNewMessageSound = () => {
 };
 
 export const playGameSound = (type: HitType) => {
+  if (SoundPath[type] === "") return;
   new Audio(SoundPath[type]).play();
 };
 
