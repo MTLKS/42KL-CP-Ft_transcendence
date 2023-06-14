@@ -328,13 +328,21 @@ export class GameData {
     }
   }
 
-  startGame() {
+  async startGame() {
     if (this.gameStarted) {
       console.error("game already started");
       return;
     }
-    this.stopDisplayQueue!();
-    this.changeStatus!("INGAME");
+    while (
+      !this.stopDisplayQueue ||
+      !this.changeStatus ||
+      !this.setShouldRender ||
+      !this.setUsingTicker
+    ) {
+      await sleep(10);
+    }
+    if (this.stopDisplayQueue) this.stopDisplayQueue();
+    if (this.changeStatus) this.changeStatus("INGAME");
     this.gameStarted = true;
     if (this.setShouldRender) this.setShouldRender(true);
     if (this.setUsingTicker) this.setUsingTicker(true);
@@ -478,6 +486,7 @@ export class GameData {
         break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
+        console.log(data);
         this.isLeft = data.isLeft;
         this.isRight = !data.isLeft;
         this.gameRoom = data.gameRoom;
