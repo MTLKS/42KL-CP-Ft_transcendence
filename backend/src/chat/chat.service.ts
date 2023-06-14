@@ -151,16 +151,9 @@ export class ChatService {
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const DM_CHANNEL = await this.channelRepository.find({ where: { channelName: In(MEMBERS.map(memberInChannel => memberInChannel.user.intraName)), isRoom: false }, relations: ['owner'] });
 			const CHANNEL_ID = DM_CHANNEL.map(memberInChannel => memberInChannel.channelId);
-			let lastMessage: Message | null;
-			if (member.channel.isRoom === true) {
-				lastMessage = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: member.channel.channelId }, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: member.channel.channelId } }], order: { timeStamp: "DESC" }, relations: ['senderChannel.owner', 'receiverChannel.owner'] });
-			} else {
-				lastMessage = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: member.channel.channelId }, senderChannel: { channelId: MY_CHANNEL.channelId } }, { receiverChannel: { channelId: MY_CHANNEL.channelId }, senderChannel: { channelId: member.channel.channelId } }], order: { timeStamp: "DESC" }, relations: ['senderChannel.owner', 'receiverChannel.owner'] });
-			}
-			if (lastMessage !== null && (lastMessage.senderChannel.owner.intraName !== USER_DATA.intraName || lastMessage.receiverChannel.owner.intraName !== USER_DATA.intraName))
-				member.channel.newMessage = false;
-			else
-				member.channel.newMessage = lastMessage === null ? false : lastMessage.timeStamp > member.lastRead;
+			let lastMessage = await this.getAllChannelMessage(accessToken, member.channel.channelId, 1, 1);
+			lastMessage = lastMessage.length === 0 ? null : lastMessage[0];
+			member.channel.newMessage = lastMessage.timeStamp > member.lastRead;
 			member.channel.owner.accessToken = lastMessage === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : lastMessage.timeStamp;
 			channel.push(member.channel);
 		}
