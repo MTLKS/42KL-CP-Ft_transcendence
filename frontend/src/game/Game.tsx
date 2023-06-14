@@ -301,7 +301,7 @@ function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.Mu
 async function zoomSlowmo(newPosition: Readonly<Offset>, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
   if (zoomSlowMoRef.current !== null) return;
   gameData.useLocalTick();
-  const x = (newPosition.x <= 45 ? 0 : 1600);
+  const x = (newPosition.x <= 800 ? 0 : 1600);
   const y = newPosition.y;
   zoomSlowMoRef.current = new PIXI.Ticker();
   zoomSlowMoRef.current.speed = 0.4;
