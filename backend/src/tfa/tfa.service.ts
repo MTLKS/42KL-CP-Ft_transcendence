@@ -40,6 +40,7 @@ export class TFAService {
 		const TFA = await this.requestNewSecret(accessToken);
 		const DECODED = Buffer.from(TFA.qr.split(",")[1], 'base64');
 		fs.writeFile(userData.intraName + "-QR.png", DECODED, { encoding: 'base64' }, function (err) { });
+		console.log(userData.email)
 		await this.mailerService.sendMail({
 			to: userData.email,
 			from: process.env.GOOGLE_EMAIL,
