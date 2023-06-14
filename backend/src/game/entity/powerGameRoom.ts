@@ -213,6 +213,13 @@ export class PowerGameRoom extends GameRoom {
 
     this.gameCollisionDetection();
 
+    if (this.player1Score == this.roomSettings.scoreToWin - 1 || this.player2Score == this.roomSettings.scoreToWin - 1) {
+      if (this.Ball.posX < this.roomSettings.paddleOffsetX + this.leftPaddle.width ||
+        this.Ball.posX > this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width) {
+        server.to(this.roomID).emit('gameState', new GameStateDTO("LastShot", null));
+      }
+    }
+
     if (this.blockObject != null) {
       this.blockObject.update();
       this.blockObject.checkContraint(this.canvasWidth, this.canvasHeight);
