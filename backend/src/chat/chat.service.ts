@@ -152,8 +152,9 @@ export class ChatService {
 			const CHANNEL_ID = DM_CHANNEL.map(memberInChannel => memberInChannel.channelId);
 			let lastMessage = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: member.channel.channelId }, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: member.channel.channelId } }], order: { timeStamp: "DESC" }, relations: ['senderChannel.owner', 'receiverChannel.owner'] });
 			if (lastMessage !== null && (lastMessage.senderChannel.owner.intraName !== USER_DATA.intraName || lastMessage.receiverChannel.owner.intraName !== USER_DATA.intraName))
-				lastMessage = null;
-			member.channel.newMessage = lastMessage === null ? false : lastMessage.timeStamp > member.lastRead;
+				member.channel.newMessage = false;
+			else
+				member.channel.newMessage = lastMessage === null ? false : lastMessage.timeStamp > member.lastRead;
 			member.channel.owner.accessToken = lastMessage === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : lastMessage.timeStamp;
 			channel.push(member.channel);
 		}

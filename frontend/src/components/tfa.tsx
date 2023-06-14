@@ -5,6 +5,7 @@ import Card, { CardType } from './Card';
 import UserContext from '../contexts/UserContext';
 import { getMyProfile } from '../api/profileAPI';
 import { UserData } from '../model/UserData';
+import { ErrorData } from '../model/ErrorData';
 
 interface TFAProps {
 	commands: string[];
@@ -66,9 +67,9 @@ function Tfa(props: TFAProps) {
 				updateMyProfile(setMyProfile);
 			})
 		}, [])
-	} else if (commands.length === 2 && commands[1].length === 6 && commands[1].match(/^[0-9]+$/) !== null) {
+	} else if (commands.length === 3 && commands[1] === "check" && commands[2].length === 6 && commands[2].match(/^[0-9]+$/) !== null) {
 		useEffect(() => {
-			checkTFA(commands[1]).then((data) => {
+			checkTFA(commands[2]).then((data) => {
 				setResult(data.success ? TFACommands.success : TFACommands.fail)
 			})
 		}, [])
@@ -76,12 +77,13 @@ function Tfa(props: TFAProps) {
 		useEffect(() => {
 			setResult(TFACommands.sending)
 			forgotTFA().then((data) => {
-				if (data.error === "Not authorized") {
+				setResult(data.error !== undefined ? TFACommands.notset : TFACommands.forgot)
+			}).catch((error: any) => {
+				console.log(error);
+				const errorObj = error.response.data as ErrorData;
+				if (errorObj && errorObj.error === "Not authorized") {
 					document.cookie = "Authorization=;";
 					setResult(TFACommands.refresh);
-				}
-				else {
-					setResult(data.error !== undefined ? TFACommands.notset : TFACommands.forgot)
 				}
 			})
 		}, [])
