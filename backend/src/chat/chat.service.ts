@@ -150,10 +150,9 @@ export class ChatService {
 				continue;
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const DM_CHANNEL = await this.channelRepository.find({ where: { channelName: In(MEMBERS.map(memberInChannel => memberInChannel.user.intraName)), isRoom: false }, relations: ['owner'] });
-			const CHANNEL_ID = DM_CHANNEL.map(memberInChannel => memberInChannel.channelId);
 			let lastMessage = await this.getAllChannelMessage(accessToken, member.channel.channelId, 1, 1);
 			lastMessage = lastMessage.length === 0 ? null : lastMessage[0];
-			member.channel.newMessage = lastMessage.timeStamp > member.lastRead;
+			member.channel.newMessage = lastMessage === null ? false : lastMessage.timeStamp > member.lastRead;
 			member.channel.owner.accessToken = lastMessage === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : lastMessage.timeStamp;
 			channel.push(member.channel);
 		}
