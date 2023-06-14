@@ -79,7 +79,6 @@ function Tfa(props: TFAProps) {
 			forgotTFA().then((data) => {
 				setResult(data.error !== undefined ? TFACommands.notset : TFACommands.forgot)
 			}).catch((error: any) => {
-				console.log(error);
 				const errorObj = error.response.data as ErrorData;
 				if (errorObj && errorObj.error === "Not authorized") {
 					document.cookie = "Authorization=;";

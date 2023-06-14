@@ -255,7 +255,7 @@ function ChatroomTextField(props: ChatroomTextFieldProps) {
           onKeyDown={handleKeyPress}
         >
         </textarea>
-        <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={() => sendMessage()}>
+        <button className='w-[60px] bg-highlight rounded-tr-md p-4 cursor-pointer' onClick={() => message === "/invite" ? sendInvite() : sendMessage()}>
           <FaPaperPlane className='w-full h-full -ml-1 text-3xl text-dimshadow aspect-square' />
         </button>
       </div>
