@@ -128,6 +128,11 @@ export class CountdonwDTO{
 	}
 }
 
+export class LastShotDTO{
+	constructor(){
+
+	}
+}
 export class GameStateDTO {
 	type: "GameStart" | "GameEnd" | "GamePause" | "FieldEffect" | "LobbyStart" | "LobbyEnd" | "LobbyCountdown" | "GameCountdown" | "CheckCreateInvite"| "CreateInvite" | "JoinInvite" | "RemoveInvite" | "GameTypeChange" | "LastShot";
 	data : GameStartDTO | GameEndDTO | GamePauseDTO | FieldEffectDTO | LobbyStartDTO | LobbyEndDTO | CountdonwDTO | CheckCreateInviteDTO | CreateInviteDTO | JoinInviteDTO | RemoveInviteDTO | GameTypeChangeDTO | null;

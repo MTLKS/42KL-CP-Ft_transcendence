@@ -565,6 +565,9 @@ export class GameData {
           this.setUnableToAcceptInvite(true);
         }
         break;
+      case "LastShot":
+        console.log("last shot");
+        break;
       default:
         break;
     }
