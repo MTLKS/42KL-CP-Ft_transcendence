@@ -150,6 +150,7 @@ export class GameData {
   stopDisplayQueue?: () => void;
   setGameType?: (gameType: GameType) => void;
   changeStatus?: (status: string) => void;
+  zoomSlowMo?: (position: Offset) => void;
 
   resize?: () => void;
   focus?: () => void;
@@ -469,6 +470,9 @@ export class GameData {
         const lobbyCountdownData = <CountdonwDTO>state.data;
         this.lobbyCountdown!();
         break;
+      case "LastShot":
+        this.zoomSlowMo!(this._pongPosition);
+        break;
       case "GameCountdown":
         const gameCountdownData = <CountdonwDTO>state.data;
         break;
@@ -564,9 +568,6 @@ export class GameData {
         ) {
           this.setUnableToAcceptInvite(true);
         }
-        break;
-      case "LastShot":
-        console.log("last shot");
         break;
       default:
         break;

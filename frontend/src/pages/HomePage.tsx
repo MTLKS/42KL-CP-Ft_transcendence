@@ -202,7 +202,7 @@ function HomePage(props: HomePageProps) {
         return;
       case "leaderboard":
         newList = elements;
-        if (midWidget.type.name === "Leaderboard") {
+        if (midWidget.type === Leaderboard) {
           setMidWidget(<MatrixRain />);
           break;
         }

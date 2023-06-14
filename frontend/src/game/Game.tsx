@@ -100,21 +100,20 @@ function Game(props: GameProps) {
 
   useEffect(() => {
     gameData.ballHit = ballhit;
+    gameData.zoomSlowMo = (position: Offset) => zoomSlowmo(position, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
   }, [scale]);
 
   useEffect(() => {
     setMounted(true);
     app.ticker.speed = 1;
+    gameData.zoomSlowMo = (position: Offset) => zoomSlowmo(position, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
     return () => setMounted(false);
   }, []);
 
   useTick((delta) => {
     if (!gameData.gameDisplayed || !mounted) return;
-    const newPosition = gameData.pongPosition;
     const newPongSpeed = gameData.pongSpeed;
     const pongSpeedMagnitude = Math.sqrt(newPongSpeed.x ** 2 + newPongSpeed.y ** 2);
-    const leftPaddlePosition = gameData.leftPaddlePosition;
-    const rightPaddlePosition = gameData.rightPaddlePosition;
     let newGameGravityArrow = gameGravityArrow;
 
     updateFpsText(fpsTextRef, timeRef);
@@ -129,8 +128,7 @@ function Game(props: GameProps) {
     setPlayer1Score(gameData.player1Score);
     setPlayer2Score(gameData.player2Score);
     if (gameData.gameType === "death") setNumberHits(gameData.numberHits);
-    if (gameData.gameType !== "boring") zoomSlowmo(newPosition, player1Score, player2Score, zoomSlowMoRef, gameData, app, containerRef, scale, displayGameEndText);
-    else {
+    if (gameData.gameType === "boring") {
       if ((gameData.player1Score === 10 && gameData.isLeft) || (gameData.player2Score === 10 && gameData.isRight))
         setGameEndText(<GameText text='Win' position={{ x: 800, y: 450 }} anchor={0.5} fontSize={250} fontWeight='900' />);
       else if (gameData.player1Score === 10 || gameData.player2Score === 10)
@@ -300,10 +298,8 @@ function updateFpsText(fpsTextRef: React.RefObject<PIXI.Text>, timeRef: React.Mu
 //   }
 // }
 
-async function zoomSlowmo(newPosition: Readonly<Offset>, player1Score: number, player2Score: number, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
-  if (!(((player1Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x >= 1550 && newPosition.x <= 1580)
-    || (player2Score === (gameData.gameType === "death" ? 0 : 9) && newPosition.x <= 40 && newPosition.x >= 10))
-    && zoomSlowMoRef.current === null)) return;
+async function zoomSlowmo(newPosition: Readonly<Offset>, zoomSlowMoRef: React.MutableRefObject<PIXI.Ticker | null>, gameData: GameData, app: PIXI.Application<PIXI.ICanvas>, containerRef: React.RefObject<PIXI.Container<PIXI.DisplayObject>>, scale: number, displayGameEndText: (win: boolean) => void) {
+  if (zoomSlowMoRef.current !== null) return;
   gameData.useLocalTick();
   const x = (newPosition.x <= 45 ? 0 : 1600);
   const y = newPosition.y;
