@@ -1,6 +1,6 @@
 import { FriendshipService } from "src/friendship/friendship.service";
 import { Friendship } from "src/entity/friendship.entity";
-import { ChannelDTO, MemberDTO } from "src/dto/chat.dto";
+import { ChannelDTO, MemberDTO, MessageDTO } from "src/dto/chat.dto";
 import { Channel } from "src/entity/channel.entity";
 import { Message } from "src/entity/message.entity";
 import { UserService } from "src/user/user.service";
@@ -142,6 +142,7 @@ export class ChatService {
 		if (Number.isNaN(page) === true)
 			page = 1;
 		const USER_DATA = await this.userService.getMyUserData(accessToken);
+		const MY_CHANNEL = await this.channelRepository.findOne({ where: { channelName: USER_DATA.intraName, isRoom: false }, relations: ['owner'] });
 		const MY_MEMBERS = await this.memberRepository.find({ where: { user: { intraName: USER_DATA.intraName } }, relations: ['user', 'channel', 'channel.owner'] });
 		let channel = [];
 		for (let member of MY_MEMBERS) {
@@ -150,9 +151,10 @@ export class ChatService {
 			const MEMBERS = await this.memberRepository.find({ where: { channel: { channelId: member.channel.channelId } }, relations: ['user', 'channel'] });
 			const DM_CHANNEL = await this.channelRepository.find({ where: { channelName: In(MEMBERS.map(memberInChannel => memberInChannel.user.intraName)), isRoom: false }, relations: ['owner'] });
 			const CHANNEL_ID = DM_CHANNEL.map(memberInChannel => memberInChannel.channelId);
-			const LAST_MESSAGE = await this.messageRepository.findOne({ where: [{ receiverChannel: { channelId: member.channel.channelId }, senderChannel: { channelId: In(CHANNEL_ID) } }, { receiverChannel: { channelId: In(CHANNEL_ID) }, senderChannel: { channelId: member.channel.channelId } }], order: { timeStamp: "DESC" } });
-			member.channel.newMessage = LAST_MESSAGE === null ? false : LAST_MESSAGE.timeStamp > member.lastRead;
-			member.channel.owner.accessToken = LAST_MESSAGE === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : LAST_MESSAGE.timeStamp;
+			let lastMessage = await this.getAllChannelMessage(accessToken, member.channel.channelId, 1, 1);
+			lastMessage = lastMessage.length === 0 ? null : lastMessage[0];
+			member.channel.newMessage = lastMessage.timeStamp > member.lastRead;
+			member.channel.owner.accessToken = lastMessage === null ? (member.channel.isRoom === true ? member.lastRead : new Date(-8640000000000000).toISOString()) : lastMessage.timeStamp;
 			channel.push(member.channel);
 		}
 		channel = channel.sort((a, b) => new Date(b.owner.accessToken).getTime() - new Date(a.owner.accessToken).getTime());

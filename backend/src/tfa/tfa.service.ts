@@ -12,13 +12,13 @@ import * as qrCode from "qrcode";
 import * as fs from 'fs';
 
 @Injectable()
-export class TFAService{
-	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService, private readonly mailerService: MailerService) {}
+export class TFAService {
+	constructor(@InjectRepository(User) private userRepository: Repository<User>, private userService: UserService, private readonly mailerService: MailerService) { }
 
-	async requestNewSecret(accessToken: string) : Promise<TfaDTO> {
+	async requestNewSecret(accessToken: string): Promise<TfaDTO> {
 		try {
 			const USER_DATA = await this.userService.getMyUserData(accessToken);
-			const DATA = await this.userRepository.findOne({ where: {intraName: USER_DATA.intraName} });
+			const DATA = await this.userRepository.findOne({ where: { intraName: USER_DATA.intraName } });
 			if (DATA.tfaSecret != null)
 				return new TfaDTO(null, null);
 			DATA.tfaSecret = authenticator.generateSecret();
@@ -32,41 +32,42 @@ export class TFAService{
 	}
 
 	async forgotSecret(accessToken: string): Promise<ErrorDTO> {
-		const INTRA_DATA = await this.userService.getMyIntraData(accessToken);
-		if (INTRA_DATA.error !== undefined)
-			return new ErrorDTO(true, INTRA_DATA.error);
-		const USER_DATA = await this.userRepository.findOne({ where: {intraName: INTRA_DATA.name} });
-		if (USER_DATA.tfaSecret === null)
+		let userData = await this.userService.getMyUserData(accessToken);
+		userData = await this.userRepository.findOne({ where: { intraName: userData.intraName } })
+		if (userData.tfaSecret === null)
 			return new ErrorDTO(true, "Invalid request - You don't have a 2FA setup");
 		await this.deleteSecret(accessToken);
 		const TFA = await this.requestNewSecret(accessToken);
 		const DECODED = Buffer.from(TFA.qr.split(",")[1], 'base64');
-		fs.writeFile(USER_DATA.intraName + "-QR.png", DECODED, {encoding:'base64'}, function(err) {});
+		fs.writeFile(userData.intraName + "-QR.png", DECODED, { encoding: 'base64' }, function (err) { });
+		console.log(userData.email)
 		await this.mailerService.sendMail({
-				to: INTRA_DATA.email,
-				from: process.env.GOOGLE_EMAIL,
-				subject: "2FA Secret Recovery",
-				html: "<h1>New 2FA Secret Requested!</h1><p>Your new 2FA secret is <b>" + TFA.secret + "</b></p>",
-				attachments: [{
-						filename: USER_DATA.intraName + "-QR.png",
-						path: USER_DATA.intraName + "-QR.png",
-					}]
+			to: userData.email,
+			from: process.env.GOOGLE_EMAIL,
+			subject: "2FA Secret Recovery",
+			html: "<h1>New 2FA Secret Requested!</h1><p>Your new 2FA secret is <b>" + TFA.secret + "</b></p>",
+			attachments: [{
+				filename: userData.intraName + "-QR.png",
+				path: userData.intraName + "-QR.png",
+			}]
 		});
-		fs.unlink(USER_DATA.intraName + "-QR.png", () => {});
+		fs.unlink(userData.intraName + "-QR.png", () => { });
+		userData.tfaSecret = TFA.secret;
+		await this.userRepository.save(userData);
 	}
 
-	async validateOTP(accessToken: string, otp: string) : Promise<TfaValidateDTO> {
+	async validateOTP(accessToken: string, otp: string): Promise<TfaValidateDTO> {
 		try {
 			let userData = await this.userService.getMyUserData(accessToken);
-			userData = await this.userRepository.findOne({ where: {intraName: userData.intraName} });
-			return new TfaValidateDTO(authenticator.verify({ token : otp, secret : userData.tfaSecret}));
+			userData = await this.userRepository.findOne({ where: { intraName: userData.intraName } });
+			return new TfaValidateDTO(authenticator.verify({ token: otp, secret: userData.tfaSecret }));
 		} catch {
 			return new TfaValidateDTO(false);
 		}
 	}
 
-	async deleteSecret(accessToken: string) : Promise<UserDTO> {
-		const DATA = await this.userRepository.findOne({ where: {intraName: (await this.userService.getMyUserData(accessToken)).intraName} });
+	async deleteSecret(accessToken: string): Promise<UserDTO> {
+		const DATA = await this.userRepository.findOne({ where: { intraName: (await this.userService.getMyUserData(accessToken)).intraName } });
 		DATA.tfaSecret = null;
 		return this.userService.hideData(await this.userRepository.save(DATA));
 	}

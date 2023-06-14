@@ -33,7 +33,7 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   const { chatroomData } = props;
   const { unreadChatrooms, setUnreadChatrooms } = useContext(ChatroomsContext);
-  const { chatSocket, setChatBody } = useContext(ChatContext);
+  const { chatSocket, setChatBody, activeInviteId } = useContext(ChatContext);
   const { myProfile } = useContext(UserContext);
   const [allMessages, setAllMessages] = useState<ChatroomMessageData[]>([]);
   const [isMessagesSet, setIsMessagesSet] = useState<boolean>(false);
@@ -218,7 +218,13 @@ function ChatroomContent(props: ChatroomContentProps) {
 
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
-      if (chatroomData.isRoom && newMessage.receiverChannel.channelId !== chatroomData.channelId) return;
+      const { senderChannel, receiverChannel } = newMessage;
+      if (senderChannel.owner.intraId === myProfile.intraId && newMessage.message === "/invite" && receiverChannel.channelId === chatroomData.channelId) {
+        setAllMessages((messages) => appendNewMessage(newMessage, messages));
+        return;
+      }
+      if (!chatroomData.isRoom && senderChannel.channelId !== chatroomData.channelId) return;
+      if (chatroomData.isRoom && receiverChannel.channelId !== chatroomData.channelId) return;
       setAllMessages((messages) => appendNewMessage(newMessage, messages));
     });
   }
