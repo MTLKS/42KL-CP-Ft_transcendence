@@ -11,6 +11,7 @@ import { inviteMemberToChannel } from '../../../../api/chatAPIs';
 import { ErrorData } from '../../../../model/ErrorData';
 import { ChatContext } from '../../../../contexts/ChatContext';
 import ChatroomList from '../Chatroom/ChatroomList';
+import MegaMind from '../../../../../assets/images/megamind.png';
 
 interface ChannelProps {
   channelInfo: ChatroomData;
@@ -65,7 +66,7 @@ function Channel(props: ChannelProps) {
         <div className='w-[70%] h-fit bg-dimshadow border-2 border-highlight rounded p-3 flex flex-col gap-y-3'>
           <button className='p-1 border-2 rounded border-dimshadow w-fit aspect-square hover:bg-highlight hover:text-dimshadow bg-dimshadow text-highlight' onClick={closeForm}><FaTimes /></button>
           <div className='relative flex flex-col items-center w-full'>
-            <img src="../../../../../assets/images/megamind.png" className='w-[60%] select-none' alt="no password?" />
+            <img src={MegaMind} className='w-[60%] select-none' alt="no password?" />
             <p className='absolute w-full font-extrabold text-center uppercase top-1'>No password?</p>
           </div>
           {/* {hasErrorJoining && <p className='text-xs text-center bg-accRed px-[1ch] mx-auto w-fit'>{joinChannelErrorMsg}</p>} */}
