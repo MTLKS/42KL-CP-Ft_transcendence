@@ -11,6 +11,7 @@ import sleep from '../../functions/sleep';
 import login from '../../api/loginAPI';
 import { FaArrowLeft } from 'react-icons/fa';
 import UserFormTfa from './UserFormTfa';
+import { ErrorData } from '../../model/ErrorData';
 
 interface IAPIResponse {
   intraId: number,
@@ -183,14 +184,12 @@ function UserForm(props: UserFormProps) {
       formData.append("image", avatarFile);
       try {
         Api.updateToken("TFA", tfaCode);
-        await Api.patch("/user", formData).then((res) => {
-          let retVal = res.data as IAPIResponse;
-          if (retVal.error === "Invalid username - username already exists or invalid") {
-            throw new Error(ErrorCode.NAMETAKEN.toString());
-          }
-        });
+        await Api.patch("/user", formData);
       } catch (Error: any) {
-        return setPopups([parseInt(Error.toString().slice(7))].map((error) => <ErrorPopup key={error} text={getError(error)} />))
+        const error = (Error.response.data as ErrorData);
+        if (error && error.error === "Invalid username - username already exists or invalid") {
+          return setPopups([<ErrorPopup key={error.error} text={getError(ErrorCode.NAMETAKEN)} />]);
+        }
       }
       setPopups([]);
       await sleep(1000);
