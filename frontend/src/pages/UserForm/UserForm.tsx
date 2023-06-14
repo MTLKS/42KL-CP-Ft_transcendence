@@ -183,7 +183,7 @@ function UserForm(props: UserFormProps) {
       formData.append("userName", userName);
       formData.append("image", avatarFile);
       try {
-        Api.updateToken("TFA", tfaCode);
+        Api.updateToken("otp", tfaCode);
         await Api.patch("/user", formData);
       } catch (Error: any) {
         const error = (Error.response.data as ErrorData);
