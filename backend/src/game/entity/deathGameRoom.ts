@@ -3,10 +3,12 @@ import { Player }  from "./player";
 import { GameSetting } from "./gameSetting";
 import { Server } from "socket.io";
 import { GameDTO } from "src/dto/game.dto";
+import { GameStateDTO } from 'src/dto/gameState.dto';
 import { MatchService } from "src/match/match.service";
 import { UserService } from "src/user/user.service";
 
 export class DeathGameRoom extends GameRoom{
+	lastShotSent: number = 0;
 
 	constructor (player1: Player, player2: Player, gameType: string, setting: GameSetting, matchService: MatchService, userService: UserService){
 		super(player1, player2, gameType, setting, matchService, userService);
@@ -43,6 +45,20 @@ export class DeathGameRoom extends GameRoom{
 		if (score == 3){
 			this.hitType = HitType.WALL;
 		}
+
+		if (this.player2Score === this.roomSettings.scoreToWin - 1){
+      if (this.Ball.posX < this.roomSettings.paddleOffsetX + this.leftPaddle.width && this.lastShotSent == 0) {
+				this.lastShotSent = 1;
+        server.to(this.roomID).emit('gameState', new GameStateDTO('LastShot', null));
+      }
+    }
+
+    if (this.player1Score === this.roomSettings.scoreToWin - 1){
+      if (this.Ball.posX > this.canvasWidth - this.roomSettings.paddleOffsetX - this.rightPaddle.width - this.Ball.width && this.lastShotSent == 0) {
+				this.lastShotSent = 1;
+        server.to(this.roomID).emit('gameState', new GameStateDTO('LastShot', null));
+      }
+    }
 
 		this.gameCollisionDetection();
 		server.to(this.roomID).emit('gameLoop',new GameDTO(

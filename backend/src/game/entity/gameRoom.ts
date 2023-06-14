@@ -76,6 +76,7 @@ export class GameRoom {
   hitType: HitType = 0;
   matchService: MatchService;
   userService: UserService;
+  lastShotSent: number = 0;
 
   constructor(
     player1: Player,
@@ -418,6 +419,7 @@ export class GameRoom {
     this.Ball.initialSpeedX = this.ballInitSpeedX;
     this.Ball.initialSpeedY = this.ballInitSpeedY;
     this.hitType = HitType.NONE;
+    this.lastShotSent = 0;
     server
       .to(this.roomID)
       .emit(
