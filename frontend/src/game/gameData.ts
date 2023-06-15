@@ -486,7 +486,6 @@ export class GameData {
         break;
       case "GameStart":
         const data = <GameStartDTO>state.data;
-        console.log(data);
         this.isLeft = data.isLeft;
         this.isRight = !data.isLeft;
         this.gameRoom = data.gameRoom;

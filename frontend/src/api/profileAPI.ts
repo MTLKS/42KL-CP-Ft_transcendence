@@ -19,10 +19,9 @@ export function getProfileStat(intraName: string) {
 export function getRecentMatchesOfUser(
   intraName: string,
   page: number = 0,
-  perPage: number = 3
+  perPage: number = 5
 ) {
-  return api.get<MatchData[]>(`/match/${intraName}`, {
-    page: page,
-    perPage: perPage,
-  });
+  return api.get<MatchData[]>(
+    `/match/${intraName}?page=${page}&perPage=${perPage}`
+  );
 }
