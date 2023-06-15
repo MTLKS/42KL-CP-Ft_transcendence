@@ -69,7 +69,7 @@ function ProfileHeader(props: ProfileHeaderProps) {
       onClick={onProfileClick}
     >
       <div className='flex flex-col justify-center flex-1 px-5 bg-dimshadow'>
-        <div className='text-2xl font-extrabold  text-highlight'>{userName} <a href={`https://profile.intra.42.fr/users/${intraName}`} className='cursor-pointer hover:underline' target='_blank'>({intraName})</a></div>
+        <div className='text-2xl font-extrabold  text-highlight'>{userName} <a  onClick={(e:React.MouseEvent)=>e.stopPropagation()} href={`https://profile.intra.42.fr/users/${intraName}`} className='cursor-pointer hover:underline' target='_blank'>({intraName})</a></div>
         <div className='text-xs  text-highlight'>{getEloTitle()}</div>
       </div>
       <div className='flex flex-row items-center p-8 w-fit bg-dimshadow'>

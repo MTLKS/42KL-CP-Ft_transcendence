@@ -20,7 +20,7 @@ function FriendRequestContent(props: FriendRequestProps) {
     <div className='flex flex-col items-center w-full text-center select-none h-fit gap-y-1'>
       <p className='text-lg font-bold cursor-pointer text-accCyan hover:underline' onClick={viewFriendRequests}>({totalRequest}) New Friend Request</p>
       <p className='text-sm text-highlight/50'>Check your friend requests using</p>
-      <p className='text-sm text-highlight/50'><span className='px-[1ch] bg-accGreen text-highlight'>friend requests</span> command!</p>
+      <p className='text-sm text-highlight/50'><span onClick={viewFriendRequests} className=' cursor-pointer px-[1ch] bg-accGreen text-highlight'>friend requests</span> command!</p>
     </div>
   )
 
