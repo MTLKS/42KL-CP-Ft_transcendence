@@ -321,6 +321,17 @@ export class GameService {
       client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("error")));
       return;
     }
+    //Is queueing
+    const IN_QUEUE = Object.keys(this.queues).find((queueType) => {
+      return this.queues[queueType].find(
+        (e) => e.intraName === user_data.intraName,
+      );
+    });
+    if (IN_QUEUE !== undefined) {
+      client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("error")));
+      return;
+    }
+
     client.emit('gameState', new GameStateDTO('CheckCreateInvite', new CheckCreateInviteDTO("success")));
   }
 
@@ -350,6 +361,17 @@ export class GameService {
       return;
     }
     const INVITATION = this.invitationRoom.get(messageID);
+
+    //Client is currently queueing
+    const IN_QUEUE = Object.keys(this.queues).find((queueType) => {
+      return this.queues[queueType].find(
+        (e) => e.intraName === user_data.intraName,
+      );
+    });
+    if (IN_QUEUE !== undefined) {
+      client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
+      return;
+    }
     //Invitation not found
     if (INVITATION === undefined){
       client.emit('gameState', new GameStateDTO('JoinInvite', new JoinInviteDTO("error", -1)));
