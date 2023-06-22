@@ -219,6 +219,7 @@ function ChatroomContent(props: ChatroomContentProps) {
   function listenForIncomingMessages() {
     chatSocket.listen("message", (newMessage: ChatroomMessageData) => {
       const { senderChannel, receiverChannel } = newMessage;
+      if (receiverChannel.isRoom && !chatroomData.isRoom) return;
       if (senderChannel.owner.intraId === myProfile.intraId && newMessage.message === "/invite" && receiverChannel.channelId === chatroomData.channelId) {
         setAllMessages((messages) => appendNewMessage(newMessage, messages));
         return;
