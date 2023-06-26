@@ -22,7 +22,7 @@ import { ErrorData } from '../../model/ErrorData';
 import UserContext from '../../contexts/UserContext'
 import sleep from '../../functions/sleep'
 import Triangle from '../../components/Triangle'
-import { FaAngry, FaHandMiddleFinger, FaHeart, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsDown, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
+import { FaAngry, FaBeer, FaHandMiddleFinger, FaHeart, FaHotjar, FaPoop, FaQuestion, FaSadCry, FaSkull, FaSmile, FaThumbsDown, FaThumbsUp, FaTrash, FaWheelchair } from 'react-icons/fa'
 import terminator from '../../../assets/terminator.webp'
 import rick from '../../../assets/rick.png'
 import musk from '../../../assets/musk.jpeg'
@@ -49,6 +49,8 @@ const emoteList = [
   <FaAngry size={100} />,
   <FaPoop size={100} />,
   <FaHeart size={100} />,
+  <FaHotjar size={100} />,
+  <FaBeer size={100} />,
 ]
 
 // const emoteListSmall = [
@@ -73,6 +75,8 @@ const emoteListSmall = [
   <FaAngry size={25} />,
   <FaPoop size={25} />,
   <FaHeart size={25} />,
+  <FaHotjar size={25} />,
+  <FaBeer size={25} />,
 ]
 
 function Lobby() {
